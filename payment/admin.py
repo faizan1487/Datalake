@@ -6,5 +6,6 @@ from .models import Payment
 class PaymentAdmin(admin.ModelAdmin):
     list_display = [('payment_source', 'first_name', 'last_name', 'email', 'enrollment_name', 'enrollment_creation_date', 'enrollment_expiry_date', 'payment_date')]
     per_page = 500
+    search_fields = ('payment_souce','email')
 
 admin.site.register(Payment)
