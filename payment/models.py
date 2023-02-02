@@ -2,15 +2,40 @@ from django.db import models
 
 # Create your models here.
 
-class Payment(models.Model):
-    payment_source = models.CharField(max_length=50)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    email = models.EmailField()
-    enrollment_name = models.CharField(max_length=50)
-    enrollment_creation_date = models.CharField(max_length=80,null=True,blank=True)
-    enrollment_expiry_date = models.CharField(max_length=80,null=True,blank=True)
-    payment_date = models.CharField(max_length=80,null=True,blank=True)
+# class Payment(models.Model):
+#     payment_source = models.CharField(max_length=50)
+#     first_name = models.CharField(max_length=50)
+#     last_name = models.CharField(max_length=50)
+#     email = models.EmailField()
+#     enrollment_name = models.CharField(max_length=50)
+#     enrollment_creation_date = models.CharField(max_length=80,null=True,blank=True)
+#     enrollment_expiry_date = models.CharField(max_length=80,null=True,blank=True)
+#     payment_date = models.CharField(max_length=80,null=True,blank=True) 
 
+#     def __str__(self):
+#         return self.email
+
+
+
+class Payment(models.Model):
+    
+    payment_id = models.CharField(max_length=100 , null=True , blank=True)
+    name = models.CharField(max_length=50, null=True , blank=True)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50, null=True , blank=True)
+    product = models.CharField(max_length=100, null=True , blank=True)
+    amount = models.CharField(max_length=50, null=True , blank=True)
+    created = models.DateTimeField(max_length=60, null=True , blank=True)
+
+    status = models.CharField(max_length=50, null=True , blank=True)
+    currency = models.CharField(max_length=50, null=True , blank=True)
+    source = models.CharField(max_length=50, null=True , blank=True)
+    description = models.CharField(max_length=100, null=True , blank=True)
+    address = models.CharField(max_length=300, null=True , blank=True)
+        
     def __str__(self):
         return self.email
+    class Meta:
+        
+        managed = False
+        db_table = 'automated_payments'

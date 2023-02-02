@@ -14,7 +14,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = 'django-insecure-1i*4dn)-_9)gf84&yqq1jytyu$6ob98k0u!$+bha%8wv!i#v6w'
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# SECURITY WARNING: don't run with debug turned on in production!cl
 DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ["*"]
@@ -67,27 +67,28 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-if DEBUG:
-    DATABASES = {
+# if DEBUG:
+#     DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
+
+
+# else:
+#     print("hello")
+DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': env("DATABASE_ENGINE"),
+        'NAME': env("DATABASE_NAME"),
+        'USER': env("DATABASE_USER"),
+        'PASSWORD': env("DATABASE_PASSWORD"),
+        'HOST': env("DATABASE_HOST"),
+        'PORT': env('DATABASE_PORT'),
+
     }
 }
-
-
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': env("DATABASE_ENGINE"),
-            'NAME': env("DATABASE_NAME"),
-            'USER': env("DATABASE_USER"),
-            'PASSWORD': env("DATABASE_PASSWORD"),
-            'HOST': env("DATABASE_HOST"),
-            'PORT': env('DATABASE_PORT'),
-
-        }
-    }
 
 
 
@@ -119,7 +120,7 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
 
 
 # Static files (CSS, JavaScript, Images)
