@@ -1,5 +1,7 @@
 from django.contrib import admin
 from .models import Payment
+from import_export.admin import ImportExportModelAdmin
+
 # Register your models here.
 
 
@@ -10,7 +12,7 @@ from .models import Payment
 
 # admin.site.register(Payment,PaymentAdmin)     
 
-class PaymentAdmin(admin.ModelAdmin):
+class PaymentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('payment_id','name', 'email', 'phone', 'product', 'amount', 'created', 'status', 'currency', 'source', 'description', 'address')
     per_page = 500
     search_fields = ('email',)
