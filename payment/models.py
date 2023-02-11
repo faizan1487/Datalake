@@ -39,3 +39,31 @@ class Payment(models.Model):
         
         managed = False
         db_table = 'automated_payments'
+
+
+#For Easypaisa_Payments:
+class Easypaisa_Payment(models.Model):
+    
+    ops_id = models.CharField(max_length=50, null=True,blank=True)
+    product_name = models.CharField(max_length=200, null=True,blank=True)
+    order_id = models.CharField(max_length=50, null=True,blank=True)
+    transaction_id = models.CharField(max_length=50, null=True,blank=True)
+    order_datetime = models.CharField(max_length=50, null=True,blank=True)
+    customer_msidn = models.CharField(max_length=50, null=True,blank=True)
+    customer_email = models.EmailField()
+    amount_pkr = models.CharField(max_length=50, null=True,blank=True)
+    status = models.CharField(max_length=50, null=True,blank=True)
+    source = models.CharField(max_length=50, null=True , blank=True)
+    credit_card = models.CharField(max_length=50, null=True,blank=True)
+    bin_bank_name = models.CharField(max_length=50, null=True,blank=True)
+    fee_pkr = models.CharField(max_length=50, null=True,blank=True)
+    fed_pkr = models.CharField(max_length=50, null=True,blank=True)
+    error_reason = models.CharField(max_length=200, null=True,blank=True)
+    token_paid_datetime = models.CharField(max_length=50, null=True,blank=True)
+        
+    def __str__(self):
+        return self.email
+   
+    class Meta:
+        managed = False
+        db_table = 'easypaisa_payments'
