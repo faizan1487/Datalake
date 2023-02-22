@@ -39,6 +39,7 @@ class Payment(models.Model):
         
         managed = False
         db_table = 'automated_payments'
+        verbose_name = 'Stripe Payment'
 
 
 #For Easypaisa_Payments:
@@ -67,3 +68,31 @@ class Easypaisa_Payment(models.Model):
     class Meta:
         managed = False
         db_table = 'easypaisa_payments'
+        verbose_name = 'Easypaisa Payment'
+
+
+
+class UBL_IPG_Payment(models.Model):
+    
+    id = models.AutoField(primary_key=True)
+    transaction_id = models.CharField(max_length=50, null=False,blank=False)
+    customer_email = models.EmailField()
+    card_mask = models.CharField(max_length=100, null=True,blank=True)
+    product_name = models.CharField(max_length=50, null=True,blank=True)
+    order_datetime = models.DateTimeField(max_length=60, null=False , blank=False)
+    order_id = models.CharField(max_length=100, null=False,blank=False)
+    amount = models.CharField(max_length=50, null=True,blank=True)
+    captured = models.CharField(max_length=50, null=True,blank=True)
+    reversed = models.CharField(max_length=50, null=True,blank=True)
+    refund = models.CharField(max_length=50, null=True , blank=True)
+    approval_code = models.CharField(max_length=50, null=True,blank=True)
+    source = models.CharField(max_length=50, null=True,blank=True)
+    status = models.CharField(max_length=50, null=True,blank=True)
+        
+    def __str__(self):
+        return self.email
+   
+    class Meta:
+        managed = False
+        db_table = 'ubl_ipg_payments'
+        verbose_name = "UBL IPG Payment"

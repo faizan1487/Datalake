@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models import Payment
 from .models import Easypaisa_Payment
+from .models import UBL_IPG_Payment
 from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
@@ -28,3 +29,12 @@ class EasypaisaPaymentsAdmin(admin.ModelAdmin):
     search_fields = ('customer_email',)
 
 admin.site.register(Easypaisa_Payment, EasypaisaPaymentsAdmin)
+
+
+#For UBL IPG Payments:
+class UBLIPGPaymentsAdmin(admin.ModelAdmin):
+    list_display = ['transaction_id', 'customer_email', 'card_mask', 'product_name', 'order_datetime', 'order_id', 'amount', 'captured', 'reversed', 'refund', 'approval_code', 'source', 'status']
+    per_page = 500
+    search_fields = ('customer_email','card_mask',)
+
+admin.site.register(UBL_IPG_Payment, UBLIPGPaymentsAdmin)   
