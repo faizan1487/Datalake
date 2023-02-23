@@ -26,7 +26,6 @@ class Payment(models.Model):
     product = models.CharField(max_length=100, null=True , blank=True)
     amount = models.CharField(max_length=50, null=True , blank=True)
     created = models.DateTimeField(max_length=60, null=True , blank=True)
-
     status = models.CharField(max_length=50, null=True , blank=True)
     currency = models.CharField(max_length=50, null=True , blank=True)
     source = models.CharField(max_length=50, null=True , blank=True)
@@ -76,7 +75,7 @@ class UBL_IPG_Payment(models.Model):
     
     id = models.AutoField(primary_key=True)
     transaction_id = models.CharField(max_length=50, null=False,blank=False)
-    customer_email = models.EmailField()
+    customer_email = models.EmailField(null=True,blank=True)
     card_mask = models.CharField(max_length=100, null=True,blank=True)
     product_name = models.CharField(max_length=50, null=True,blank=True)
     order_datetime = models.DateTimeField(max_length=60, null=False , blank=False)
