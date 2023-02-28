@@ -78,7 +78,7 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 
 
 # else:
-    # print("hello")
+print("hello")
 DATABASES = {
     'default': {
         'ENGINE': env("DATABASE_ENGINE"),
