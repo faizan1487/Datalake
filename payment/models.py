@@ -90,7 +90,7 @@ class UBL_IPG_Payment(models.Model):
         
     def __str__(self):
         return self.email
-   
+
     class Meta:
         managed = False
         db_table = 'ubl_ipg_payments'
