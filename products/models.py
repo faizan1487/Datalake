@@ -46,3 +46,8 @@ class AlnafiProduct(models.Model):
 
     def __str__(self):
         return self.name
+    
+    class Meta:
+        managed = True
+        db_table = 'products_alnafiproduct'
+        verbose_name = "Al-Nafi Product"
