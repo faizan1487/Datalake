@@ -49,5 +49,4 @@ class AlnafiProduct(models.Model):
     
     class Meta:
         managed = True
-        db_table = 'products_alnafiproduct'
         verbose_name = "Al-Nafi Product"
