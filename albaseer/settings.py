@@ -32,7 +32,8 @@ INSTALLED_APPS = [
     'payment.apps.PaymentConfig',
     'user.apps.UserConfig',
     'rest_framework',
-    'import_export',   
+    'import_export',
+    'products.apps.ProductsConfig'
 ]
 
 MIDDLEWARE = [
