@@ -72,8 +72,6 @@ class IslamicAcademyProduct(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     description = models.TextField(blank=True, null=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    regular_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    sale_price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     stock_status = models.CharField(max_length=20, default='instock')
 
     class Meta:

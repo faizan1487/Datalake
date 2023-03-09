@@ -20,4 +20,4 @@ class ProductSerializer(ModelSerializer):
 class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = IslamicAcademyProduct
-        fields = ("id", "name", "slug", "date_created", "date_modified", "type", "status", "description", "price", "regular_price", "sale_price", "stock_status")
+        fields = ("id", "name", "slug", "date_created", "date_modified", "type", "status", "description", "price", "stock_status")
