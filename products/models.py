@@ -65,7 +65,7 @@ class IslamicAcademyProduct(models.Model):
     )
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    slug = models.CharField(max_length=255)
     date_created = models.DateTimeField(auto_now_add=True)
     date_modified = models.DateTimeField(auto_now=True)
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='simple')
