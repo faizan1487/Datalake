@@ -25,15 +25,15 @@ class User(models.Model):
 class IslamicAcademyUser(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
     is_paying_customer = models.BooleanField(default=False)
-    username = models.CharField(max_length=255)
-    email = models.EmailField()
-    first_name = models.CharField(max_length=255)
-    last_name = models.CharField(max_length=255)
+    username = models.CharField(max_length=255, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    first_name = models.CharField(max_length=255, null=True, blank=True)
+    last_name = models.CharField(max_length=255, null=True, blank=True)
     date_created = models.DateTimeField()
     date_modified = models.DateTimeField()
     role = models.CharField(max_length=255)
-    phone = models.CharField(max_length=255)
-    address = models.CharField(max_length=255)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    address = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
         return self.username
