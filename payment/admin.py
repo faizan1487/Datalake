@@ -23,7 +23,7 @@ class PaymentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 admin.site.register(Payment,PaymentAdmin)     
 
 #For Easypaisa Payments:
-class EasypaisaPaymentsAdmin(admin.ModelAdmin):
+class EasypaisaPaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['ops_id','product_name','order_id','transaction_id','order_datetime','customer_msidn','customer_email','amount_pkr','status','source','credit_card','bin_bank_name','fee_pkr',	'fed_pkr','error_reason','token_paid_datetime']
     per_page = 500
     search_fields = ('customer_email',)
@@ -32,7 +32,7 @@ admin.site.register(Easypaisa_Payment, EasypaisaPaymentsAdmin)
 
 
 #For UBL IPG Payments:
-class UBLIPGPaymentsAdmin(admin.ModelAdmin):
+class UBLIPGPaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['transaction_id', 'customer_email', 'card_mask', 'product_name', 'order_datetime', 'order_id', 'amount', 'captured', 'reversed', 'refund', 'approval_code', 'source', 'status']
     per_page = 500
     search_fields = ('customer_email','card_mask',)

@@ -17,7 +17,7 @@ admin.site.register(AlnafiProduct, ProductAdmin)
 
 #FOR ISLAMIC ACADEMY PRODUCT:
 class IslamicAcademyProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ("id", "name", "slug", "date_created", "date_modified", "type", "status", "description", "price", "stock_status")
+    list_display = ("id", "name", "slug", "date_created", "date_modified", "type", "status", "price", "stock_status")
     search_fields = ("id", "name", "slug")
     list_filter = ('date_created', "type", "status", "stock_status")
 
