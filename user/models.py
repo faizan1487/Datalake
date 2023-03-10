@@ -33,7 +33,7 @@ class IslamicAcademyUser(models.Model):
     date_modified = models.DateTimeField()
     role = models.CharField(max_length=255)
     phone = models.CharField(max_length=255)
-    address = models.JSONField()
+    address = models.CharField(max_length=255)
 
     def __str__(self):
         return self.username
