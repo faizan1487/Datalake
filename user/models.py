@@ -24,7 +24,7 @@ class User(models.Model):
 #For Islamic Academy User/Customer:
 class IslamicAcademyUser(models.Model):
     id = models.PositiveIntegerField(primary_key=True)
-    is_paying_customer = models.BooleanField(default=False)
+    is_paying_customer = models.BooleanField()
     username = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     first_name = models.CharField(max_length=255, null=True, blank=True)
