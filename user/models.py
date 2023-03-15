@@ -3,18 +3,25 @@ from django.db import models
 # Create your models here.
 
 #For MainSite User:
-class User(models.Model):
-    username = models.CharField(max_length=255, unique=True)
-    first_name = models.CharField(max_length=50)
-    last_name = models.CharField(max_length=50)
-    email = models.CharField(max_length=50, unique=True)
-    phone = models.CharField(max_length=50)
-    address = models.TextField(null=True, blank=True)
-    country = models.CharField(max_length=50, default="PK")
-    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    
+class AlnafiUser(models.Model):
+    id = models.IntegerField(primary_key=True)
+    username = models.CharField(max_length=255)
+    first_name = models.CharField(max_length=255)
+    last_name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=25, null=True)
+    address = models.TextField(null=True)
+    country = models.CharField(max_length=255)
+    language = models.CharField(max_length=255, null=True)
+    verification_code = models.CharField(max_length=30)
+    isAffiliate = models.BooleanField(default=False)
+    how_did_you_hear_about_us = models.CharField(max_length=255, null=True)
+    affiliate_code = models.CharField(max_length=255, null=True)
+    isMentor = models.BooleanField(default=False)
+
     def __str__(self):
         return self.username
+    
     class Meta:
         managed = True
         verbose_name = "Al-Nafi User"
