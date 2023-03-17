@@ -18,7 +18,34 @@ SECRET_KEY = 'django-insecure-1i*4dn)-_9)gf84&yqq1jytyu$6ob98k0u!$+bha%8wv!i#v6w
 # DEBUG = env("DEBUG")
 
 ALLOWED_HOSTS = ["*"]
+CORS_ALLOW_ALL_ORIGINS: bool
 
+CORS_ALLOWED_ORIGINS = [
+    "https://example.com",
+    "https://sub.example.com",
+    "http://localhost:3000",
+    "http://127.0.0.1:9000",
+]
+
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
 
 # Application definition
 
@@ -33,7 +60,8 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'rest_framework',
     'import_export',
-    'products.apps.ProductsConfig'
+    'products.apps.ProductsConfig',
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -44,6 +72,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
 ]
 
 ROOT_URLCONF = 'albaseer.urls'
