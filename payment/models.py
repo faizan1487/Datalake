@@ -62,7 +62,7 @@ class Easypaisa_Payment(models.Model):
     token_paid_datetime = models.CharField(max_length=50, null=True,blank=True)
         
     def __str__(self):
-        return self.email
+        return self.customer_email
    
     class Meta:
         managed = False
@@ -89,7 +89,7 @@ class UBL_IPG_Payment(models.Model):
     status = models.CharField(max_length=50, null=True,blank=True)
         
     def __str__(self):
-        return self.email
+        return self.customer_email
 
     class Meta:
         managed = False
