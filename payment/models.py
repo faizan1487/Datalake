@@ -18,7 +18,6 @@ from django.db import models
 
 
 class Payment(models.Model):
-    
     payment_id = models.CharField(max_length=100 , null=True , blank=True)
     name = models.CharField(max_length=50, null=True , blank=True)
     email = models.EmailField()
@@ -43,7 +42,6 @@ class Payment(models.Model):
 
 #For Easypaisa_Payments:
 class Easypaisa_Payment(models.Model):
-    
     ops_id = models.CharField(max_length=50, null=True,blank=True)
     product_name = models.CharField(max_length=200, null=True,blank=True)
     order_id = models.CharField(max_length=50, null=True,blank=True)
