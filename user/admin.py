@@ -11,7 +11,7 @@ class AlnafiUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'phone', 'created_at', 'address', 'country', 'language', 'verification_code', 'isAffiliate', 'how_did_you_hear_about_us', 'affiliate_code', 'isMentor')
     per_page = 500
     search_fields = ('id', 'username', 'email', 'phone')
-    list_filter = ('created_at', 'country', 'language', 'isAffiliate', 'isMentor')
+    list_filter = ('created_at', 'isAffiliate', 'isMentor', 'language', 'country')
 
 admin.site.register(AlnafiUser, AlnafiUserAdmin)
 
