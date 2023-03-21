@@ -7,19 +7,9 @@ from import_export.admin import ImportExportModelAdmin
 
 # Register your models here.
 
-# #FOR AL-NAFI MAIN SITE PRODUCT:
-# class ProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
- 
-#     list_display = ('id', "name", "productSlug", "language", "bundle_Ids", "amount_pkr", "amount_usd", "legacy_available", "legacy_fee_pkr", "legacy_fee_usd",'qarz_product', 'qarz_fee_pkr', 'qarz_fee_usd',"product_type", "plan", 'old_amount_usd', 'old_amount_pkr', 'is_certificate_product', 'allow_coupon','created_at')
-    # search_fields = ("id", "name", "productSlug", "language", "bundle_Ids","plan", "product_type")
-    # list_filter = ('created_at',"language", "product_type", "plan")
-
-# admin.site.register(AlnafiProduct, ProductAdmin)
-
-
 #FOR AL-NAFI MAIN SITE PRODUCT:
 class AlnafiProductAdmin(ImportExportModelAdmin, admin.ModelAdmin): 
-    list_display = ('id', 'image', 'product_type', 'productSlug', 'plan', 'name', 'bundle_Ids', 'amount_pkr', 'amount_usd', 'amount_gbp', 'old_amount_pkr', 'old_amount_usd', 'legacy_fee_pkr', 'legacy_fee_usd', 'legacy_available', 'qarz_product', 'qarz_fee_pkr', 'qarz_fee_usd', 'lms_id', 'language', 'created_at', 'has_legacy_version', 'is_certificate_product', 'allow_coupon', 'courses')
+    list_display = ('id','product_type', 'productSlug', 'plan', 'name', 'bundle_Ids', 'amount_pkr', 'amount_usd', 'amount_gbp', 'old_amount_pkr', 'old_amount_usd', 'legacy_fee_pkr', 'legacy_fee_usd', 'legacy_available', 'qarz_product', 'qarz_fee_pkr', 'qarz_fee_usd', 'lms_id', 'language', 'created_at', 'has_legacy_version', 'is_certificate_product', 'allow_coupon', 'courses')
     search_fields = ("id", "name", "productSlug", "language", "bundle_Ids","plan", "product_type")
     list_filter = ('created_at',"language", "product_type", "plan")
 
