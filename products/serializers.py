@@ -4,7 +4,7 @@ from .models import IslamicAcademyProduct
 from rest_framework.serializers import ModelSerializer
 
 #FOR AL-NAFI MAIN SITE PRODUCT:
-class ProductSerializer(ModelSerializer):
+class AlnafiProductSerializer(ModelSerializer):
     def __init__(self, data, fields="__all__", action="serialize"):
         self.Meta.fields = fields  # type: ignore
         if action == "deserialize":
@@ -17,7 +17,7 @@ class ProductSerializer(ModelSerializer):
 
 
 #FOR ISLAMIC ACADEMY PRODUCT:
-class ProductSerializer(serializers.ModelSerializer):
+class IslamicAcademyProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = IslamicAcademyProduct
         fields = ("id", "name", "slug", "date_created", "date_modified", "type", "status", "description", "price", "stock_status")
