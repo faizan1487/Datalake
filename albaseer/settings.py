@@ -1,5 +1,6 @@
 import environ
 from pathlib import Path
+from django.conf.locale.en import formats as en_formats
 
 env = environ.Env()
 env.read_env()
@@ -16,6 +17,13 @@ SECRET_KEY = 'django-insecure-1i*4dn)-_9)gf84&yqq1jytyu$6ob98k0u!$+bha%8wv!i#v6w
 
 # SECURITY WARNING: don't run with debug turned on in production!cl
 # DEBUG = env("DEBUG")
+
+
+
+# Change date format (AM PM to hours time format)
+en_formats.DATE_FORMAT = 'Y-m-d'
+en_formats.TIME_FORMAT = 'H:i:s'
+en_formats.DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 ALLOWED_HOSTS = ["*"]
 CORS_ALLOW_ALL_ORIGINS: bool
@@ -122,7 +130,7 @@ DATABASES = {
 
 
 # else:
-print("hello")
+# print("hello")
 # DATABASES = {
 #     'default': {
 #         'ENGINE': env("DATABASE_ENGINE"),
@@ -167,6 +175,7 @@ USE_I18N = True
 
 USE_TZ = False
 
+TIME_INPUT_FORMAT = ['%H:%M:%S']
 
 
 

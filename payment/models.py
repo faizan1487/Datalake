@@ -38,6 +38,7 @@ class Payment(models.Model):
         managed = False
         db_table = 'automated_payments'
         verbose_name = 'Stripe Payment'
+        ordering = ["-created"]
 
 
 #For Easypaisa_Payments:
@@ -46,7 +47,7 @@ class Easypaisa_Payment(models.Model):
     product_name = models.CharField(max_length=200, null=True,blank=True)
     order_id = models.CharField(max_length=50, null=True,blank=True)
     transaction_id = models.CharField(max_length=50, null=True,blank=True)
-    order_datetime = models.CharField(max_length=50, null=True,blank=True)
+    order_datetime = models.DateTimeField(max_length=60, null=False , blank=False)
     customer_msidn = models.CharField(max_length=50, null=True,blank=True)
     customer_email = models.EmailField()
     amount_pkr = models.CharField(max_length=50, null=True,blank=True)
@@ -66,7 +67,7 @@ class Easypaisa_Payment(models.Model):
         managed = False
         db_table = 'easypaisa_payments'
         verbose_name = 'Easypaisa Payment'
-
+        ordering = ["-order_datetime"]
 
 
 class UBL_IPG_Payment(models.Model):
@@ -93,3 +94,4 @@ class UBL_IPG_Payment(models.Model):
         managed = False
         db_table = 'ubl_ipg_payments'
         verbose_name = "UBL IPG Payment"
+        ordering = ["-order_datetime"]

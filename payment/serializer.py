@@ -16,7 +16,7 @@ class Easypaisa_PaymentsSerializer(ModelSerializer):
         managed = False
         model = Easypaisa_Payment
         fields = '__all__'
-
+    
 #For UBL IPG Payments:
 class Ubl_Ipg_PaymentsSerializer(ModelSerializer):
     class Meta:
