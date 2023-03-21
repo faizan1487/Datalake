@@ -7,20 +7,17 @@ from .models import AlnafiUser, IslamicAcademyUser
 from .serializers import UserSerializer
 # Create your views here.
 
-
+class MyPagination(PageNumberPagination):
+    page_size = 10
+    page_query_param = 'page'
+    page_size_query_param = 'page_size'
+    max_page_size = 100   
 # class GetUserDetails(APIView):
 #     def post(self, request):
 #         email = request.data['email']
 #         queryset = User.objects.filter(email=email)
 #         serializer = UserSerializer(queryset, many=True)
 #         return Response(serializer.data)
-
-class MyPagination(PageNumberPagination):
-    page_size = 10
-    page_query_param = 'page'
-    page_size_query_param = 'page_size'
-    max_page_size = 100           
-
 class SearchUsers(APIView):
     def get(self, request):
         query = self.request.GET.get('q')
