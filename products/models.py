@@ -28,7 +28,7 @@ class AlnafiProduct(models.Model):
     has_legacy_version = models.BooleanField(default=False)
     is_certificate_product = models.BooleanField(default=False)
     allow_coupon = models.BooleanField(default=False)
-    # courses = models.JSONField(null=True, blank=True)
+    courses = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
         return self.name
