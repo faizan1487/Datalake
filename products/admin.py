@@ -1,9 +1,8 @@
 from django.contrib import admin
 from rest_framework.serializers import ModelSerializer
-from .models import AlnafiProduct
-from .models import IslamicAcademyProduct
+from .models import Alnafi_Product
+from .models import IslamicAcademy_Product
 from import_export.admin import ImportExportModelAdmin
-
 
 # Register your models here.
 
@@ -13,7 +12,7 @@ class AlnafiProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ("id", "name", "product_slug", "language", "bundle_Ids","plan", "product_type")
     list_filter = ('created_at',"language", "product_type", "plan")
 
-admin.site.register(AlnafiProduct, AlnafiProductAdmin)
+admin.site.register(Alnafi_Product, AlnafiProductAdmin)
 
 
 #FOR ISLAMIC ACADEMY PRODUCT:
@@ -22,6 +21,6 @@ class IslamicAcademyProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ("id", "name", "product_slug")
     list_filter = ('created_at', "type", "status", "stock_status")
 
-admin.site.register(IslamicAcademyProduct, IslamicAcademyProductAdmin)
+admin.site.register(IslamicAcademy_Product, IslamicAcademyProductAdmin)
 
 

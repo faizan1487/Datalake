@@ -3,7 +3,7 @@ from django.db import models
 # Create your models here.
 
 #FOR AL-NAFI MAIN SITE PRODUCT:
-class AlnafiProduct(models.Model):
+class Alnafi_Product(models.Model):
     id = models.IntegerField(primary_key=True)
     image = models.CharField(max_length=255, null=True, blank=True)
     product_type = models.CharField(max_length=255, null=True, blank=True)
@@ -39,7 +39,7 @@ class AlnafiProduct(models.Model):
 
 
 #FOR ISLAMIC ACADEMY PRODUCT:
-class IslamicAcademyProduct(models.Model):
+class IslamicAcademy_Product(models.Model):
     TYPE_CHOICES = (
         ('simple', 'Simple'),
         ('variable', 'Variable'),
@@ -49,13 +49,13 @@ class IslamicAcademyProduct(models.Model):
         ('publish', 'Publish'),
     )
     id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=255)
-    product_slug = models.SlugField(unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    modified_at = models.DateTimeField(auto_now=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    product_slug = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    modified_at = models.DateTimeField(auto_now=True, null=True, blank=True)
     type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='simple')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
-    description = models.TextField(blank=True, null=True)
+    description = models.CharField(max_length=255, null=True, blank=True)
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     stock_status = models.CharField(max_length=20, default='instock')
 

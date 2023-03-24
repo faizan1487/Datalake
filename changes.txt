@@ -31,6 +31,36 @@ date_modified ---> modified_at
 
 
 #CHANGES ON FAIZAN WORK: (On Views and Services)
+#STRIPE VIEWS and SERVICES
 Payments ---> Stripe_Payments
-PaymentsSerializer ---> StripePaymentsSerializer 
+PaymentsSerializer ---> StripePaymentsSerializer
+
+
+#User and Products Views and Services:
+-In Views.py naming convenson chnaged.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ 
 
