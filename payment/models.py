@@ -33,7 +33,7 @@ class Easypaisa_Payment(models.Model):
     product_name = models.CharField(max_length=200, null=True,blank=True)
     order_id = models.CharField(max_length=50, null=True,blank=True)
     transaction_id = models.CharField(max_length=50, null=True,blank=True)
-    order_datetime = models.DateTimeField(max_length=60, null=False , blank=False)
+    order_datetime = models.DateTimeField(default=datetime.now, null=False , blank=False)
     customer_msidn = models.CharField(max_length=50, null=True,blank=True)
     customer_email = models.EmailField(null=True,blank=True)
     amount = models.CharField(max_length=50, null=True,blank=True)
