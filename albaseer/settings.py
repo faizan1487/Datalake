@@ -108,40 +108,40 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# if DEBUG:
-#     DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-DEBUG=True
+# if env('DEBUG') == True:
+print("SQL Lite CONNECTED")
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'general_purpose',
-        'USER': 'admin',
-        'PASSWORD': 'Noncritical321#',
-        'HOST': 'instance-for-non-critical-databases.cxmsoa44dxsg.us-east-1.rds.amazonaws.com',
-        'PORT': '3306',
+    'ENGINE': 'django.db.backends.sqlite3',
+    'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-
 # else:
-# print("hello")
-# DATABASES = {
-#     'default': {
-#         'ENGINE': env("DATABASE_ENGINE"),
-#         'NAME': env("DATABASE_NAME"),
-#         'USER': env("DATABASE_USER"),
-#         'PASSWORD': env("DATABASE_PASSWORD"),
-#         'HOST': env("DATABASE_HOST"),
-#         'PORT': env('DATABASE_PORT'),
-
+#     print("RDS CONNECTED")
+#     DATABASES = {
+#         'default': {
+#             'ENGINE': env("DATABASE_ENGINE"),
+#             'NAME': env("DATABASE_NAME"),
+#             'USER': env("DATABASE_USER"),
+#             'PASSWORD': env("DATABASE_PASSWORD"),
+#             'HOST': env("DATABASE_HOST"),
+#             'PORT': env('DATABASE_PORT'),
+#         }
 #     }
-# }
+
+DEBUG=True
+# # DATABASES = {
+# #     'default': {
+# #         'ENGINE': 'django.db.backends.mysql',
+# #         'NAME': 'general_purpose',
+# #         'USER': 'admin',
+# #         'PASSWORD': 'Noncritical321#',
+# #         'HOST': 'instance-for-non-critical-databases.cxmsoa44dxsg.us-east-1.rds.amazonaws.com',
+# #         'PORT': '3306',
+# #     }
+# # }
+
+
 
 
 
@@ -196,3 +196,8 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny'
     ]
 }
+
+# if DEBUG:
+REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
+    'rest_framework.renderers.JSONRenderer',
+)

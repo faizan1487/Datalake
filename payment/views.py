@@ -67,3 +67,23 @@ class SearchPayments(APIView):
                 serializer.append(serializer_class(obj).data)
             
             return paginator.get_paginated_response(serializer)        
+        
+
+
+
+#Creating API For Stripe Payments: 
+class GetStripePayments(APIView):
+    def get(self,request):
+        pay = Payment.objects.all()
+        serializer = PaymentSerializer(pay,many=True)
+        return Response(serializer.data)
+    
+#Creating API For ubl_ipg Payments:
+class GetUBLPayments(APIView):
+    def get(self,request):
+        ubl_pay = UBL_IPG_Payment.objects.all()
+        serializer = Ubl_Ipg_PaymentsSerializer(ubl_pay, many=True)
+        return Response(serializer.data)
+
+
+    
