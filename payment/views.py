@@ -1,6 +1,6 @@
 from django.shortcuts import render
-from .models import Payment, Easypaisa_Payment, UBL_IPG_Payment
-from .serializer import PaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment
+from .serializer import StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer
 from .services import easypaisa_pay, ubl_pay, stripe_pay
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -38,7 +38,7 @@ class SearchPayments(APIView):
             stripe_obj = stripe_pay(query, start_date, end_date, source)
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(stripe_obj, request)
-            stripe_serializer = PaymentSerializer(paginated_queryset,many=True)
+            stripe_serializer = StripePaymentSerializer(paginated_queryset,many=True)
             return paginator.get_paginated_response(stripe_serializer.data)
         elif source == 'ubl':
             ubl_obj = ubl_pay(query, start_date, end_date, source)
@@ -54,7 +54,7 @@ class SearchPayments(APIView):
             queryset = list(easypaisa_obj) + list(stripe_obj) + list(ubl_obj)
             
             serializer_dict = {
-                Payment: PaymentSerializer,
+                Stripe_Payment: StripePaymentSerializer,
                 Easypaisa_Payment: Easypaisa_PaymentsSerializer,
                 UBL_IPG_Payment: Ubl_Ipg_PaymentsSerializer
             }
@@ -74,8 +74,8 @@ class SearchPayments(APIView):
 #Creating API For Stripe Payments: 
 class GetStripePayments(APIView):
     def get(self,request):
-        pay = Payment.objects.all()
-        serializer = PaymentSerializer(pay,many=True)
+        pay = Stripe_Payment.objects.all()
+        serializer = StripePaymentSerializer(pay,many=True)
         return Response(serializer.data)
     
 #Creating API For ubl_ipg Payments:

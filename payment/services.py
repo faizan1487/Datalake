@@ -1,17 +1,16 @@
 from django.shortcuts import render
-from .models import Payment, Easypaisa_Payment, UBL_IPG_Payment
-from .serializer import PaymentSerializer
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment
+from .serializer import StripePaymentSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
 from datetime import date, datetime, time, timedelta
 
-
 def stripe_pay(q, start_date, end_date, source):
     if start_date:
         pass
     else:
-        first_payment = Payment.objects.first()
+        first_payment = Stripe_Payment.objects.first()
         date_obj = datetime.strptime(first_payment.created, "%Y-%m-%d %H:%M:%S")
         date_time_obj = date_obj.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
@@ -21,7 +20,7 @@ def stripe_pay(q, start_date, end_date, source):
         pass
     else:
         pass
-        last_payment = Payment.objects.last()
+        last_payment = Stripe_Payment.objects.last()
         date_obj = datetime.strptime(last_payment.created, "%Y-%m-%d %H:%M:%S")
         date_time_obj = date_obj.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
@@ -33,12 +32,12 @@ def stripe_pay(q, start_date, end_date, source):
         source = ""
         
     if q:
-        queryset = Payment.objects.filter(
+        queryset = Stripe_Payment.objects.filter(
             Q(email__iexact=q) | Q(name__icontains=q)
             |Q(payment_id__iexact=q))
         query_time = queryset.filter(Q(created__gte = end_date) & Q(created__lte = start_date))
     else:
-        queryset = Payment.objects.all()
+        queryset = Stripe_Payment.objects.all()
         query_time = queryset.filter(Q(created__gte = end_date) & Q(created__lte = start_date))
         
     return query_time

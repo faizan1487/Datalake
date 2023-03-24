@@ -2,7 +2,7 @@ from django.shortcuts import render
 from .models import AlnafiUser, IslamicAcademyUser
 from django.db.models import Q
 from datetime import date, datetime, timedelta
-from payment.models import UBL_IPG_Payment, Payment, Easypaisa_Payment
+from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment
 
 def paying_users(isPaying):
     queryset = AlnafiUser.objects.all()
@@ -11,7 +11,7 @@ def paying_users(isPaying):
         pay_users = []
         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
         easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-        stripe_user = Payment.objects.filter(email=user.email)
+        stripe_user = Stripe_Payment.objects.filter(email=user.email)
         pay_users.append(ubl_user)
         pay_users.append(easypaisa_user)
         # pay_users.append(stripe_user)

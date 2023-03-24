@@ -2,7 +2,7 @@ Payments App Models:
 
 #STRIPE:
 #Model Name change:
-Payment ---> Stripe_Payment
+Payment ---> Stripe_Payment (Done in admin.py, )
 
 #Stripe Model Fields changes:
 email ---> customer_email
@@ -28,4 +28,9 @@ productSlug ---> product_slug
 slug ---> product_slug
 date_created ---> created_at
 date_modified ---> modified_at
+
+
+#CHANGES ON FAIZAN WORK: (On Views and Services)
+Payments ---> Stripe_Payments
+PaymentsSerializer ---> StripePaymentsSerializer 
 
