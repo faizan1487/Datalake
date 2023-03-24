@@ -1,0 +1,31 @@
+Payments App Models:
+
+#STRIPE:
+#Model Name change:
+Payment ---> Stripe_Payment
+
+#Stripe Model Fields changes:
+email ---> customer_email
+product ---> product_name
+created ---> order_datetime
+
+#EASYPAISA
+#Easypaisa_Payment Model field chnage:
+amount_pkr  --->  amount
+
+#ISLAMIC USERS:
+#IslamicAcademyUser Model:
+date_created ---> created_at
+date_modified --->  modified_at
+ 
+#PRODUCTS MODE:
+
+#AlnafiProduct Model Fields:
+productSlug ---> product_slug
+
+
+#IslamicAcademyProduct Model Fields:
+slug ---> product_slug
+date_created ---> created_at
+date_modified ---> modified_at
+
