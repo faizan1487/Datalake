@@ -3,9 +3,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
-from .models import AlnafiUser, IslamicAcademyUser
+from .models import AlNafi_User, IslamicAcademy_User
 from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer
 from .services import alnafi_user, islamic_user
+
 # Create your views here.
 
 class MyPagination(PageNumberPagination):
@@ -39,8 +40,8 @@ class GetUserDetails(APIView):
             islamic_obj = islamic_user(q, start_date, end_date)
             queryset = list(alnafi_obj) + list(islamic_obj)
             serializer_dict = {
-                    AlnafiUser: AlnafiUserSerializer,
-                    IslamicAcademyUser: IslamicAcademyUserSerializer,
+                    AlNafi_User: AlnafiUserSerializer,
+                    IslamicAcademy_User: IslamicAcademyUserSerializer,
                 }
 
             paginator = MyPagination()
