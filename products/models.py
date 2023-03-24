@@ -59,6 +59,9 @@ class IslamicAcademy_Product(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     stock_status = models.CharField(max_length=20, default='instock')
 
+    def __str__(self):
+        return self.name
+
     class Meta:
         managed = True
         verbose_name = "Islamic Academy Product"
