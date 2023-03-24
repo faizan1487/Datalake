@@ -1,12 +1,12 @@
 from rest_framework import serializers
-from .models import User
+from .models import AlnafiUser
 from .models import IslamicAcademyUser
 
 
 # For Main Site Al-Nafi User Table:
-class UserSerializer(serializers.ModelSerializer):
+class AlnafiUserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = AlnafiUser
         fields = '__all__'
 
 

@@ -15,6 +15,12 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
+
+class GetUserPayments(APIView):
+    def get(self, request):
+        query = self.request.GET.get('q')
+                
+
 class SearchPayments(APIView):
     def get(self, request):
         query = self.request.GET.get('q')

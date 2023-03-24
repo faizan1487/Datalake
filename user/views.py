@@ -4,7 +4,8 @@ from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
 from .models import AlnafiUser, IslamicAcademyUser
-from .serializers import UserSerializer
+from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer
+from .services import alnafi_user, islamic_user
 # Create your views here.
 
 class MyPagination(PageNumberPagination):
@@ -12,50 +13,36 @@ class MyPagination(PageNumberPagination):
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100   
-# class GetUserDetails(APIView):
-#     def post(self, request):
-#         email = request.data['email']
-#         queryset = User.objects.filter(email=email)
-#         serializer = UserSerializer(queryset, many=True)
-#         return Response(serializer.data)
-class SearchUsers(APIView):
+
+class GetUserDetails(APIView):
     def get(self, request):
-        query = self.request.GET.get('q')
-        source = self.request.GET.get('source')
+        q = self.request.GET.get('q')
+        isPaying = self.request.GET.get('ispaying')
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
-           
-        if source=='easypaisa':
-            easypaisa_obj = easypaisa_pay(query, start_date, end_date, source)
+        source = self.request.GET.get('source')
+        
+        if source == 'alnafiuser':
+            alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(easypaisa_obj, request)
-            easypaisa_serializer = Easypaisa_PaymentsSerializer(paginated_queryset,many=True)
-            return paginator.get_paginated_response(easypaisa_serializer.data)
-        elif source=='stripe':
-            stripe_obj = stripe_pay(query, start_date, end_date, source)
+            paginated_queryset = paginator.paginate_queryset(alnafi_obj, request)
+            alnafi_serializer = AlnafiUserSerializer(paginated_queryset,many=True)
+            return paginator.get_paginated_response(alnafi_serializer.data)
+        elif source =='islamicacademyuser':
+            islamic_obj = islamic_user(q, start_date, end_date, isPaying)
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(stripe_obj, request)
-            stripe_serializer = PaymentSerializer(paginated_queryset,many=True)
-            return paginator.get_paginated_response(stripe_serializer.data)
-        elif source == 'ubl':
-            ubl_obj = ubl_pay(query, start_date, end_date, source)
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(ubl_obj, request)
-            ubl_serializer = Ubl_Ipg_PaymentsSerializer(paginated_queryset,many=True)
-            return paginator.get_paginated_response(ubl_serializer.data)
+            paginated_queryset = paginator.paginate_queryset(islamic_obj, request)
+            islamic_serializer = IslamicAcademyUserSerializer(paginated_queryset,many=True)
+            return paginator.get_paginated_response(islamic_serializer.data)
         else:
-            easypaisa_obj = easypaisa_pay(query, start_date, end_date, source)
-            stripe_obj = stripe_pay(query, start_date, end_date, source)
-            ubl_obj = ubl_pay(query, start_date, end_date, source) 
-            
-            queryset = list(easypaisa_obj) + list(stripe_obj) + list(ubl_obj)
-            
+            alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
+            islamic_obj = islamic_user(q, start_date, end_date)
+            queryset = list(alnafi_obj) + list(islamic_obj)
             serializer_dict = {
-                Payment: PaymentSerializer,
-                Easypaisa_Payment: Easypaisa_PaymentsSerializer,
-                UBL_IPG_Payment: Ubl_Ipg_PaymentsSerializer
-            }
-            
+                    AlnafiUser: AlnafiUserSerializer,
+                    IslamicAcademyUser: IslamicAcademyUserSerializer,
+                }
+
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(queryset, request)
             serializer = []
@@ -63,4 +50,4 @@ class SearchUsers(APIView):
                 serializer_class = serializer_dict.get(obj.__class__)
                 serializer.append(serializer_class(obj).data)
             
-            return paginator.get_paginated_response(serializer)        
+            return paginator.get_paginated_response(serializer)

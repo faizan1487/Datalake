@@ -5,7 +5,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db.models import Q
 from datetime import date, datetime, time, timedelta
-import pytz
 
 
 def stripe_pay(q, start_date, end_date, source):
@@ -35,7 +34,7 @@ def stripe_pay(q, start_date, end_date, source):
         
     if q:
         queryset = Payment.objects.filter(
-            Q(email__icontains=q) | Q(name__icontains=q)
+            Q(email__iexact=q) | Q(name__icontains=q)
             |Q(payment_id__iexact=q))
         query_time = queryset.filter(Q(created__gte = end_date) & Q(created__lte = start_date))
     else:
@@ -67,7 +66,7 @@ def easypaisa_pay(q, start_date, end_date, source):
     
     if q:
         queryset = Easypaisa_Payment.objects.filter(
-            Q(customer_email__icontains=q) | Q(product_name__icontains=q)
+            Q(customer_email__iexact=q) | Q(product_name__icontains=q)
             |Q(order_id__iexact=q))
         query_time = queryset.filter(Q(order_datetime__gte = end_date) & Q(order_datetime__lte = start_date))
     else:
@@ -97,7 +96,7 @@ def ubl_pay(q, start_date, end_date, source):
     
     if q:
         queryset = UBL_IPG_Payment.objects.filter(
-            Q(customer_email__icontains=q) | Q(product_name__icontains=q)
+            Q(customer_email__iexact=q) | Q(product_name__icontains=q)
             |Q(order_id__iexact=q))
         time_query = queryset.filter(Q(order_datetime__gte=end_date) & Q(order_datetime__lte=start_date))
     else:
