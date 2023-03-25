@@ -33,7 +33,7 @@ class Easypaisa_Payment(models.Model):
     product_name = models.CharField(max_length=200, null=True,blank=True)
     order_id = models.CharField(max_length=50, null=True,blank=True)
     transaction_id = models.CharField(max_length=50, null=True,blank=True)
-    order_datetime = models.DateTimeField(default=datetime.now, null=False , blank=False)
+    order_datetime = models.DateTimeField(default=None, null=False , blank=False)
     customer_msidn = models.CharField(max_length=50, null=True,blank=True)
     customer_email = models.EmailField(null=True,blank=True)
     amount = models.CharField(max_length=50, null=True,blank=True)
@@ -44,8 +44,8 @@ class Easypaisa_Payment(models.Model):
     fee_pkr = models.CharField(max_length=50, null=True,blank=True)
     fed_pkr = models.CharField(max_length=50, null=True,blank=True)
     error_reason = models.CharField(max_length=200, null=True,blank=True)
-    token_paid_datetime = models.DateTimeField(max_length=60, null=False , blank=False)
-        
+    token_paid_datetime = models.DateTimeField(default=None, null=False , blank=False)
+            
     def __str__(self):
         return self.customer_email
    
