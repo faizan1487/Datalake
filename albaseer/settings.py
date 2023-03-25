@@ -108,7 +108,6 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
-# if env('DEBUG') == True:
 # print("SQL Lite CONNECTED")
 # DATABASES = {
 #     'default': {
@@ -116,7 +115,7 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 #     'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
-# else:
+
 print("RDS CONNECTED")
 DATABASES = {
     'default': {
@@ -130,20 +129,6 @@ DATABASES = {
 }
 
 DEBUG=True
-# # DATABASES = {
-# #     'default': {
-# #         'ENGINE': 'django.db.backends.mysql',
-# #         'NAME': 'general_purpose',
-# #         'USER': 'admin',
-# #         'PASSWORD': 'Noncritical321#',
-# #         'HOST': 'instance-for-non-critical-databases.cxmsoa44dxsg.us-east-1.rds.amazonaws.com',
-# #         'PORT': '3306',
-# #     }
-# # }
-
-
-
-
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
