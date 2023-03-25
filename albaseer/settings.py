@@ -109,25 +109,25 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 
 # if env('DEBUG') == True:
-print("SQL Lite CONNECTED")
-DATABASES = {
-    'default': {
-    'ENGINE': 'django.db.backends.sqlite3',
-    'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
-# else:
-# print("RDS CONNECTED")
+# print("SQL Lite CONNECTED")
 # DATABASES = {
 #     'default': {
-#         'ENGINE': env("DATABASE_ENGINE"),
-#         'NAME': env("DATABASE_NAME"),
-#         'USER': env("DATABASE_USER"),
-#         'PASSWORD': env("DATABASE_PASSWORD"),
-#         'HOST': env("DATABASE_HOST"),
-#         'PORT': env('DATABASE_PORT'),
+#     'ENGINE': 'django.db.backends.sqlite3',
+#     'NAME': BASE_DIR / 'db.sqlite3',
 #     }
 # }
+# else:
+print("RDS CONNECTED")
+DATABASES = {
+    'default': {
+        'ENGINE': env("DATABASE_ENGINE"),
+        'NAME': env("DATABASE_NAME"),
+        'USER': env("DATABASE_USER"),
+        'PASSWORD': env("DATABASE_PASSWORD"),
+        'HOST': env("DATABASE_HOST"),
+        'PORT': env('DATABASE_PORT'),
+    }
+}
 
 DEBUG=True
 # # DATABASES = {
