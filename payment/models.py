@@ -2,7 +2,6 @@ from django.db import models
 
 # Create your models here.
 
-#For Stripe_Payment:
 class Stripe_Payment(models.Model):
     payment_id = models.CharField(max_length=100 , null=True , blank=True)
     name = models.CharField(max_length=50, null=True , blank=True)
