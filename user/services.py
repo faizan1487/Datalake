@@ -11,7 +11,7 @@ def paying_users(isPaying):
         pay_users = []
         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
         easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-        stripe_user = Stripe_Payment.objects.filter(email=user.email)
+        stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
         pay_users.append(ubl_user)
         pay_users.append(easypaisa_user)
         # pay_users.append(stripe_user)
@@ -45,10 +45,11 @@ def alnafi_user(q, start_date, end_date, isPaying):
         
     if q:
         if isPaying =='True':
-            # paying_user = paying_users(isPaying)
+            paying_user = paying_users(isPaying)
             queryset = AlNafi_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q))
             query_time = queryset.filter(Q(created_at__gte = end_date) & Q(created_at__lte = start_date))
+            paying_user = paying_users(isPaying)
         elif isPaying =='False':
             queryset = AlNafi_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q))
@@ -60,8 +61,8 @@ def alnafi_user(q, start_date, end_date, isPaying):
             query_time = queryset.filter(Q(created_at__gte = end_date) & Q(created_at__lte = start_date))
             # paying_user = paying_users(query_time)
     else:
-        queryset = AlNafi_User.objects.all()
-        query_time = queryset.filter(created_at__lte = start_date, created_at__gte = end_date)    
+        paying_user = paying_users(isPaying)
+        query_time = paying_user.filter(created_at__lte = start_date, created_at__gte = end_date)    
     return query_time
 
 def islamic_user(q, start_date, end_date, isPaying): 
@@ -69,14 +70,14 @@ def islamic_user(q, start_date, end_date, isPaying):
         pass
     else:
         first_user = IslamicAcademy_User.objects.last()
-        date_time_obj = first_user.date_created.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = new_date_obj
     if end_date:
         pass
     else:
         last_user = IslamicAcademy_User.objects.first()
-        date_time_obj = last_user.date_created.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj   
     if q:
@@ -84,25 +85,25 @@ def islamic_user(q, start_date, end_date, isPaying):
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
             queryset = paying_users.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-            query_time = queryset.filter(Q(date_created__lte = start_date) & Q(date_created__gte = end_date))
+            query_time = queryset.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
         elif isPaying == 'False':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=False)
             queryset = paying_users.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-            query_time = queryset.filter(Q(date_created__lte = start_date) & Q(date_created__gte = end_date))
+            query_time = queryset.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
         else:
             queryset = IslamicAcademy_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-            query_time = queryset.filter(Q(date_created__lte = start_date) & Q(date_created__gte = end_date))
+            query_time = queryset.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
     else:
         if isPaying == 'True':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
-            query_time = paying_users.filter(Q(date_created__lte = start_date) & Q(date_created__gte = end_date))
+            query_time = paying_users.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
         elif isPaying == 'False':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=False)
-            query_time = paying_users.filter(Q(date_created__lte = start_date) & Q(date_created__gte = end_date))
+            query_time = paying_users.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
         else:
             queryset = IslamicAcademy_User.objects.all()
-            query_time = queryset.filter(Q(date_created__lte = start_date) & Q(date_created__gte = end_date))
+            query_time = queryset.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
             
     return query_time

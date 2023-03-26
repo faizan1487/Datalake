@@ -11,8 +11,7 @@ def stripe_pay(q, start_date, end_date, source):
         pass
     else:
         first_payment = Stripe_Payment.objects.first()
-        date_obj = datetime.strptime(first_payment.created, "%Y-%m-%d %H:%M:%S")
-        date_time_obj = date_obj.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = new_date_obj + timedelta(days=20)
         
@@ -21,8 +20,7 @@ def stripe_pay(q, start_date, end_date, source):
     else:
         pass
         last_payment = Stripe_Payment.objects.last()
-        date_obj = datetime.strptime(last_payment.created, "%Y-%m-%d %H:%M:%S")
-        date_time_obj = date_obj.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj - timedelta(days=20)
     
@@ -33,12 +31,12 @@ def stripe_pay(q, start_date, end_date, source):
         
     if q:
         queryset = Stripe_Payment.objects.filter(
-            Q(email__iexact=q) | Q(name__icontains=q)
+            Q(customer_email__iexact=q) | Q(name__icontains=q)
             |Q(payment_id__iexact=q))
-        query_time = queryset.filter(Q(created__gte = end_date) & Q(created__lte = start_date))
+        query_time = queryset.filter(Q(order_datetime__gte = end_date) & Q(order_datetime__lte = start_date))
     else:
         queryset = Stripe_Payment.objects.all()
-        query_time = queryset.filter(Q(created__gte = end_date) & Q(created__lte = start_date))
+        query_time = queryset.filter(Q(order_datetime__gte = end_date) & Q(order_datetime__lte = start_date))
         
     return query_time
 

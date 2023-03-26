@@ -6,29 +6,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from django.db.models import Q
-import csv
 
-class Import_csv(APIView):
-    def post(self, request):
-        csv_file = self.request.FILES['csv_file']
-        decoded_file = csv_file.read().decode('utf-8').splitlines()
-        reader = csv.DictReader(decoded_file)
-        for row in reader:
-            Stripe_Payment.objects.create(
-                payment_id=row['payment_id'],
-                name=row['name'],
-                customer_email=row['email'],
-                product_name = row['product'],
-                amount = row['amount'],
-                order_datetime = row['created'],
-                status = row['status'],
-                currency = row['currency'],
-                source = row['source'],
-                description = row['description'],
-                address = row['address']
-            )
-            
-        return Response("Data added")
 
 class MyPagination(PageNumberPagination):
     page_size = 10
