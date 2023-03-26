@@ -5,7 +5,7 @@ from django.db import models
 class Stripe_Payment(models.Model):
     payment_id = models.CharField(max_length=100 , null=True , blank=True)
     name = models.CharField(max_length=50, null=True , blank=True)
-    customer_email = models.EmailField(null=True,blank=True)
+    customer_email = models.CharField(null=True,blank=True, max_length=100)
     phone = models.CharField(max_length=50, null=True , blank=True)
     product_name = models.CharField(max_length=100, null=True , blank=True)
     amount = models.CharField(max_length=50, null=True , blank=True)
@@ -17,7 +17,8 @@ class Stripe_Payment(models.Model):
     address = models.CharField(max_length=300, null=True , blank=True)
         
     def __str__(self):
-        return self.customer_email
+        return self.payment_id
+ 
     
     class Meta:
         managed = True
