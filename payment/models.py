@@ -24,8 +24,7 @@ class Stripe_Payment(models.Model):
         managed = True
         verbose_name = 'Stripe Payment'
         ordering = ["-order_datetime"]
-        # db_table = 'automated_payments'
-
+        
 
 #For Easypaisa_Payments:
 class Easypaisa_Payment(models.Model):
@@ -53,8 +52,7 @@ class Easypaisa_Payment(models.Model):
         managed = True
         verbose_name = 'Easypaisa Payment'
         ordering = ["-order_datetime"]
-        # db_table = 'easypaisa_payments'
-
+        
 
 #For UBL_IPG_Payment:
 class UBL_IPG_Payment(models.Model):
@@ -80,4 +78,3 @@ class UBL_IPG_Payment(models.Model):
         managed = True
         verbose_name = "UBL IPG Payment"
         ordering = ["-order_datetime"]
-        # db_table = 'ubl_ipg_payments'
