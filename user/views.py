@@ -11,27 +11,6 @@ from .services import alnafi_user, islamic_user
 
 import csv
 
-class Import_csv(APIView):
-    def post(self, request):
-        csv_file = self.request.FILES['csv_file']
-        decoded_file = csv_file.read().decode('utf-8').splitlines()
-        reader = csv.DictReader(decoded_file)
-        for row in reader:
-            IslamicAcademy_User.objects.create(
-                is_paying_customer=row['is_paying_customer'],
-                username=row['username'],
-                email=row['email'],
-                first_name = row['first_name'],
-                last_name = row['last_name'],
-                created_at = row['date_created'],
-                modified_at = row['date_modified'],
-                role = row['role'],
-                phone = row['phone'],
-                address = row['address'],
-            )
-            
-        return Response("Data added")
-
 
 class MyPagination(PageNumberPagination):
     page_size = 10
