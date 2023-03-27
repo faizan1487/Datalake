@@ -33,10 +33,10 @@ def stripe_pay(q, start_date, end_date, source):
         queryset = Stripe_Payment.objects.filter(
             Q(customer_email__iexact=q) | Q(name__icontains=q)
             |Q(payment_id__iexact=q))
-        query_time = queryset.filter(Q(order_datetime__gte = end_date) & Q(order_datetime__lte = start_date))
+        query_time = queryset.filter(Q(order_datetime__date__gte = end_date) & Q(order_datetime__date__lte = start_date))
     else:
         queryset = Stripe_Payment.objects.all()
-        query_time = queryset.filter(Q(order_datetime__gte = end_date) & Q(order_datetime__lte = start_date))
+        query_time = queryset.filter(Q(order_datetime__date__gte = end_date) & Q(order_datetime__date__lte = start_date))
         
     return query_time
 
@@ -65,10 +65,10 @@ def easypaisa_pay(q, start_date, end_date, source):
         queryset = Easypaisa_Payment.objects.filter(
             Q(customer_email__iexact=q) | Q(product_name__icontains=q)
             |Q(order_id__iexact=q))
-        query_time = queryset.filter(Q(order_datetime__gte = end_date) & Q(order_datetime__lte = start_date))
+        query_time = queryset.filter(Q(order_datetime__date__gte = end_date) & Q(order_datetime__date__lte = start_date))
     else:
         queryset = Easypaisa_Payment.objects.all()
-        query_time = queryset.filter(Q(order_datetime__gte = end_date) & Q(order_datetime__lte = start_date))
+        query_time = queryset.filter(Q(order_datetime__date__gte = end_date) & Q(order_datetime__date__lte = start_date))
         
     return query_time
 
@@ -95,8 +95,8 @@ def ubl_pay(q, start_date, end_date, source):
         queryset = UBL_IPG_Payment.objects.filter(
             Q(customer_email__iexact=q) | Q(product_name__icontains=q)
             |Q(order_id__iexact=q))
-        time_query = queryset.filter(Q(order_datetime__gte=end_date) & Q(order_datetime__lte=start_date))
+        time_query = queryset.filter(Q(order_datetime__date__gte=end_date) & Q(order_datetime__date__lte=start_date))
     else:
         queryset = UBL_IPG_Payment.objects.all()
-        time_query = queryset.filter(Q(order_datetime__gte=end_date) & Q(order_datetime__lte=start_date))
+        time_query = queryset.filter(Q(order_datetime__date__gte=end_date) & Q(order_datetime__date__lte=start_date))
     return time_query
