@@ -107,11 +107,8 @@ class AlNafi_Payment(models.Model):
     affiliate = models.CharField(max_length=50,null=True, blank=False)
 
     def __str__(self):
-        if self.email:
-            return self.email
-        else:
-            return "Anonymous User"
-        
+        return self.customer_email
+    
     class Meta:
         managed = True
         verbose_name = "Al-Nafi Payment"
