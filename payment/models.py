@@ -1,7 +1,9 @@
 from django.db import models
+from datetime import datetime
 
 # Create your models here.
 
+#For Stripe Payments:
 class Stripe_Payment(models.Model):
     payment_id = models.CharField(max_length=100 , null=True , blank=True)
     name = models.CharField(max_length=50, null=True , blank=True)
@@ -78,3 +80,43 @@ class UBL_IPG_Payment(models.Model):
         managed = True
         verbose_name = "UBL IPG Payment"
         ordering = ["-order_datetime"]
+
+
+#For MainSite(Al-Nafi) Payments:
+class AlNafi_Payment(models.Model):
+    payment_id = models.IntegerField(null=True, blank=False)
+    customer_email = models.CharField(max_length=100, null=True, blank=False)
+    product_name = models.CharField(max_length=50, null=True, blank=False)
+    amount_pkr = models.IntegerField(default=0)
+    amount_usd = models.IntegerField(default=0)
+    order_datetime = models.DateTimeField(default=datetime.now)
+    expiration_datetime = models.DateTimeField(null=True, blank=True)
+    source = models.CharField(max_length=50, null=True, blank=True)
+    order_id = models.CharField(max_length=50, null=True, blank=False)
+    date_of_activation = models.DateField(null=True, blank=False)
+    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    qarz = models.BooleanField(default=False)
+    remarks = models.CharField(max_length=100,null=True, blank=False)
+    payment_proof = models.CharField(max_length=100, null=True, blank=False)
+    send_invoice = models.BooleanField(default=True, null=True, blank=True)
+    pk_invoice_number= models.CharField(max_length = 10,null=True,blank=True)
+    us_invoice_number= models.CharField(max_length = 10,null=True,blank=True)
+    sponsored = models.BooleanField(default=False)
+    coupon_code = models.CharField(max_length=20, null=True, blank=False)
+    is_upgrade_payment = models.BooleanField(default=False)
+    affiliate = models.CharField(max_length=50,null=True, blank=False)
+
+    def __str__(self):
+        if self.email:
+            return self.email
+        else:
+            return "Anonymous User"
+        
+    class Meta:
+        managed = True
+        verbose_name = "Al-Nafi Payment"
+        ordering = ["-order_datetime"]
+
+
+
+

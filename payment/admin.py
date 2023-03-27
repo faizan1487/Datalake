@@ -2,7 +2,10 @@ from django.contrib import admin
 from .models import Stripe_Payment
 from .models import Easypaisa_Payment
 from .models import UBL_IPG_Payment
+from .models import AlNafi_Payment
 from import_export.admin import ImportExportModelAdmin
+from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
+
 
 # Register your models here.    
 
@@ -13,6 +16,7 @@ class StripePaymentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ('order_datetime', 'status', 'currency', 'source')
 
 admin.site.register(Stripe_Payment,StripePaymentAdmin)     
+
 
 #For Easypaisa Payments:
 class EasypaisaPaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
@@ -30,3 +34,14 @@ class UBLIPGPaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ('order_datetime', 'source', 'status')
 
 admin.site.register(UBL_IPG_Payment, UBLIPGPaymentsAdmin)   
+
+
+#For MainSite(Al-Nafi) Payments:
+class AlNafiPaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['payment_id', 'customer_email', 'product_name', 'amount_pkr', 'amount_usd', 'order_datetime', 'expiration_datetime', 'source', 'order_id', 'date_of_activation', 'created_at', 'qarz', 'remarks', 'payment_proof', 'send_invoice', 'pk_invoice_number', 'us_invoice_number', 'sponsored', 'coupon_code', 'is_upgrade_payment', 'affiliate']
+    search_fields = ('payment_id', 'customer_email', 'order_datetime', 'expiration_datetime','product_name', 'order_id', "created_at","pk_invoice_number","us_invoice_number" )
+    list_filter = ("source", 'order_datetime', 'expiration_datetime',"sponsored")
+    
+admin.site.register(AlNafi_Payment, AlNafiPaymentsAdmin)   
+
+
