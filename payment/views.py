@@ -1,6 +1,7 @@
 from django.shortcuts import render
+from rest_framework import status
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment
-from .serializer import StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer
+from .serializer import StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer
 from .services import easypaisa_pay, ubl_pay, stripe_pay
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -14,6 +15,17 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
+class AlnafiPayment(APIView):
+    def post(self, request):
+        data = request.data
+        serializer = AlNafiPaymentSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 
 class GetUserPayments(APIView):
     def get(self, request):

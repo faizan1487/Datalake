@@ -1,12 +1,9 @@
 from django.urls import path
-from .views import SearchPayments, GetStripePayments, GetUBLPayments
+from .views import SearchPayments, GetStripePayments, GetUBLPayments, AlnafiPayment
 
 urlpatterns = [
-    # path("",GetAllUserDetails.as_view(),name='get_all_users_details'),
-    # path("easypaisa",GetEasyPaisaUserDetails.as_view(),name='get_easypaisa_users_details'),
-    # path("stripe",GetStripeUserDetails.as_view(),name='get_stripe_users_details'),
-    # path("ubl",GetUblUserDetails.as_view(),name='get_ubl_users_details'),
-    path("searchpayment/", SearchPayments.as_view(), name='search_payments'),
+    path("alnafipayment/", AlnafiPayment.as_view(), name='alnafi-payment'),
+    path("searchpayment/", SearchPayments.as_view(), name='search-payments'),
     path("stripe/", GetStripePayments.as_view(), name='all'),  #For all stripe payemnts
     path("ubl/", GetUBLPayments.as_view(), name='ubl'), #For all UBL Payments
 ]

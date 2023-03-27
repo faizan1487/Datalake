@@ -6,18 +6,25 @@ from django.db.models import Q
 from .models import AlNafi_User, IslamicAcademy_User
 from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer
 from .services import alnafi_user, islamic_user
-
+from rest_framework import status
 # Create your views here.
-
-import csv
-
-
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100   
 
+class AlnafiUser(APIView):
+    def post(self, request):
+        data = request.data
+        serializer = AlnafiUserSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 class GetUserDetails(APIView):
     def get(self, request):
         q = self.request.GET.get('q')

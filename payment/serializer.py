@@ -1,7 +1,14 @@
 from rest_framework.serializers import ModelSerializer
 from .models import Stripe_Payment
 from .models import Easypaisa_Payment
-from .models import UBL_IPG_Payment
+from .models import UBL_IPG_Payment, AlNafi_Payment
+
+
+
+class AlNafiPaymentSerializer(ModelSerializer):
+    class Meta:
+        model = AlNafi_Payment
+        fields = '__all__'
 
 #For Stripe Payments:
 class StripePaymentSerializer(ModelSerializer):
