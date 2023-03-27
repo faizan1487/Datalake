@@ -1,13 +1,12 @@
-from django.shortcuts import render
 from rest_framework import status
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment
 from .serializer import StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer
 from .services import easypaisa_pay, ubl_pay, stripe_pay
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from datetime import datetime, timedelta, date
 from django.db.models import Q
-
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -25,13 +24,36 @@ class AlnafiPayment(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
 
-class GetUserPayments(APIView):
+
+class SearchAlNafiPayments(APIView):
     def get(self, request):
-        query = self.request.GET.get('q')
-                
-
+        expiration = self.request.GET.get('expiration_date')
+        exact = self.request.GET.get('exact')
+        
+        if expiration:
+            if exact=='True':
+                expiration_date = date.today() + timedelta(days=int(expiration))
+                print("Expiration date",expiration_date)
+                queryset = AlNafi_Payment.objects.filter(Q(expiration_datetime=expiration_date))
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(queryset, request)
+                alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
+                return paginator.get_paginated_response(alnafi_payments_serializer.data)
+            else:
+                expiration_date = date.today() + timedelta(days=int(expiration))
+                queryset = AlNafi_Payment.objects.filter(Q(expiration_datetime__gte=date.today()) & Q(expiration_datetime__lte=expiration_date))
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(queryset, request)
+                alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
+                return paginator.get_paginated_response(alnafi_payments_serializer.data)
+        else:
+            queryset = AlNafi_Payment.objects.all()
+            paginator = MyPagination()
+            paginated_queryset = paginator.paginate_queryset(queryset, request)
+            alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
+            return paginator.get_paginated_response(alnafi_payments_serializer.data)
+        
 class SearchPayments(APIView):
     def get(self, request):
         query = self.request.GET.get('q')
@@ -78,10 +100,7 @@ class SearchPayments(APIView):
                 serializer.append(serializer_class(obj).data)
             
             return paginator.get_paginated_response(serializer)        
-        
-
-
-
+    
 #Creating API For Stripe Payments: 
 class GetStripePayments(APIView):
     def get(self,request):
@@ -95,6 +114,3 @@ class GetUBLPayments(APIView):
         ubl_pay = UBL_IPG_Payment.objects.all()
         serializer = Ubl_Ipg_PaymentsSerializer(ubl_pay, many=True)
         return Response(serializer.data)
-
-
-    
