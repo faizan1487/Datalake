@@ -3,6 +3,7 @@ from .models import Stripe_Payment
 from .models import Easypaisa_Payment
 from .models import UBL_IPG_Payment
 from .models import AlNafi_Payment
+from .models import UBL_Manual_Payment
 from import_export.admin import ImportExportModelAdmin
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
@@ -44,4 +45,11 @@ class AlNafiPaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     
 admin.site.register(AlNafi_Payment, AlNafiPaymentsAdmin)   
 
+    
+#For UBL Manual Payments:
+class UBLManualPaymentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['candidate_name', 'depositor_name', 'customer_email', 'phone', 'amount', 'product_name', 'status', 'order_datetime', 'activation_datetime', 'payment_channel', 'transaction_id', 'source', 's3_file_url', 's3_file_name']
+    search_fields = ('candidate_name', 'depositor_name', 'customer_email', 'phone', 'transaction_id')
+    list_filter = ('status','source', 'order_datetime')
 
+admin.site.register(UBL_Manual_Payment, UBLManualPaymentAdmin)
