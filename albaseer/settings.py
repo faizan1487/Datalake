@@ -25,6 +25,8 @@ en_formats.DATE_FORMAT = 'Y-m-d'
 en_formats.TIME_FORMAT = 'H:i:s'
 en_formats.DATETIME_FORMAT = 'Y-m-d H:i:s'
 
+DEBUG = env('DEBUG',cast=bool)
+
 ALLOWED_HOSTS = ["*"]
 CORS_ALLOW_ALL_ORIGINS: bool
 
@@ -104,7 +106,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'albaseer.wsgi.application'
 
-DEBUG = env('DEBUG',cast=bool)
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 if DEBUG:
