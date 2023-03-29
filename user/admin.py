@@ -22,4 +22,3 @@ class IslamicAcademyUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ('created_at',"is_paying_customer", "role")
 
 admin.site.register(IslamicAcademy_User, IslamicAcademyUserAdmin)
- 

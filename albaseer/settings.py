@@ -20,6 +20,13 @@ SECRET_KEY = 'django-insecure-1i*4dn)-_9)gf84&yqq1jytyu$6ob98k0u!$+bha%8wv!i#v6w
 # DEBUG = env("DEBUG")
 
 
+if not DEBUG:
+    REST_FRAMEWORK = {
+        'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+        'PAGE_SIZE': 10,
+        'DEFAULT_LINKS_TEMPLATE': 'rest_framework/pagination/links.html',
+        'BASE_URL': 'https://stage-api-al-baseer.alnafi.com/'
+    }
 
 # Change date format (AM PM to hours time format)
 en_formats.DATE_FORMAT = 'Y-m-d'
@@ -70,6 +77,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'payment.apps.PaymentConfig',
     'user.apps.UserConfig',
+    'thinkific.apps.ThinkificConfig',
     'rest_framework',
     'import_export',
     'products.apps.ProductsConfig',

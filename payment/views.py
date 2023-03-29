@@ -34,7 +34,7 @@ class SearchAlNafiPayments(APIView):
         if expiration:
             if exact=='True':
                 expiration_date = date.today() + timedelta(days=int(expiration))
-                queryset = AlNafi_Payment.objects.filter  (expiration_datetime__date=expiration_date)
+                queryset = AlNafi_Payment.objects.filter(expiration_datetime__date=expiration_date)
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(queryset, request)
                 alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
