@@ -192,7 +192,6 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
     'rest_framework.renderers.JSONRenderer',
 )
 
-<<<<<<< Updated upstream
 CSRF_COOKIE_NAME="csrftoken"
 CSRF_HEADER_NAME="csrftoken"
 CSRF_COOKIE_SECURE = True
@@ -200,7 +199,7 @@ CSRF_COOKIE_HTTPONLY = True
 
 
 CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com']
-=======
+
 
 if DEBUG:
     STATIC_URL = '/static/'
@@ -210,4 +209,3 @@ else:
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
->>>>>>> Stashed changes

@@ -118,20 +118,20 @@ class AlNafi_Payment(models.Model):
 
 #For UBL Manual Payments:
 class UBL_Manual_Payment(models.Model):
-    candidate_name = models.CharField(max_length=200, null=False, blank=True)
-    depositor_name = models.CharField(max_length=200, null=False, blank=True)
-    customer_email = models.CharField(max_length=200, null=False, blank=True)
-    phone = models.CharField(max_length=45, null=False, blank=True)
-    amount = models.CharField(max_length=45, null=False, blank=True)
-    product_name = models.CharField(max_length=200, null=False, blank=True)
-    status = models.CharField(max_length=45, null=False, blank=True)
-    order_datetime = models.DateField(max_length=45, null=False, blank=True)
-    activation_datetime = models.DateField(max_length=45, null=False, blank=True)
-    payment_channel = models.CharField(max_length=45, null=False, blank=True)
-    transaction_id = models.CharField(max_length=45, null=False, blank=True)
-    source = models.CharField(max_length=45, null=False, blank=True)
-    s3_file_url = models.CharField(max_length=600, null=False, blank=True)
-    s3_file_name = models.CharField(max_length=200, null=False, blank=True)
+    candidate_name = models.CharField(default= "" ,max_length=200, null=False, blank=True)
+    depositor_name = models.CharField(default= "", max_length=200, null=False, blank=True)
+    customer_email = models.CharField(default= "", max_length=200, null=False, blank=True)
+    phone = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    amount = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    product_name = models.CharField(default= "" ,max_length=200, null=False, blank=True)
+    status = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    order_datetime = models.DateField(default=datetime.now, null=False, blank=True)
+    activation_datetime = models.DateField(default=datetime.now ,null=False, blank=True)
+    payment_channel = models.CharField(default= ""  ,max_length=45, null=False, blank=True)
+    transaction_id = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    source = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    s3_file_url = models.CharField(default= "" ,max_length=600, null=False, blank=True)
+    s3_file_name = models.CharField(default= "" ,max_length=200, null=False, blank=True)
 
     def __str__(self):
         return self.customer_email
