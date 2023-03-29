@@ -1,4 +1,5 @@
 import environ
+import os
 from pathlib import Path
 from django.conf.locale.en import formats as en_formats
 
@@ -191,6 +192,7 @@ REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
     'rest_framework.renderers.JSONRenderer',
 )
 
+<<<<<<< Updated upstream
 CSRF_COOKIE_NAME="csrftoken"
 CSRF_HEADER_NAME="csrftoken"
 CSRF_COOKIE_SECURE = True
@@ -198,3 +200,14 @@ CSRF_COOKIE_HTTPONLY = True
 
 
 CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com']
+=======
+
+if DEBUG:
+    STATIC_URL = '/static/'
+else:
+    STATIC_URL = env("S3_STATIC_URL")
+
+MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
+MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
+>>>>>>> Stashed changes
