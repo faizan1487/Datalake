@@ -35,6 +35,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://sub.example.com",
     "http://localhost:3000",
     "http://127.0.0.1:9000",
+    'https://stage-api-al-baseer.alnafi.com'
 ]
 
 CORS_ALLOW_METHODS = [
@@ -109,7 +110,7 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 if DEBUG:
-    print("SQL Lite CONNECTED")
+    # print("SQL Lite CONNECTED")
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -117,7 +118,7 @@ if DEBUG:
         }
     }
 else:
-    print("RDS CONNECTED")
+    # print("RDS CONNECTED")
     DATABASES = {
         'default': {
             'ENGINE': env("DATABASE_ENGINE"),
@@ -189,3 +190,11 @@ REST_FRAMEWORK = {
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = (
     'rest_framework.renderers.JSONRenderer',
 )
+
+CSRF_COOKIE_NAME="csrftoken"
+CSRF_HEADER_NAME="csrftoken"
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+
+
+CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com']
