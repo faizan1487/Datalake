@@ -33,18 +33,18 @@ def alnafi_user(q, start_date, end_date, isPaying):
     if start_date:
         pass
     else:
-        first_user = AlNafi_User.objects.last()
+        first_user = AlNafi_User.objects.first()
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = new_date_obj
     if end_date:
         pass
     else:
-        last_user = AlNafi_User.objects.first()
+        last_user = AlNafi_User.objects.last()
         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
-        
+    
     if q:
         queryset = AlNafi_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q))

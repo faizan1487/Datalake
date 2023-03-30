@@ -79,16 +79,10 @@ def ubl_pay(q, start_date, end_date, source):
         end_date = last_payment.order_datetime - timedelta(days=20)
     else:
         pass
-    
-    print(start_date)
-    print(end_date)
-    
     if source:
         pass
     else:
-        source = ""  
-    
-    
+        source = ""
     if q:
         queryset = UBL_IPG_Payment.objects.filter(
             Q(customer_email__iexact=q) | Q(product_name__icontains=q)

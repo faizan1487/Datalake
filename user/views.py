@@ -32,7 +32,6 @@ class GetUserDetails(APIView):
         start_date = self.request.GET.get('start_date')
         end_date = self.request.GET.get('end_date')
         source = self.request.GET.get('source')
-        
         if source == 'alnafiuser':
             alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
             paginator = MyPagination()
