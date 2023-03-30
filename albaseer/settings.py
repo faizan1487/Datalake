@@ -2,12 +2,15 @@ import environ
 import os
 from pathlib import Path
 from django.conf.locale.en import formats as en_formats
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
 
 env = environ.Env()
 env.read_env()
 DEBUG = env('DEBUG',cast=bool)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_URL = "https://stage-api-al-baseer.alnafi.com/"
 
 
 # Quick-start development settings - unsuitable for production
@@ -207,7 +210,7 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 
 
-CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com']
+CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io']
 
 
 if DEBUG:
@@ -218,3 +221,20 @@ else:
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
+
+if not DEBUG:
+    sentry_sdk.init(
+    dsn="https://e09dae87954440acb4e0c0683b86a2c1@o1153820.ingest.sentry.io/4504926428528640",
+    integrations=[
+        DjangoIntegration(),
+    ],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
