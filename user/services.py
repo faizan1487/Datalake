@@ -15,19 +15,18 @@ def paying_users(query_time, isPaying):
         pay_users.append(easypaisa_user)
         pay_users.append(stripe_user)
         for pay_user in pay_users:
-            for p_user in pay_user:
-                if isPaying:
-                    if isPaying =="True":
+            if isPaying: 
+                for p_user in pay_user:
+                    if isPaying:
                         if p_user.customer_email == user.email:
                             paying_users.append(user)
                         else:
-                            print("email does not exist")
+                            pass
                     else:
                         if p_user.customer_email != user.email:
                             paying_users.append(user)
-                else:
-                    return query_time
-                                   
+            else:
+                return query_time                   
     return paying_users
     
 def alnafi_user(q, start_date, end_date, isPaying):
