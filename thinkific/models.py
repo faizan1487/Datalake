@@ -9,7 +9,7 @@ class Thinkific_User(models.Model):
     full_name = models.CharField(max_length=255, null=True, blank=True)
     company = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(max_length=255, null=True, blank=True)
-    roles = models.JSONField(default=list)
+    roles = models.JSONField(null=True, blank=True)
     avatar_url = models.URLField(max_length=255, null=True, blank=True)
     bio = models.TextField(null=True, blank=True)
     headline = models.CharField(max_length=255, null=True, blank=True)

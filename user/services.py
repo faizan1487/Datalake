@@ -48,10 +48,11 @@ def alnafi_user(q, start_date, end_date, isPaying):
     if q:
         queryset = AlNafi_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q))
-        query_time = queryset.filter(Q(created_at__date__gte = end_date) & Q(created_at__date__lte = start_date))
+        query_time = queryset.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
         paying_user_queryset = paying_users(query_time, isPaying)
+
     else:
-        query_time = AlNafi_User.objects.filter(created_at__date__lte = start_date, created_at__date__gte = end_date)
+        query_time = AlNafi_User.objects.filter(created_at__date__gte = start_date, created_at__date__lte = end_date)
         paying_user_queryset = paying_users(query_time, isPaying)
     return paying_user_queryset
 
@@ -59,14 +60,14 @@ def islamic_user(q, start_date, end_date, isPaying):
     if start_date:
         pass
     else:
-        first_user = IslamicAcademy_User.objects.last()
+        first_user = IslamicAcademy_User.objects.first()
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = new_date_obj
     if end_date:
         pass
     else:
-        last_user = IslamicAcademy_User.objects.first()
+        last_user = IslamicAcademy_User.objects.last()
         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj   
@@ -75,25 +76,25 @@ def islamic_user(q, start_date, end_date, isPaying):
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
             queryset = paying_users.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-            query_time = queryset.filter(Q(created_at__date__lte = start_date) & Q(created_at__date__gte = end_date))
+            query_time = queryset.filter(Q(created_at__date__gte = start_date) & Q(created_at__date__lte = end_date))
         elif isPaying == 'False':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=False)
             queryset = paying_users.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-            query_time = queryset.filter(Q(created_at__date__lte = start_date) & Q(created_at__date__gte = end_date))
+            query_time = queryset.filter(Q(created_at__date__gte = start_date) & Q(created_at__date__lte = end_date))
         else:
             queryset = IslamicAcademy_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-            query_time = queryset.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
+            query_time = queryset.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
     else:
         if isPaying == 'True':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
-            query_time = paying_users.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
+            query_time = paying_users.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
         elif isPaying == 'False':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=False)
-            query_time = paying_users.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
+            query_time = paying_users.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
         else:
             queryset = IslamicAcademy_User.objects.all()
-            query_time = queryset.filter(Q(created_at__lte = start_date) & Q(created_at__gte = end_date))
+            query_time = queryset.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
             
     return query_time

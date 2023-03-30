@@ -7,5 +7,5 @@ def enrollment_created_webhook(request):
     if(request.method != "POST"):
         return HttpResponse(status=400)
     data = request.body
-    print(data)
+    # print(data)
     return HttpResponse(status=200)
