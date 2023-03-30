@@ -5,7 +5,7 @@ from django.conf.locale.en import formats as en_formats
 
 env = environ.Env()
 env.read_env()
-
+DEBUG = env('DEBUG',cast=bool)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -19,7 +19,6 @@ SECRET_KEY = 'django-insecure-1i*4dn)-_9)gf84&yqq1jytyu$6ob98k0u!$+bha%8wv!i#v6w
 # SECURITY WARNING: don't run with debug turned on in production!cl
 # DEBUG = env("DEBUG")
 
-
 if not DEBUG:
     REST_FRAMEWORK = {
         'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
@@ -28,12 +27,14 @@ if not DEBUG:
         'BASE_URL': 'https://stage-api-al-baseer.alnafi.com/'
     }
 
+
+
+
 # Change date format (AM PM to hours time format)
 en_formats.DATE_FORMAT = 'Y-m-d'
 en_formats.TIME_FORMAT = 'H:i:s'
 en_formats.DATETIME_FORMAT = 'Y-m-d H:i:s'
 
-DEBUG = env('DEBUG',cast=bool)
 
 ALLOWED_HOSTS = ["*"]
 CORS_ALLOW_ALL_ORIGINS: bool
