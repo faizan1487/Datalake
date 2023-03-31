@@ -56,10 +56,10 @@ class SearchAlNafiPayments(APIView):
         
 class SearchPayments(APIView):
     def get(self, request):
-        query = self.request.GET.get('q')
-        source = self.request.GET.get('source')
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
+        query = self.request.GET.get('q', None) or None
+        source = self.request.GET.get('source', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
            
         if source=='easypaisa':
             easypaisa_obj = easypaisa_pay(query, start_date, end_date, source)

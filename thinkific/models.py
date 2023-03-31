@@ -18,12 +18,37 @@ class Thinkific_User(models.Model):
     affiliate_commission = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     affiliate_commission_type = models.CharField(max_length=255, null=True, blank=True)
     affiliate_payout_email = models.EmailField(max_length=255, null=True, blank=True)
-    administered_course_ids = models.JSONField(default=list, null=True, blank=True)
-    custom_profile_fields = models.JSONField(default=list, null=True, blank=True)
+    administered_course_ids = models.JSONField(null=True, blank=True)
+    custom_profile_fields = models.JSONField(null=True, blank=True)
 
     def __str__(self):
         return self.email
     
     class Meta:
         managed = True
-        verbose_name = "Thinkific User"
+        verbose_name = "Thinkific Users"
+        
+        
+class Thinkific_Users_Enrollments(models.Model):
+    id = models.IntegerField(primary_key=True)
+    email = models.EmailField(max_length=255, null=True, blank=True)
+    username = models.CharField(max_length=255, null=True, blank=True)
+    user_id = models.IntegerField(max_length=255,null=True, blank=True)
+    course_name = models.CharField(max_length=255, null=True, blank=True)
+    course_id = models.IntegerField(max_length=255,null=True, blank=True)
+    percentage_completed = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    expired = models.BooleanField(default=False)
+    is_free_trial = models.BooleanField(default=False)
+    completed = models.BooleanField(default=False)
+    started_at = models.DateTimeField(null=True, blank=True)
+    activated_at = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    expiry_date = models.DateTimeField(null=True, blank=True)    
+
+    def __str__(self):
+        return self.email
+    
+    class Meta:
+        managed = True
+        verbose_name = "Thinkific Users Enrollments"
