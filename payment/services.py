@@ -13,7 +13,7 @@ def stripe_pay(q, start_date, end_date, source):
         first_payment = Stripe_Payment.objects.last()
         date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
-        start_date = new_date_obj + timedelta(days=20)      
+        start_date = new_date_obj      
     if end_date:
         pass
     else:
@@ -21,7 +21,8 @@ def stripe_pay(q, start_date, end_date, source):
         last_payment = Stripe_Payment.objects.first()
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-        end_date = new_date_obj - timedelta(days=20)  
+        end_date = new_date_obj
+      
     if source:
         pass
     else:

@@ -15,14 +15,14 @@ class Thinkific_User(models.Model):
     headline = models.CharField(max_length=255, null=True, blank=True)
     affiliate_code = models.CharField(max_length=255, null=True, blank=True)
     external_source = models.CharField(max_length=255, null=True, blank=True)
-    affiliate_commission = models.DecimalField(max_digits=5, decimal_places=2)
+    affiliate_commission = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     affiliate_commission_type = models.CharField(max_length=255, null=True, blank=True)
     affiliate_payout_email = models.EmailField(max_length=255, null=True, blank=True)
     administered_course_ids = models.JSONField(default=list, null=True, blank=True)
     custom_profile_fields = models.JSONField(default=list, null=True, blank=True)
 
-    def _str_(self):
-        return self.full_name
+    def __str__(self):
+        return self.email
     
     class Meta:
         managed = True
