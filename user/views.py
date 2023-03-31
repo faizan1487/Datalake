@@ -27,11 +27,11 @@ class AlnafiUser(APIView):
         
 class GetUserDetails(APIView):
     def get(self, request):
-        q = self.request.GET.get('q')
-        isPaying = self.request.GET.get('ispaying')
-        start_date = self.request.GET.get('start_date')
-        end_date = self.request.GET.get('end_date')
-        source = self.request.GET.get('source')
+        q = self.request.GET.get('q', None) or None
+        isPaying = self.request.GET.get('ispaying', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
+        source = self.request.GET.get('source', None) or None
         if source == 'alnafiuser':
             alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
             paginator = MyPagination()

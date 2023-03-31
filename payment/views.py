@@ -28,8 +28,8 @@ class AlnafiPayment(APIView):
 
 class SearchAlNafiPayments(APIView):
     def get(self, request):
-        expiration = self.request.GET.get('expiration_date')
-        exact = self.request.GET.get('exact')
+        expiration = self.request.GET.get('expiration_date', None) or None
+        exact = self.request.GET.get('exact', None) or None
         
         if expiration:
             if exact=='True':
