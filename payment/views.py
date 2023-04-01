@@ -36,11 +36,12 @@ class SearchAlNafiPayments(APIView):
         if q:
             queryset = AlNafi_Payment.objects.filter(
                 Q(customer_email__iexact=q) | Q(product_name__icontains=q)
-                |Q(order_id__iexact=q)|Q(source__iexact=q))
-            if source:
-                queryset = queryset.filter(source=source)
+                |Q(order_id__iexact=q))
         else:
             queryset = AlNafi_Payment.objects.all()
+            
+        if source:
+            queryset = queryset.filter(source__iexact=source)
            
         if expiration:
             if exact=='True':
