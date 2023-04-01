@@ -6,7 +6,7 @@ from rest_framework.response import Response
 from django.db.models import Q
 from datetime import date, datetime, time, timedelta
 
-def stripe_pay(q, start_date, end_date, source):
+def stripe_pay(q, start_date, end_date):
     if start_date:
         pass
     else:
@@ -22,11 +22,7 @@ def stripe_pay(q, start_date, end_date, source):
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
-      
-    if source:
-        pass
-    else:
-        source = ""      
+          
     if q:
         queryset = Stripe_Payment.objects.filter(
             Q(customer_email__iexact=q) | Q(name__icontains=q)
@@ -37,7 +33,7 @@ def stripe_pay(q, start_date, end_date, source):
         query_time = queryset.filter(Q(order_datetime__date__gte = start_date) & Q(order_datetime__date__lte = end_date))     
     return query_time
 
-def easypaisa_pay(q, start_date, end_date, source):
+def easypaisa_pay(q, start_date, end_date):
     if start_date:
         pass
     else:
@@ -52,10 +48,6 @@ def easypaisa_pay(q, start_date, end_date, source):
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
         end_date = new_date_obj - timedelta(days=20)
-    if source:
-        pass
-    else:
-        source = ""
     
     if q:
         queryset = Easypaisa_Payment.objects.filter(
@@ -68,7 +60,7 @@ def easypaisa_pay(q, start_date, end_date, source):
         
     return query_time
 
-def ubl_pay(q, start_date, end_date, source):
+def ubl_pay(q, start_date, end_date):
     if start_date==None:
         first_payment = UBL_IPG_Payment.objects.last()
         start_date = first_payment.order_datetime + timedelta(days=20) 
@@ -80,10 +72,7 @@ def ubl_pay(q, start_date, end_date, source):
         end_date = last_payment.order_datetime - timedelta(days=20)
     else:
         pass
-    if source:
-        pass
-    else:
-        source = ""
+    
     if q:
         queryset = UBL_IPG_Payment.objects.filter(
             Q(customer_email__iexact=q) | Q(product_name__icontains=q)

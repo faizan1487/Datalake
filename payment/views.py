@@ -29,26 +29,36 @@ class AlnafiPayment(APIView):
 class SearchAlNafiPayments(APIView):
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
+        q = self.request.GET.get('q', None) or None
+        source = self.request.GET.get('source', None) or None
         exact = self.request.GET.get('exact', None) or None
         
+        if q:
+            queryset = AlNafi_Payment.objects.filter(
+                Q(customer_email__iexact=q) | Q(product_name__icontains=q)
+                |Q(order_id__iexact=q)|Q(source__iexact=q))
+            if source:
+                queryset = queryset.filter(source=source)
+        else:
+            queryset = AlNafi_Payment.objects.all()
+           
         if expiration:
             if exact=='True':
                 expiration_date = date.today() + timedelta(days=int(expiration))
-                queryset = AlNafi_Payment.objects.filter(expiration_datetime__date=expiration_date)
+                query_time = queryset.filter(expiration_datetime__date=expiration_date)
                 paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(queryset, request)
+                paginated_queryset = paginator.paginate_queryset(query_time, request)
                 alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
                 return paginator.get_paginated_response(alnafi_payments_serializer.data)
             
             else:
                 expiration_date = date.today() + timedelta(days=int(expiration))
-                queryset = AlNafi_Payment.objects.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date))
+                query_time = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date))
                 paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(queryset, request)
+                paginated_queryset = paginator.paginate_queryset(query_time, request)
                 alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
                 return paginator.get_paginated_response(alnafi_payments_serializer.data)
         else:
-            queryset = AlNafi_Payment.objects.all()
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(queryset, request)
             alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
@@ -62,27 +72,27 @@ class SearchPayments(APIView):
         end_date = self.request.GET.get('end_date', None) or None
            
         if source=='easypaisa':
-            easypaisa_obj = easypaisa_pay(query, start_date, end_date, source)
+            easypaisa_obj = easypaisa_pay(query, start_date, end_date)
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(easypaisa_obj, request)
             easypaisa_serializer = Easypaisa_PaymentsSerializer(paginated_queryset,many=True)
             return paginator.get_paginated_response(easypaisa_serializer.data)
         elif source=='stripe':
-            stripe_obj = stripe_pay(query, start_date, end_date, source)
+            stripe_obj = stripe_pay(query, start_date, end_date)
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(stripe_obj, request)
             stripe_serializer = StripePaymentSerializer(paginated_queryset,many=True)
             return paginator.get_paginated_response(stripe_serializer.data)
         elif source == 'ubl':
-            ubl_obj = ubl_pay(query, start_date, end_date, source)
+            ubl_obj = ubl_pay(query, start_date, end_date)
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(ubl_obj, request)
             ubl_serializer = Ubl_Ipg_PaymentsSerializer(paginated_queryset,many=True)
             return paginator.get_paginated_response(ubl_serializer.data)
         else:
-            easypaisa_obj = easypaisa_pay(query, start_date, end_date, source)
-            stripe_obj = stripe_pay(query, start_date, end_date, source)
-            ubl_obj = ubl_pay(query, start_date, end_date, source) 
+            easypaisa_obj = easypaisa_pay(query, start_date, end_date)
+            stripe_obj = stripe_pay(query, start_date, end_date)
+            ubl_obj = ubl_pay(query, start_date, end_date) 
             
             queryset = list(easypaisa_obj) + list(stripe_obj) + list(ubl_obj)
             
