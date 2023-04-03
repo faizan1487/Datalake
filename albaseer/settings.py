@@ -220,7 +220,6 @@ if DEBUG:
 else:
     STATIC_URL = env("S3_STATIC_URL")
 
-MEDIA_BASE_URL = 'http://localhost:8000/media/'
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")

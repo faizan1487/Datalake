@@ -161,7 +161,6 @@ class SearchPayments(APIView):
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 merged_df = pd.concat([df1, df2, df3], axis=1)
                 merged_df.to_csv(file_path, index=False)
-                print(settings.MEDIA_BASE_URL)
                 return Response(file_path)
             else:   
                 easypaisa_obj = easypaisa_pay(query, start_date, end_date)
