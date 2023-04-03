@@ -37,6 +37,7 @@ class SearchAlNafiPayments(APIView):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
         exact = self.request.GET.get('exact', None) or None
+        export = self.request.GET.get('export', None) or None
         
         if q:
             queryset = AlNafi_Payment.objects.filter(
@@ -52,23 +53,53 @@ class SearchAlNafiPayments(APIView):
             if exact=='True':
                 expiration_date = date.today() + timedelta(days=int(expiration))
                 query_time = queryset.filter(expiration_datetime__date=expiration_date)
-                paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(query_time, request)
-                alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
-                return paginator.get_paginated_response(alnafi_payments_serializer.data)
+                
+                if export =='True':
+                    alnafi_payments_serializer = AlNafiPaymentSerializer(query_time, many=True)
+                    file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                    # Build the full path to the media directory
+                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                    pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
+                    
+                    return Response(file_path)
+                else:
+                    paginator = MyPagination()
+                    paginated_queryset = paginator.paginate_queryset(query_time, request)
+                    alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
+                    return paginator.get_paginated_response(alnafi_payments_serializer.data)
             
             else:
                 expiration_date = date.today() + timedelta(days=int(expiration))
                 query_time = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date))
+                
+                if export =='True':
+                    alnafi_payments_serializer = AlNafiPaymentSerializer(query_time, many=True)
+                    file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                    # Build the full path to the media directory
+                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                    pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
+                    
+                    return Response(file_path)
+                else:
+                    paginator = MyPagination()
+                    paginated_queryset = paginator.paginate_queryset(query_time, request)
+                    alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
+                    return paginator.get_paginated_response(alnafi_payments_serializer.data)
+        else:
+            if export =='True':
+                alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
+                file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                # Build the full path to the media directory
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
+                
+                
+                return Response(file_path)
+            else:
                 paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(query_time, request)
+                paginated_queryset = paginator.paginate_queryset(queryset, request)
                 alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
                 return paginator.get_paginated_response(alnafi_payments_serializer.data)
-        else:
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(queryset, request)
-            alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
-            return paginator.get_paginated_response(alnafi_payments_serializer.data)
 
 
 class SearchPayments(APIView):
