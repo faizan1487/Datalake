@@ -7,7 +7,10 @@ from .models import AlNafi_User, IslamicAcademy_User
 from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer
 from .services import alnafi_user, islamic_user
 from rest_framework import status
-
+from django.conf import settings
+import os
+import pandas as pd
+from datetime import datetime
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -33,35 +36,69 @@ class GetUserDetails(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         source = self.request.GET.get('source', None) or None
+        export = self.request.GET.get('export', None) or None
+        
         if source == 'alnafiuser':
-            alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(alnafi_obj, request)
-            alnafi_serializer = AlnafiUserSerializer(paginated_queryset,many=True)
-            return paginator.get_paginated_response(alnafi_serializer.data)
+            obj = alnafi_user(q, start_date, end_date, isPaying)
+            if export =='True':
+                serializer = AlnafiUserSerializer(obj, many=True)
+                file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                # Build the full path to the media directory
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                return Response(file_path)
+            else:
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(obj, request)
+                serializer = AlnafiUserSerializer(paginated_queryset,many=True)
+                return paginator.get_paginated_response(serializer.data)
         elif source =='islamicacademyuser':
-            islamic_obj = islamic_user(q, start_date, end_date, isPaying)
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(islamic_obj, request)
-            islamic_serializer = IslamicAcademyUserSerializer(paginated_queryset,many=True)
-            return paginator.get_paginated_response(islamic_serializer.data)
+            obj = islamic_user(q, start_date, end_date, isPaying)
+            if export =='True':
+                serializer = IslamicAcademyUserSerializer(obj, many=True)
+                file_name = f"Islamic_Academy_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                # Build the full path to the media directory
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                return Response(file_path)
+            else:
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(obj, request)
+                serializer = IslamicAcademyUserSerializer(paginated_queryset,many=True)
+                return paginator.get_paginated_response(serializer.data)
         else:
-            alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
-            islamic_obj = islamic_user(q, start_date, end_date,isPaying)
-            queryset = list(alnafi_obj) + list(islamic_obj)
-            serializer_dict = {
-                    AlNafi_User: AlnafiUserSerializer,
-                    IslamicAcademy_User: IslamicAcademyUserSerializer,
-                }
+            if export == 'True':
+                alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
+                islamic_obj = islamic_user(q, start_date, end_date,isPaying)
+                alnafi_serializer = AlnafiUserSerializer(alnafi_obj, many=True)
+                islamic_serializer = IslamicAcademyUserSerializer(islamic_obj, many=True)
+                
+                df1 = pd.DataFrame(alnafi_serializer.data)
+                df2 = pd.DataFrame(islamic_serializer.data)
+                
+                # Merge dataframes
+                file_name = f"USERS_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                merged_df = pd.concat([df1, df2], axis=1)
+                merged_df.to_csv(file_path, index=False)
+                return Response(file_path)
+            else:
+                alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
+                islamic_obj = islamic_user(q, start_date, end_date,isPaying)
+                queryset = list(alnafi_obj) + list(islamic_obj)
+                serializer_dict = {
+                        AlNafi_User: AlnafiUserSerializer,
+                        IslamicAcademy_User: IslamicAcademyUserSerializer,
+                    }
 
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(queryset, request)
-            serializer = []
-            for obj in paginated_queryset:
-                serializer_class = serializer_dict.get(obj.__class__)
-                serializer.append(serializer_class(obj).data)
-            
-            return paginator.get_paginated_response(serializer)
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(queryset, request)
+                serializer = []
+                for obj in paginated_queryset:
+                    serializer_class = serializer_dict.get(obj.__class__)
+                    serializer.append(serializer_class(obj).data)
+                
+                return paginator.get_paginated_response(serializer)
         
         
         

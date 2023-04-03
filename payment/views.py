@@ -60,7 +60,6 @@ class SearchAlNafiPayments(APIView):
                     # Build the full path to the media directory
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                     pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
-                    
                     return Response(file_path)
                 else:
                     paginator = MyPagination()
