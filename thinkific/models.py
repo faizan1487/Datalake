@@ -53,5 +53,3 @@ class Thinkific_Users_Enrollments(models.Model):
     class Meta:
         managed = True
         verbose_name = "Thinkific Users Enrollment"
-        
-        

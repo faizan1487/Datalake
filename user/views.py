@@ -7,6 +7,7 @@ from .models import AlNafi_User, IslamicAcademy_User
 from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer
 from .services import alnafi_user, islamic_user
 from rest_framework import status
+
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -61,3 +62,45 @@ class GetUserDetails(APIView):
                 serializer.append(serializer_class(obj).data)
             
             return paginator.get_paginated_response(serializer)
+        
+        
+        
+        
+# class RegisterView(APIView):
+#     """
+#     Register User
+#     <h2>Body Format:-</h2> 
+#     {
+# "username":"new",
+# "email":"new@gmail.com",
+# "password":"admin123",
+# "first_name":"new",
+# "last_name":"user",
+# "phone":"234324"
+# }
+#     """
+
+#     # @staticmethod
+#     def post(self, request):
+#         password = request.data['password']
+#         email = request.data['email']
+#         request.data['country'] = getCountryISO(request)
+#         serializer = UserSerializer(
+#             data=request.data, action="deserialize")
+#         serializer.is_valid(raise_exception=True)
+#         # REAL_EMAIL_API_KEY = env('REAL_EMAIL_API_KEY')
+        
+#         # email_response = requests.get(
+#         #     "https://isitarealemail.com/api/email/validate",
+#         #     params = {'email': email},
+#         #     headers = {'Authorization': "Bearer " + REAL_EMAIL_API_KEY })
+
+
+#         # email_status = email_response.json()['status']
+#         # if email_status == "invalid":
+#         #     return Response({"Invalid": "Email is invalid"}, status=status.HTTP_400_BAD_REQUEST)
+
+#         try:
+#             serializer.save()
+#         except Exception as _:
+#             return Response({"Invalid": "user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
