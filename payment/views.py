@@ -54,46 +54,45 @@ class SearchAlNafiPayments(APIView):
                 expiration_date = date.today() + timedelta(days=int(expiration))
                 query_time = queryset.filter(expiration_datetime__date=expiration_date)
                 
-                if export =='True':
+                if export =='true':
                     alnafi_payments_serializer = AlNafiPaymentSerializer(query_time, many=True)
                     file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                     pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
-                    return Response(file_path)
+                    data = {'file_link': file_path}
+                    return Response(data)
                 else:
                     paginator = MyPagination()
                     paginated_queryset = paginator.paginate_queryset(query_time, request)
                     alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
                     return paginator.get_paginated_response(alnafi_payments_serializer.data)
-            
             else:
                 expiration_date = date.today() + timedelta(days=int(expiration))
                 query_time = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date))
                 
-                if export =='True':
+                if export =='true':
                     alnafi_payments_serializer = AlNafiPaymentSerializer(query_time, many=True)
                     file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
-                    
-                    return Response(file_path)
+                    pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)            
+                    data = {'file_link': file_path}
+                    return Response(data)
                 else:
                     paginator = MyPagination()
                     paginated_queryset = paginator.paginate_queryset(query_time, request)
                     alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
                     return paginator.get_paginated_response(alnafi_payments_serializer.data)
         else:
-            if export =='True':
+            if export =='true':
                 alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
                 file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
-                
-                
-                return Response(file_path)
+                pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)               
+                data = {'file_link': file_path}
+                return Response(data)
             else:
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(queryset, request)
@@ -111,9 +110,11 @@ class SearchPayments(APIView):
            
         if source=='easypaisa':
             easypaisa_obj = easypaisa_pay(query, start_date, end_date)
-            if export=='True':
+            if export=='true':
                 easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa_obj,many=True)
                 csv_link = json_to_csv(easypaisa_serializer, 'easypaisa')
+                data = {'file_link': csv_link}
+                return Response(data)
                 return Response(csv_link)
             else:
                 paginator = MyPagination()
@@ -122,10 +123,11 @@ class SearchPayments(APIView):
                 return paginator.get_paginated_response(easypaisa_serializer.data)
         elif source=='stripe':
             stripe_obj = stripe_pay(query, start_date, end_date)
-            if export=='True':
+            if export=='true':
                 stripe_serializer = StripePaymentSerializer(stripe_obj,many=True)
                 csv_link = json_to_csv(stripe_serializer, 'stripe')
-                return Response(csv_link)
+                data = {'file_link': csv_link}
+                return Response(data)
             else:
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(stripe_obj, request)
@@ -133,17 +135,18 @@ class SearchPayments(APIView):
                 return paginator.get_paginated_response(stripe_serializer.data)
         elif source == 'ubl':
             ubl_obj = ubl_pay(query, start_date, end_date)
-            if export=='True':
+            if export=='true':
                 ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl_obj,many=True)
                 csv_link = json_to_csv(ubl_serializer, 'ubl')
-                return Response(csv_link)
+                data = {'file_link': csv_link}
+                return Response(data)
             else:
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(ubl_obj, request)
                 ubl_serializer = Ubl_Ipg_PaymentsSerializer(paginated_queryset,many=True)
                 return paginator.get_paginated_response(ubl_serializer.data)
         else:
-            if export=='True':
+            if export=='true':
                 easypaisa_obj = easypaisa_pay(query, start_date, end_date)
                 stripe_obj = stripe_pay(query, start_date, end_date)
                 ubl_obj = ubl_pay(query, start_date, end_date)
@@ -161,7 +164,8 @@ class SearchPayments(APIView):
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 merged_df = pd.concat([df1, df2, df3], axis=1)
                 merged_df.to_csv(file_path, index=False)
-                return Response(file_path)
+                data = {'file_link': file_path}
+                return Response(data)
             else:   
                 easypaisa_obj = easypaisa_pay(query, start_date, end_date)
                 stripe_obj = stripe_pay(query, start_date, end_date)
