@@ -41,6 +41,7 @@ class AlnafiUser(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetUserDetails(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         isPaying = self.request.GET.get('ispaying', None) or None

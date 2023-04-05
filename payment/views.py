@@ -5,6 +5,7 @@ from .services import easypaisa_pay, ubl_pay, stripe_pay, json_to_csv
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, timedelta, date
 from django.db.models import Q
 from django.http import HttpResponse
@@ -32,6 +33,7 @@ class AlnafiPayment(APIView):
 
 
 class SearchAlNafiPayments(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -101,6 +103,7 @@ class SearchAlNafiPayments(APIView):
 
 
 class SearchPayments(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
