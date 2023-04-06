@@ -2,11 +2,14 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.request import Request
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from django.contrib.auth import logout
 from rest_framework import status
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+import jwt
+from jwt.exceptions import ExpiredSignatureError
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from django.db.models import Q
@@ -20,8 +23,11 @@ from .models import AlNafi_User, IslamicAcademy_User
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer)
-from .services import alnafi_user, islamic_user, set_auth_token, checkSameDomain, loginUser,get_tokens_for_user
+from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, 
+loginUser,get_tokens_for_user,aware_utcnow)
 from .renderers import UserRenderer
+
+
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -137,14 +143,19 @@ class UserRegistrationView(APIView):
 class UserLoginView(APIView):
     renderer_classes = [UserRenderer]
     def post(self, request, format=None):
+        response = Response()
+        response.data = {}
+        sameDomain = checkSameDomain(request)
+        response.data["sameDomain"] = sameDomain
         serializer = UserLoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.data.get('email')
         password = serializer.data.get('password')
         user = authenticate(email=email, password=password)
         if user is not None:
-            token = get_tokens_for_user(user)
-            return Response({'token':token, 'msg':'Login Success'}, status=status.HTTP_200_OK)
+            response = loginUser(request, response, user, sameDomain)
+            response.data["user"] = UserLoginSerializer(user).data
+            return response
         else:
             return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_401_UNAUTHORIZED)
         
@@ -177,9 +188,67 @@ class UserProfileView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
+        response = Response()
+        response.data = {}
         serializer = UserProfileSerializer(request.user)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+        response.data["user"] = serializer.data
+        return response
+        # return Response(serializer.data, status=status.HTTP_200_OK)
+ 
+def processAccessToken(response: Response, refresh_token, sameDomain):
+    try:
+        cookie = jwt.decode(
+            refresh_token, settings.SECRET_KEY, algorithms=['HS256'])
+        access = AccessToken()
+        access.set_exp(from_time=aware_utcnow())
+        no_copy_claims = (
+            settings.SIMPLE_JWT["TOKEN_TYPE_CLAIM"],
+            "exp",
+            settings.SIMPLE_JWT["JTI_CLAIM"],
+            "jti",
+        )
+        no_copy = no_copy_claims
+        for claim, value in cookie.items():
+            if claim in no_copy:
+                continue
+            access[claim] = value
+        response.data["message"] = "Token refreshed successfully"
+        if sameDomain:
+            response = set_auth_token(
+                response, settings.SIMPLE_JWT['AUTH_COOKIE'], access)
+        else:
+            response.data[settings.SIMPLE_JWT['AUTH_COOKIE']] = str(access)
+        return response
+    except ExpiredSignatureError:
+        return Response({"message": "Token has been expired"}, status=403)
+ 
+
+class TokenRefreshView(APIView):
+    def post(self, request: Request):
+        sameDomain = checkSameDomain(request)
+        response = Response()
+        response.data = {}
+        response.data["sameDomain"] = sameDomain
     
+        if sameDomain:
+            if(settings.SIMPLE_JWT['REFRESH_COOKIE'] in request.COOKIES):
+                refresh_token = request.COOKIES[settings.SIMPLE_JWT['REFRESH_COOKIE']]
+                response = processAccessToken(
+                    response, refresh_token, sameDomain)
+            else:
+                response = Response(
+                    {"message": "User is not logged in same domain"}, status=403)
+        else:
+            if "refresh_token" in request.data:
+                refresh_token = request.data["refresh_token"]
+                response = processAccessToken(
+                    response, refresh_token, sameDomain)
+            else:
+                response = Response(
+                    {"message": "User is not logged in different domain"}, status=403)
+        return response
+ 
+   
 class UserChangePasswordView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]

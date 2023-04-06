@@ -3,6 +3,7 @@ from django.shortcuts import render
 from .models import AlNafi_User, IslamicAcademy_User
 from django.db.models import Q
 from django.conf import settings
+from django.utils.timezone import is_naive, make_aware, utc
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import date, datetime, timedelta
 from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment
@@ -104,7 +105,6 @@ def islamic_user(q, start_date, end_date, isPaying):
 
 
 def loginUser(request, response, user, sameDomain):
-    print("response data", response.data)
     if not response.data:
         response.data = {}
     data = get_tokens_for_user(user)
@@ -117,14 +117,14 @@ def loginUser(request, response, user, sameDomain):
         response.data[settings.SIMPLE_JWT['AUTH_COOKIE']] = data["access"]
         response.data[settings.SIMPLE_JWT['REFRESH_COOKIE']] = data["refresh"]
     csrf.get_token(request)
-    print("csrf token",csrf.get_token(request))
-    print("AUTH COOKIE",settings.SIMPLE_JWT['AUTH_COOKIE'])
-    print("REFRESH COOKIR",settings.SIMPLE_JWT['REFRESH_COOKIE'])
+    # print("response_data", response.data)
     response.data["Success"] = "Login successfully"
-    print("response data", response.data)
     return response
 
 def set_auth_token(response, key, value):
+    # print("key", key)
+    # print("value", value)
+    # print("response data", response.data)
     response.set_cookie(
         key=key,
         value=value,
@@ -151,3 +151,12 @@ def checkSameDomain(request):
         if (frontendDomain == backendDomain):
             sameDomain = True
     return sameDomain
+
+def make_utc(dt):
+    if settings.USE_TZ and is_naive(dt):
+        return make_aware(dt, timezone=utc)
+    return dt
+
+def aware_utcnow():
+    print("make_utc",make_utc(datetime.utcnow()))
+    return make_utc(datetime.utcnow())
