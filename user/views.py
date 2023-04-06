@@ -20,7 +20,7 @@ from .models import AlNafi_User, IslamicAcademy_User
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer)
-from .services import alnafi_user, islamic_user
+from .services import alnafi_user, islamic_user, set_auth_token, checkSameDomain, loginUser,get_tokens_for_user
 from .renderers import UserRenderer
 # Create your views here.
 class MyPagination(PageNumberPagination):
@@ -114,21 +114,25 @@ class GetUserDetails(APIView):
                 return paginator.get_paginated_response(serializer)
 
 
-def get_tokens_for_user(user):
-    refresh = RefreshToken.for_user(user)
-    return {
-        'refresh': str(refresh),
-        'access': str(refresh.access_token),
-    }
+
 
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
     def post(self, request, format=None):
         serializer = UserRegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = serializer.save()
-        token = get_tokens_for_user(user)
-        return Response({'token':token, 'msg':'Registration Successful'}, status=status.HTTP_201_CREATED)
+        try:
+            serializer.save()
+        except Exception as _:
+            return Response({"Invalid": "user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = serializer.instance
+        response = Response({"message": "User created successfully"})
+        sameDomain = checkSameDomain(request)
+        response = loginUser(request, response, user, sameDomain)
+        response.data["sameDomain"] = sameDomain
+        response.data["user"] = serializer.data
+        return response    
 
 class UserLoginView(APIView):
     renderer_classes = [UserRenderer]
@@ -194,8 +198,8 @@ class SendPasswordResetEmailView(APIView):
 
 
 class UserPasswordResetView(APIView):
-  renderer_classes = [UserRenderer]
-  def post(self, request, uid, token, format=None):
-    serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})
-    serializer.is_valid(raise_exception=True)
-    return Response({'msg':'Password Reset Successfully'}, status=status.HTTP_200_OK)
+    renderer_classes = [UserRenderer]
+    def post(self, request, uid, token, format=None):
+        serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})
+        serializer.is_valid(raise_exception=True)
+        return Response({'msg':'Password Reset Successfully'}, status=status.HTTP_200_OK)

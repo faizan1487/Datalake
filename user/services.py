@@ -1,6 +1,9 @@
+from django.middleware import csrf
 from django.shortcuts import render
 from .models import AlNafi_User, IslamicAcademy_User
 from django.db.models import Q
+from django.conf import settings
+from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import date, datetime, timedelta
 from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment
 
@@ -98,3 +101,53 @@ def islamic_user(q, start_date, end_date, isPaying):
             query_time = queryset.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
             
     return query_time
+
+
+def loginUser(request, response, user, sameDomain):
+    print("response data", response.data)
+    if not response.data:
+        response.data = {}
+    data = get_tokens_for_user(user)
+    if sameDomain:
+        response = set_auth_token(
+            response, settings.SIMPLE_JWT['AUTH_COOKIE'], data["access"])
+        response = set_auth_token(
+            response, settings.SIMPLE_JWT['REFRESH_COOKIE'], data["refresh"])
+    else:
+        response.data[settings.SIMPLE_JWT['AUTH_COOKIE']] = data["access"]
+        response.data[settings.SIMPLE_JWT['REFRESH_COOKIE']] = data["refresh"]
+    csrf.get_token(request)
+    print("csrf token",csrf.get_token(request))
+    print("AUTH COOKIE",settings.SIMPLE_JWT['AUTH_COOKIE'])
+    print("REFRESH COOKIR",settings.SIMPLE_JWT['REFRESH_COOKIE'])
+    response.data["Success"] = "Login successfully"
+    print("response data", response.data)
+    return response
+
+def set_auth_token(response, key, value):
+    response.set_cookie(
+        key=key,
+        value=value,
+        expires=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'],
+        secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+        httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+        samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE']
+    )
+    return response
+
+
+def get_tokens_for_user(user):
+    refresh = RefreshToken.for_user(user)
+    return {
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }
+    
+def checkSameDomain(request):
+    backendDomain = request.get_host().split(":")[0]
+    sameDomain = False
+    if 'HTTP_ORIGIN' in request.META:
+        frontendDomain = request.META['HTTP_ORIGIN'].split(":")[0]
+        if (frontendDomain == backendDomain):
+            sameDomain = True
+    return sameDomain
