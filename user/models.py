@@ -1,6 +1,6 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser,AbstractUser
-
+from django.contrib.auth.models import (BaseUserManager,AbstractBaseUser,AbstractUser,Group, 
+Permission,PermissionsMixin)
 
 # Create your models here.
 
@@ -84,9 +84,10 @@ class UserManager(BaseUserManager):
         user.is_admin = True
         user.save(using=self._db)
         return user
+
+
     
-    
-class User(AbstractBaseUser):
+class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         verbose_name='Email',
         max_length=255,
@@ -97,6 +98,8 @@ class User(AbstractBaseUser):
     is_admin = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    groups = models.ManyToManyField(Group, blank=True, related_name='users')
+    user_permissions = models.ManyToManyField(Permission, blank=True)
 
     objects = UserManager()
 
@@ -120,4 +123,4 @@ class User(AbstractBaseUser):
     def is_staff(self):
         "Is the user a member of staff?"
         # Simplest possible answer: All admins are staff
-        return self.is_admin
+        return True

@@ -1,6 +1,7 @@
 from rest_framework import status
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment
-from .serializer import StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment, NavbarLink
+from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
+                         AlNafiPaymentSerializer,NavbarSerializer)
 from .services import easypaisa_pay, ubl_pay, stripe_pay, json_to_csv
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -12,14 +13,15 @@ from django.http import HttpResponse
 from django.conf import settings
 import os
 import pandas as pd
-import shutil
-
+from rest_framework.permissions import BasePermission
+from user.services import GroupPermission
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
+# delete this api before production
 class AlnafiPayment(APIView):
     def post(self, request):
         data = request.data
@@ -32,8 +34,16 @@ class AlnafiPayment(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class Navbar(APIView):
+    def get(self,request):
+        obj = NavbarLink.objects.all()
+        serializer = NavbarSerializer(obj, many=True)
+        return Response(serializer.data)
+
 class SearchAlNafiPayments(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_group = 'Sales'
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -103,7 +113,9 @@ class SearchAlNafiPayments(APIView):
 
 
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_group = 'Sales'
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -199,9 +211,48 @@ class GetStripePayments(APIView):
         serializer = StripePaymentSerializer(pay,many=True)
         return Response(serializer.data)
     
+    def post(self, request):
+        data = request.data
+        serializer = StripePaymentSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 #Creating API For ubl_ipg Payments:
 class GetUBLPayments(APIView):
     def get(self,request):
         ubl_pay = UBL_IPG_Payment.objects.all()
         serializer = Ubl_Ipg_PaymentsSerializer(ubl_pay, many=True)
         return Response(serializer.data)
+    
+    def post(self, request):
+        data = request.data
+        serializer = Ubl_Ipg_PaymentsSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class GetEasypaisaPayments(APIView):
+    def get(self,request):
+        obj = Easypaisa_Payment.objects.all()
+        serializer = Easypaisa_PaymentsSerializer(obj, many=True)
+        return Response(serializer.data)
+    
+    def post(self, request):
+        data = request.data
+        serializer = Easypaisa_PaymentsSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    

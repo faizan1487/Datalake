@@ -7,6 +7,9 @@ from django.utils.timezone import is_naive, make_aware, utc
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import date, datetime, timedelta
 from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment
+from rest_framework.permissions import BasePermission
+from rest_framework.exceptions import PermissionDenied
+
 
 def paying_users(query_time, isPaying):
     paying_users = []
@@ -160,3 +163,18 @@ def make_utc(dt):
 def aware_utcnow():
     print("make_utc",make_utc(datetime.utcnow()))
     return make_utc(datetime.utcnow())
+
+class GroupPermission(BasePermission):
+    def has_permission(self, request, view):
+        required_group = getattr(view, 'required_group', None)
+        if required_group is None:
+            return True
+        if request.user.groups.filter(name=required_group).exists():
+            return True
+        else:
+            data = {
+                "detail": "You do not have permission to access this API.",
+                "has_perm": False
+                }
+            raise PermissionDenied(data)
+

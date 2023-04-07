@@ -140,3 +140,12 @@ class UBL_Manual_Payment(models.Model):
         managed = True
         verbose_name = "UBL-Manual Payment"
         ordering = ["-order_datetime"]
+        
+        
+class NavbarLink(models.Model):
+    name = models.CharField(max_length=100,null=True, blank=True)
+    path = models.CharField(max_length=100,null=True, blank=True)
+    image = models.ImageField(upload_to='navbar_images')
+
+    def __str__(self):
+        return self.name

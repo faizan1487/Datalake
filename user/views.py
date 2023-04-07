@@ -19,11 +19,11 @@ import os
 import pandas as pd
 from datetime import datetime
 
-from .models import AlNafi_User, IslamicAcademy_User
+from .models import AlNafi_User, IslamicAcademy_User,User
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer)
-from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, 
+from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
 loginUser,get_tokens_for_user,aware_utcnow)
 from .renderers import UserRenderer
 
@@ -34,6 +34,12 @@ class MyPagination(PageNumberPagination):
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100
+
+class UsersDelete(APIView):
+    def get(self, request):
+        objs = User.objects.all()
+        objs.delete()
+        return Response("data deleted")
 
 class AlnafiUser(APIView):
     def post(self, request):
@@ -46,7 +52,11 @@ class AlnafiUser(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class GetUserDetails(APIView):
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_group = 'Sales'
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         isPaying = self.request.GET.get('ispaying', None) or None
@@ -118,9 +128,6 @@ class GetUserDetails(APIView):
                     serializer_class = serializer_dict.get(obj.__class__)
                     serializer.append(serializer_class(obj).data)
                 return paginator.get_paginated_response(serializer)
-
-
-
 
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
