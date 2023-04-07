@@ -54,7 +54,7 @@ class AlnafiUser(APIView):
 
 
 class GetUserDetails(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
@@ -193,7 +193,7 @@ def User_logout(request):
 
 class UserProfileView(APIView):
     renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         response = Response()
         response.data = {}
@@ -258,7 +258,7 @@ class TokenRefreshView(APIView):
    
 class UserChangePasswordView(APIView):
     renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         serializer = UserChangePasswordSerializer(data=request.data, context={'user':request.user})
         serializer.is_valid(raise_exception=True)

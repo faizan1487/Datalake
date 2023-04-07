@@ -1,4 +1,5 @@
 from rest_framework import status
+from user.models import User
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment, NavbarLink
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,NavbarSerializer)
@@ -11,6 +12,7 @@ from datetime import datetime, timedelta, date
 from django.db.models import Q
 from django.http import HttpResponse
 from django.conf import settings
+from django.contrib.auth.models import Group
 import os
 import pandas as pd
 from rest_framework.permissions import BasePermission
@@ -36,12 +38,21 @@ class AlnafiPayment(APIView):
 
 class Navbar(APIView):
     def get(self,request):
-        obj = NavbarLink.objects.all()
+        user = request.user
+        sales = Group.objects.get(name='Sales')
+        support = Group.objects.get(name='Support')
+        support_user = User.objects.filter(groups__name=support.name, email__iexact=user.email)
+        sales_user = User.objects.filter(groups__name=sales.name, email__iexact=user.email)
+        if support_user:
+            obj = NavbarLink.objects.filter(group='Support')
+        elif sales_user:
+            obj = NavbarLink.objects.filter(group='Sales')
+            
         serializer = NavbarSerializer(obj, many=True)
         return Response(serializer.data)
 
 class SearchAlNafiPayments(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
@@ -113,7 +124,7 @@ class SearchAlNafiPayments(APIView):
 
 
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
@@ -253,6 +264,3 @@ class GetEasypaisaPayments(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-    
