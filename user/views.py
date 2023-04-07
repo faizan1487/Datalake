@@ -55,7 +55,7 @@ class AlnafiUser(APIView):
 
 class GetUserDetails(APIView):
     # permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
+    # permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
         q = self.request.GET.get('q', None) or None
