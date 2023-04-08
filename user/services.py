@@ -107,6 +107,7 @@ def islamic_user(q, start_date, end_date, isPaying):
     return query_time
 
 
+
 def loginUser(request, response, user, sameDomain):
     if not response.data:
         response.data = {}

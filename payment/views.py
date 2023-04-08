@@ -52,8 +52,8 @@ class Navbar(APIView):
         return Response(serializer.data)
 
 class SearchAlNafiPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
@@ -124,8 +124,8 @@ class SearchAlNafiPayments(APIView):
 
 
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
         query = self.request.GET.get('q', None) or None

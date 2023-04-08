@@ -17,7 +17,7 @@ from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth import authenticate
 import os
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from .models import AlNafi_User, IslamicAcademy_User,User
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
@@ -54,8 +54,8 @@ class AlnafiUser(APIView):
 
 
 class GetUserDetails(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
         q = self.request.GET.get('q', None) or None
@@ -129,6 +129,27 @@ class GetUserDetails(APIView):
                     serializer.append(serializer_class(obj).data)
                 return paginator.get_paginated_response(serializer)
 
+class GetNoOfUsers(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    required_group = 'Sales'
+    def get(self, request):
+        start_date = self.request.GET.get('start_date', None) or None
+        start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+        end_date = self.request.GET.get('end_date', None) or None
+        end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+        delta = end_date_obj - start_date_obj
+
+        dates = []
+        for i in range(delta.days + 1):
+            date = start_date_obj + timedelta(days=i)
+            dates.append(date)
+        
+        print(dates)  
+        return Response("working")
+    
+    
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
     def post(self, request, format=None):
@@ -193,7 +214,7 @@ def User_logout(request):
 
 class UserProfileView(APIView):
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, format=None):
         response = Response()
         response.data = {}
@@ -258,7 +279,7 @@ class TokenRefreshView(APIView):
    
 class UserChangePasswordView(APIView):
     renderer_classes = [UserRenderer]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def post(self, request, format=None):
         serializer = UserChangePasswordSerializer(data=request.data, context={'user':request.user})
         serializer.is_valid(raise_exception=True)
