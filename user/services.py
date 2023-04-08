@@ -9,7 +9,7 @@ from datetime import date, datetime, timedelta
 from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
-
+from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer
 
 def paying_users(query_time, isPaying):
     paying_users = []
@@ -107,6 +107,100 @@ def islamic_user(q, start_date, end_date, isPaying):
     return query_time
 
 
+def alnafi_no_users(start_date,end_date):
+    if start_date:
+            pass
+    else:
+        first_user = AlNafi_User.objects.first()
+        print(type(first_user.created_at))
+        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+        start_date = str(new_date_obj.date())
+        
+    if end_date:
+        pass
+    else:
+        last_user = AlNafi_User.objects.last()
+        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
+        end_date = str(new_date_obj.date())
+    
+    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+    end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()       
+    delta = end_date_obj - start_date_obj
+    dates = []
+    for i in range(delta.days + 1):
+        date = start_date_obj + timedelta(days=i)
+        dates.append(date)
+        
+    users = AlNafi_User.objects.filter(created_at__date__in=dates)
+    user_dict = {}
+    for user in users:
+        if user.created_at.date() in user_dict:
+            user_dict[user.created_at.date()].append(user)
+        else:
+            user_dict[user.created_at.date()] = [user]
+    response_data = []
+    for date in dates:
+        if date in user_dict:
+            users_for_date = user_dict[date]
+            serialized_users = AlnafiUserSerializer(users_for_date, many=True).data
+        else:
+            serialized_users = []
+
+        response_data.append({
+            'date': date,
+            'users': len(serialized_users)
+        })
+    return response_data
+
+def islamic_no_users(start_date,end_date):
+    if start_date:
+            pass
+    else:
+        first_user = IslamicAcademy_User.objects.first()
+        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+        start_date = str(new_date_obj.date())
+        
+    if end_date:
+        pass
+    else:
+        last_user = IslamicAcademy_User.objects.last()
+        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
+        end_date = str(new_date_obj.date())
+    
+    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
+    end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()       
+    delta = end_date_obj - start_date_obj
+    dates = []
+    for i in range(delta.days + 1):
+        date = start_date_obj + timedelta(days=i)
+        dates.append(date)
+        
+    users = IslamicAcademy_User.objects.filter(created_at__date__in=dates)
+    user_dict = {}
+    for user in users:
+        if user.created_at.date() in user_dict:
+            user_dict[user.created_at.date()].append(user)
+        else:
+            user_dict[user.created_at.date()] = [user]
+            
+    response_data = []
+    for date in dates:
+        if date in user_dict:
+            users_for_date = user_dict[date]
+            serialized_users = IslamicAcademyUserSerializer(users_for_date, many=True).data
+        else:
+            serialized_users = []
+
+        response_data.append({
+            'date': date,
+            'users': len(serialized_users)
+        })
+    return response_data
+    
 
 def loginUser(request, response, user, sameDomain):
     if not response.data:

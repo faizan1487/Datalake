@@ -1,6 +1,6 @@
 from rest_framework import status
 from user.models import User
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment, NavbarLink
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer)
 from .services import easypaisa_pay, ubl_pay, stripe_pay, json_to_csv
@@ -34,22 +34,6 @@ class AlnafiPayment(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class Navbar(APIView):
-    def get(self,request):
-        user = request.user
-        sales = Group.objects.get(name='Sales')
-        support = Group.objects.get(name='Support')
-        support_user = User.objects.filter(groups__name=support.name, email__iexact=user.email)
-        sales_user = User.objects.filter(groups__name=sales.name, email__iexact=user.email)
-        if support_user:
-            obj = NavbarLink.objects.filter(group='Support')
-        elif sales_user:
-            obj = NavbarLink.objects.filter(group='Sales')
-            
-        serializer = NavbarSerializer(obj, many=True)
-        return Response(serializer.data)
 
 class SearchAlNafiPayments(APIView):
     permission_classes = [IsAuthenticated]

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import SearchPayments, GetStripePayments, GetUBLPayments, AlnafiPayment,SearchAlNafiPayments,GetEasypaisaPayments,Navbar
+from .views import SearchPayments, GetStripePayments, GetUBLPayments, AlnafiPayment,SearchAlNafiPayments,GetEasypaisaPayments
 from payment.webhooks import enrollment_created_webhook
 
 urlpatterns = [
@@ -10,6 +10,4 @@ urlpatterns = [
     path("stripe/", GetStripePayments.as_view(), name='all'),  #For all stripe payemnts
     path("ubl/", GetUBLPayments.as_view(), name='ubl'), #For all UBL Payments
     path("easypaisa/", GetEasypaisaPayments.as_view(), name='easypaisa'), #For all easypaisa Payments
-    
-    path("navbar/", Navbar.as_view(), name='navbar'),
 ]
