@@ -18,7 +18,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import Group
 import os
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from .models import AlNafi_User, IslamicAcademy_User,User, NavbarLink
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
@@ -57,7 +57,7 @@ class AlnafiUser(APIView):
 class GetUserDetails(APIView):
     permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
-    required_group = 'Sales'
+    required_group = 'Support'
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         isPaying = self.request.GET.get('ispaying', None) or None
@@ -133,23 +133,67 @@ class GetUserDetails(APIView):
 class GetNoOfUsers(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
-    required_group = 'Sales'
+    required_group = 'Support'
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
         start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
         end_date = self.request.GET.get('end_date', None) or None
         end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()
+        source = self.request.GET.get('source', None) or None
         
         delta = end_date_obj - start_date_obj
-
         dates = []
         for i in range(delta.days + 1):
             date = start_date_obj + timedelta(days=i)
             dates.append(date)
+            
+        if source == 'alnafiuser':
+            users = AlNafi_User.objects.filter(created_at__date__in=dates)
+            user_dict = {}
+            for user in users:
+                if user.created_at.date() in user_dict:
+                    user_dict[user.created_at.date()].append(user)
+                else:
+                    user_dict[user.created_at.date()] = [user]
+            
+
+            response_data = []
+            for date in dates:
+                if date in user_dict:
+                    users_for_date = user_dict[date]
+                    serialized_users = AlnafiUserSerializer(users_for_date, many=True).data
+                else:
+                    serialized_users = []
+
+                response_data.append({
+                    'date': date,
+                    'users': len(serialized_users)
+                })
+        elif source == 'islamicacademyuser':
+            users = IslamicAcademy_User.objects.filter(created_at__date__in=dates)
+            user_dict = {}
+            for user in users:
+                if user.created_at.date() in user_dict:
+                    user_dict[user.created_at.date()].append(user)
+                else:
+                    user_dict[user.created_at.date()] = [user]
+            
+
+            response_data = []
+            for date in dates:
+                if date in user_dict:
+                    users_for_date = user_dict[date]
+                    serialized_users = IslamicAcademyUserSerializer(users_for_date, many=True).data
+                else:
+                    serialized_users = []
+
+                response_data.append({
+                    'date': date,
+                    'users': len(serialized_users)
+                })
+
+            return Response(response_data)
         
-        print(dates)  
-        return Response("working")
-    
     
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
