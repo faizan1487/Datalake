@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import AlNafi_User
-from user.models import IslamicAcademy_User, User
+from user.models import IslamicAcademy_User, User, NavbarLink
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin
 
@@ -51,3 +51,9 @@ class UserModelAdmin(BaseUserAdmin):
 
 # Now register the new UserModelAdmin...
 admin.site.register(User, UserModelAdmin)
+
+
+class NavbarLinkAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('name', 'path')
+
+admin.site.register(NavbarLink,NavbarLinkAdmin)   

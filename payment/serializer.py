@@ -2,13 +2,10 @@ from rest_framework.serializers import ModelSerializer
 from .models import Stripe_Payment
 from .models import Easypaisa_Payment
 from .models import UBL_Manual_Payment
-from .models import UBL_IPG_Payment, AlNafi_Payment, NavbarLink
+from .models import UBL_IPG_Payment, AlNafi_Payment
 
 
-class NavbarSerializer(ModelSerializer):
-    class Meta:
-        model = NavbarLink
-        fields = '__all__'
+
 
 #For AlNafi (MainSite) Payments:
 class AlNafiPaymentSerializer(ModelSerializer):

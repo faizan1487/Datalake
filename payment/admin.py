@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UBL_Manual_Payment,NavbarLink,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment
+from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment
 from import_export.admin import ImportExportModelAdmin
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
@@ -7,10 +7,7 @@ from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 # Register your models here.    
 
 #For Navbar:
-class NavbarLinkAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('name', 'path')
-
-admin.site.register(NavbarLink,NavbarLinkAdmin)     
+  
 
 #For Stripe Payments:
 class StripePaymentAdmin(ImportExportModelAdmin, admin.ModelAdmin):

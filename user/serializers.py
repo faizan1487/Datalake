@@ -1,6 +1,7 @@
+from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import AlNafi_User
-from .models import IslamicAcademy_User, User
+from .models import IslamicAcademy_User, User, NavbarLink
 from .utils import Util
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -123,3 +124,9 @@ class UserPasswordResetSerializer(serializers.Serializer):
     except DjangoUnicodeDecodeError as identifier:
       PasswordResetTokenGenerator().check_token(user, token)
       raise serializers.ValidationError('Token is not Valid or Expired')
+    
+    
+class NavbarSerializer(ModelSerializer):
+    class Meta:
+        model = NavbarLink
+        fields = '__all__'

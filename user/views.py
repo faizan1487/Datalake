@@ -15,14 +15,15 @@ from django.conf import settings
 from django.db.models import Q
 from django.contrib.auth.models import AnonymousUser
 from django.contrib.auth import authenticate
+from django.contrib.auth.models import Group
 import os
 import pandas as pd
 from datetime import datetime, timedelta
 
-from .models import AlNafi_User, IslamicAcademy_User,User
+from .models import AlNafi_User, IslamicAcademy_User,User, NavbarLink
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
-UserPasswordResetSerializer)
+UserPasswordResetSerializer,NavbarSerializer)
 from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
 loginUser,get_tokens_for_user,aware_utcnow)
 from .renderers import UserRenderer
@@ -300,3 +301,19 @@ class UserPasswordResetView(APIView):
         serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})
         serializer.is_valid(raise_exception=True)
         return Response({'msg':'Password Reset Successfully'}, status=status.HTTP_200_OK)
+    
+    
+class Navbar(APIView):
+    def get(self,request):
+        user = request.user
+        sales = Group.objects.get(name='Sales')
+        support = Group.objects.get(name='Support')
+        support_user = User.objects.filter(groups__name=support.name, email__iexact=user.email)
+        sales_user = User.objects.filter(groups__name=sales.name, email__iexact=user.email)
+        if support_user:
+            obj = NavbarLink.objects.filter(group='Support')
+        elif sales_user:
+            obj = NavbarLink.objects.filter(group='Sales')
+            
+        serializer = NavbarSerializer(obj, many=True)
+        return Response(serializer.data)

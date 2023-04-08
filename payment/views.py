@@ -2,7 +2,7 @@ from rest_framework import status
 from user.models import User
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment, NavbarLink
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
-                         AlNafiPaymentSerializer,NavbarSerializer)
+                         AlNafiPaymentSerializer)
 from .services import easypaisa_pay, ubl_pay, stripe_pay, json_to_csv
 from rest_framework.views import APIView
 from rest_framework.response import Response
