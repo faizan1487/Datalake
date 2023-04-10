@@ -23,7 +23,7 @@ from datetime import datetime, timedelta, date
 from .models import AlNafi_User, IslamicAcademy_User,User, NavbarLink
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
-UserPasswordResetSerializer,NavbarSerializer)
+UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer)
 from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
 loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users)
 from .renderers import UserRenderer
@@ -185,7 +185,12 @@ class UserLoginView(APIView):
         user = authenticate(email=email, password=password)
         if user is not None:
             response = loginUser(request, response, user, sameDomain)
-            response.data["user"] = UserLoginSerializer(user).data
+            groups = user.groups.all()
+            serialized_data = GroupsSerailizer(groups,many=True).data
+            # print(serialized_data)
+            user = UserLoginSerializer(user).data
+            response.data["user"] = user
+            response.data["groups"] = serialized_data
             return response
         else:
             # return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_401_UNAUTHORIZED)

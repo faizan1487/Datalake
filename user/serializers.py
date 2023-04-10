@@ -6,6 +6,8 @@ from .utils import Util
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from django.contrib.auth.models import Group
+
 # from django.contrib.auth.models import User
 
 # For Main Site Al-Nafi User Table:
@@ -130,3 +132,9 @@ class NavbarSerializer(ModelSerializer):
     class Meta:
         model = NavbarLink
         fields = '__all__'
+        
+        
+class GroupsSerailizer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = ('name',)
