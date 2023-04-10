@@ -189,8 +189,8 @@ class UserLoginView(APIView):
             serialized_data = GroupsSerailizer(groups,many=True).data
             # print(serialized_data)
             user = UserLoginSerializer(user).data
+            user['groups'] = serialized_data
             response.data["user"] = user
-            response.data["groups"] = serialized_data
             return response
         else:
             # return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_401_UNAUTHORIZED)
