@@ -138,15 +138,11 @@ class GetNoOfUsers(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
             
-        source = self.request.GET.get('source', None) or None
-        
-            
+        source = self.request.GET.get('source', None) or None 
         if source == 'alnafiuser':
-            users = alnafi_no_users(start_date, end_date)       
-            return Response(users)           
+            response_data = alnafi_no_users(start_date, end_date)                
         elif source == 'islamicacademyuser':
-            users = islamic_no_users(start_date,end_date)
-            return Response(users)
+            response_data = islamic_no_users(start_date,end_date)
         else:
             islamic_users = islamic_no_users(start_date, end_date)   
             alnafi_users = alnafi_no_users(start_date,end_date)
@@ -192,7 +188,8 @@ class UserLoginView(APIView):
             response.data["user"] = UserLoginSerializer(user).data
             return response
         else:
-            return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_401_UNAUTHORIZED)
+            # return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({'error': 'Email or Password is not Valid'}, status=status.HTTP_401_UNAUTHORIZED)
         
 # class UserLogoutView(APIView):
 #     authentication_classes = [JWTAuthentication]

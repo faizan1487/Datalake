@@ -3,7 +3,7 @@ from user.models import User
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer)
-from .services import easypaisa_pay, ubl_pay, stripe_pay, json_to_csv
+from .services import (easypaisa_pay, ubl_pay, stripe_pay, json_to_csv,stripe_no_payments,ubl_no_payments,easypaisa_no_payments,no_of_payments)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -198,7 +198,54 @@ class SearchPayments(APIView):
                 
                     
                 return paginator.get_paginated_response(serializer)        
+ 
+ 
+class NoOfPayments(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    required_group = 'Sales'
+    def get(self, request):
+        source = self.request.GET.get('source', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
+        export = self.request.GET.get('export', None) or None
         
+        if source=='stripe':
+            response_data = stripe_no_payments(start_date,end_date)
+        elif source =='ubl':
+            response_data = ubl_no_payments(start_date,end_date)
+        elif source =='easypaisa':
+            response_data = easypaisa_no_payments(start_date,end_date)
+        else:
+            stripe_payments = stripe_no_payments(start_date,end_date)
+            ubl_payments = ubl_no_payments(start_date,end_date)
+            easypaisa_payments = easypaisa_no_payments(start_date,end_date)
+            response_data = {"stripe_payments": stripe_payments,
+                             "ubl_payments": ubl_payments,
+                             "easypaisa_payments":easypaisa_payments
+                             }
+        return Response(response_data)
+            
+class RenewalNoOfPayments(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    required_group = 'Sales'
+    def get(self, request):
+        source = self.request.GET.get('source', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
+        export = self.request.GET.get('export', None) or None
+        
+        if source:
+            queryset = AlNafi_Payment.objects.filter(source__iexact=source)
+            response_data = no_of_payments(start_date,end_date,queryset)
+        else:
+            response_data = no_of_payments(start_date,end_date,None)
+        return Response(response_data)
+        
+        
+        
+               
 #Creating API For Stripe Payments: 
 class GetStripePayments(APIView):
     def get(self,request):
@@ -232,7 +279,8 @@ class GetUBLPayments(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+
+#Creating API For Easypaisa Payments
 class GetEasypaisaPayments(APIView):
     def get(self,request):
         obj = Easypaisa_Payment.objects.all()

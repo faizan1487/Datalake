@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from .models import Alnafi_Product
-from .models import IslamicAcademyProduct
+from .models import Alnafi_Product,IslamicAcademy_Product
 from rest_framework.serializers import ModelSerializer
 
 class AlNafiMainSiteProductSerializer(ModelSerializer):
@@ -24,5 +23,5 @@ class AlNafiMainSiteProductSerializer(ModelSerializer):
 #FOR ISLAMIC ACADEMY PRODUCT:
 class IslamicAcademyProductSerializer(serializers.ModelSerializer):
     class Meta:
-        model = IslamicAcademyProduct
+        model = IslamicAcademy_Product
         fields = ("id", "name", "slug", "date_created", "date_modified", "type", "status", "description", "price", "stock_status")

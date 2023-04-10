@@ -13,7 +13,7 @@ urlpatterns = [
     path("payments/",include('payment.urls')),
     path("user/",include('user.urls')),
     path("thinkific/",include('thinkific.urls')),
-    
+    path("products/",include('products.urls')),    
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 

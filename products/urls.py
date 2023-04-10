@@ -1,8 +1,6 @@
 from django.urls import path
-from .models import AlnafiProduct
-from . import views
+from .views import AlnafiProduct
 
 urlpatterns = [
-    path('', AlnafiProduct.index, name='index'),
-     path("alnafiproduct/", AlnafiProduct.as_view(), name='alnafi-product'),
+    path("alnafiproduct/", AlnafiProduct.as_view(), name='alnafi-product'),
 ]

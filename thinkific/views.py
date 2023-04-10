@@ -17,8 +17,7 @@ class DeleteEnroll(APIView):
     def get(self, request):
         objs = Thinkific_Users_Enrollments.objects.all()
         objs.delete()
-        return Response("data deleted")
-    
+        return Response("data deleted")   
     
     
 class GetThinkificUsers(APIView):

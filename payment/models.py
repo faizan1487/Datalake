@@ -114,8 +114,6 @@ class AlNafi_Payment(models.Model):
         verbose_name = "Al-Nafi Payment"
         ordering = ["-order_datetime"]
 
-
-
 #For UBL Manual Payments:
 class UBL_Manual_Payment(models.Model):
     candidate_name = models.CharField(default= "" ,max_length=200, null=False, blank=True)
