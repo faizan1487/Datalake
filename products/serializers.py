@@ -6,6 +6,29 @@ class AlNafiMainSiteProductSerializer(ModelSerializer):
     class Meta:
         model = Alnafi_Product
         fields = '__all__'
+        
+    def create(self, validated_data):
+        # Get the ID of the object to update, if it exists
+        product_slug = validated_data.get('product_slug')
+        
+        # If an ID was provided, try to get the existing object
+        if product_slug:
+            try:
+                obj = Alnafi_Product.objects.get(product_slug=product_slug)
+            except Alnafi_Product.DoesNotExist:
+                obj = None
+        else:
+            obj = None
+        
+        # If the object exists, update its fields with the validated data
+        if obj:
+            for key, value in validated_data.items():
+                setattr(obj, key, value)
+            obj.save()
+        else:
+            obj = Alnafi_Product.objects.create(**validated_data)
+        
+        return obj
 
 # #FOR AL-NAFI MAIN SITE PRODUCT:
 # class AlnafiProductSerializer(ModelSerializer):

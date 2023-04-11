@@ -15,12 +15,12 @@ class AlNafiPaymentSerializer(ModelSerializer):
         
     def create(self, validated_data):
         # Get the ID of the object to update, if it exists
-        my_id = validated_data.get('id')
+        my_id = validated_data.get('payment_id')
         
         # If an ID was provided, try to get the existing object
         if my_id:
             try:
-                obj = AlNafi_Payment.objects.get(id=my_id)
+                obj = AlNafi_Payment.objects.get(payment_id=my_id)
             except AlNafi_Payment.DoesNotExist:
                 obj = None
         else:

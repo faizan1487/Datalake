@@ -16,7 +16,26 @@ class AlnafiUserSerializer(serializers.ModelSerializer):
         model = AlNafi_User
         fields = '__all__'
 
-
+    def create(self,validated_data):
+      email = validated_data.get("email")
+      
+      if email:
+        try:
+          obj = AlNafi_User.objects.get(email=email)
+        except AlNafi_User.DoesNotExist:
+              obj = None
+      else:
+          obj = None
+      
+      # If the object exists, update its fields with the validated data
+      if obj:
+          for key, value in validated_data.items():
+              setattr(obj, key, value)
+          obj.save()
+      else:
+          obj = AlNafi_User.objects.create(**validated_data)
+      
+      return obj
 # For Islamic Academy Users:
 class IslamicAcademyUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -138,3 +157,8 @@ class GroupsSerailizer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ('name',)
+        
+        
+class UsersCombinedSerializer(serializers.Serializer):
+    data1 = AlnafiUserSerializer(many=True)
+    data2 = IslamicAcademyUserSerializer(many=True)
