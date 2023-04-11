@@ -56,8 +56,8 @@ class AlnafiUser(APIView):
 
 
 class GetUserDetails(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
     required_group = 'Support'
     def get(self, request):
         q = self.request.GET.get('q', None) or None
@@ -146,7 +146,7 @@ class GetPayingUser(APIView):
         if source == 'islamicacademyuser':
             obj = islamic_Paying_user(isPaying,exact,date)
             serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
-            if export =='True':
+            if export =='true':
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -164,7 +164,7 @@ class GetPayingUser(APIView):
         elif source =='alnafiuser':
             obj = alnafi_Paying_user(isPaying, exact, date)
             serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
-            if export =='True':
+            if export =='true':
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -183,7 +183,7 @@ class GetPayingUser(APIView):
             alnafi_users = alnafi_Paying_user(isPaying,exact,date)
             alnafi_serialized_data = AlnafiUserSerializer(alnafi_users['paying_users'], many=True)
             islamic_serialized_data = IslamicAcademyUserSerializer(islamic_users['paying_users'], many=True)
-            if export == 'True':
+            if export == 'true':
                 df1 = pd.DataFrame(alnafi_serialized_data.data)
                 df2 = pd.DataFrame(islamic_serialized_data.data)
                 # Merge dataframes
