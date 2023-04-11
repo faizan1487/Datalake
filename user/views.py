@@ -27,6 +27,7 @@ UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSeria
 from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
 loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,islamic_Paying_user,alnafi_Paying_user)
 from .renderers import UserRenderer
+from itertools import chain
 
 
 # Create your views here.
@@ -136,57 +137,76 @@ class GetPayingUser(APIView):
     # permission_classes = [GroupPermission]
     required_group = 'Support'
     def get(self, request):
-        start_date = self.request.GET.get('start_date', None) or None
-        end_date = self.request.GET.get('end_date', None) or None
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
         isPaying = self.request.GET.get('ispaying', None) or None
-        
-        if source == 'islamicacademyuser':
-            obj = islamic_Paying_user(start_date, end_date,isPaying)
-            serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
-            for i in range(len(serializer.data)):
-                serializer.data[i]['payment_boolean_value'] = obj['payment_boolean_value'][i]
+        exact = self.request.GET.get('exact', None) or None
+        date = self.request.GET.get('date', None) or None
 
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-            return paginator.get_paginated_response(paginated_queryset)
-            
+        if source == 'islamicacademyuser':
+            obj = islamic_Paying_user(isPaying,exact,date)
+            serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
+            if export =='True':
+                file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                    # Build the full path to the media directory
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                data = {'file_link': file_path}
+                return Response(data)
+            else:
+                for i in range(len(serializer.data)):
+                    serializer.data[i]['payment_boolean_value'] = obj['payment_boolean_value'][i]
+
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+                return paginator.get_paginated_response(paginated_queryset)
             
         elif source =='alnafiuser':
-            obj = alnafi_Paying_user(start_date, end_date,isPaying)
-            serializer = AlnafiUserSerializer(obj['paying_users'], many=True)
-            for i in range(len(serializer.data)):
-                serializer.data[i]['payment_boolean_value'] = obj['payment_boolean_value'][i]
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-            return paginator.get_paginated_response(paginated_queryset)
+            obj = alnafi_Paying_user(isPaying, exact, date)
+            serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
+            if export =='True':
+                file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                    # Build the full path to the media directory
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                data = {'file_link': file_path}
+                print("data",data)
+                return Response(data)
+            else:
+                for i in range(len(serializer.data)):
+                    serializer.data[i]['payment_boolean_value'] = obj['payment_boolean_value'][i]
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+                return paginator.get_paginated_response(paginated_queryset)
         else:
-            islamic_users = islamic_Paying_user(start_date, end_date,isPaying)
-            alnafi_users = alnafi_Paying_user(start_date, end_date,isPaying)
+            islamic_users = islamic_Paying_user(isPaying,exact,date)
+            alnafi_users = alnafi_Paying_user(isPaying,exact,date)
             alnafi_serialized_data = AlnafiUserSerializer(alnafi_users['paying_users'], many=True)
             islamic_serialized_data = IslamicAcademyUserSerializer(islamic_users['paying_users'], many=True)
-            combined_data = {
-                'data1': alnafi_serialized_data.data,
-                'data2': islamic_serialized_data.data,
-            }
-            
-            serialized_data = UsersCombinedSerializer(combined_data).data
-            print(serialized_data.keys())
-            for i in range(len(serialized_data['data1'])):
-                serialized_data['data1'][i]['payment_boolean_value'] = alnafi_users['payment_boolean_value'][i]
-            for i in range(len(serialized_data['data2'])):
-                serialized_data['data2'][i]['payment_boolean_value'] = islamic_users['payment_boolean_value'][i]
-            
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(serialized_data, request)
-            return paginator.get_paginated_response(paginated_queryset)
-
-        
-            
-
-
-
+            if export == 'True':
+                df1 = pd.DataFrame(alnafi_serialized_data.data)
+                df2 = pd.DataFrame(islamic_serialized_data.data)
+                # Merge dataframes
+                file_name = f"USERS_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                merged_df = pd.concat([df1, df2], axis=1)
+                merged_df.to_csv(file_path, index=False)
+                data = {'file_link': file_path}
+                return Response(data)
+            else:
+                combined_data = {
+                    'data1': alnafi_serialized_data.data,
+                    'data2': islamic_serialized_data.data,
+                }
+                serialized_data = UsersCombinedSerializer(combined_data).data
+                for i in range(len(serialized_data['data1'])):
+                    serialized_data['data1'][i]['payment_boolean_value'] = alnafi_users['payment_boolean_value'][i]
+                for i in range(len(serialized_data['data2'])):
+                    serialized_data['data2'][i]['payment_boolean_value'] = islamic_users['payment_boolean_value'][i]
+                combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2']))
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(combined_queryset, request)
+                return paginator.get_paginated_response(paginated_queryset)
     
 class GetNoOfUsers(APIView):
     # permission_classes = [IsAuthenticated]
@@ -209,8 +229,7 @@ class GetNoOfUsers(APIView):
                              "alnafi_users": alnafi_users
                              }
         return Response(response_data)
-        
-    
+            
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
     def post(self, request, format=None):

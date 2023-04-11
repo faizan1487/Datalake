@@ -9,76 +9,39 @@ from datetime import date, datetime, timedelta
 from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
-from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer
-
-# def paying_users(query_time, isPaying):
-#     paying_users = []
-#     for user in query_time:
-#         pay_users = []
-#         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-#         easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-#         stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
-#         pay_users.append(ubl_user)
-#         # pay_users.append(easypaisa_user)
-#         # pay_users.append(stripe_user)
-#         for pay_user in pay_users:
-#             if isPaying: 
-#                 for p_user in pay_user:
-#                     if isPaying:
-#                         if p_user.customer_email == user.email:
-#                             paying_users.append(user)
-#                         else:
-#                             pass
-#                     else:
-#                         if p_user.customer_email != user.email:
-#                             paying_users.append(user)
-#             else:
-#                 return query_time                   
-#     return paying_users
+from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer    
     
-    
-def islamic_Paying_user(start_date, end_date, isPaying):
-    if start_date:
-        print("start date exists")
+def islamic_Paying_user(isPaying, exact,date):
+    if date:
         pass
     else:
         first_user = IslamicAcademy_User.objects.first()
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
-        start_date = new_date_obj
+        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+        date = new_date_obj
+    
+    if exact =='True':
+        query_time = IslamicAcademy_User.objects.filter(created_at__date=date)
+    else:   
+        query_time = IslamicAcademy_User.objects.filter(created_at__date__gte=date) 
         
-    if end_date:
-        pass
-    else:
-        last_user = IslamicAcademy_User.objects.last()
-        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-        end_date = new_date_obj
-        
-    query_time = IslamicAcademy_User.objects.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
     paying_user_queryset = paying_user(query_time, isPaying)
     return paying_user_queryset
         
 
-def alnafi_Paying_user(start_date, end_date, isPaying):
-    if start_date:
+def alnafi_Paying_user(isPaying, exact, date):
+    if date:
         pass
     else:
         first_user = AlNafi_User.objects.first()
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
-        start_date = new_date_obj.date()
+        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+        date = new_date_obj
         
-    if end_date:
-        pass
-    else:
-        last_user = AlNafi_User.objects.last()
-        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-        end_date = new_date_obj.date()
-        
-    
-    query_time = AlNafi_User.objects.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
+    if exact =='True':
+        query_time = AlNafi_User.objects.filter(created_at__date=date)
+    else:  
+        query_time = AlNafi_User.objects.filter(created_at__date__gte=date)
     paying_user_queryset = paying_user(query_time, isPaying)
     return paying_user_queryset
 
@@ -304,7 +267,6 @@ def make_utc(dt):
     return dt
 
 def aware_utcnow():
-    print("make_utc",make_utc(datetime.utcnow()))
     return make_utc(datetime.utcnow())
 
 class GroupPermission(BasePermission):
