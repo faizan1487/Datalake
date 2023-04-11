@@ -9,7 +9,6 @@ import pandas as pd
 from django.conf import settings
 import os
 import shutil
-
 def json_to_csv(serialized_data,name):
     file_name = f"{name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
     # Build the full path to the media directory
@@ -288,3 +287,7 @@ def ubl_pay(q, start_date, end_date):
         queryset = UBL_IPG_Payment.objects.all()
         time_query = queryset.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
     return time_query
+
+
+
+

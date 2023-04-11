@@ -1,16 +1,17 @@
 from django.urls import path
 from .views import (GetUserDetails, UserRegistrationView,UserLoginView,UserProfileView,
                     UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,
-                    TokenRefreshView,UsersDelete,GetNoOfUsers, Navbar,AlnafiUser)
+                    TokenRefreshView,UsersDelete,GetNoOfUsers, Navbar,AlnafiUser,GetPayingUser)
 from django.http import HttpResponse
 
 urlpatterns = [
     path("", lambda req: HttpResponse(status=200)),
-    path('alnafiuser/',AlnafiUser.as_view(), name='alnafiuser'),
-    path('userdelete/', UsersDelete.as_view(), name='userdelete'),
+    path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
+    path('userdelete/', UsersDelete.as_view(), name='user-delete'),
     path('users/', GetUserDetails.as_view(), name='user-list'),
+    path('payingusers/', GetPayingUser.as_view(), name='paying-user'),
     path('nofusers/', GetNoOfUsers.as_view(), name='no-of-users'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     path('register/', UserRegistrationView.as_view()),
     path('login/', UserLoginView.as_view(),name='login'),
     path('logout/', User_logout,name='logout'),

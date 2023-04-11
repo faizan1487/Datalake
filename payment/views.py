@@ -2,7 +2,7 @@ from rest_framework import status
 from user.models import User
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
-                         AlNafiPaymentSerializer)
+                         AlNafiPaymentSerializer,PaymentCombinedSerializer)
 from .services import (easypaisa_pay, ubl_pay, stripe_pay, json_to_csv,stripe_no_payments,ubl_no_payments,easypaisa_no_payments,no_of_payments)
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -25,6 +25,11 @@ class MyPagination(PageNumberPagination):
 
 # delete this api before production
 class AlnafiPayment(APIView):
+    # def get(self,request):
+    #     alnafi_payment = AlNafi_Payment.objects.values('id', 'order_id', 'payment_id')
+    #     serializer = GetAlnafipaymentSerializer(alnafi_payment, many=True)
+    #     return Response(serializer.data)
+    
     def post(self, request):
         data = request.data
         serializer = AlNafiPaymentSerializer(data=data)
@@ -247,21 +252,12 @@ class RenewalNoOfPayments(APIView):
         
                
 #Creating API For Stripe Payments: 
-class GetStripePayments(APIView):
-    def get(self,request):
-        pay = Stripe_Payment.objects.all()
-        serializer = StripePaymentSerializer(pay,many=True)
-        return Response(serializer.data)
+# class GetAlnafiPayments(APIView):
+#     def get(self,request):
+#         alnafi_payment = AlNafi_Payment.objects.all()
+#         serializer = AlNafiPaymentSerializer(alnafi_payment,many=True)
+#         return Response(serializer.data)
     
-    def post(self, request):
-        data = request.data
-        serializer = StripePaymentSerializer(data=data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 #Creating API For ubl_ipg Payments:
 class GetUBLPayments(APIView):

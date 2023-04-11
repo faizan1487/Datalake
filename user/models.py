@@ -6,13 +6,12 @@ Permission,PermissionsMixin)
 
 #For MainSite (Al-Nafi) User:
 class AlNafi_User(models.Model):
-    id = models.IntegerField(primary_key=True)
     username = models.CharField(max_length=255, null=True, blank=True)
     first_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
-    phone = models.CharField(max_length=25, null=True, blank=True)
-    address = models.CharField(max_length=25, null=True, blank=True)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    address = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
     language = models.CharField(max_length=255, null=True, blank=True)
     verification_code = models.CharField(max_length=30, null=True, blank=True)

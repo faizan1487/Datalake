@@ -23,9 +23,9 @@ from datetime import datetime, timedelta, date
 from .models import AlNafi_User, IslamicAcademy_User,User, NavbarLink
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
-UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer)
+UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer)
 from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
-loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users)
+loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,islamic_Paying_user,alnafi_Paying_user)
 from .renderers import UserRenderer
 
 
@@ -130,6 +130,64 @@ class GetUserDetails(APIView):
                     serializer.append(serializer_class(obj).data)
                 return paginator.get_paginated_response(serializer)
 
+
+class GetPayingUser(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    required_group = 'Support'
+    def get(self, request):
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
+        source = self.request.GET.get('source', None) or None
+        export = self.request.GET.get('export', None) or None
+        isPaying = self.request.GET.get('ispaying', None) or None
+        
+        if source == 'islamicacademyuser':
+            obj = islamic_Paying_user(start_date, end_date,isPaying)
+            serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
+            for i in range(len(serializer.data)):
+                serializer.data[i]['payment_boolean_value'] = obj['payment_boolean_value'][i]
+
+            paginator = MyPagination()
+            paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+            return paginator.get_paginated_response(paginated_queryset)
+            
+            
+        elif source =='alnafiuser':
+            obj = alnafi_Paying_user(start_date, end_date,isPaying)
+            serializer = AlnafiUserSerializer(obj['paying_users'], many=True)
+            for i in range(len(serializer.data)):
+                serializer.data[i]['payment_boolean_value'] = obj['payment_boolean_value'][i]
+            paginator = MyPagination()
+            paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+            return paginator.get_paginated_response(paginated_queryset)
+        else:
+            islamic_users = islamic_Paying_user(start_date, end_date,isPaying)
+            alnafi_users = alnafi_Paying_user(start_date, end_date,isPaying)
+            alnafi_serialized_data = AlnafiUserSerializer(alnafi_users['paying_users'], many=True)
+            islamic_serialized_data = IslamicAcademyUserSerializer(islamic_users['paying_users'], many=True)
+            combined_data = {
+                'data1': alnafi_serialized_data.data,
+                'data2': islamic_serialized_data.data,
+            }
+            
+            serialized_data = UsersCombinedSerializer(combined_data).data
+            print(serialized_data.keys())
+            for i in range(len(serialized_data['data1'])):
+                serialized_data['data1'][i]['payment_boolean_value'] = alnafi_users['payment_boolean_value'][i]
+            for i in range(len(serialized_data['data2'])):
+                serialized_data['data2'][i]['payment_boolean_value'] = islamic_users['payment_boolean_value'][i]
+            
+            paginator = MyPagination()
+            paginated_queryset = paginator.paginate_queryset(serialized_data, request)
+            return paginator.get_paginated_response(paginated_queryset)
+
+        
+            
+
+
+
+    
 class GetNoOfUsers(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
