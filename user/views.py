@@ -69,7 +69,7 @@ class GetUserDetails(APIView):
 
         if source == 'alnafiuser':
             obj = alnafi_user(q, start_date, end_date, isPaying)
-            if export =='true':
+            if export =='True':
                 serializer = AlnafiUserSerializer(obj, many=True)
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
@@ -84,7 +84,7 @@ class GetUserDetails(APIView):
                 return paginator.get_paginated_response(serializer.data)
         elif source =='islamicacademyuser':
             obj = islamic_user(q, start_date, end_date, isPaying)
-            if export =='true':
+            if export =='True':
                 serializer = IslamicAcademyUserSerializer(obj, many=True)
                 file_name = f"Islamic_Academy_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
@@ -98,7 +98,7 @@ class GetUserDetails(APIView):
                 serializer = IslamicAcademyUserSerializer(paginated_queryset,many=True)
                 return paginator.get_paginated_response(serializer.data)
         else:
-            if export == 'true':
+            if export == 'True':
                 alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
                 islamic_obj = islamic_user(q, start_date, end_date,isPaying)
                 alnafi_serializer = AlnafiUserSerializer(alnafi_obj, many=True)
@@ -146,7 +146,7 @@ class GetPayingUser(APIView):
         if source == 'islamicacademyuser':
             obj = islamic_Paying_user(isPaying,exact,date)
             serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
-            if export =='true':
+            if export =='True':
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -164,7 +164,7 @@ class GetPayingUser(APIView):
         elif source =='alnafiuser':
             obj = alnafi_Paying_user(isPaying, exact, date)
             serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
-            if export =='true':
+            if export =='True':
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -183,7 +183,7 @@ class GetPayingUser(APIView):
             alnafi_users = alnafi_Paying_user(isPaying,exact,date)
             alnafi_serialized_data = AlnafiUserSerializer(alnafi_users['paying_users'], many=True)
             islamic_serialized_data = IslamicAcademyUserSerializer(islamic_users['paying_users'], many=True)
-            if export == 'true':
+            if export == 'True':
                 df1 = pd.DataFrame(alnafi_serialized_data.data)
                 df2 = pd.DataFrame(islamic_serialized_data.data)
                 # Merge dataframes
