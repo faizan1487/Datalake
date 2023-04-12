@@ -213,7 +213,6 @@ class NoOfPayments(APIView):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
-        export = self.request.GET.get('export', None) or None
         
         if source=='stripe':
             response_data = stripe_no_payments(start_date,end_date)
@@ -239,7 +238,6 @@ class RenewalNoOfPayments(APIView):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
-        export = self.request.GET.get('export', None) or None
         
         if source:
             queryset = AlNafi_Payment.objects.filter(source__iexact=source)

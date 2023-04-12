@@ -48,7 +48,8 @@ CORS_ALLOWED_ORIGINS = [
     "https://sub.example.com",
     "http://localhost:3000",
     "http://127.0.0.1:9000",
-    'https://stage-api-al-baseer.alnafi.com'
+    'https://stage-api-al-baseer.alnafi.com',
+    'http://ec2-34-194-10-51.compute-1.amazonaws.com/'
 ]
 
 CORS_ALLOW_METHODS = [
@@ -136,6 +137,7 @@ if DEBUG:
     }
 else:
     # print("RDS CONNECTED")
+    
     DATABASES = {
         'default': {
             'ENGINE': env("DATABASE_ENGINE"),
@@ -149,7 +151,7 @@ else:
             }
         }
     }
-
+print(DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators

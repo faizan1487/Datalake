@@ -214,9 +214,9 @@ class GetNoOfUsers(APIView):
     required_group = 'Support'
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
-        end_date = self.request.GET.get('end_date', None) or None
-            
+        end_date = self.request.GET.get('end_date', None) or None   
         source = self.request.GET.get('source', None) or None 
+        
         if source == 'alnafiuser':
             response_data = alnafi_no_users(start_date, end_date)                
         elif source == 'islamicacademyuser':
