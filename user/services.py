@@ -283,31 +283,52 @@ class GroupPermission(BasePermission):
                 }
             raise PermissionDenied(data)
 
+# def paying_users_details(query_time, isPaying):
+#     paying_users = []
+#     for user in query_time:
+#         pay_users = []
+#         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
+#         easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+#         stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
+#         pay_users.append(ubl_user)
+#         pay_users.append(easypaisa_user)
+#         pay_users.append(stripe_user)
+#         for pay_user in pay_users:
+#             if isPaying: 
+#                 for p_user in pay_user:
+#                     if isPaying:
+#                         if p_user.customer_email == user.email:
+#                             paying_users.append(user)
+#                         else:
+#                             paying_users.append(user)
+#                     else:
+#                         if p_user.customer_email != user.email:
+#                             paying_users.append(user)
+#             else:
+#                 return query_time
+#     # print(paying_users)                
+#     return paying_users
+
+
 def paying_users_details(query_time, isPaying):
-    paying_users = []
-    for user in query_time:
-        pay_users = []
-        ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-        easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-        stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
-        pay_users.append(ubl_user)
-        pay_users.append(easypaisa_user)
-        pay_users.append(stripe_user)
-        for pay_user in pay_users:
-            if isPaying: 
-                for p_user in pay_user:
-                    if isPaying:
-                        if p_user.customer_email == user.email:
-                            paying_users.append(user)
-                        else:
-                            paying_users.append(user)
-                    else:
-                        if p_user.customer_email != user.email:
-                            paying_users.append(user)
+    if isPaying:
+        paying_users = []
+        for user in query_time:
+            ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
+            easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+            stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
+            
+            if isPaying == 'True':
+                if ubl_user or easypaisa_user or stripe_user:
+                    paying_users.append(user)
             else:
-                return query_time
-    # print(paying_users)                
-    return paying_users
+                if ubl_user or easypaisa_user or stripe_user:
+                    pass
+                else:
+                    paying_users.append(user)
+        return paying_users
+    else:
+        return query_time
 
 
 def paying_user(query_time, isPaying):
