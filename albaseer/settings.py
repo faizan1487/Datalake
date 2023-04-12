@@ -232,7 +232,7 @@ CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2
 if DEBUG:
     STATIC_URL = '/static/'
 else:
-    STATIC_URL = env("S3_STATIC_URL")
+    STATIC_URL = env("S3_BUCKET")
 
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")

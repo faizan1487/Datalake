@@ -145,7 +145,7 @@ class GetPayingUser(APIView):
 
         if source == 'islamicacademyuser':
             obj = islamic_Paying_user(isPaying,exact,date)
-            serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
+            serializer = IslamicAcademyUserSerializer(obj, many=True)
             if export =='True':
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
@@ -154,16 +154,13 @@ class GetPayingUser(APIView):
                 data = {'file_link': file_path}
                 return Response(data)
             else:
-                for i in range(len(serializer.data)):
-                    serializer.data[i]['payment_boolean_value'] = obj['payment_boolean_value'][i]
-
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(serializer.data, request)
                 return paginator.get_paginated_response(paginated_queryset)
             
         elif source =='alnafiuser':
             obj = alnafi_Paying_user(isPaying, exact, date)
-            serializer = IslamicAcademyUserSerializer(obj['paying_users'], many=True)
+            serializer = AlnafiUserSerializer(obj['paying_users'], many=True)
             if export =='True':
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
@@ -174,15 +171,15 @@ class GetPayingUser(APIView):
                 return Response(data)
             else:
                 for i in range(len(serializer.data)):
-                    serializer.data[i]['payment_boolean_value'] = obj['payment_boolean_value'][i]
+                    serializer.data[i]['is_paying'] = obj['is_paying'][i]
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-                return paginator.get_paginated_response(paginated_queryset)
+                return paginator.get_paginated_response(paginated_queryset)                
         else:
             islamic_users = islamic_Paying_user(isPaying,exact,date)
             alnafi_users = alnafi_Paying_user(isPaying,exact,date)
             alnafi_serialized_data = AlnafiUserSerializer(alnafi_users['paying_users'], many=True)
-            islamic_serialized_data = IslamicAcademyUserSerializer(islamic_users['paying_users'], many=True)
+            islamic_serialized_data = IslamicAcademyUserSerializer(islamic_users, many=True)
             if export == 'True':
                 df1 = pd.DataFrame(alnafi_serialized_data.data)
                 df2 = pd.DataFrame(islamic_serialized_data.data)
@@ -200,9 +197,7 @@ class GetPayingUser(APIView):
                 }
                 serialized_data = UsersCombinedSerializer(combined_data).data
                 for i in range(len(serialized_data['data1'])):
-                    serialized_data['data1'][i]['payment_boolean_value'] = alnafi_users['payment_boolean_value'][i]
-                for i in range(len(serialized_data['data2'])):
-                    serialized_data['data2'][i]['payment_boolean_value'] = islamic_users['payment_boolean_value'][i]
+                    serialized_data['data1'][i]['is_paying'] = alnafi_users['is_paying'][i]
                 combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2']))
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(combined_queryset, request)

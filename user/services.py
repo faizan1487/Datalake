@@ -10,7 +10,8 @@ from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
 from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer    
-    
+import threading
+
 def islamic_Paying_user(isPaying, exact,date):
     if date:
         pass
@@ -21,12 +22,17 @@ def islamic_Paying_user(isPaying, exact,date):
         date = new_date_obj
     
     if exact =='True':
-        query_time = IslamicAcademy_User.objects.filter(created_at__date=date)
+        queryset = IslamicAcademy_User.objects.filter(created_at__date=date)
     else:   
-        query_time = IslamicAcademy_User.objects.filter(created_at__date__gte=date) 
+        queryset = IslamicAcademy_User.objects.filter(created_at__date__gte=date) 
         
-    paying_user_queryset = paying_user(query_time, isPaying)
-    return paying_user_queryset
+    if isPaying == 'True':
+        queryset = queryset.filter(is_paying_customer=True)
+        return queryset
+    elif isPaying == 'False':
+        queryset = queryset.filter(is_paying_customer=False)    
+        return queryset
+    return queryset
         
 
 def alnafi_Paying_user(isPaying, exact, date):
@@ -283,41 +289,13 @@ class GroupPermission(BasePermission):
                 }
             raise PermissionDenied(data)
 
-# def paying_users_details(query_time, isPaying):
-#     paying_users = []
-#     for user in query_time:
-#         pay_users = []
-#         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-#         easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-#         stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
-#         pay_users.append(ubl_user)
-#         pay_users.append(easypaisa_user)
-#         pay_users.append(stripe_user)
-#         for pay_user in pay_users:
-#             if isPaying: 
-#                 for p_user in pay_user:
-#                     if isPaying:
-#                         if p_user.customer_email == user.email:
-#                             paying_users.append(user)
-#                         else:
-#                             paying_users.append(user)
-#                     else:
-#                         if p_user.customer_email != user.email:
-#                             paying_users.append(user)
-#             else:
-#                 return query_time
-#     # print(paying_users)                
-#     return paying_users
-
-
 def paying_users_details(query_time, isPaying):
     if isPaying:
         paying_users = []
         for user in query_time:
             ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
             easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-            stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
-            
+            stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)        
             if isPaying == 'True':
                 if ubl_user or easypaisa_user or stripe_user:
                     paying_users.append(user)
@@ -333,21 +311,69 @@ def paying_users_details(query_time, isPaying):
 
 def paying_user(query_time, isPaying):
     paying_users = []
-    payment_boolean_value = []
+    is_paying = []
     for user in query_time:
-        ubl_user = list(UBL_IPG_Payment.objects.filter(customer_email=user.email))
-        easypaisa_user = list(Easypaisa_Payment.objects.filter(customer_email=user.email))
-        stripe_user = list(Stripe_Payment.objects.filter(customer_email=user.email))
+        ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
+        easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+        stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
         # for payment in ubl_user:
         if ubl_user or easypaisa_user or stripe_user:
             paying_users.append(user)
-            payment_boolean_value.append('True')
+            is_paying.append('True')
         else:
             paying_users.append(user)
-            payment_boolean_value.append('False')
-            
+            is_paying.append('False')
             
     response = {"paying_users":paying_users,
-                "payment_boolean_value": payment_boolean_value
-                }
+                "is_paying": is_paying}
+    
+    print(response['paying_users'])
     return response
+
+
+# def paying_user(query_time, isPaying):
+#     paying_users = []
+#     is_paying = []
+#     def process_user(user):
+#         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
+#         # for payment in ubl_user:
+#         if ubl_user:
+#             paying_users.append(user)
+#             is_paying.append('True')
+#         else:
+#             paying_users.append(user)
+#             is_paying.append('False')
+#     def process_user2(user):
+#         easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+#         # for payment in ubl_user:
+#         if easypaisa_user:
+#             paying_users.append(user)
+#             is_paying.append('True')
+#         else:
+#             paying_users.append(user)
+#             is_paying.append('False')
+    
+#     def process_user3(user):
+#         stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
+#         # for payment in ubl_user:
+#         if stripe_user:
+#             paying_users.append(user)
+#             is_paying.append('True')
+#         else:
+#             paying_users.append(user)
+#             is_paying.append('False')
+            
+#     # Create a list of threads
+#     threads = []
+
+#     # Iterate over the users and create a thread for each user
+#     for user in query_time:
+#         threading.Thread(target=process_user, args=(user,)).start()
+#         threading.Thread(target=process_user2, args=(user,)).start()
+#         threading.Thread(target=process_user3, args=(user,)).start()
+    
+        
+#     response = {"paying_users":paying_users,
+#                 "is_paying": is_paying
+#                 }
+#     return response

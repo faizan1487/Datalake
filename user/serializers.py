@@ -14,8 +14,7 @@ from django.contrib.auth.models import Group
 class AlnafiUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AlNafi_User
-        fields = '__all__'
-
+        fields = ('username','first_name','last_name','email','phone','isAffiliate','isMentor','country','created_at',)
     def create(self,validated_data):
       email = validated_data.get("email")
       
@@ -40,7 +39,7 @@ class AlnafiUserSerializer(serializers.ModelSerializer):
 class IslamicAcademyUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = IslamicAcademy_User
-        fields = '__all__'
+        fields = ('username','first_name','last_name','email','phone','is_paying_customer','created_at',)
         
 #For albaseer users        
 class UserRegistrationSerializer(serializers.ModelSerializer):
