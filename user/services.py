@@ -20,7 +20,6 @@ def islamic_Paying_user(isPaying, exact,date):
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         date = new_date_obj
-    
     if exact =='True':
         queryset = IslamicAcademy_User.objects.filter(created_at__date=date)
     else:   
@@ -42,16 +41,13 @@ def alnafi_Paying_user(isPaying, exact, date):
         first_user = AlNafi_User.objects.first()
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-        date = new_date_obj
-        
+        date = new_date_obj    
     if exact =='True':
         query_time = AlNafi_User.objects.filter(created_at__date=date)
     else:  
         query_time = AlNafi_User.objects.filter(created_at__date__gte=date)
     paying_user_queryset = paying_user(query_time, isPaying)
     return paying_user_queryset
-
-
 
 def alnafi_user(q, start_date, end_date, isPaying):
     if start_date:
@@ -129,7 +125,6 @@ def alnafi_no_users(start_date,end_date):
             pass
     else:
         first_user = AlNafi_User.objects.first()
-        print(type(first_user.created_at))
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = str(new_date_obj.date())
@@ -294,13 +289,15 @@ def paying_users_details(query_time, isPaying):
         paying_users = []
         for user in query_time:
             ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-            easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-            stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)        
+            # easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+            # stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)        
             if isPaying == 'True':
-                if ubl_user or easypaisa_user or stripe_user:
+                #  or easypaisa_user or stripe_user
+                if ubl_user:
                     paying_users.append(user)
             else:
-                if ubl_user or easypaisa_user or stripe_user:
+                #  or easypaisa_user or stripe_user
+                if ubl_user:
                     pass
                 else:
                     paying_users.append(user)
@@ -314,10 +311,11 @@ def paying_user(query_time, isPaying):
     is_paying = []
     for user in query_time:
         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-        easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-        stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
+        # easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+        # stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
         # for payment in ubl_user:
-        if ubl_user or easypaisa_user or stripe_user:
+        # or easypaisa_user or stripe_user
+        if ubl_user:
             paying_users.append(user)
             is_paying.append('True')
         else:
@@ -327,7 +325,6 @@ def paying_user(query_time, isPaying):
     response = {"paying_users":paying_users,
                 "is_paying": is_paying}
     
-    print(response['paying_users'])
     return response
 
 

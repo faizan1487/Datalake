@@ -167,7 +167,6 @@ class GetPayingUser(APIView):
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 pd.DataFrame(serializer.data).to_csv(file_path, index=False)
                 data = {'file_link': file_path}
-                print("data",data)
                 return Response(data)
             else:
                 for i in range(len(serializer.data)):

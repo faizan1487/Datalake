@@ -288,6 +288,3 @@ def ubl_pay(q, start_date, end_date):
         time_query = queryset.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
     return time_query
 
-
-
-
