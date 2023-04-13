@@ -32,8 +32,6 @@ if not DEBUG:
     }
 
 
-
-
 # Change date format (AM PM to hours time format)
 en_formats.DATE_FORMAT = 'Y-m-d'
 en_formats.TIME_FORMAT = 'H:i:s'
@@ -77,7 +75,6 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -132,7 +129,7 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 if DEBUG:
-    # print("SQL Lite CONNECTED")
+    print("SQL Lite CONNECTED")
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -239,6 +236,7 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static")
 MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
 
 if not DEBUG:
+    pass
     sentry_sdk.init(
     dsn="https://e09dae87954440acb4e0c0683b86a2c1@o1153820.ingest.sentry.io/4504926428528640",
     integrations=[
