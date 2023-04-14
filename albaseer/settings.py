@@ -232,7 +232,7 @@ if DEBUG:
     
 else:
     STATIC_URL = env("S3_BUCKET")
-    MEDIA_ROOT = env("S3_BUCKET")
+    MEDIA_ROOT = env("SE_MEDIA")
 
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")
