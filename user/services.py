@@ -64,13 +64,11 @@ def alnafi_user(q, start_date, end_date, isPaying):
         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
-    
     if q:
         queryset = AlNafi_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q))
         query_time = queryset.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
         paying_user_queryset = paying_users_details(query_time, isPaying)
-
     else:
         query_time = AlNafi_User.objects.filter(created_at__date__gte = start_date, created_at__date__lte = end_date)
         paying_user_queryset = paying_users_details(query_time, isPaying)

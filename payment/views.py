@@ -12,11 +12,14 @@ from datetime import datetime, timedelta, date
 from django.db.models import Q
 from django.http import HttpResponse
 from django.conf import settings
+from django.utils import timezone
 from django.contrib.auth.models import Group
 import os
 import pandas as pd
 from rest_framework.permissions import BasePermission
 from user.services import GroupPermission
+from products.models import  IslamicAcademy_Product, Alnafi_Product
+
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
@@ -41,8 +44,8 @@ class AlnafiPayment(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class SearchAlNafiPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
@@ -110,11 +113,9 @@ class SearchAlNafiPayments(APIView):
                 paginated_queryset = paginator.paginate_queryset(queryset, request)
                 alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
                 return paginator.get_paginated_response(alnafi_payments_serializer.data)
-
-
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
         query = self.request.GET.get('q', None) or None
@@ -204,7 +205,6 @@ class SearchPayments(APIView):
                     
                 return paginator.get_paginated_response(serializer)        
  
- 
 class NoOfPayments(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
@@ -290,3 +290,129 @@ class GetEasypaisaPayments(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    
+    
+class PaymentValidation(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    required_group = 'Sales'
+    def get(self, request):
+        # expiration = self.request.GET.get('expiration_date', None) or None
+        q = self.request.GET.get('q', None) or None
+        source = self.request.GET.get('source', None) or None
+        # exact = self.request.GET.get('exact', None) or None
+        export = self.request.GET.get('export', None) or None
+        
+        # create a datetime object for 24 hours ago
+        time_threshold = timezone.now() - timezone.timedelta(days=30)
+        time_threshold_str = time_threshold.strftime('%Y-%m-%d')
+        if source == 'ubl':
+            ubl_pay = UBL_IPG_Payment.objects.filter(order_datetime__date__gte=time_threshold_str)
+            # print(ubl_pay)
+            ubl_payments = []
+            valid_payments = []
+            for obj in ubl_pay:
+                valid_payment = True
+                ubl_payments.append(obj)
+                alnafi_product = Alnafi_Product.objects.filter(name=obj.product_name)
+                
+                # print("alnafi_product[0].amount_pkr ",type(alnafi_product[0].amount_pkr ))
+                # print("obj.amount", type(obj.amount))
+                if alnafi_product:
+                    if alnafi_product[0].amount_pkr == obj.amount:
+                        valid_payment = True
+                
+                #Get the latest alnafi payment
+                alnafi_payment = list(AlNafi_Payment.objects.filter(customer_email=obj.customer_email))
+                # print("alnafi_payment[0].expiration_datetime",alnafi_payment[0].expiration_datetime)
+                # print("alnafi_payment[0].expiration_datetime+timedelta(days=380)",alnafi_payment[0].expiration_datetime+timedelta(days=380))
+                # print("alnafi_payment[0].expiration_datetime",type(alnafi_payment[0].expiration_datetime))
+                if alnafi_payment:
+                    if obj.product_name == alnafi_payment[0].product_name:
+                        valid_payment = True
+                    else:
+                        valid_payment = False
+                        # print("obj id", obj.id)
+                        # print("false product name")
+                        # print("obj.product_name",obj.product_name)
+                        # print("alnafi_payment[0].product_name",alnafi_payment[0].product_name)
+                    
+                    tolerance = timedelta(days=1)
+                    if obj.order_datetime.date()>=alnafi_payment[0].order_datetime.date() - tolerance and obj.order_datetime.date()<=alnafi_payment[0].order_datetime.date() + tolerance:
+                        valid_payment = True
+                    else:
+                        valid_payment = False
+                        # print("obj id", obj.id)
+                        # print("false order datetime")
+                        # print("obj.order_datetime",obj.order_datetime)
+                        # print("alnafi_payment[0].order_datetime",alnafi_payment[0].order_datetime)
+                    if alnafi_product:
+                        # print("alnafi producr exists")
+                        # print("alnafi_product[0].plan",alnafi_product[0].plan)
+                        if alnafi_product[0].plan == 'Yearly':
+                            print("plan is yearly")
+                            tolerance = timedelta(days=15)
+                            expiry_date = alnafi_payment[0].expiration_datetime
+                            expected_expiry = alnafi_payment[0].order_datetime+timedelta(days=380)-tolerance
+                            # print("expiry_date",expiry_date)
+                            # print("expected_expiry - tolerance",expected_expiry)
+                            # print("expected_expiry + tolerance", alnafi_payment[0].order_datetime+timedelta(days=380) + tolerance)
+                            if expiry_date >= expected_expiry and expiry_date <= alnafi_payment[0].order_datetime+timedelta(days=380) + tolerance:
+                                print("corrent expirt date")
+                                valid_payment = True
+                            else:
+                                # print("obj id", obj.id)
+                                # print("false expiry date")
+                                # print("expiry_date",expiry_date)
+                                # print("expected_expiry - tolerance",expected_expiry)
+                                # print("expected_expiry + tolerance", alnafi_payment[0].order_datetime+timedelta(days=380) + tolerance)
+                                valid_payment = False
+                        if alnafi_product[0].plan == 'Half Yearly':
+                            print(alnafi_product[0].plan)
+                            tolerance = timedelta(days=10)
+                            expiry_date = alnafi_payment[0].expiration_datetime
+                            expected_expiry = alnafi_payment[0].order_datetime+timedelta(days=180)-tolerance
+                            if expiry_date >= expected_expiry and expiry_date <= alnafi_payment[0].order_datetime+timedelta(days=180) + tolerance:
+                                print("corrent expirt date")
+                                valid_payment = True
+                            else:
+                                print("false expiry")
+                                valid_payment = False
+                        
+                        if alnafi_product[0].plan == 'Quarterly':
+                            print(alnafi_product[0].plan)
+                            tolerance = timedelta(days=7)
+                            expiry_date = alnafi_payment[0].expiration_datetime
+                            expected_expiry = alnafi_payment[0].order_datetime+timedelta(days=90)-tolerance
+                            if expiry_date >= expected_expiry and expiry_date <= alnafi_payment[0].order_datetime+timedelta(days=90) + tolerance:
+                                print("corrent expirt date")
+                                valid_payment = True
+                            else:
+                                print("false expiry")
+                                valid_payment = False
+                                
+                        if alnafi_product[0].plan == 'Monthly':
+                            print(alnafi_product[0].plan)
+                            tolerance = timedelta(days=5)
+                            expiry_date = alnafi_payment[0].expiration_datetime
+                            expected_expiry = alnafi_payment[0].order_datetime+timedelta(days=30)-tolerance
+                            if expiry_date >= expected_expiry and expiry_date <= alnafi_payment[0].order_datetime+timedelta(days=30) + tolerance:
+                                print("corrent expirt date")
+                                valid_payment = True
+                            else:
+                                print("false expiry")
+                                valid_payment = False
+                
+                    valid_payments.append(valid_payment)
+                
+                # print(ubl_payments)
+                serializer = Ubl_Ipg_PaymentsSerializer(ubl_payments, many=True)
+                # print(serializer.data)
+                # print(ubl_payments)
+                # print(valid_payments)
+                for i in range(len(serializer.data)):
+                    serializer.data[i]['is_valid_payment'] = valid_payments[i]
+                response_data = {"payments":serializer.data,"valid_payments":valid_payments}
+                
+            return Response(response_data)
