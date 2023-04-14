@@ -33,8 +33,8 @@ class Migration(migrations.Migration):
                 'managed': True,
             },
         ),
-        migrations.RenameModel(
-            old_name='User',
-            new_name='User1'
-        ),
+        # migrations.RenameModel(
+        #     old_name='User',
+        #     new_name='User1'
+        # ),
     ]
