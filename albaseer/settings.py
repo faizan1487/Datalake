@@ -226,13 +226,13 @@ CSRF_COOKIE_HTTPONLY = True
 CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io']
 
 
-if DEBUG:
-    STATIC_URL = '/static/'
-    MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
+# if DEBUG:
+#     STATIC_URL = '/static/'
+#     MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
     
-else:
-    STATIC_URL = env("S3_BUCKET")
-    MEDIA_ROOT = env("SE_MEDIA")
+# else:
+STATIC_URL = env("S3_BUCKET")
+MEDIA_ROOT = env("SE_MEDIA")
 
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static")

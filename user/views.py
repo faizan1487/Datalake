@@ -70,13 +70,16 @@ class GetUserDetails(APIView):
         if source == 'alnafiuser':
             obj = alnafi_user(q, start_date, end_date, isPaying)
             if export =='True':
-                serializer = AlnafiUserSerializer(obj, many=True)
-                file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                # Build the full path to the media directory
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                pd.DataFrame(serializer.data).to_csv(file_path, index=False)
-                data = {'file_link': file_path}
-                return Response(data)
+                try:
+                    serializer = AlnafiUserSerializer(obj, many=True)
+                    file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                    # Build the full path to the media directory
+                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                    pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                    data = {'file_link': file_path}
+                    return Response(data)
+                except exception as e:
+                    print(e)
             else:
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(obj, request)
@@ -109,9 +112,12 @@ class GetUserDetails(APIView):
 
                 # Merge dataframes
                 file_name = f"USERS_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 merged_df = pd.concat([df1, df2], axis=1)
-                merged_df.to_csv(file_path, index=False)
+                try:
+                    merged_df.to_csv(file_name, index=False)
+                except Exception as e:
+                    pass
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 data = {'file_link': file_path}
                 return Response(data)
             else:
@@ -122,7 +128,6 @@ class GetUserDetails(APIView):
                         AlNafi_User: AlnafiUserSerializer,
                         IslamicAcademy_User: IslamicAcademyUserSerializer,
                     }
-
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(queryset, request)
                 serializer = []
@@ -142,7 +147,6 @@ class GetPayingUser(APIView):
         isPaying = self.request.GET.get('ispaying', None) or None
         exact = self.request.GET.get('exact', None) or None
         date = self.request.GET.get('date', None) or None
-
         if source == 'islamicacademyuser':
             obj = islamic_Paying_user(isPaying,exact,date)
             serializer = IslamicAcademyUserSerializer(obj, many=True)
@@ -157,7 +161,6 @@ class GetPayingUser(APIView):
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(serializer.data, request)
                 return paginator.get_paginated_response(paginated_queryset)
-            
         elif source =='alnafiuser':
             obj = alnafi_Paying_user(isPaying, exact, date)
             serializer = AlnafiUserSerializer(obj['paying_users'], many=True)
@@ -389,6 +392,7 @@ class Navbar(APIView):
         support = Group.objects.get(name='Support')
         support_user = User.objects.filter(groups__name=support.name, email__iexact=user.email)
         sales_user = User.objects.filter(groups__name=sales.name, email__iexact=user.email)
+        # if support_user and
         if support_user:
             obj = NavbarLink.objects.filter(group='Support')
         elif sales_user:
