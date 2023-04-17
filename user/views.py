@@ -25,10 +25,13 @@ from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, Us
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer)
 from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
-loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,islamic_Paying_user,alnafi_Paying_user)
+loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,islamic_Paying_user,alnafi_Paying_user,upload_csv_to_s3)
 from .renderers import UserRenderer
 from itertools import chain
+import environ
 
+env = environ.Env()
+env.read_env()
 
 # Create your views here.
 class MyPagination(PageNumberPagination):
@@ -75,11 +78,13 @@ class GetUserDetails(APIView):
                     file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                    df = pd.DataFrame(serializer.data)
+                    df_str = df.to_csv(index=False)
+                    s3 = upload_csv_to_s3(df_str,file_name)
                     data = {'file_link': file_path}
                     return Response(data)
-                except exception as e:
-                    print(e)
+                except Exception as e:
+                    return Response(e)
             else:
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(obj, request)
@@ -88,13 +93,18 @@ class GetUserDetails(APIView):
         elif source =='islamicacademyuser':
             obj = islamic_user(q, start_date, end_date, isPaying)
             if export =='True':
-                serializer = IslamicAcademyUserSerializer(obj, many=True)
-                file_name = f"Islamic_Academy_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                # Build the full path to the media directory
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                pd.DataFrame(serializer.data).to_csv(file_path, index=False)
-                data = {'file_link': file_path}
-                return Response(data)
+                try:
+                    serializer = IslamicAcademyUserSerializer(obj, many=True)
+                    file_name = f"Islamic_Academy_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                    # Build the full path to the media directory
+                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                    df = pd.DataFrame(serializer.data).to_csv(index=False)
+                    # df_str = df.to_csv(index=False)
+                    s3 = upload_csv_to_s3(df,file_name)
+                    data = {'file_link': file_path}
+                    return Response(data)
+                except Exception as e:
+                    return Response(e)
             else:
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(obj, request)
@@ -106,17 +116,14 @@ class GetUserDetails(APIView):
                 islamic_obj = islamic_user(q, start_date, end_date,isPaying)
                 alnafi_serializer = AlnafiUserSerializer(alnafi_obj, many=True)
                 islamic_serializer = IslamicAcademyUserSerializer(islamic_obj, many=True)
-
                 df1 = pd.DataFrame(alnafi_serializer.data)
                 df2 = pd.DataFrame(islamic_serializer.data)
-
                 # Merge dataframes
                 file_name = f"USERS_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                merged_df = pd.concat([df1, df2], axis=1)
-                try:
-                    merged_df.to_csv(file_name, index=False)
-                except Exception as e:
-                    pass
+                merged_df = pd.concat([df1, df2], axis=1).to_csv(index=False)
+                print(type(merged_df))
+                # print(merged_df)
+                s3 = upload_csv_to_s3(merged_df,file_name)
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 data = {'file_link': file_path}
                 return Response(data)
@@ -154,7 +161,8 @@ class GetPayingUser(APIView):
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                df = pd.DataFrame(serializer.data).to_csv(index=False)
+                s3 = upload_csv_to_s3(df,file_name)
                 data = {'file_link': file_path}
                 return Response(data)
             else:
@@ -168,7 +176,8 @@ class GetPayingUser(APIView):
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                df = pd.DataFrame(serializer.data).to_csv(file_path, index=False)
+                s3 = upload_csv_to_s3(df,file_name)
                 data = {'file_link': file_path}
                 return Response(data)
             else:
@@ -188,8 +197,8 @@ class GetPayingUser(APIView):
                 # Merge dataframes
                 file_name = f"USERS_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                merged_df = pd.concat([df1, df2], axis=1)
-                merged_df.to_csv(file_path, index=False)
+                merged_df = pd.concat([df1, df2], axis=1).to_csv(index=False)
+                s3 = upload_csv_to_s3(merged_df,file_name)
                 data = {'file_link': file_path}
                 return Response(data)
             else:

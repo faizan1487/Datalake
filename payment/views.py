@@ -54,7 +54,8 @@ class SearchAlNafiPayments(APIView):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
         exact = self.request.GET.get('exact', None) or None
-        export = self.request.GET.get('export', None) or None        
+        export = self.request.GET.get('export', None) or None 
+        plan = self.request.GET.get('plan', None) or None        
         if q:
             queryset = AlNafi_Payment.objects.filter(
                 Q(customer_email__iexact=q) | Q(product_name__icontains=q)
@@ -63,6 +64,9 @@ class SearchAlNafiPayments(APIView):
             queryset = AlNafi_Payment.objects.all()            
         if source:
             queryset = queryset.filter(source__iexact=source)
+            
+        
+        
         if expiration:
             if exact=='True':
                 expiration_date = date.today() + timedelta(days=int(expiration))
@@ -305,19 +309,21 @@ class PaymentValidation(APIView):
         if source == 'ubl':
             ubl_pay = ubl_payment_validation(time_threshold_str,q)
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(ubl_pay.data, request)
+            print(ubl_pay)
+            paginated_queryset = paginator.paginate_queryset(ubl_pay['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
         
         elif source == 'easypaisa':
-            easypaisa_pay = easypaisa_payment_validation(time_threshold_str,q)   
+            easypaisa_pay = easypaisa_payment_validation(time_threshold_str,q)  
+            print(easypaisa_pay) 
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(easypaisa_pay.data, request)
+            paginated_queryset = paginator.paginate_queryset(easypaisa_pay['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
             # return Response(response_data)  
         elif source == 'stripe':
             stripe_pay = stripe_payment_validation(time_threshold_str,q)
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(stripe_pay.data, request)
+            paginated_queryset = paginator.paginate_queryset(stripe_pay['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
             # return Response(response_data)
         else:
@@ -326,14 +332,25 @@ class PaymentValidation(APIView):
             stripe_pay = stripe_payment_validation(time_threshold_str,q)
                         
             combined_data = {
-                    'data1': stripe_pay.data,
-                    'data2': ubl_pay.data,
-                    'data3': easypaisa_pay.data,
+                    'data1': stripe_pay['payments'].data,
+                    'data2': ubl_pay['payments'].data,
+                    'data3': easypaisa_pay['payments'].data,
                 }
             
             serialized_data = PaymentCombinedSerializer(combined_data).data
+            
+            for i in range(len(serialized_data['data1'])):
+                serialized_data['data1']['is_valid_payment'] = stripe_pay['valid_payments'][i]
+            
+            for i in range(len(serialized_data['data2'])):
+                serialized_data['data2']['is_valid_payment'] = ubl_pay['valid_payments'][i]
+                
+            for i in range(len(serialized_data['data3'])):
+                serialized_data['data3']['is_valid_payment'] = easypaisa_pay['valid_payments'][i]
+                
+                
+                                
             combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2'],serialized_data['data3']))
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(combined_queryset, request)
             return paginator.get_paginated_response(paginated_queryset)
-           

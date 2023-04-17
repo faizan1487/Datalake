@@ -11,6 +11,19 @@ from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
 from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer    
 import threading
+import boto3
+import environ
+
+env = environ.Env()
+env.read_env()
+
+def upload_csv_to_s3(df,file_name):
+    s3 = boto3.client('s3')
+    bucket_name = env("AWS_STORAGE_BUCKET_NAME")
+    object_name = file_name
+    upload_to_s3 = s3.put_object(Bucket=bucket_name, Key=object_name, Body=df)
+    return s3
+
 
 def islamic_Paying_user(isPaying, exact,date):
     if date:
