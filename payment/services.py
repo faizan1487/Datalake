@@ -430,7 +430,7 @@ def ubl_payment_validation(time_threshold_str,q):
                     # print("alnafi producr exists")
                     # print("alnafi_product[0].plan",alnafi_product[0].plan)
                     if alnafi_product[0].plan == 'Yearly':
-                        print("plan is yearly")
+                        # print("plan is yearly")
                         tolerance = timedelta(days=15)
                         expiry_date = alnafi_payment[0].expiration_datetime
                         expected_expiry = alnafi_payment[0].order_datetime+timedelta(days=380)-tolerance
@@ -438,7 +438,7 @@ def ubl_payment_validation(time_threshold_str,q):
                         # print("expected_expiry - tolerance",expected_expiry)
                         # print("expected_expiry + tolerance", alnafi_payment[0].order_datetime+timedelta(days=380) + tolerance)
                         if expiry_date >= expected_expiry and expiry_date <= alnafi_payment[0].order_datetime+timedelta(days=380) + tolerance:
-                            print("corrent expirt date")
+                            # print("corrent expirt date")
                             valid_payment = True
                         else:
                             # print("obj id", obj.id)
@@ -448,39 +448,39 @@ def ubl_payment_validation(time_threshold_str,q):
                             # print("expected_expiry + tolerance", alnafi_payment[0].order_datetime+timedelta(days=380) + tolerance)
                             valid_payment = False
                     if alnafi_product[0].plan == 'Half Yearly':
-                        print(alnafi_product[0].plan)
+                        # print(alnafi_product[0].plan)
                         tolerance = timedelta(days=10)
                         expiry_date = alnafi_payment[0].expiration_datetime
                         expected_expiry = alnafi_payment[0].order_datetime+timedelta(days=180)-tolerance
                         if expiry_date >= expected_expiry and expiry_date <= alnafi_payment[0].order_datetime+timedelta(days=180) + tolerance:
-                            print("corrent expirt date")
+                            # print("corrent expirt date")
                             valid_payment = True
                         else:
-                            print("false expiry")
+                            # print("false expiry")
                             valid_payment = False
                     
                     if alnafi_product[0].plan == 'Quarterly':
-                        print(alnafi_product[0].plan)
+                        # print(alnafi_product[0].plan)
                         tolerance = timedelta(days=7)
                         expiry_date = alnafi_payment[0].expiration_datetime
                         expected_expiry = alnafi_payment[0].order_datetime+timedelta(days=90)-tolerance
                         if expiry_date >= expected_expiry and expiry_date <= alnafi_payment[0].order_datetime+timedelta(days=90) + tolerance:
-                            print("corrent expirt date")
+                            # print("corrent expirt date")
                             valid_payment = True
                         else:
-                            print("false expiry")
+                            # print("false expiry")
                             valid_payment = False
                             
                     if alnafi_product[0].plan == 'Monthly':
-                        print(alnafi_product[0].plan)
+                        # print(alnafi_product[0].plan)
                         tolerance = timedelta(days=5)
                         expiry_date = alnafi_payment[0].expiration_datetime
                         expected_expiry = alnafi_payment[0].order_datetime+timedelta(days=30)-tolerance
                         if expiry_date >= expected_expiry and expiry_date <= alnafi_payment[0].order_datetime+timedelta(days=30) + tolerance:
-                            print("corrent expirt date")
+                            # print("corrent expirt date")
                             valid_payment = True
                         else:
-                            print("false expiry")
+                            # print("false expiry")
                             valid_payment = False
             
                 valid_payments.append(valid_payment)
@@ -637,7 +637,7 @@ def stripe_payment_validation(time_threshold_str,q):
     if q:
         stripe_pay = stripe_pay.filter(customer_email__iexact=q)
     
-    print("stripepay",stripe_pay)
+    # print("stripepay",stripe_pay)
     stripe_payments = []
     valid_payments = [] 
     if stripe_pay:
@@ -649,7 +649,7 @@ def stripe_payment_validation(time_threshold_str,q):
             # print("alnafiproduct", alnafi_product)
             # print("obj.amount", type(obj.amount))
             if alnafi_product:
-                print("alnafi_product[0].amount_usd ",type(alnafi_product[0].amount_usd))
+                # print("alnafi_product[0].amount_usd ",type(alnafi_product[0].amount_usd))
                 if alnafi_product[0].amount_usd == obj.amount:
                     valid_payment = True
             

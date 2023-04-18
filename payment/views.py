@@ -217,9 +217,9 @@ class SearchPayments(APIView):
                 data = {'file_link': file_path}
                 return Response(data)
             else:   
-                easypaisa_obj = easypaisa_pay(query, start_date, end_date)
-                stripe_obj = stripe_pay(query, start_date, end_date)
-                ubl_obj = ubl_pay(query, start_date, end_date) 
+                easypaisa_obj = easypaisa_pay(query, start_date, end_date,plan)
+                stripe_obj = stripe_pay(query, start_date, end_date,plan)
+                ubl_obj = ubl_pay(query, start_date, end_date,plan) 
                 
                 queryset = list(easypaisa_obj) + list(stripe_obj) + list(ubl_obj)
                 
@@ -370,15 +370,15 @@ class PaymentValidation(APIView):
                 }
             
             serialized_data = PaymentCombinedSerializer(combined_data).data
-            
+            # print("serialized_data['data1'", serialized_data['data1'])
             for i in range(len(serialized_data['data1'])):
-                serialized_data['data1']['is_valid_payment'] = stripe_pay['valid_payments'][i]
+                serialized_data['data1'][i]['is_valid_payment'] = stripe_pay['valid_payments'][i]
             
             for i in range(len(serialized_data['data2'])):
-                serialized_data['data2']['is_valid_payment'] = ubl_pay['valid_payments'][i]
+                serialized_data['data2'][i]['is_valid_payment'] = ubl_pay['valid_payments'][i]
                 
             for i in range(len(serialized_data['data3'])):
-                serialized_data['data3']['is_valid_payment'] = easypaisa_pay['valid_payments'][i]
+                serialized_data['data3'][i]['is_valid_payment'] = easypaisa_pay['valid_payments'][i]
                 
                 
                                 
