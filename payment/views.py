@@ -341,23 +341,19 @@ class PaymentValidation(APIView):
         if source == 'ubl':
             ubl_pay = ubl_payment_validation(time_threshold_str,q)
             paginator = MyPagination()
-            print(ubl_pay)
             paginated_queryset = paginator.paginate_queryset(ubl_pay['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
         
         elif source == 'easypaisa':
             easypaisa_pay = easypaisa_payment_validation(time_threshold_str,q)  
-            print(easypaisa_pay) 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(easypaisa_pay['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
-            # return Response(response_data)  
         elif source == 'stripe':
             stripe_pay = stripe_payment_validation(time_threshold_str,q)
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(stripe_pay['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
-            # return Response(response_data)
         else:
             ubl_pay = ubl_payment_validation(time_threshold_str,q)
             easypaisa_pay = easypaisa_payment_validation(time_threshold_str,q)
@@ -370,7 +366,6 @@ class PaymentValidation(APIView):
                 }
             
             serialized_data = PaymentCombinedSerializer(combined_data).data
-            # print("serialized_data['data1'", serialized_data['data1'])
             for i in range(len(serialized_data['data1'])):
                 serialized_data['data1'][i]['is_valid_payment'] = stripe_pay['valid_payments'][i]
             
@@ -379,9 +374,7 @@ class PaymentValidation(APIView):
                 
             for i in range(len(serialized_data['data3'])):
                 serialized_data['data3'][i]['is_valid_payment'] = easypaisa_pay['valid_payments'][i]
-                
-                
-                                
+                                     
             combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2'],serialized_data['data3']))
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(combined_queryset, request)

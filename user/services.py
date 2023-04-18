@@ -300,15 +300,15 @@ def paying_users_details(query_time, isPaying):
         paying_users = []
         for user in query_time:
             ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-            # easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-            # stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)        
+            easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+            stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)        
             if isPaying == 'True':
                 #  or easypaisa_user or stripe_user
-                if ubl_user:
+                if ubl_user or easypaisa_user or stripe_user:
                     paying_users.append(user)
             else:
                 #  or easypaisa_user or stripe_user
-                if ubl_user:
+                if ubl_user or easypaisa_user or stripe_user:
                     pass
                 else:
                     paying_users.append(user)
@@ -322,11 +322,11 @@ def paying_user(query_time, isPaying):
     is_paying = []
     for user in query_time:
         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-        # easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-        # stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
+        easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+        stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
         # for payment in ubl_user:
         # or easypaisa_user or stripe_user
-        if ubl_user:
+        if ubl_user or easypaisa_user or stripe_user:
             paying_users.append(user)
             is_paying.append('True')
         else:
