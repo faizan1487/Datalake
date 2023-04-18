@@ -212,7 +212,7 @@ def no_of_payments(start_date,end_date,queryset):
         })
     return response_data
     
-def stripe_pay(q, start_date, end_date):
+def stripe_pay(q, start_date, end_date,plan):
     if start_date:
         pass
     else:
@@ -236,10 +236,41 @@ def stripe_pay(q, start_date, end_date):
         query_time = queryset.filter(Q(order_datetime__date__gte = start_date) & Q(order_datetime__date__lte = end_date))
     else:
         queryset = Stripe_Payment.objects.all()
-        query_time = queryset.filter(Q(order_datetime__date__gte = start_date) & Q(order_datetime__date__lte = end_date))     
+        query_time = queryset.filter(Q(order_datetime__date__gte = start_date) & Q(order_datetime__date__lte = end_date)) 
+        
+    if plan:
+        payment_plan = []
+        for obj in query_time:
+            product = Alnafi_Product.objects.filter(name=obj.product_name)
+            # print(product)
+            if plan == 'yearly':
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Yearly':
+                            payment_plan.append(obj)
+            if plan == 'half yearly':
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Half Yearly':
+                            payment_plan.append(obj)
+                            
+            if plan == 'quarterly':           
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Quarterly':
+                            payment_plan.append(obj)
+                            
+            if plan == 'monthly':           
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Monthly':
+                            payment_plan.append(obj)
+                            
+        query_time = payment_plan    
+            
     return query_time
 
-def easypaisa_pay(q, start_date, end_date):
+def easypaisa_pay(q, start_date, end_date,plan):
     if start_date:
         pass
     else:
@@ -264,9 +295,39 @@ def easypaisa_pay(q, start_date, end_date):
         queryset = Easypaisa_Payment.objects.all()
         query_time = queryset.filter(Q(order_datetime__date__lte = end_date) & Q(order_datetime__date__gte = start_date))
     
+    if plan:
+        payment_plan = []
+        for obj in query_time:
+            product = Alnafi_Product.objects.filter(name=obj.product_name)
+            # print(product)
+            if plan == 'yearly':
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Yearly':
+                            payment_plan.append(obj)
+            if plan == 'half yearly':
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Half Yearly':
+                            payment_plan.append(obj)
+                            
+            if plan == 'quarterly':           
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Quarterly':
+                            payment_plan.append(obj)
+                            
+            if plan == 'monthly':           
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Monthly':
+                            payment_plan.append(obj)
+                            
+        query_time = payment_plan    
+                
     return query_time
 
-def ubl_pay(q, start_date, end_date):
+def ubl_pay(q, start_date, end_date,plan):
     if start_date==None:
         first_payment = UBL_IPG_Payment.objects.last()
         start_date = first_payment.order_datetime + timedelta(days=20) 
@@ -283,11 +344,42 @@ def ubl_pay(q, start_date, end_date):
         queryset = UBL_IPG_Payment.objects.filter(
             Q(customer_email__iexact=q) | Q(product_name__icontains=q)
             |Q(order_id__iexact=q))
-        time_query = queryset.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
+        query_time = queryset.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
     else:
         queryset = UBL_IPG_Payment.objects.all()
-        time_query = queryset.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
-    return time_query
+        query_time = queryset.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
+        
+    if plan:
+        payment_plan = []
+        for obj in query_time:
+            product = Alnafi_Product.objects.filter(name=obj.product_name)
+            # print(product)
+            if plan == 'yearly':
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Yearly':
+                            payment_plan.append(obj)
+            if plan == 'half yearly':
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Half Yearly':
+                            payment_plan.append(obj)                   
+            if plan == 'quarterly':           
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Quarterly':
+                            payment_plan.append(obj)  
+                                             
+            if plan == 'monthly':           
+                for i in product:
+                    if i.plan:
+                        if i.plan == 'Monthly':
+                            payment_plan.append(obj)
+                            
+        query_time = payment_plan  
+        
+          
+    return query_time
 
 
 def ubl_payment_validation(time_threshold_str,q):

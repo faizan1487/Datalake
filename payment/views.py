@@ -61,12 +61,42 @@ class SearchAlNafiPayments(APIView):
                 Q(customer_email__iexact=q) | Q(product_name__icontains=q)
                 |Q(order_id__iexact=q))
         else:
-            queryset = AlNafi_Payment.objects.all()            
+            queryset = AlNafi_Payment.objects.all()  
+                      
         if source:
             queryset = queryset.filter(source__iexact=source)
+        
+
+        if plan:
+            payment_plan = []
+            for obj in queryset:
+                product = Alnafi_Product.objects.filter(name=obj.product_name)
+                # print(product)
+                if plan == 'yearly':
+                    for i in product:
+                        if i.plan:
+                            if i.plan == 'Yearly':
+                                payment_plan.append(obj)
+                if plan == 'half yearly':
+                    for i in product:
+                        if i.plan:
+                            if i.plan == 'Half Yearly':
+                                payment_plan.append(obj)
+                                
+                if plan == 'quarterly':           
+                    for i in product:
+                        if i.plan:
+                            if i.plan == 'Quarterly':
+                                payment_plan.append(obj)
+                                
+                if plan == 'monthly':           
+                    for i in product:
+                        if i.plan:
+                            if i.plan == 'Monthly':
+                                payment_plan.append(obj)
+                                
+            queryset = payment_plan    
             
-        
-        
         if expiration:
             if exact=='True':
                 expiration_date = date.today() + timedelta(days=int(expiration))
@@ -125,9 +155,11 @@ class SearchPayments(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         export = self.request.GET.get('export', None) or None
-           
+        plan = self.request.GET.get('plan', None) or None     
+        print(plan)
+        
         if source=='easypaisa':
-            easypaisa_obj = easypaisa_pay(query, start_date, end_date)
+            easypaisa_obj = easypaisa_pay(query, start_date, end_date,plan)
             if export=='True':
                 easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa_obj,many=True)
                 csv_link = json_to_csv(easypaisa_serializer, 'easypaisa')
@@ -140,7 +172,7 @@ class SearchPayments(APIView):
                 easypaisa_serializer = Easypaisa_PaymentsSerializer(paginated_queryset,many=True)
                 return paginator.get_paginated_response(easypaisa_serializer.data)
         elif source=='stripe':
-            stripe_obj = stripe_pay(query, start_date, end_date)
+            stripe_obj = stripe_pay(query, start_date, end_date, plan)
             if export=='True':
                 stripe_serializer = StripePaymentSerializer(stripe_obj,many=True)
                 csv_link = json_to_csv(stripe_serializer, 'stripe')
@@ -152,7 +184,7 @@ class SearchPayments(APIView):
                 stripe_serializer = StripePaymentSerializer(paginated_queryset,many=True)
                 return paginator.get_paginated_response(stripe_serializer.data)
         elif source == 'ubl':
-            ubl_obj = ubl_pay(query, start_date, end_date)
+            ubl_obj = ubl_pay(query, start_date, end_date, plan)
             if export=='True':
                 ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl_obj,many=True)
                 csv_link = json_to_csv(ubl_serializer, 'ubl')

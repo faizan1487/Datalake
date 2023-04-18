@@ -99,7 +99,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     updated_at = models.DateTimeField(auto_now=True)
     groups = models.ManyToManyField(Group, blank=True, related_name='users')
     user_permissions = models.ManyToManyField(Permission, blank=True)
-
+    
     objects = UserManager()
 
     USERNAME_FIELD = 'email'

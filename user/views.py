@@ -399,10 +399,14 @@ class Navbar(APIView):
         user = request.user
         sales = Group.objects.get(name='Sales')
         support = Group.objects.get(name='Support')
+        admin = Group.objects.get(name='Admin')
         support_user = User.objects.filter(groups__name=support.name, email__iexact=user.email)
         sales_user = User.objects.filter(groups__name=sales.name, email__iexact=user.email)
+        admin_user = User.objects.filter(groups__name=admin.name, email__iexact=user.email)
         # if support_user and
-        if support_user:
+        if admin_user:
+            obj = NavbarLink.objects.all()
+        elif support_user:
             obj = NavbarLink.objects.filter(group='Support')
         elif sales_user:
             obj = NavbarLink.objects.filter(group='Sales')
