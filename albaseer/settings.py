@@ -129,7 +129,7 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 if DEBUG:
-    print("SQL Lite CONNECTED")
+    # print("SQL Lite CONNECTED")
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -138,7 +138,6 @@ if DEBUG:
     }
 else:
     # print("RDS CONNECTED")
-    
     DATABASES = {
         'default': {
             'ENGINE': env("DATABASE_ENGINE"),
@@ -152,6 +151,17 @@ else:
             }
         }
     }
+    
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/0', # Change IP and port if needed
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
+
 print(DATABASES)
 
 # Password validation

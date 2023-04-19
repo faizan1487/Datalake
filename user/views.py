@@ -28,10 +28,9 @@ from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomai
 loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,islamic_Paying_user,alnafi_Paying_user,upload_csv_to_s3)
 from .renderers import UserRenderer
 from itertools import chain
-import environ
+from django.core.cache import cache
 
-env = environ.Env()
-env.read_env()
+
 
 # Create your views here.
 class MyPagination(PageNumberPagination):
@@ -71,7 +70,10 @@ class GetUserDetails(APIView):
         export = self.request.GET.get('export', None) or None
 
         if source == 'alnafiuser':
-            obj = alnafi_user(q, start_date, end_date, isPaying)
+            obj = cache.get('alnafi_users_data')
+            if obj is None:
+                obj = alnafi_user(q, start_date, end_date, isPaying)
+                cache.set('alnafi_users_data', obj) 
             if export =='True':
                 try:
                     serializer = AlnafiUserSerializer(obj, many=True)
@@ -91,7 +93,10 @@ class GetUserDetails(APIView):
                 serializer = AlnafiUserSerializer(paginated_queryset,many=True)
                 return paginator.get_paginated_response(serializer.data)
         elif source =='islamicacademyuser':
-            obj = islamic_user(q, start_date, end_date, isPaying)
+            obj = cache.get('islamic_users_data')
+            if obj is None:
+                obj = islamic_user(q, start_date, end_date, isPaying)
+                cache.set('islamic_users_data', obj) 
             if export =='True':
                 try:
                     serializer = IslamicAcademyUserSerializer(obj, many=True)
@@ -111,9 +116,18 @@ class GetUserDetails(APIView):
                 serializer = IslamicAcademyUserSerializer(paginated_queryset,many=True)
                 return paginator.get_paginated_response(serializer.data)
         else:
-            if export == 'True':
+            alnafi_obj = cache.get('alnafi_users_data')
+            islamic_obj = cache.get('islamic_users_data')
+            
+            if alnafi_obj is None:
                 alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
+                cache.set('alnafi_users_data', alnafi_obj)
+                
+            if islamic_obj is None: 
                 islamic_obj = islamic_user(q, start_date, end_date,isPaying)
+                cache.set('islamic_users_data', islamic_obj)
+                
+            if export == 'True':
                 alnafi_serializer = AlnafiUserSerializer(alnafi_obj, many=True)
                 islamic_serializer = IslamicAcademyUserSerializer(islamic_obj, many=True)
                 df1 = pd.DataFrame(alnafi_serializer.data)
@@ -127,9 +141,7 @@ class GetUserDetails(APIView):
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 data = {'file_link': file_path}
                 return Response(data)
-            else:
-                alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
-                islamic_obj = islamic_user(q, start_date, end_date,isPaying)
+            else:        
                 queryset = list(alnafi_obj) + list(islamic_obj)
                 serializer_dict = {
                         AlNafi_User: AlnafiUserSerializer,
@@ -155,7 +167,11 @@ class GetPayingUser(APIView):
         exact = self.request.GET.get('exact', None) or None
         date = self.request.GET.get('date', None) or None
         if source == 'islamicacademyuser':
-            obj = islamic_Paying_user(isPaying,exact,date)
+            obj = cache.get('islamic_paying_users')
+            if obj is None:
+                obj = islamic_Paying_user(isPaying,exact,date)
+                cache.set('islamic_paying_users', obj) 
+                
             serializer = IslamicAcademyUserSerializer(obj, many=True)
             if export =='True':
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -170,7 +186,11 @@ class GetPayingUser(APIView):
                 paginated_queryset = paginator.paginate_queryset(serializer.data, request)
                 return paginator.get_paginated_response(paginated_queryset)
         elif source =='alnafiuser':
-            obj = alnafi_Paying_user(isPaying, exact, date)
+            obj = cache.get('alnafi_paying_users')
+            if obj is None:
+                obj = alnafi_Paying_user(isPaying, exact, date)
+                cache.set('alnafi_paying_user', obj)
+                         
             serializer = AlnafiUserSerializer(obj['paying_users'], many=True)
             if export =='True':
                 file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -187,7 +207,19 @@ class GetPayingUser(APIView):
                 paginated_queryset = paginator.paginate_queryset(serializer.data, request)
                 return paginator.get_paginated_response(paginated_queryset)                
         else:
-            islamic_users = islamic_Paying_user(isPaying,exact,date)
+            alnafi_users = cache.get('alnafi_paying_users')
+            islamic_users = cache.get('islamic_paying_users')
+            if alnafi_users is None:
+                print("cache is empty of alnafi users")
+                alnafi_users = alnafi_Paying_user(isPaying, exact, date)
+                cache.set('alnafi_paying_users', alnafi_users)
+                
+            if islamic_users is None:
+                print("cache is empty of islamic users")
+                islamic_users = islamic_Paying_user(isPaying,exact,date)
+                cache.set('islamic_paying_users', islamic_users) 
+                
+                
             alnafi_users = alnafi_Paying_user(isPaying,exact,date)
             alnafi_serialized_data = AlnafiUserSerializer(alnafi_users['paying_users'], many=True)
             islamic_serialized_data = IslamicAcademyUserSerializer(islamic_users, many=True)
@@ -224,15 +256,31 @@ class GetNoOfUsers(APIView):
         source = self.request.GET.get('source', None) or None 
         
         if source == 'alnafiuser':
-            response_data = alnafi_no_users(start_date, end_date)                
+            alnafi_no_of_users = cache.get('alnafi_no_of_users')
+            if alnafi_no_of_users is None:
+                alnafi_no_of_users = alnafi_no_users(start_date, end_date)
+                cache.set('alnafi_no_of_users', alnafi_no_of_users)
         elif source == 'islamicacademyuser':
-            response_data = islamic_no_users(start_date,end_date)
+            academy_no_of_users = cache.get('academy_no_of_users')
+            if academy_no_of_users is None:
+                academy_no_of_users = islamic_no_users(start_date,end_date)
+                cache.set('academy_no_of_users', academy_no_of_users) 
         else:
             islamic_users = islamic_no_users(start_date, end_date)   
             alnafi_users = alnafi_no_users(start_date,end_date)
             
-            response_data = {"islamic_users": islamic_users,
-                             "alnafi_users": alnafi_users
+            alnafi_no_of_users = cache.get('alnafi_no_of_users')
+            if alnafi_no_of_users is None:
+                alnafi_no_of_users = alnafi_no_users(start_date, end_date)
+                cache.set('alnafi_no_of_users', alnafi_no_of_users) 
+                    
+            academy_no_of_users = cache.get('academy_no_of_users')
+            if academy_no_of_users is None:
+                academy_no_of_users = islamic_no_users(start_date,end_date)
+                cache.set('academy_no_of_users', academy_no_of_users) 
+            
+            response_data = {"academy_no_of_users": academy_no_of_users,
+                             "alnafi_no_of_users": alnafi_no_of_users
                              }
         return Response(response_data)
             
