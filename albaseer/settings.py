@@ -150,17 +150,26 @@ else:
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
             }
         }
-    }
+    } 
     
-CACHES = {
-    'default': {
-        'BACKEND': 'django_redis.cache.RedisCache',
-        'LOCATION': 'redis://127.0.0.1:6379/0', # Change IP and port if needed
-        'OPTIONS': {
-            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+
+if DEBUG:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        },
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
+            'TIMEOUT':1800,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
         }
     }
-}
 
 print(DATABASES)
 
