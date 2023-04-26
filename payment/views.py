@@ -64,11 +64,8 @@ class SearchAlNafiPayments(APIView):
                 |Q(order_id__iexact=q))
         else:
             queryset = AlNafi_Payment.objects.all()  
-                      
         if source:
             queryset = queryset.filter(source__iexact=source)
-        
-
         if plan:
             payment_plan = []
             for obj in queryset:

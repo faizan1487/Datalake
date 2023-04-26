@@ -164,15 +164,13 @@ else:
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
-            'TIMEOUT':1800,
+            'TIMEOUT':300,
             'OPTIONS': {
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             }
         }
-    }
-# redis://127.0.0.1
-# http://redis.io  
-print(DATABASES)
+    } 
+# print(DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
