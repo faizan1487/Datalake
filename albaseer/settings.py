@@ -157,6 +157,7 @@ if DEBUG:
     CACHES = {
         'default': {
             'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+            'TIMEOUT':1800,
         },
     }
 else:
@@ -164,7 +165,7 @@ else:
         'default': {
             'BACKEND': 'django_redis.cache.RedisCache',
             'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
-            'TIMEOUT':60,
+            'TIMEOUT':1800,
             'OPTIONS': {
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             }

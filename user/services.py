@@ -25,42 +25,6 @@ def upload_csv_to_s3(df,file_name):
     return s3
 
 
-def islamic_Paying_user(isPaying, exact,date):
-    if date:
-        pass
-    else:
-        first_user = IslamicAcademy_User.objects.first()
-        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-        date = new_date_obj
-    if exact =='True':
-        queryset = IslamicAcademy_User.objects.filter(created_at__date=date)
-    else:   
-        queryset = IslamicAcademy_User.objects.filter(created_at__date__gte=date) 
-        
-    if isPaying == 'True':
-        queryset = queryset.filter(is_paying_customer=True)
-        return queryset
-    elif isPaying == 'False':
-        queryset = queryset.filter(is_paying_customer=False)    
-        return queryset
-    return queryset
-        
-
-def alnafi_Paying_user(isPaying, exact, date):
-    if date:
-        pass
-    else:
-        first_user = AlNafi_User.objects.first()
-        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-        date = new_date_obj    
-    if exact =='True':
-        query_time = AlNafi_User.objects.filter(created_at__date=date)
-    else:  
-        query_time = AlNafi_User.objects.filter(created_at__date__gte=date)
-    paying_user_queryset = paying_user(query_time, isPaying)
-    return paying_user_queryset
 
 def alnafi_user(q, start_date, end_date, isPaying):
     if not start_date:
@@ -298,40 +262,75 @@ def paying_users_details(query_time, isPaying):
         paying_users = []
         for user in query_time:
             ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-            easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-            stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)        
+            # easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+            # stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)        
             if isPaying == 'True':
                 #  or easypaisa_user or stripe_user
-                if ubl_user or easypaisa_user or stripe_user:
+                if ubl_user:
                     paying_users.append(user)
             else:
                 #  or easypaisa_user or stripe_user
-                if ubl_user or easypaisa_user or stripe_user:
-                    pass
-                else:
+                if not ubl_user:
                     paying_users.append(user)
         return paying_users
     else:
         return query_time
 
 
-def paying_user(query_time, isPaying):
-    paying_users = []
-    is_paying = []
-    for user in query_time:
-        ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-        easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-        stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
-        # for payment in ubl_user:
-        # or easypaisa_user or stripe_user
-        if ubl_user or easypaisa_user or stripe_user:
-            paying_users.append(user)
-            is_paying.append('True')
-        else:
-            paying_users.append(user)
-            is_paying.append('False')
+# def paying_user(query_time, isPaying):
+#     paying_users = []
+#     is_paying = []
+#     for user in query_time:
+#         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
+#         easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+#         stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)
+#         # for payment in ubl_user:
+#         # or easypaisa_user or stripe_user
+#         if ubl_user or easypaisa_user or stripe_user:
+#             paying_users.append(user)
+#             is_paying.append('True')
+#         else:
+#             paying_users.append(user)
+#             is_paying.append('False')
             
-    response = {"paying_users":paying_users,
-                "is_paying": is_paying}
+#     response = {"paying_users":paying_users,
+#                 "is_paying": is_paying}
     
-    return response
+#     return response
+
+# def alnafi_Paying_user(isPaying, exact, date):
+#     if date:
+#         pass
+#     else:
+#         first_user = AlNafi_User.objects.first()
+#         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+#         date = new_date_obj    
+#     if exact =='True':
+#         query_time = AlNafi_User.objects.filter(created_at__date=date)
+#     else:  
+#         query_time = AlNafi_User.objects.filter(created_at__date__gte=date)
+#     paying_user_queryset = paying_user(query_time, isPaying)
+#     return paying_user_queryset
+
+
+# def islamic_Paying_user(isPaying, exact,date):
+#     if date:
+#         pass
+#     else:
+#         first_user = IslamicAcademy_User.objects.first()
+#         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+#         date = new_date_obj
+#     if exact =='True':
+#         queryset = IslamicAcademy_User.objects.filter(created_at__date=date)
+#     else:   
+#         queryset = IslamicAcademy_User.objects.filter(created_at__date__gte=date) 
+        
+#     if isPaying == 'True':
+#         queryset = queryset.filter(is_paying_customer=True)
+#         return queryset
+#     elif isPaying == 'False':
+#         queryset = queryset.filter(is_paying_customer=False)    
+#         return queryset
+#     return queryset
