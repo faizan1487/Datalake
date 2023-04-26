@@ -29,13 +29,19 @@ def upload_csv_to_s3(df,file_name):
 def alnafi_user(q, start_date, end_date, isPaying):
     if not start_date:
         first_user = AlNafi_User.objects.first()
-        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        try:
+            date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        except:
+            pass
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = new_date_obj
 
     if not end_date:
         last_user = AlNafi_User.objects.last()
-        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        try:
+            date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        except:
+            pass
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
 
@@ -54,14 +60,20 @@ def islamic_user(q, start_date, end_date, isPaying):
         pass
     else:
         first_user = IslamicAcademy_User.objects.first()
-        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        try:
+            date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        except:
+            pass
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = new_date_obj
     if end_date:
         pass
     else:
         last_user = IslamicAcademy_User.objects.last()
-        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        try:
+            date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        except:
+            pass
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj   
     if q:
@@ -79,6 +91,8 @@ def islamic_user(q, start_date, end_date, isPaying):
             queryset = IslamicAcademy_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
             query_time = queryset.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
+            
+        
     else:
         if isPaying == 'True':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
