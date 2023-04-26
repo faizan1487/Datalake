@@ -29,19 +29,19 @@ def upload_csv_to_s3(df,file_name):
 def alnafi_user(q, start_date, end_date, isPaying):
     if not start_date:
         first_user = AlNafi_User.objects.first()
-        try:
-            date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        except:
-            pass
+        # try:
+        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        # except:
+        #     pass
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = new_date_obj
 
     if not end_date:
         last_user = AlNafi_User.objects.last()
-        try:
-            date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        except:
-            pass
+        # try:
+        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        # except:
+        #     pass
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
 
