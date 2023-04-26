@@ -71,10 +71,10 @@ class GetUserDetails(APIView):
         url = request.build_absolute_uri()
         print(url)
         if source == 'alnafiuser':
-            obj = cache.get(url)
-            if obj is None:
-                obj = alnafi_user(q, start_date, end_date, isPaying)
-                cache.set(url, obj) 
+            # obj = cache.get(url)
+            # if obj is None:
+            obj = alnafi_user(q, start_date, end_date, isPaying)
+                # cache.set(url, obj) 
             if export =='True':
                 try:
                     serializer = AlnafiUserSerializer(obj, many=True)
