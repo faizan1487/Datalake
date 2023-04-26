@@ -43,7 +43,7 @@ class UsersDelete(APIView):
     def get(self, request):
         objs = AlNafi_User.objects.all()
         objs.delete()
-        return Response("data deleted")
+        return Response('deleted')
 
 class AlnafiUser(APIView):
     def post(self, request):
@@ -69,6 +69,7 @@ class GetUserDetails(APIView):
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
+        print(url)
         if source == 'alnafiuser':
             obj = cache.get(url)
             if obj is None:
