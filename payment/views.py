@@ -32,10 +32,10 @@ class MyPagination(PageNumberPagination):
 
 
 
-def easypaisa_payment(export,query,start_date,end_date,plan,request,url):
+def easypaisa_payment(export,query,start_date,end_date,plan,request,url,product):
     easypaisa = cache.get(url+'easypaisa')
     if easypaisa is None:
-        easypaisa = easypaisa_pay(query, start_date, end_date,plan)
+        easypaisa = easypaisa_pay(query,start_date,end_date,plan,product)
         cache.set(url+'easypaisa', easypaisa) 
     if export=='True':
         easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)
@@ -52,10 +52,10 @@ def easypaisa_payment(export,query,start_date,end_date,plan,request,url):
         easypaisa_serializer = Easypaisa_PaymentsSerializer(paginated_queryset,many=True)
         return paginator.get_paginated_response(easypaisa_serializer.data)
 
-def ubl_payment(export,query,start_date,end_date,plan,request,url):
+def ubl_payment(export,query,start_date,end_date,plan,request,url,product):
     ubl = cache.get(url+'ubl')
     if ubl is None:
-        ubl = ubl_pay(query, start_date, end_date,plan)
+        ubl = ubl_pay(query, start_date, end_date,plan,product)
         cache.set(url+'ubl', ubl) 
     if export=='True':
         ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl,many=True)
@@ -71,10 +71,10 @@ def ubl_payment(export,query,start_date,end_date,plan,request,url):
         ubl_serializer = Ubl_Ipg_PaymentsSerializer(paginated_queryset,many=True)
         return paginator.get_paginated_response(ubl_serializer.data)
             
-def stripe_payment(export,query,start_date,end_date,plan,request,url):
+def stripe_payment(export,query,start_date,end_date,plan,request,url,product):
     stripe = cache.get(url+'stripe')
     if stripe is None:
-        stripe = stripe_pay(query, start_date, end_date,plan)
+        stripe = stripe_pay(query, start_date, end_date,plan,product)
         cache.set(url+'stripe', stripe) 
     if export=='True':
         stripe_serializer = StripePaymentSerializer(stripe,many=True)
@@ -119,7 +119,7 @@ class SearchAlNafiPayments(APIView):
         source = self.request.GET.get('source', None) or None
         exact = self.request.GET.get('exact', None) or None
         export = self.request.GET.get('export', None) or None 
-        plan = self.request.GET.get('plan', None) or None   
+        plan = self.request.GET.get('plan', None) or None
         url = request.build_absolute_uri()
              
         if q:
@@ -226,26 +226,27 @@ class SearchPayments(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         export = self.request.GET.get('export', None) or None
-        plan = self.request.GET.get('plan', None) or None     
+        plan = self.request.GET.get('plan', None) or None   
+        product = self.request.GET.get('product', None) or None  
         url = request.build_absolute_uri()
         
         if origin =='local':
             if source=='easypaisa':
-                response = easypaisa_payment(export,query,start_date,end_date,plan,request,url)
+                response = easypaisa_payment(export,query,start_date,end_date,plan,request,url,product)
                 return response
                 
             elif source == 'ubl':
-                response = ubl_payment(export,query,start_date,end_date,plan,request,url)
+                response = ubl_payment(export,query,start_date,end_date,plan,request,url,product)
                 return response
             else:
                 easypaisa = cache.get(url+'easypaisa')
                 if easypaisa is None:
-                    easypaisa = easypaisa_pay(query, start_date, end_date,plan)
+                    easypaisa = easypaisa_pay(query, start_date, end_date,plan,product)
                     cache.set(url+'easypaisa', easypaisa)  
                         
                 ubl = cache.get(url+'ubl')
                 if ubl is None:
-                    ubl = ubl_pay(query, start_date, end_date,plan)
+                    ubl = ubl_pay(query, start_date, end_date,plan,product)
                     cache.set(url+'ubl', ubl)         
                 if export=='True':
                     easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)
@@ -281,30 +282,30 @@ class SearchPayments(APIView):
                 
                         
         elif origin =='overseas':                
-            response = stripe_payment(export,query,start_date,end_date,plan,request,url)
+            response = stripe_payment(export,query,start_date,end_date,plan,request,url,product)
             return response
         else:
             if source=='easypaisa':
-                response = easypaisa_payment(export,query,start_date,end_date,plan,request,url)
+                response = easypaisa_payment(export,query,start_date,end_date,plan,request,url,product)
                 return response
             elif source == 'ubl':
-                response = ubl_payment(export,query,start_date,end_date,plan,request,url)
+                response = ubl_payment(export,query,start_date,end_date,plan,request,url,product)
                 return response
             elif source=='stripe':
-                response = stripe_payment(export,query,start_date,end_date,plan,request,url)
+                response = stripe_payment(export,query,start_date,end_date,plan,request,url,product)
                 return response
             else:
                 easypaisa = cache.get(url+'easypaisa')
                 if easypaisa is None:
-                    easypaisa = easypaisa_pay(query, start_date, end_date,plan)
+                    easypaisa = easypaisa_pay(query, start_date, end_date,plan,product)
                     cache.set(url+'easypaisa', easypaisa)      
                 stripe = cache.get(url+'stripe')
                 if stripe is None:
-                    stripe = stripe_pay(query, start_date, end_date,plan)
+                    stripe = stripe_pay(query, start_date, end_date,plan,product)
                     cache.set(url+'stripe', stripe) 
                 ubl = cache.get(url+'ubl')
                 if ubl is None:
-                    ubl = ubl_pay(query, start_date, end_date,plan)
+                    ubl = ubl_pay(query, start_date, end_date,plan,product)
                     cache.set(url+'ubl', ubl)         
                 if export=='True':
                     easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)

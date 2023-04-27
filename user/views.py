@@ -63,21 +63,21 @@ class GetUserDetails(APIView):
     required_group = 'Support'
     def get(self, request):
         q = self.request.GET.get('q', None) or None
-        isConverted = self.request.GET.get('isConverted', None) or None
+        is_converted = self.request.GET.get('is_converted', None) or None
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
-        # print(url)
         if source == 'alnafiuser':
             obj = cache.get(url)
             if obj is None:
-                obj = alnafi_user(q, start_date, end_date, isConverted)
+                obj = alnafi_user(q, start_date, end_date, is_converted)
                 cache.set(url, obj) 
+            serializer = AlnafiUserSerializer(obj['converted_users'], many=True)
             if export =='True':
                 try:
-                    serializer = AlnafiUserSerializer(obj, many=True)
+                    serializer = AlnafiUserSerializer(obj['converted_users'], many=True)
                     file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -89,14 +89,15 @@ class GetUserDetails(APIView):
                 except Exception as e:
                     return Response(e)
             else:
+                for i in range(len(serializer.data)):
+                    serializer.data[i]['is_paying_customer'] = obj['converted'][i]
                 paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(obj, request)
-                serializer = AlnafiUserSerializer(paginated_queryset,many=True)
-                return paginator.get_paginated_response(serializer.data)
+                paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+                return paginator.get_paginated_response(paginated_queryset)
         elif source =='islamicacademyuser':
             obj = cache.get(url)
             if obj is None:
-                obj = islamic_user(q, start_date, end_date, isConverted)
+                obj = islamic_user(q, start_date, end_date, is_converted)
                 cache.set(url, obj) 
             if export =='True':
                 try:
@@ -120,13 +121,13 @@ class GetUserDetails(APIView):
             islamic_obj = cache.get(url+'islamic')
             
             if alnafi_obj is None:
-                alnafi_obj = alnafi_user(q, start_date, end_date, isConverted)
+                alnafi_obj = alnafi_user(q, start_date, end_date, is_converted)
                 cache.set(url+'alnafi', alnafi_obj)
                 
             if islamic_obj is None: 
-                islamic_obj = islamic_user(q, start_date, end_date,isConverted)
+                islamic_obj = islamic_user(q, start_date, end_date,is_converted)
                 cache.set(url+'islamic', islamic_obj)
-                
+            
             if export == 'True':
                 alnafi_serializer = AlnafiUserSerializer(alnafi_obj, many=True)
                 islamic_serializer = IslamicAcademyUserSerializer(islamic_obj, many=True)
@@ -139,22 +140,26 @@ class GetUserDetails(APIView):
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 data = {'file_link': file_path}
                 return Response(data)
-            else:        
-                queryset = list(alnafi_obj) + list(islamic_obj)
-                serializer_dict = {
-                        AlNafi_User: AlnafiUserSerializer,
-                        IslamicAcademy_User: IslamicAcademyUserSerializer,
-                    }
+            else:   
+                alnafi_serialized_data = AlnafiUserSerializer(alnafi_obj['converted_users'], many=True)
+                islamic_serialized_data = IslamicAcademyUserSerializer(islamic_obj, many=True)
+                combined_data = {
+                    'data1': alnafi_serialized_data.data,
+                    'data2': islamic_serialized_data.data,
+                }
+                serialized_data = UsersCombinedSerializer(combined_data).data
+                for i in range(len(serialized_data['data1'])):
+                    serialized_data['data1'][i]['is_paying_customer'] = alnafi_obj['converted'][i]
+                combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2']))
                 paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(queryset, request)
-                serializer = []
-                for obj in paginated_queryset:
-                    serializer_class = serializer_dict.get(obj.__class__)
-                    serializer.append(serializer_class(obj).data)
-                return paginator.get_paginated_response(serializer)
+                paginated_queryset = paginator.paginate_queryset(combined_queryset, request)
+                return paginator.get_paginated_response(paginated_queryset)
+            
+                
+                
+                
 
-
-    
+  
 class GetNoOfUsers(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
@@ -361,12 +366,6 @@ class Navbar(APIView):
         return Response(serializer.data)
     
     
-    
-    
-    
-    
-    
-    
 # class GetPayingUser(APIView):
 #     # permission_classes = [IsAuthenticated]
 #     # permission_classes = [GroupPermission]
@@ -374,7 +373,7 @@ class Navbar(APIView):
 #     def get(self, request):
 #         source = self.request.GET.get('source', None) or None
 #         export = self.request.GET.get('export', None) or None
-#         isConverted = self.request.GET.get('ispaying', None) or None
+#         is_converted = self.request.GET.get('ispaying', None) or None
 #         exact = self.request.GET.get('exact', None) or None
 #         date = self.request.GET.get('date', None) or None
 #         if source == 'islamicacademyuser':

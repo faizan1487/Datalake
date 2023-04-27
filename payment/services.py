@@ -212,7 +212,7 @@ def no_of_payments(start_date,end_date,queryset):
         })
     return response_data
     
-def stripe_pay(q, start_date, end_date,plan):
+def stripe_pay(q, start_date, end_date,plan,product):
     if start_date:
         pass
     else:
@@ -238,6 +238,9 @@ def stripe_pay(q, start_date, end_date,plan):
         queryset = Stripe_Payment.objects.all()
         query_time = queryset.filter(Q(order_datetime__date__gte = start_date) & Q(order_datetime__date__lte = end_date)) 
         
+    if product:
+        query_time = query_time.filter(product_name__icontains=product)
+    
     if plan:
         payment_plan = []
         for obj in query_time:
@@ -270,7 +273,7 @@ def stripe_pay(q, start_date, end_date,plan):
             
     return query_time
 
-def easypaisa_pay(q, start_date, end_date,plan):
+def easypaisa_pay(q,start_date,end_date,plan,product):
     if start_date:
         pass
     else:
@@ -288,12 +291,14 @@ def easypaisa_pay(q, start_date, end_date,plan):
     
     if q:
         queryset = Easypaisa_Payment.objects.filter(
-            Q(customer_email__iexact=q) | Q(product_name__icontains=q)
-            |Q(order_id__iexact=q))
+            Q(customer_email__iexact=q) | Q(order_id__iexact=q))
         query_time = queryset.filter(Q(order_datetime__date__lte = end_date) & Q(order_datetime__date__gte = start_date))
     else:
         queryset = Easypaisa_Payment.objects.all()
         query_time = queryset.filter(Q(order_datetime__date__lte = end_date) & Q(order_datetime__date__gte = start_date))
+    
+    if product:
+        query_time = query_time.filter(product_name__icontains=product)
     
     if plan:
         payment_plan = []
@@ -327,7 +332,7 @@ def easypaisa_pay(q, start_date, end_date,plan):
                 
     return query_time
 
-def ubl_pay(q, start_date, end_date,plan):
+def ubl_pay(q, start_date, end_date,plan,product):
     if start_date==None:
         first_payment = UBL_IPG_Payment.objects.last()
         start_date = first_payment.order_datetime + timedelta(days=20) 
@@ -342,13 +347,15 @@ def ubl_pay(q, start_date, end_date,plan):
     
     if q:
         queryset = UBL_IPG_Payment.objects.filter(
-            Q(customer_email__iexact=q) | Q(product_name__icontains=q)
-            |Q(order_id__iexact=q))
+            Q(customer_email__iexact=q)|Q(order_id__iexact=q))
         query_time = queryset.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
     else:
         queryset = UBL_IPG_Payment.objects.all()
         query_time = queryset.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
-        
+       
+    if product:
+        query_time = query_time.filter(product_name__icontains=product)
+    
     if plan:
         payment_plan = []
         for obj in query_time:
