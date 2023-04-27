@@ -63,7 +63,7 @@ class GetUserDetails(APIView):
     required_group = 'Support'
     def get(self, request):
         q = self.request.GET.get('q', None) or None
-        isPaying = self.request.GET.get('ispaying', None) or None
+        isConverted = self.request.GET.get('isConverted', None) or None
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         source = self.request.GET.get('source', None) or None
@@ -73,7 +73,7 @@ class GetUserDetails(APIView):
         if source == 'alnafiuser':
             obj = cache.get(url)
             if obj is None:
-                obj = alnafi_user(q, start_date, end_date, isPaying)
+                obj = alnafi_user(q, start_date, end_date, isConverted)
                 cache.set(url, obj) 
             if export =='True':
                 try:
@@ -96,7 +96,7 @@ class GetUserDetails(APIView):
         elif source =='islamicacademyuser':
             obj = cache.get(url)
             if obj is None:
-                obj = islamic_user(q, start_date, end_date, isPaying)
+                obj = islamic_user(q, start_date, end_date, isConverted)
                 cache.set(url, obj) 
             if export =='True':
                 try:
@@ -120,11 +120,11 @@ class GetUserDetails(APIView):
             islamic_obj = cache.get(url+'islamic')
             
             if alnafi_obj is None:
-                alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
+                alnafi_obj = alnafi_user(q, start_date, end_date, isConverted)
                 cache.set(url+'alnafi', alnafi_obj)
                 
             if islamic_obj is None: 
-                islamic_obj = islamic_user(q, start_date, end_date,isPaying)
+                islamic_obj = islamic_user(q, start_date, end_date,isConverted)
                 cache.set(url+'islamic', islamic_obj)
                 
             if export == 'True':
@@ -374,7 +374,7 @@ class Navbar(APIView):
 #     def get(self, request):
 #         source = self.request.GET.get('source', None) or None
 #         export = self.request.GET.get('export', None) or None
-#         isPaying = self.request.GET.get('ispaying', None) or None
+#         isConverted = self.request.GET.get('ispaying', None) or None
 #         exact = self.request.GET.get('exact', None) or None
 #         date = self.request.GET.get('date', None) or None
 #         if source == 'islamicacademyuser':
