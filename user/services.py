@@ -108,21 +108,24 @@ def islamic_user(q, start_date, end_date, isPaying):
 
 
 def alnafi_no_users(start_date,end_date):
-    if start_date:
-            pass
-    else:
+    if not start_date:
         first_user = AlNafi_User.objects.first()
-        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        try:
+            date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        except:
+            pass
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = str(new_date_obj.date())
         
-    if end_date:
-        pass
-    else:
+    if not end_date:
         last_user = AlNafi_User.objects.last()
-        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        try:
+            date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        except:
+            pass
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = str(new_date_obj.date())
+        
     
     start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
     end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()       
@@ -154,17 +157,13 @@ def alnafi_no_users(start_date,end_date):
     return response_data
 
 def islamic_no_users(start_date,end_date):
-    if start_date:
-            pass
-    else:
+    if not start_date:
         first_user = IslamicAcademy_User.objects.first()
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = str(new_date_obj.date())
         
-    if end_date:
-        pass
-    else:
+    if not end_date:
         last_user = IslamicAcademy_User.objects.last()
         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
