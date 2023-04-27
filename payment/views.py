@@ -119,13 +119,22 @@ class SearchAlNafiPayments(APIView):
         source = self.request.GET.get('source', None) or None
         exact = self.request.GET.get('exact', None) or None
         export = self.request.GET.get('export', None) or None 
-        plan = self.request.GET.get('plan', None) or None        
+        plan = self.request.GET.get('plan', None) or None   
+        url = request.build_absolute_uri()
+             
         if q:
-            queryset = AlNafi_Payment.objects.filter(
-                Q(customer_email__iexact=q) | Q(product_name__icontains=q)
-                |Q(order_id__iexact=q))
+            queryset = cache.get(url)
+            if queryset is None:
+                queryset = AlNafi_Payment.objects.filter(
+                    Q(customer_email__iexact=q) | Q(product_name__icontains=q)
+                    |Q(order_id__iexact=q))
+                cache.set(url, queryset)
         else:
-            queryset = AlNafi_Payment.objects.all()  
+            queryset = cache.get(url)
+            if queryset is None:
+                queryset = AlNafi_Payment.objects.all()
+                cache.set(url, queryset)
+                
         if source:
             queryset = queryset.filter(source__iexact=source)
         if plan:
@@ -374,15 +383,7 @@ class RenewalNoOfPayments(APIView):
         return Response(response_data)
         
         
-        
-               
-#Creating API For Stripe Payments: 
-# class GetAlnafiPayments(APIView):
-#     def get(self,request):
-#         alnafi_payment = AlNafi_Payment.objects.all()
-#         serializer = AlNafiPaymentSerializer(alnafi_payment,many=True)
-#         return Response(serializer.data)
-    
+            
     
 #Creating API For ubl_ipg Payments:
 class GetUBLPayments(APIView):
@@ -431,46 +432,47 @@ class PaymentValidation(APIView):
         # create a datetime object for 24 hours ago
         time_threshold = timezone.now() - timezone.timedelta(days=90)
         time_threshold_str = time_threshold.strftime('%Y-%m-%d')
+        url = request.build_absolute_uri()
         if source == 'ubl':
-            ubl = cache.get('validated_ubl_payments')
+            ubl = cache.get(url)
             if ubl is None:
                 ubl = ubl_payment_validation(time_threshold_str,q)
-                cache.set('validated_ubl_payments', ubl) 
+                cache.set(url, ubl) 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(ubl['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
         
         elif source == 'easypaisa':
-            easypaisa = cache.get('validated_easypaisa_payments')
+            easypaisa = cache.get(url)
             if easypaisa is None:
                 easypaisa = easypaisa_payment_validation(time_threshold_str,q)
-                cache.set('validated_easypaisa_payments', easypaisa) 
+                cache.set(url, easypaisa) 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(easypaisa['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
         elif source == 'stripe':
-            stripe = cache.get('validated_stripe_payments')
+            stripe = cache.get(url)
             if stripe is None:
                 stripe = stripe_payment_validation(time_threshold_str,q)
-                cache.set('validated_stripe_payments', stripe) 
+                cache.set(url, stripe) 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(stripe['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
         else:
-            ubl = cache.get('validated_ubl_payments')
+            ubl = cache.get(url+'ubl')
             if ubl is None:
                 ubl = ubl_payment_validation(time_threshold_str,q)
-                cache.set('validated_ubl_payments', ubl) 
+                cache.set(url+'ubl', ubl) 
                             
-            easypaisa = cache.get('validated_easypaisa_payments')
+            easypaisa = cache.get(url+'easypaisa')
             if easypaisa is None:
                 easypaisa = easypaisa_payment_validation(time_threshold_str,q)
-                cache.set('validated_easypaisa_payments', easypaisa) 
+                cache.set(url+'easypaisa', easypaisa) 
             
-            stripe = cache.get('validated_stripe_payments')
+            stripe = cache.get(url+'stripe')
             if stripe is None:
                 stripe = stripe_payment_validation(time_threshold_str,q)
-                cache.set('validated_stripe_payments', stripe) 
+                cache.set(url+'stripe', stripe)
                         
             combined_data = {
                     'data1': stripe['payments'].data,
@@ -492,3 +494,11 @@ class PaymentValidation(APIView):
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(combined_queryset, request)
             return paginator.get_paginated_response(paginated_queryset)
+        
+        
+#Creating API For Stripe Payments: 
+# class GetAlnafiPayments(APIView):
+#     def get(self,request):
+#         alnafi_payment = AlNafi_Payment.objects.all()
+#         serializer = AlNafiPaymentSerializer(alnafi_payment,many=True)
+#         return Response(serializer.data)

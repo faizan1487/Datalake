@@ -69,12 +69,12 @@ class GetUserDetails(APIView):
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
-        print(url)
+        # print(url)
         if source == 'alnafiuser':
-            # obj = cache.get(url)
-            # if obj is None:
-            obj = alnafi_user(q, start_date, end_date, isPaying)
-                # cache.set(url, obj) 
+            obj = cache.get(url)
+            if obj is None:
+                obj = alnafi_user(q, start_date, end_date, isPaying)
+                cache.set(url, obj) 
             if export =='True':
                 try:
                     serializer = AlnafiUserSerializer(obj, many=True)
@@ -116,16 +116,16 @@ class GetUserDetails(APIView):
                 serializer = IslamicAcademyUserSerializer(paginated_queryset,many=True)
                 return paginator.get_paginated_response(serializer.data)
         else:
-            alnafi_obj = cache.get(url)
-            islamic_obj = cache.get(url)
+            alnafi_obj = cache.get(url+'alnafi')
+            islamic_obj = cache.get(url+'islamic')
             
             if alnafi_obj is None:
                 alnafi_obj = alnafi_user(q, start_date, end_date, isPaying)
-                cache.set(url, alnafi_obj)
+                cache.set(url+'alnafi', alnafi_obj)
                 
             if islamic_obj is None: 
                 islamic_obj = islamic_user(q, start_date, end_date,isPaying)
-                cache.set(url, islamic_obj)
+                cache.set(url+'islamic', islamic_obj)
                 
             if export == 'True':
                 alnafi_serializer = AlnafiUserSerializer(alnafi_obj, many=True)
