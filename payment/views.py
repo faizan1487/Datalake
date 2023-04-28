@@ -39,10 +39,12 @@ def easypaisa_payment(export,query,start_date,end_date,plan,request,url,product)
         cache.set(url+'easypaisa', easypaisa) 
     if export=='true':
         easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)
+        # print(easypaisa_serializer.data)
         file_name = f"Easypaisa_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
         # Build the full path to the media directory
         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
         df = pd.DataFrame(easypaisa_serializer.data).to_csv(index=False)
+        # print(df)
         s3 = upload_csv_to_s3(df,file_name)
         data = {'file_link': file_path,'export':'true'}
         return Response(data)

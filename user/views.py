@@ -165,30 +165,32 @@ class GetNoOfUsers(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None   
         source = self.request.GET.get('source', None) or None 
-        
+        url = request.build_absolute_uri()
         if source == 'alnafiuser':
-            alnafi_no_of_users = cache.get('alnafi_no_of_users')
+            alnafi_no_of_users = cache.get(url)
             if alnafi_no_of_users is None:
                 alnafi_no_of_users = alnafi_no_users(start_date, end_date)
-                cache.set('alnafi_no_of_users', alnafi_no_of_users)
+                cache.set(url, alnafi_no_of_users)
+            response_data = {"alnafi_no_of_users": alnafi_no_of_users}
         elif source == 'islamicacademyuser':
-            academy_no_of_users = cache.get('academy_no_of_users')
+            academy_no_of_users = cache.get(url)
             if academy_no_of_users is None:
                 academy_no_of_users = islamic_no_users(start_date,end_date)
-                cache.set('academy_no_of_users', academy_no_of_users) 
+                cache.set(url, academy_no_of_users)   
+            response_data = {"academy_no_of_users": academy_no_of_users,}
         else:
             islamic_users = islamic_no_users(start_date, end_date)   
             alnafi_users = alnafi_no_users(start_date,end_date)
             
-            alnafi_no_of_users = cache.get('alnafi_no_of_users')
+            alnafi_no_of_users = cache.get(url+'alnafi')
             if alnafi_no_of_users is None:
                 alnafi_no_of_users = alnafi_no_users(start_date, end_date)
-                cache.set('alnafi_no_of_users', alnafi_no_of_users) 
+                cache.set(url+'alnafi', alnafi_no_of_users) 
                     
-            academy_no_of_users = cache.get('academy_no_of_users')
+            academy_no_of_users = cache.get(url+'academy')
             if academy_no_of_users is None:
                 academy_no_of_users = islamic_no_users(start_date,end_date)
-                cache.set('academy_no_of_users', academy_no_of_users) 
+                cache.set(url+'academy', academy_no_of_users) 
             
             response_data = {"academy_no_of_users": academy_no_of_users,
                              "alnafi_no_of_users": alnafi_no_of_users
@@ -229,7 +231,6 @@ class UserLoginView(APIView):
             response = loginUser(request, response, user, sameDomain)
             groups = user.groups.all()
             serialized_data = GroupsSerailizer(groups,many=True).data
-            # print(serialized_data)
             user = UserLoginSerializer(user).data
             user['groups'] = serialized_data
             response.data["user"] = user
