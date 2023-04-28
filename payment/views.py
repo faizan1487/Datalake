@@ -178,7 +178,8 @@ class SearchAlNafiPayments(APIView):
                     file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
+                    df = pd.DataFrame(alnafi_payments_serializer.data).to_csv(index=False)
+                    s3 = upload_csv_to_s3(df,file_name)  
                     data = {'file_link': file_path,'export':'true'}
                     return Response(data)
                 else:
@@ -194,7 +195,8 @@ class SearchAlNafiPayments(APIView):
                     file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)            
+                    df = pd.DataFrame(alnafi_payments_serializer.data).to_csv(index=False)  
+                    s3 = upload_csv_to_s3(df,file_name)            
                     data = {'file_link': file_path}
                     return Response(data)
                 else:
@@ -208,9 +210,11 @@ class SearchAlNafiPayments(APIView):
                 file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)               
+                df = pd.DataFrame(alnafi_payments_serializer.data).to_csv(index=False)   
+                s3 = upload_csv_to_s3(df,file_name)            
                 data = {'file_link': file_path,'export':'true'}
-                return Response(data)
+                return Response(data)            
+            
             else:
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(queryset, request)
