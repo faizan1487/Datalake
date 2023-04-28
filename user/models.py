@@ -129,7 +129,7 @@ class NavbarLink(models.Model):
     name = models.CharField(max_length=100,null=True, blank=True)
     path = models.CharField(max_length=100,null=True, blank=True)
     image = models.CharField(max_length=100,null=True, blank=True)
-    group = models.CharField(max_length=100,null=True, blank=True)
+    group = models.ManyToManyField(Group)
 
     def __str__(self):
         return self.name
