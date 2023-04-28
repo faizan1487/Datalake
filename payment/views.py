@@ -44,7 +44,7 @@ def easypaisa_payment(export,query,start_date,end_date,plan,request,url,product)
         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
         df = pd.DataFrame(easypaisa_serializer.data).to_csv(index=False)
         s3 = upload_csv_to_s3(df,file_name)
-        data = {'file_link': file_path}
+        data = {'file_link': file_path,'export':'true'}
         return Response(data)
     else:
         paginator = MyPagination()
@@ -63,7 +63,7 @@ def ubl_payment(export,query,start_date,end_date,plan,request,url,product):
         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
         df = pd.DataFrame(ubl_serializer.data).to_csv(index=False)
         s3 = upload_csv_to_s3(df,file_name)
-        data = {'file_link': file_path}
+        data = {'file_link': file_path,'export':'true'}
         return Response(data)
     else:
         paginator = MyPagination()
@@ -83,7 +83,7 @@ def stripe_payment(export,query,start_date,end_date,plan,request,url,product):
         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
         df = pd.DataFrame(stripe_serializer.data).to_csv(index=False)
         s3 = upload_csv_to_s3(df,file_name)
-        data = {'file_link': file_path}
+        data = {'file_link': file_path,'export':'true'}
         return Response(data)
     else:
         paginator = MyPagination()
@@ -177,7 +177,7 @@ class SearchAlNafiPayments(APIView):
                     # Build the full path to the media directory
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                     pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)
-                    data = {'file_link': file_path}
+                    data = {'file_link': file_path,'export':'true'}
                     return Response(data)
                 else:
                     paginator = MyPagination()
@@ -207,7 +207,7 @@ class SearchAlNafiPayments(APIView):
                 # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                 pd.DataFrame(alnafi_payments_serializer.data).to_csv(file_path, index=False)               
-                data = {'file_link': file_path}
+                data = {'file_link': file_path,'export':'true'}
                 return Response(data)
             else:
                 paginator = MyPagination()
@@ -261,7 +261,7 @@ class SearchPayments(APIView):
                     merged_df = pd.concat([df1, df2], axis=1)
                     df = merged_df.to_csv(index=False)
                     s3 = upload_csv_to_s3(df,file_name)
-                    data = {'file_link': file_path}
+                    data = {'file_link': file_path,'export':'true'}
                     return Response(data)
                 else:   
                     queryset = list(easypaisa) + list(ubl)
@@ -322,7 +322,7 @@ class SearchPayments(APIView):
                     merged_df = pd.concat([df1, df2, df3], axis=1)
                     df = merged_df.to_csv(index=False)
                     s3 = upload_csv_to_s3(df,file_name)
-                    data = {'file_link': file_path}
+                    data = {'file_link': file_path,'export':'true'}
                     return Response(data)
                 else:   
                     queryset = list(easypaisa) + list(stripe) + list(ubl)

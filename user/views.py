@@ -84,7 +84,7 @@ class GetUserDetails(APIView):
                     df = pd.DataFrame(serializer.data)
                     df_str = df.to_csv(index=False)
                     s3 = upload_csv_to_s3(df_str,file_name)
-                    data = {'file_link': file_path}
+                    data = {'file_link': file_path,'export':'true'}
                     return Response(data)
                 except Exception as e:
                     return Response(e)
@@ -107,7 +107,7 @@ class GetUserDetails(APIView):
                     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
                     df = pd.DataFrame(serializer.data).to_csv(index=False)
                     s3 = upload_csv_to_s3(df,file_name)
-                    data = {'file_link': file_path}
+                    data = {'file_link': file_path,'export':'true'}
                     return Response(data)
                 except Exception as e:
                     return Response(e)
@@ -137,7 +137,7 @@ class GetUserDetails(APIView):
                 merged_df = pd.concat([df1, df2], axis=1).to_csv(index=False)
                 s3 = upload_csv_to_s3(merged_df,file_name)
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                data = {'file_link': file_path}
+                data = {'file_link': file_path,'export':'true'}
                 return Response(data)
             else:   
                 alnafi_serialized_data = AlnafiUserSerializer(alnafi_obj['converted_users'], many=True)
