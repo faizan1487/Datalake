@@ -37,7 +37,7 @@ def easypaisa_payment(export,query,start_date,end_date,plan,request,url,product)
     if easypaisa is None:
         easypaisa = easypaisa_pay(query,start_date,end_date,plan,product)
         cache.set(url+'easypaisa', easypaisa) 
-    if export=='True':
+    if export=='true':
         easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)
         file_name = f"Easypaisa_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
         # Build the full path to the media directory
@@ -57,7 +57,7 @@ def ubl_payment(export,query,start_date,end_date,plan,request,url,product):
     if ubl is None:
         ubl = ubl_pay(query, start_date, end_date,plan,product)
         cache.set(url+'ubl', ubl) 
-    if export=='True':
+    if export=='true':
         ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl,many=True)
         file_name = f"Ubl_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -76,7 +76,7 @@ def stripe_payment(export,query,start_date,end_date,plan,request,url,product):
     if stripe is None:
         stripe = stripe_pay(query, start_date, end_date,plan,product)
         cache.set(url+'stripe', stripe) 
-    if export=='True':
+    if export=='true':
         stripe_serializer = StripePaymentSerializer(stripe,many=True)
         file_name = f"Stripe_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
         # Build the full path to the media directory
@@ -168,10 +168,10 @@ class SearchAlNafiPayments(APIView):
             queryset = payment_plan    
             
         if expiration:
-            if exact=='True':
+            if exact=='true':
                 expiration_date = date.today() + timedelta(days=int(expiration))
                 query_time = queryset.filter(expiration_datetime__date=expiration_date)
-                if export =='True':
+                if export =='true':
                     alnafi_payments_serializer = AlNafiPaymentSerializer(query_time, many=True)
                     file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
@@ -187,7 +187,7 @@ class SearchAlNafiPayments(APIView):
             else:
                 expiration_date = date.today() + timedelta(days=int(expiration))
                 query_time = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date))
-                if export =='True':
+                if export =='true':
                     alnafi_payments_serializer = AlNafiPaymentSerializer(query_time, many=True)
                     file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                     # Build the full path to the media directory
@@ -201,7 +201,7 @@ class SearchAlNafiPayments(APIView):
                     alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
                     return paginator.get_paginated_response(alnafi_payments_serializer.data)
         else:
-            if export =='True':
+            if export =='true':
                 alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
                 file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
@@ -248,7 +248,7 @@ class SearchPayments(APIView):
                 if ubl is None:
                     ubl = ubl_pay(query, start_date, end_date,plan,product)
                     cache.set(url+'ubl', ubl)         
-                if export=='True':
+                if export=='true':
                     easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)
                     ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl,many=True)
                     
@@ -307,7 +307,7 @@ class SearchPayments(APIView):
                 if ubl is None:
                     ubl = ubl_pay(query, start_date, end_date,plan,product)
                     cache.set(url+'ubl', ubl)         
-                if export=='True':
+                if export=='true':
                     easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)
                     stripe_serializer = StripePaymentSerializer(stripe,many=True)
                     ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl,many=True)

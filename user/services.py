@@ -78,12 +78,12 @@ def islamic_user(q, start_date, end_date, is_converted):
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj   
     if q:
-        if is_converted == 'True':
+        if is_converted == 'true':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
             queryset = paying_users.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
             query_time = queryset.filter(Q(created_at__date__gte = start_date) & Q(created_at__date__lte = end_date))
-        elif is_converted == 'False':
+        elif is_converted == 'false':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=False)
             queryset = paying_users.filter(
             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
@@ -95,10 +95,10 @@ def islamic_user(q, start_date, end_date, is_converted):
             
         
     else:
-        if is_converted == 'True':
+        if is_converted == 'true':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
             query_time = paying_users.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
-        elif is_converted == 'False':
+        elif is_converted == 'false':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=False)
             query_time = paying_users.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
         else:
@@ -127,7 +127,8 @@ def alnafi_no_users(start_date,end_date):
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = str(new_date_obj.date())
         
-    
+    # print("start_date", start_date)
+    # print("end_date", end_date)
     start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
     end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()       
     delta = end_date_obj - start_date_obj
@@ -279,12 +280,12 @@ def paying_users_details(query_time, is_converted):
         # easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
         # stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)  
               
-        if is_converted == 'True':
+        if is_converted == 'true':
             #  or easypaisa_user or stripe_user
             if ubl_user:
                 converted_users.append(user)
                 converted.append(True)
-        elif is_converted == 'False':
+        elif is_converted == 'false':
             #  or easypaisa_user or stripe_user
             if not ubl_user:
                 converted_users.append(user)
@@ -295,7 +296,8 @@ def paying_users_details(query_time, is_converted):
                 converted.append(True)
             else:
                 converted_users.append(user)
-                converted.append(False)        
+                converted.append(False)   
+                     
     response = {"converted_users":converted_users, "converted": converted}
     return response
 

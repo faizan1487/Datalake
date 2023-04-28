@@ -17,7 +17,7 @@ class Stripe_Payment(models.Model):
     source = models.CharField(max_length=50, null=True , blank=True)
     description = models.CharField(max_length=100, null=True , blank=True)
     address = models.CharField(max_length=300, null=True , blank=True)
-        
+    
     def __str__(self):
         return self.payment_id
  

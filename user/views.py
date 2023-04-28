@@ -75,7 +75,7 @@ class GetUserDetails(APIView):
                 obj = alnafi_user(q, start_date, end_date, is_converted)
                 cache.set(url, obj) 
             serializer = AlnafiUserSerializer(obj['converted_users'], many=True)
-            if export =='True':
+            if export =='true':
                 try:
                     serializer = AlnafiUserSerializer(obj['converted_users'], many=True)
                     file_name = f"Alanfi_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -99,7 +99,7 @@ class GetUserDetails(APIView):
             if obj is None:
                 obj = islamic_user(q, start_date, end_date, is_converted)
                 cache.set(url, obj) 
-            if export =='True':
+            if export =='true':
                 try:
                     serializer = IslamicAcademyUserSerializer(obj, many=True)
                     file_name = f"Islamic_Academy_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -119,7 +119,6 @@ class GetUserDetails(APIView):
         else:
             alnafi_obj = cache.get(url+'alnafi')
             islamic_obj = cache.get(url+'islamic')
-            
             if alnafi_obj is None:
                 alnafi_obj = alnafi_user(q, start_date, end_date, is_converted)
                 cache.set(url+'alnafi', alnafi_obj)
@@ -128,7 +127,7 @@ class GetUserDetails(APIView):
                 islamic_obj = islamic_user(q, start_date, end_date,is_converted)
                 cache.set(url+'islamic', islamic_obj)
             
-            if export == 'True':
+            if export == 'true':
                 alnafi_serializer = AlnafiUserSerializer(alnafi_obj, many=True)
                 islamic_serializer = IslamicAcademyUserSerializer(islamic_obj, many=True)
                 df1 = pd.DataFrame(alnafi_serializer.data)
