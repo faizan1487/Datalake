@@ -18,18 +18,14 @@ def json_to_csv(serialized_data,name):
     return file_path
 
 def stripe_no_payments(start_date,end_date):
-    if start_date:
-        pass
-    else:
-        first_payment = Stripe_Payment.objects.last()
+    if not start_date:
+        first_payment = Stripe_Payment.objects.exclude(order_datetime=None).last()
         date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
-        start_date = str(new_date_obj.date())    
-    if end_date:
-        pass
-    else:
-        pass
-        last_payment = Stripe_Payment.objects.first()
+        start_date = str(new_date_obj.date()) 
+           
+    if not end_date:
+        last_payment = Stripe_Payment.objects.exclude(order_datetime=None).first()
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = str(new_date_obj.date())
@@ -66,18 +62,13 @@ def stripe_no_payments(start_date,end_date):
     return response_data
 
 def ubl_no_payments(start_date,end_date):
-    if start_date:
-        pass
-    else:
-        first_payment = UBL_IPG_Payment.objects.last()
+    if not start_date:
+        first_payment = UBL_IPG_Payment.objects.exclude(order_datetime=None).last()
         date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = str(new_date_obj.date())    
-    if end_date:
-        pass
-    else:
-        pass
-        last_payment = UBL_IPG_Payment.objects.first()
+    if not end_date:
+        last_payment = UBL_IPG_Payment.objects.exclude(order_datetime=None).first()
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = str(new_date_obj.date())
@@ -114,18 +105,13 @@ def ubl_no_payments(start_date,end_date):
     return response_data
     
 def easypaisa_no_payments(start_date,end_date):
-    if start_date:
-        pass
-    else:
-        first_payment = Easypaisa_Payment.objects.last()
+    if not start_date:
+        first_payment = Easypaisa_Payment.objects.exclude(order_datetime=None).last()
         date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = str(new_date_obj.date())    
-    if end_date:
-        pass
-    else:
-        pass
-        last_payment = Easypaisa_Payment.objects.first()
+    if not end_date:
+        last_payment = Easypaisa_Payment.objects.exclude(order_datetime=None).first()
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = str(new_date_obj.date())
@@ -163,18 +149,13 @@ def easypaisa_no_payments(start_date,end_date):
 
 
 def no_of_payments(start_date,end_date,queryset):
-    if start_date:
-        pass
-    else:
-        first_payment = AlNafi_Payment.objects.last()
+    if not start_date:
+        first_payment = AlNafi_Payment.objects.exclude(order_datetime=None).last()
         date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = str(new_date_obj.date())    
-    if end_date:
-        pass
-    else:
-        pass
-        last_payment = AlNafi_Payment.objects.first()
+    if not end_date:
+        last_payment = AlNafi_Payment.objects.exclude(order_datetime=None).first()
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = str(new_date_obj.date())
@@ -213,18 +194,13 @@ def no_of_payments(start_date,end_date,queryset):
     return response_data
     
 def stripe_pay(q, start_date, end_date,plan,product):
-    if start_date:
-        pass
-    else:
-        first_payment = Stripe_Payment.objects.last()
+    if not start_date:
+        first_payment = Stripe_Payment.objects.exclude(order_datetime=None).last()
         date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = new_date_obj      
-    if end_date:
-        pass
-    else:
-        pass
-        last_payment = Stripe_Payment.objects.first()
+    if not end_date:
+        last_payment = Stripe_Payment.objects.exclude(order_datetime=None).first()
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
@@ -274,17 +250,13 @@ def stripe_pay(q, start_date, end_date,plan,product):
     return query_time
 
 def easypaisa_pay(q,start_date,end_date,plan,product):
-    if start_date:
-        pass
-    else:
-        first_payment = Easypaisa_Payment.objects.last()
+    if not start_date:
+        first_payment = Easypaisa_Payment.objects.exclude(order_datetime=None).last()
         date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                    
         start_date = new_date_obj + timedelta(days=20)       
-    if end_date:
-        pass
-    else:
-        last_payment = Easypaisa_Payment.objects.first()
+    if not end_date:
+        last_payment = Easypaisa_Payment.objects.exclude(order_datetime=None).first()
         date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
         end_date = new_date_obj - timedelta(days=20)
@@ -333,17 +305,13 @@ def easypaisa_pay(q,start_date,end_date,plan,product):
     return query_time
 
 def ubl_pay(q, start_date, end_date,plan,product):
-    if start_date==None:
-        first_payment = UBL_IPG_Payment.objects.last()
+    if not start_date:
+        first_payment = UBL_IPG_Payment.objects.exclude(order_datetime=None).last()
         start_date = first_payment.order_datetime + timedelta(days=20) 
-    else:
-        pass  
         
-    if end_date==None:
-        last_payment = UBL_IPG_Payment.objects.first()
+    if not end_date:
+        last_payment = UBL_IPG_Payment.objects.exclude(order_datetime=None).first()
         end_date = last_payment.order_datetime - timedelta(days=20)
-    else:
-        pass
     
     if q:
         queryset = UBL_IPG_Payment.objects.filter(

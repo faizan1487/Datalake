@@ -28,20 +28,14 @@ def upload_csv_to_s3(df,file_name):
 
 def alnafi_user(q, start_date, end_date, is_converted):
     if not start_date:
-        first_user = AlNafi_User.objects.first()
-        try:
-            date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        except:
-            pass
+        first_user = AlNafi_User.objects.exclude(created_at=None).first()
+        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = new_date_obj
 
     if not end_date:
-        last_user = AlNafi_User.objects.last()
-        try:
-            date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        except:
-            pass
+        last_user = AlNafi_User.objects.exclude(created_at=None).last()
+        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
 
@@ -57,26 +51,18 @@ def alnafi_user(q, start_date, end_date, is_converted):
     return paying_user_queryset
 
 def islamic_user(q, start_date, end_date, is_converted): 
-    if start_date:
-        pass
-    else:
-        first_user = IslamicAcademy_User.objects.first()
-        try:
-            date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        except:
-            pass
+    if not start_date:
+        first_user = IslamicAcademy_User.objects.exclude(created_at=None).first()
+        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
         start_date = new_date_obj
-    if end_date:
-        pass
-    else:
-        last_user = IslamicAcademy_User.objects.last()
-        try:
-            date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        except:
-            pass
+    
+    if not end_date:
+        last_user = IslamicAcademy_User.objects.exclude(created_at=None).last()
+        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-        end_date = new_date_obj   
+        end_date = new_date_obj  
+         
     if q:
         if is_converted == 'true':
             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
@@ -110,20 +96,14 @@ def islamic_user(q, start_date, end_date, is_converted):
 
 def alnafi_no_users(start_date,end_date):
     if not start_date:
-        first_user = AlNafi_User.objects.first()
-        try:
-            date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        except:
-            pass
+        first_user = AlNafi_User.objects.exclude(created_at=None).first()
+        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = str(new_date_obj.date())
         
     if not end_date:
-        last_user = AlNafi_User.objects.last()
-        try:
-            date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        except:
-            pass
+        last_user = AlNafi_User.objects.exclude(created_at=None).last()
+        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = str(new_date_obj.date())
         
