@@ -1,6 +1,7 @@
 venv
 db.sqlite3
 .env
+.env_faizan
 __pycache__
 
 # Editors/ IDEs Folders

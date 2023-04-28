@@ -48,3 +48,5 @@ class IslamicAcademyProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = IslamicAcademy_Product
         fields = ("id", "name", "slug", "date_created", "date_modified", "type", "status", "description", "price", "stock_status")
+
+# FOR MAIN PRODUCTS COMBINE PRODUCT ALL TABLE IN ONE:
