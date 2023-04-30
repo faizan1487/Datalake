@@ -32,13 +32,13 @@ class IslamicAcademyProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 admin.site.register(IslamicAcademy_Product, IslamicAcademyProductAdmin)
 
 
-# FOR MAIN PRODUCTS COMBINE PRODUCT ALL TABLE IN ONE:
-class MainProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ("id","source", "product_name", "product_slug", "created_at", "product_type",
-                    "product_plan", "amount_pkr", "amount_usd", "product_language", "allow_coupon")
-    search_fields = ("product_name", "product_slug")
-    list_filter = ("created_at", "source", "product_type", "product_plan",
-                   "product_language", "allow_coupon", "amount_pkr", "amount_usd")
- 
+# # FOR MAIN PRODUCTS COMBINE PRODUCT ALL TABLE IN ONE:
+# class MainProductAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+#     list_display = ("id", "source", "product_name", "product_slug", "created_at", "modified_at", "product_type", "product_plan", "amount_pkr", "amount_usd", "amount_gbp", "old_amount_pkr", "old_amount_usd", "legacy_fee_pkr", "legacy_fee_usd",
+#                     "legacy_available", "qarz_product", "qarz_fee_pkr", "qarz_fee_usd", "lms_id", "product_language", "has_legacy_version", "is_certificate_product", "allow_coupon", "courses", "image", "bundle_ids", "status", "description", "stock_status")
+#     search_fields = ("product_name", "product_slug")
+#     list_filter = ("created_at", "source", "product_type", "product_plan",
+#                    "product_language", "allow_coupon", "amount_pkr", "amount_usd")
 
-admin.site.register(Main_Product, MainProductAdmin)
+
+# admin.site.register(Main_Product, MainProductAdmin)
