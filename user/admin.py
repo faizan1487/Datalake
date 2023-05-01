@@ -1,5 +1,6 @@
 from django.contrib import admin
 from .models import AlNafi_User
+from .models import Main_User
 from user.models import IslamicAcademy_User, User, NavbarLink
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin
@@ -24,6 +25,14 @@ class IslamicAcademyUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 admin.site.register(IslamicAcademy_User, IslamicAcademyUserAdmin)
 
+
+#FOR MERGE USERS TABLES MAIN_USER:
+class Main_UserAdmin(admin.ModelAdmin):
+    list_display = ["username", "first_name", "last_name", "email", "source", "phone", "address", "country", "language", "created_at", "modified_at", "verification_code", "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer", "role"]
+    search_fields = ("username", "first_name", "last_name", "email", "source", "phone", "address", "country", "language", "created_at", "modified_at", "verification_code", "isAffiliate", "affiliate_code", "isMentor", "is_paying_customer", "role")
+    list_filter = ("source", "country", "language", "created_at", "modified_at", "verification_code", "isMentor", "is_paying_customer", "role")
+
+admin.site.register(Main_User, Main_UserAdmin)
 
 class UserModelAdmin(BaseUserAdmin):
   # The fields to be used in displaying the User model.
