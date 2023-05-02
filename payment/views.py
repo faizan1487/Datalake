@@ -157,37 +157,38 @@ class SearchAlNafiPayments(APIView):
         payment_cycle = []
         for obj in queryset:
             product = Alnafi_Product.objects.filter(name=obj.product_name)
-            if product[0].plan:
-                if plan == 'yearly':
-                    if product[0].plan == 'Yearly':
-                        payment_plan.append(obj)
-                        payment_cycle.append('Yearly')
-                elif plan == 'halfyearly':
-                    if product[0].plan == 'Half Yearly':
-                        payment_plan.append(obj)
-                        payment_cycle.append('Half yearly')
-                elif plan == 'quarterly':           
-                    if product[0].plan == 'Quarterly':
-                        payment_plan.append(obj)
-                        payment_cycle.append('Quarterly')
-                elif plan == 'monthly':           
-                    if product[0].plan == 'Monthly':
-                        payment_plan.append(obj)
-                        payment_cycle.append('Monthly')
-                else:
-                    if product[0].plan == 'Yearly':
-                        payment_plan.append(obj)
-                        payment_cycle.append('Yearly')
-                    if product[0].plan == 'Half Yearly':
-                        payment_plan.append(obj)
-                        payment_cycle.append('Half yearly')
-                    if product[0].plan == 'Quarterly':
-                        payment_plan.append(obj)
-                        payment_cycle.append('Quarterly')
-                    if product[0].plan == 'Monthly':
-                        payment_plan.append(obj)
-                        payment_cycle.append('Monthly')   
-                            
+            if product:
+                if product[0].plan:
+                    if plan == 'yearly':
+                        if product[0].plan == 'Yearly':
+                            payment_plan.append(obj)
+                            payment_cycle.append('Yearly')
+                    elif plan == 'halfyearly':
+                        if product[0].plan == 'Half Yearly':
+                            payment_plan.append(obj)
+                            payment_cycle.append('Half yearly')
+                    elif plan == 'quarterly':           
+                        if product[0].plan == 'Quarterly':
+                            payment_plan.append(obj)
+                            payment_cycle.append('Quarterly')
+                    elif plan == 'monthly':           
+                        if product[0].plan == 'Monthly':
+                            payment_plan.append(obj)
+                            payment_cycle.append('Monthly')
+                    else:
+                        if product[0].plan == 'Yearly':
+                            payment_plan.append(obj)
+                            payment_cycle.append('Yearly')
+                        if product[0].plan == 'Half Yearly':
+                            payment_plan.append(obj)
+                            payment_cycle.append('Half yearly')
+                        if product[0].plan == 'Quarterly':
+                            payment_plan.append(obj)
+                            payment_cycle.append('Quarterly')
+                        if product[0].plan == 'Monthly':
+                            payment_plan.append(obj)
+                            payment_cycle.append('Monthly')   
+                                
         queryset = payment_plan   
                  
         alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
