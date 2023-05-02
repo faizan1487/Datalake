@@ -128,7 +128,7 @@ class SearchAlNafiPayments(APIView):
         export = self.request.GET.get('export', None) or None 
         plan = self.request.GET.get('plan', None) or None
         url = request.build_absolute_uri()
-             
+        
         if q:
             queryset = cache.get(url)
             if queryset is None:
@@ -144,87 +144,67 @@ class SearchAlNafiPayments(APIView):
                 
         if source:
             queryset = queryset.filter(source__iexact=source)
-        if plan:
-            payment_plan = []
-            for obj in queryset:
-                product = Alnafi_Product.objects.filter(name=obj.product_name)
-                # print(product)
-                if plan == 'yearly':
-                    for i in product:
-                        if i.plan:
-                            if i.plan == 'Yearly':
-                                payment_plan.append(obj)
-                if plan == 'halfyearly':
-                    for i in product:
-                        if i.plan:
-                            if i.plan == 'Half Yearly':
-                                payment_plan.append(obj)
-                                
-                if plan == 'quarterly':           
-                    for i in product:
-                        if i.plan:
-                            if i.plan == 'Quarterly':
-                                payment_plan.append(obj)
-                                
-                if plan == 'monthly':           
-                    for i in product:
-                        if i.plan:
-                            if i.plan == 'Monthly':
-                                payment_plan.append(obj)
-                                
-            queryset = payment_plan    
             
         if expiration:
             if exact=='true':
                 expiration_date = date.today() + timedelta(days=int(expiration))
-                query_time = queryset.filter(expiration_datetime__date=expiration_date)
-                if export =='true':
-                    alnafi_payments_serializer = AlNafiPaymentSerializer(query_time, many=True)
-                    file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                    # Build the full path to the media directory
-                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    df = pd.DataFrame(alnafi_payments_serializer.data).to_csv(index=False)
-                    s3 = upload_csv_to_s3(df,file_name)  
-                    data = {'file_link': file_path,'export':'true'}
-                    return Response(data)
-                else:
-                    paginator = MyPagination()
-                    paginated_queryset = paginator.paginate_queryset(query_time, request)
-                    alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
-                    return paginator.get_paginated_response(alnafi_payments_serializer.data)
+                queryset = queryset.filter(expiration_datetime__date=expiration_date)
             else:
                 expiration_date = date.today() + timedelta(days=int(expiration))
-                query_time = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date))
-                if export =='true':
-                    alnafi_payments_serializer = AlNafiPaymentSerializer(query_time, many=True)
-                    file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                    # Build the full path to the media directory
-                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    df = pd.DataFrame(alnafi_payments_serializer.data).to_csv(index=False)  
-                    s3 = upload_csv_to_s3(df,file_name)            
-                    data = {'file_link': file_path}
-                    return Response(data)
+                queryset = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date)) 
+                
+        payment_plan = []
+        payment_cycle = []
+        for obj in queryset:
+            product = Alnafi_Product.objects.filter(name=obj.product_name)
+            if product[0].plan:
+                if plan == 'yearly':
+                    if product[0].plan == 'Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Yearly')
+                elif plan == 'halfyearly':
+                    if product[0].plan == 'Half Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Half yearly')
+                elif plan == 'quarterly':           
+                    if product[0].plan == 'Quarterly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Quarterly')
+                elif plan == 'monthly':           
+                    if product[0].plan == 'Monthly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Monthly')
                 else:
-                    paginator = MyPagination()
-                    paginated_queryset = paginator.paginate_queryset(query_time, request)
-                    alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
-                    return paginator.get_paginated_response(alnafi_payments_serializer.data)
+                    if product[0].plan == 'Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Yearly')
+                    if product[0].plan == 'Half Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Half yearly')
+                    if product[0].plan == 'Quarterly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Quarterly')
+                    if product[0].plan == 'Monthly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Monthly')   
+                            
+        queryset = payment_plan   
+                 
+        alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
+        for i in range(len(alnafi_payments_serializer.data)):
+            alnafi_payments_serializer.data[i]['payment_cycle'] = payment_cycle[i]
+        if export =='true':
+            file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            # Build the full path to the media directory
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            df = pd.DataFrame(alnafi_payments_serializer.data).to_csv(index=False)   
+            s3 = upload_csv_to_s3(df,file_name)            
+            data = {'file_link': file_path,'export':'true'}
+            return Response(data)                       
         else:
-            if export =='true':
-                alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
-                file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                # Build the full path to the media directory
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                df = pd.DataFrame(alnafi_payments_serializer.data).to_csv(index=False)   
-                s3 = upload_csv_to_s3(df,file_name)            
-                data = {'file_link': file_path,'export':'true'}
-                return Response(data)            
-            
-            else:
-                paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(queryset, request)
-                alnafi_payments_serializer = AlNafiPaymentSerializer(paginated_queryset, many=True)
-                return paginator.get_paginated_response(alnafi_payments_serializer.data)
+            paginator = MyPagination()
+            paginated_queryset = paginator.paginate_queryset(alnafi_payments_serializer.data, request)
+            return paginator.get_paginated_response(paginated_queryset)
             
 class SearchPayments(APIView):
     # permission_classes = [IsAuthenticated]
