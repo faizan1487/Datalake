@@ -149,7 +149,7 @@ class SearchAlNafiPayments(APIView):
                         if i.plan:
                             if i.plan == 'Yearly':
                                 payment_plan.append(obj)
-                if plan == 'half yearly':
+                if plan == 'halfyearly':
                     for i in product:
                         if i.plan:
                             if i.plan == 'Half Yearly':

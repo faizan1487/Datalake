@@ -227,7 +227,7 @@ def stripe_pay(q, start_date, end_date,plan,product):
                     if i.plan:
                         if i.plan == 'Yearly':
                             payment_plan.append(obj)
-            if plan == 'half yearly':
+            if plan == 'halfyearly':
                 for i in product:
                     if i.plan:
                         if i.plan == 'Half Yearly':
@@ -245,8 +245,7 @@ def stripe_pay(q, start_date, end_date,plan,product):
                         if i.plan == 'Monthly':
                             payment_plan.append(obj)
                             
-        query_time = payment_plan    
-            
+        query_time = payment_plan              
     return query_time
 
 def easypaisa_pay(q,start_date,end_date,plan,product):
@@ -282,7 +281,7 @@ def easypaisa_pay(q,start_date,end_date,plan,product):
                     if i.plan:
                         if i.plan == 'Yearly':
                             payment_plan.append(obj)
-            if plan == 'half yearly':
+            if plan == 'halfyearly':
                 for i in product:
                     if i.plan:
                         if i.plan == 'Half Yearly':
@@ -334,7 +333,7 @@ def ubl_pay(q, start_date, end_date,plan,product):
                     if i.plan:
                         if i.plan == 'Yearly':
                             payment_plan.append(obj)
-            if plan == 'half yearly':
+            if plan == 'halfyearly':
                 for i in product:
                     if i.plan:
                         if i.plan == 'Half Yearly':
