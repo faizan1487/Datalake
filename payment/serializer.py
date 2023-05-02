@@ -77,3 +77,7 @@ class PaymentCombinedSerializer(Serializer):
     data1 = StripePaymentSerializer(many=True)
     data2 = Ubl_Ipg_PaymentsSerializer(many=True)
     data3 = Easypaisa_PaymentsSerializer(many=True)
+
+class LocalPaymentCombinedSerializer(Serializer):
+    data1 = Ubl_Ipg_PaymentsSerializer(many=True)
+    data2 = Easypaisa_PaymentsSerializer(many=True)

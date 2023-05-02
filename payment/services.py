@@ -217,36 +217,56 @@ def stripe_pay(q, start_date, end_date,plan,product):
     if product:
         query_time = query_time.filter(product_name__icontains=product)
     
-    if plan:
-        payment_plan = []
-        for obj in query_time:
-            product = Alnafi_Product.objects.filter(name=obj.product_name)
-            # print(product)
-            if plan == 'yearly':
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Yearly':
-                            payment_plan.append(obj)
-            if plan == 'halfyearly':
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Half Yearly':
-                            payment_plan.append(obj)
-                            
-            if plan == 'quarterly':           
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Quarterly':
-                            payment_plan.append(obj)
-                            
-            if plan == 'monthly':           
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Monthly':
-                            payment_plan.append(obj)
-                            
-        query_time = payment_plan              
-    return query_time
+    
+    payment_plan = []
+    payment_cycle = []
+    for obj in query_time:
+        product = Alnafi_Product.objects.filter(name=obj.product_name)
+        # print(product)
+        if plan == 'yearly':
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Yearly')
+        elif plan == 'halfyearly':
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Half Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Half yearly')
+        elif plan == 'quarterly':           
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Quarterly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Quarterly')
+        elif plan == 'monthly':           
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Monthly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Monthly')
+        else:
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Yearly')
+                    if i.plan == 'Half Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Half yearly')
+                    if i.plan == 'Quarterly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Quarterly')
+                    if i.plan == 'Monthly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Monthly')
+                        
+    query_time = payment_plan   
+    response_data = {"data":query_time,
+                        "payment_cycle":payment_cycle}            
+    return response_data
 
 def easypaisa_pay(q,start_date,end_date,plan,product):
     if not start_date:
@@ -271,37 +291,57 @@ def easypaisa_pay(q,start_date,end_date,plan,product):
     if product:
         query_time = query_time.filter(product_name__icontains=product)
     
-    if plan:
-        payment_plan = []
-        for obj in query_time:
-            product = Alnafi_Product.objects.filter(name=obj.product_name)
-            # print(product)
-            if plan == 'yearly':
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Yearly':
-                            payment_plan.append(obj)
-            if plan == 'halfyearly':
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Half Yearly':
-                            payment_plan.append(obj)
-                            
-            if plan == 'quarterly':           
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Quarterly':
-                            payment_plan.append(obj)
-                            
-            if plan == 'monthly':           
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Monthly':
-                            payment_plan.append(obj)
-                            
-        query_time = payment_plan    
-                
-    return query_time
+    payment_plan = []
+    payment_cycle = []
+    for obj in query_time:
+        product = Alnafi_Product.objects.filter(name=obj.product_name)
+        # print(product)
+        if plan == 'yearly':
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Yearly')
+        elif plan == 'halfyearly':
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Half Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Half yearly')
+        elif plan == 'quarterly':           
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Quarterly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Quarterly')
+        elif plan == 'monthly':           
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Monthly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Monthly')
+        else:
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Yearly')
+                    if i.plan == 'Half Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Half yearly')
+                    if i.plan == 'Quarterly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Quarterly')
+                    if i.plan == 'Monthly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Monthly')
+    
+                        
+    query_time = payment_plan   
+        
+    response_data = {"data":query_time,
+                        "payment_cycle":payment_cycle}        
+    return response_data
 
 def ubl_pay(q, start_date, end_date,plan,product):
     if not start_date:
@@ -323,37 +363,56 @@ def ubl_pay(q, start_date, end_date,plan,product):
     if product:
         query_time = query_time.filter(product_name__icontains=product)
     
-    if plan:
-        payment_plan = []
-        for obj in query_time:
-            product = Alnafi_Product.objects.filter(name=obj.product_name)
-            # print(product)
-            if plan == 'yearly':
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Yearly':
-                            payment_plan.append(obj)
-            if plan == 'halfyearly':
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Half Yearly':
-                            payment_plan.append(obj)                   
-            if plan == 'quarterly':           
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Quarterly':
-                            payment_plan.append(obj)  
-                                             
-            if plan == 'monthly':           
-                for i in product:
-                    if i.plan:
-                        if i.plan == 'Monthly':
-                            payment_plan.append(obj)
-                            
-        query_time = payment_plan  
+    payment_plan = []
+    payment_cycle = []
+    for obj in query_time:
+        product = Alnafi_Product.objects.filter(name=obj.product_name)
+        # print(product)
+        if plan == 'yearly':
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Yearly')
+        elif plan == 'halfyearly':
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Half Yearly':
+                        payment_plan.append(obj)   
+                        payment_cycle.append('Half yearly')                
+        elif plan == 'quarterly':           
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Quarterly':
+                        payment_plan.append(obj) 
+                        payment_cycle.append('Quarterly')                                 
+        elif plan == 'monthly':           
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Monthly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Monthly')  
+        else:
+            for i in product:
+                if i.plan:
+                    if i.plan == 'Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Yearly')
+                    if i.plan == 'Half Yearly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Half yearly')
+                    if i.plan == 'Quarterly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Quarterly')
+                    if i.plan == 'Monthly':
+                        payment_plan.append(obj)
+                        payment_cycle.append('Monthly')
+                        
+    query_time = payment_plan  
+    response_data = {"data":query_time,
+                        "payment_cycle":payment_cycle}
         
-          
-    return query_time
+    return response_data
 
 
 def ubl_payment_validation(time_threshold_str,q):
