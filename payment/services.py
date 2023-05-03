@@ -657,7 +657,7 @@ def easypaisa_payment_validation(time_threshold_str,q):
                 "valid_payments": valid_payments}     
     else:
         serializer = Easypaisa_PaymentsSerializer(easypaisa_pay,many=True)
-        response_data = {"payments":serializer.data}
+        response = {"payments":serializer}
     return response
 
 

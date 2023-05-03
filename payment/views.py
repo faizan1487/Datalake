@@ -462,6 +462,7 @@ class PaymentValidation(APIView):
                 easypaisa = easypaisa_payment_validation(time_threshold_str,q)
                 cache.set(url, easypaisa) 
             paginator = MyPagination()
+            print(easypaisa['payments'])
             paginated_queryset = paginator.paginate_queryset(easypaisa['payments'].data, request)
             return paginator.get_paginated_response(paginated_queryset)
         elif source == 'stripe':
