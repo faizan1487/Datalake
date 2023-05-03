@@ -204,6 +204,18 @@ class SearchAlNafiPayments(APIView):
         alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
         for i in range(len(alnafi_payments_serializer.data)):
             alnafi_payments_serializer.data[i]['payment_cycle'] = payment_cycle[i]
+            if expired == 'true':
+                alnafi_payments_serializer.data[i]['expired'] = True
+            elif active == 'true':
+                alnafi_payments_serializer.data[i]['active'] = True
+            else:
+                date_string = alnafi_payments_serializer.data[i]['expiration_datetime']
+                date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S").date()
+                if date_object < date.today():
+                    alnafi_payments_serializer.data[i]['expired'] = True
+                else:
+                    alnafi_payments_serializer.data[i]['active'] = True
+                  
         if export =='true':
             file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             # Build the full path to the media directory
