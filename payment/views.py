@@ -131,7 +131,6 @@ class SearchAlNafiPayments(APIView):
         expired = self.request.GET.get('expired', None) or None
         active = self.request.GET.get('active', None) or None
         product = self.request.GET.get('product', None) or None
-        
         if q:
             queryset = cache.get(url)
             if queryset is None:
@@ -160,13 +159,9 @@ class SearchAlNafiPayments(APIView):
         
         if expired == 'true':
             queryset = [obj for obj in queryset if obj.expiration_datetime.date() < date.today()]
-        elif expired == 'false':
-            queryset = [obj for obj in queryset if obj.expiration_datetime.date() > date.today()] 
-                    
+                   
         if active == 'true':
             queryset = [obj for obj in queryset if obj.expiration_datetime.date() > date.today()]
-        elif active == 'false':
-            queryset = [obj for obj in queryset if obj.expiration_datetime.date() < date.today()]
         
         payment_plan = []
         payment_cycle = []
