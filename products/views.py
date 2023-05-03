@@ -16,3 +16,6 @@ class AlnafiProduct(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
+    def get(self,request):
+        data = Alnafi_Product.objects.values_list('name', flat=True)
+        return Response(data)

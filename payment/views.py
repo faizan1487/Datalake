@@ -128,20 +128,25 @@ class SearchAlNafiPayments(APIView):
         export = self.request.GET.get('export', None) or None 
         plan = self.request.GET.get('plan', None) or None
         url = request.build_absolute_uri()
+        expired = self.request.GET.get('expired', None) or None
+        active = self.request.GET.get('active', None) or None
+        product = self.request.GET.get('product', None) or None
         
         if q:
             queryset = cache.get(url)
             if queryset is None:
                 queryset = AlNafi_Payment.objects.filter(
-                    Q(customer_email__iexact=q) | Q(product_name__icontains=q)
-                    |Q(order_id__iexact=q))
+                    Q(customer_email__iexact=q) | Q(order_id__iexact=q))
                 cache.set(url, queryset)
         else:
             queryset = cache.get(url)
             if queryset is None:
                 queryset = AlNafi_Payment.objects.all()
                 cache.set(url, queryset)
-                
+          
+        if product:
+            queryset = queryset.filter(product_name__icontains=product)  
+              
         if source:
             queryset = queryset.filter(source__iexact=source)
             
@@ -152,7 +157,17 @@ class SearchAlNafiPayments(APIView):
             else:
                 expiration_date = date.today() + timedelta(days=int(expiration))
                 queryset = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date)) 
-                
+        
+        if expired == 'true':
+            queryset = [obj for obj in queryset if obj.expiration_datetime.date() < date.today()]
+        elif expired == 'false':
+            queryset = [obj for obj in queryset if obj.expiration_datetime.date() > date.today()] 
+                    
+        if active == 'true':
+            queryset = [obj for obj in queryset if obj.expiration_datetime.date() > date.today()]
+        elif active == 'false':
+            queryset = [obj for obj in queryset if obj.expiration_datetime.date() < date.today()]
+        
         payment_plan = []
         payment_cycle = []
         for obj in queryset:

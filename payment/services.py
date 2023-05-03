@@ -429,17 +429,13 @@ def ubl_payment_validation(time_threshold_str,q):
             ubl_payments.append(obj)
             alnafi_product = Alnafi_Product.objects.filter(name=obj.product_name)
             
-            # print("alnafi_product[0].amount_pkr ",type(alnafi_product[0].amount_pkr ))
-            # print("obj.amount", type(obj.amount))
+            
             if alnafi_product:
                 if alnafi_product[0].amount_pkr == obj.amount:
                     valid_payment = True
             
             #Get the latest alnafi payment
             alnafi_payment = list(AlNafi_Payment.objects.filter(customer_email=obj.customer_email))
-            # print("alnafi_payment[0].expiration_datetime",alnafi_payment[0].expiration_datetime)
-            # print("alnafi_payment[0].expiration_datetime+timedelta(days=380)",alnafi_payment[0].expiration_datetime+timedelta(days=380))
-            # print("alnafi_payment[0].expiration_datetime",type(alnafi_payment[0].expiration_datetime))
             if alnafi_payment:
                 if obj.product_name == alnafi_payment[0].product_name:
                     valid_payment = True
