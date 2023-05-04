@@ -128,8 +128,8 @@ class SearchAlNafiPayments(APIView):
         export = self.request.GET.get('export', None) or None 
         plan = self.request.GET.get('plan', None) or None
         url = request.build_absolute_uri()
-        expired = self.request.GET.get('expired', None) or None
-        active = self.request.GET.get('active', None) or None
+        # expired = self.request.GET.get('expired', None) or None
+        active = self.request.GET.get('is_active', None) or None
         product = self.request.GET.get('product', None) or None
         if q:
             queryset = cache.get(url)
@@ -157,11 +157,13 @@ class SearchAlNafiPayments(APIView):
                 expiration_date = date.today() + timedelta(days=int(expiration))
                 queryset = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date)) 
         
-        if expired == 'true':
-            queryset = [obj for obj in queryset if obj.expiration_datetime.date() < date.today()]
+        # if expired == 'true':
+        #     queryset = [obj for obj in queryset if obj.expiration_datetime.date() < date.today()]
                    
         if active == 'true':
             queryset = [obj for obj in queryset if obj.expiration_datetime.date() > date.today()]
+        elif active == 'false':
+            queryset = [obj for obj in queryset if obj.expiration_datetime.date() < date.today()]
         
         payment_plan = []
         payment_cycle = []
@@ -204,17 +206,18 @@ class SearchAlNafiPayments(APIView):
         alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
         for i in range(len(alnafi_payments_serializer.data)):
             alnafi_payments_serializer.data[i]['payment_cycle'] = payment_cycle[i]
-            if expired == 'true':
-                alnafi_payments_serializer.data[i]['expired'] = True
-            elif active == 'true':
-                alnafi_payments_serializer.data[i]['active'] = True
+            if active == 'true':
+                alnafi_payments_serializer.data[i]['is_active'] = True
+            elif active == 'false':
+                alnafi_payments_serializer.data[i]['is_active'] = False
+            
             else:
                 date_string = alnafi_payments_serializer.data[i]['expiration_datetime']
                 date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S").date()
                 if date_object < date.today():
-                    alnafi_payments_serializer.data[i]['expired'] = True
+                    alnafi_payments_serializer.data[i]['is_active'] = False
                 else:
-                    alnafi_payments_serializer.data[i]['active'] = True
+                    alnafi_payments_serializer.data[i]['is_active'] = True
                   
         if export =='true':
             file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
