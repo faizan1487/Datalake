@@ -213,7 +213,7 @@ class SearchAlNafiPayments(APIView):
             else:
                 date_string = alnafi_payments_serializer.data[i]['expiration_datetime']
                 print(date_string)
-                date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f").date()
+                date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S").date()
                 if date_object < date.today():
                     alnafi_payments_serializer.data[i]['is_active'] = False
                 else:
