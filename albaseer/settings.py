@@ -52,6 +52,10 @@ CORS_ALLOWED_ORIGINS = [
     'https://ec2-34-194-10-51.compute-1.amazonaws.com',
     'http://stage-al-baseer.alnafi.com',
     'https://stage-al-baseer.alnafi.com'
+    'http://ec2-3-233-91-36.compute-1.amazonaws.com'
+    'https://al-baseer.alnafi.com'
+    'https://api-al-baseer.alnafi.com'
+    'http://ec2-52-6-12-123.compute-1.amazonaws.com'
 ]
 
 CORS_ALLOW_METHODS = [
