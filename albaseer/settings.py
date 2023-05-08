@@ -256,10 +256,8 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 
 
-CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io','http://ec2-3-233-91-36.compute-1.amazonaws.com'
-    'https://al-baseer.alnafi.com',
-    'https://api-al-baseer.alnafi.com',
-    'http://ec2-52-6-12-123.compute-1.amazonaws.com']
+CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io','http://ec2-3-233-91-36.compute-1.amazonaws.com',
+    'https://al-baseer.alnafi.com','https://api-al-baseer.alnafi.com','http://ec2-52-6-12-123.compute-1.amazonaws.com']
 
 
 # if DEBUG:
