@@ -1,12 +1,17 @@
-
 from django.urls import path
-from .views import GetUserDetails, GetEasyPaisaUserDetails, GetStripeUserDetails, GetUblUserDetails, GetAllUserDetails, SearchUser
+from .views import (SearchPayments, GetUBLPayments, AlnafiPayment,SearchAlNafiPayments,GetEasypaisaPayments,
+                    NoOfPayments,RenewalNoOfPayments,PaymentValidation)
+from payment.webhooks import enrollment_created_webhook
 
 urlpatterns = [
-    path("",GetAllUserDetails.as_view(),name='get_all_users_details'),
-    path("/payment",GetUserDetails.as_view(),name='get_user_details'),
-    path("/easypaisa",GetEasyPaisaUserDetails.as_view(),name='get_easypaisa_users_details'),
-    path("/stripe",GetStripeUserDetails.as_view(),name='get_stripe_users_details'),
-    path("/ubl",GetUblUserDetails.as_view(),name='get_ubl_users_details'),
-    # path('/search/', SearchUser.as_view()),
+    path("enrollmentwebhook/", enrollment_created_webhook),
+    path("alnafipayment/", AlnafiPayment.as_view(), name='alnafi-payment'),
+    path("searchpayment/", SearchPayments.as_view(), name='search-payments'),
+    path("searchalnafipayment/", SearchAlNafiPayments.as_view(), name='search-alnafi-payments'),
+    path("nofpayments/", NoOfPayments.as_view(), name='no-of-payments'),
+    path("nofrenewalpayments/", RenewalNoOfPayments.as_view(), name='no-of-renewal-payments'),
+    path("paymentvalidation/", PaymentValidation.as_view(), name='payment-validation'),
+    # path("stripe/", GetStripePayments.as_view(), name='all'),  #For all stripe payemnts
+    path("ubl/", GetUBLPayments.as_view(), name='ubl'), #For all UBL Payments
+    path("easypaisa/", GetEasypaisaPayments.as_view(), name='easypaisa'), #For all easypaisa Payments
 ]

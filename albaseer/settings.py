@@ -1,11 +1,17 @@
 import environ
+import os
 from pathlib import Path
+from django.conf.locale.en import formats as en_formats
+import sentry_sdk
+from sentry_sdk.integrations.django import DjangoIntegration
+from datetime import timedelta
 
 env = environ.Env()
 env.read_env()
-
+DEBUG = env('DEBUG',cast=bool)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_URL = "https://stage-api-al-baseer.alnafi.com/"
 
 
 # Quick-start development settings - unsuitable for production
@@ -17,6 +23,21 @@ SECRET_KEY = 'django-insecure-1i*4dn)-_9)gf84&yqq1jytyu$6ob98k0u!$+bha%8wv!i#v6w
 # SECURITY WARNING: don't run with debug turned on in production!cl
 # DEBUG = env("DEBUG")
 
+if not DEBUG:
+    REST_FRAMEWORK = {
+        'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+        'PAGE_SIZE': 10,
+        'DEFAULT_LINKS_TEMPLATE': 'rest_framework/pagination/links.html',
+        'BASE_URL': 'https://stage-api-al-baseer.alnafi.com/'
+    }
+
+
+# Change date format (AM PM to hours time format)
+en_formats.DATE_FORMAT = 'Y-m-d'
+en_formats.TIME_FORMAT = 'H:i:s'
+en_formats.DATETIME_FORMAT = 'Y-m-d H:i:s'
+
+
 ALLOWED_HOSTS = ["*"]
 CORS_ALLOW_ALL_ORIGINS: bool
 
@@ -25,6 +46,12 @@ CORS_ALLOWED_ORIGINS = [
     "https://sub.example.com",
     "http://localhost:3000",
     "http://127.0.0.1:9000",
+    'https://stage-api-al-baseer.alnafi.com',
+    'http://stage-api-al-baseer.alnafi.com',
+    'http://ec2-34-194-10-51.compute-1.amazonaws.com',
+    'https://ec2-34-194-10-51.compute-1.amazonaws.com',
+    'http://stage-al-baseer.alnafi.com',
+    'https://stage-al-baseer.alnafi.com'
 ]
 
 CORS_ALLOW_METHODS = [
@@ -48,7 +75,6 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -56,10 +82,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
+    'import_export',
+    
     'payment.apps.PaymentConfig',
     'user.apps.UserConfig',
-    'rest_framework',
-    'import_export',
+    'thinkific.apps.ThinkificConfig',
     'products.apps.ProductsConfig',
     "corsheaders",
 ]
@@ -69,7 +99,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware', 
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -96,46 +126,62 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'albaseer.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-
-# if DEBUG:
-#     DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#     }
-# }
-
-DEBUG=True
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'general_purpose',
-        'USER': 'admin',
-        'PASSWORD': 'Noncritical321#',
-        'HOST': 'instance-for-non-critical-databases.cxmsoa44dxsg.us-east-1.rds.amazonaws.com',
-        'PORT': '3306',
+if DEBUG:
+    print("SQL Lite CONNECTED")
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+else:
+    # print("RDS CONNECTED")
+    DATABASES = {
+        'default': {
+            'ENGINE': env("DATABASE_ENGINE"),
+            'NAME': env("DATABASE_NAME"),
+            'USER': env("DATABASE_USER"),
+            'PASSWORD': env("DATABASE_PASSWORD"),
+            'HOST': env("DATABASE_HOST"),
+            'PORT': env('DATABASE_PORT'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+            }
+        }
+    } 
+    
 
-
-# else:
-print("hello")
-# DATABASES = {
-#     'default': {
-#         'ENGINE': env("DATABASE_ENGINE"),
-#         'NAME': env("DATABASE_NAME"),
-#         'USER': env("DATABASE_USER"),
-#         'PASSWORD': env("DATABASE_PASSWORD"),
-#         'HOST': env("DATABASE_HOST"),
-#         'PORT': env('DATABASE_PORT'),
-
-#     }
-# }
-
-
+if DEBUG:
+    # CACHES = {
+    #     'default': {
+    #         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    #         'TIMEOUT':1800,
+    #     },
+    # }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
+            'TIMEOUT':1,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    } 
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
+            'TIMEOUT':1800,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    } 
+# print(DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -167,6 +213,9 @@ USE_I18N = True
 
 USE_TZ = False
 
+TIME_INPUT_FORMAT = ['%H:%M:%S']
+
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
@@ -183,5 +232,110 @@ REST_FRAMEWORK = {
     # or allow read-only access for unauthenticated users.
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny'
-    ]
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    )
+}
+
+REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
+        'rest_framework.renderers.JSONRenderer',
+]
+if DEBUG:
+    REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append(
+        'rest_framework.renderers.BrowsableAPIRenderer',
+    )
+    
+CSRF_COOKIE_NAME="csrftoken"
+CSRF_HEADER_NAME="csrftoken"
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True
+
+
+CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io']
+
+
+# if DEBUG:
+#     STATIC_URL = '/static/'
+#     MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
+    
+# else:
+STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+AWS_QUERYSTRING_AUTH = False
+STATIC_URL = env("S3_STATIC_URL")
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+MEDIA_ROOT = env("S3_MEDIA")
+
+MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+# MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+if not DEBUG:
+    pass
+    sentry_sdk.init(
+    dsn="https://e09dae87954440acb4e0c0683b86a2c1@o1153820.ingest.sentry.io/4504926428528640",
+    integrations=[
+        DjangoIntegration(),
+    ],
+
+    # Set traces_sample_rate to 1.0 to capture 100%
+    # of transactions for performance monitoring.
+    # We recommend adjusting this value in production.
+    traces_sample_rate=1.0,
+
+    # If you wish to associate users to errors (assuming you are using
+    # django.contrib.auth) you may enable sending PII data.
+    send_default_pii=True
+)
+
+PASSWORD_RESET_TIMEOUT=900
+ 
+AUTH_USER_MODEL = 'user.User'   
+
+# Email Configuration
+EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'faizanahmed14877@gmail.com'
+EMAIL_HOST_PASSWORD = 'rrogkbngirfjchbq'
+EMAIL_USE_TLS = True
+
+#JWT Settings
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=365),
+
+    "AUTH_HEADER_TYPES": ("Bearer",),
+    "AUTH_HEADER_NAME": "HTTP_AUTHORIZATION",
+    "USER_ID_FIELD": "id",
+    "USER_ID_CLAIM": "user_id",
+    "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt.authentication.default_user_authentication_rule",
+
+    "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt.tokens.AccessToken",),
+    "TOKEN_TYPE_CLAIM": "token_type",
+    "TOKEN_USER_CLASS": "rest_framework_simplejwt.models.TokenUser",
+
+    "JTI_CLAIM": "jti",
+    'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+    'SLIDING_TOKEN_LIFETIME': timedelta(days=1),
+    'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=365),
+    'AUTH_COOKIE': 'access_token',
+    'REFRESH_COOKIE': 'refresh_token',
+    'AUTH_COOKIE_DOMAIN': None,
+    'AUTH_COOKIE_SECURE': False,
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_PATH': '/',        # The path of the auth cookie.
+    # The SameSite attribute of the auth cookie.
+    'AUTH_COOKIE_SAMESITE': "Lax",
+
+
+    "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainPairSerializer",
+    "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSerializer",
+    "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt.serializers.TokenVerifySerializer",
+    "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt.serializers.TokenBlacklistSerializer",
+    "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
+    "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }

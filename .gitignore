@@ -1,3 +1,19 @@
 venv
 db.sqlite3
 .env
+.env_faizan
+__pycache__
+
+# Editors/ IDEs Folders
+.vscode
+.idea
+# Python cached modules/ data
+_pycache_/
+*/_pycache_
+*.pyc
+# Virtual Environment Folders
+venv/
+# Redis Cached Data
+dump.rdb
+# Files inside media
+media

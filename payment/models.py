@@ -1,57 +1,43 @@
 from django.db import models
+from datetime import datetime
 
 # Create your models here.
 
-# class Payment(models.Model):
-#     payment_source = models.CharField(max_length=50)
-#     first_name = models.CharField(max_length=50)
-#     last_name = models.CharField(max_length=50)
-#     email = models.EmailField()
-#     enrollment_name = models.CharField(max_length=50)
-#     enrollment_creation_date = models.CharField(max_length=80,null=True,blank=True)
-#     enrollment_expiry_date = models.CharField(max_length=80,null=True,blank=True)
-#     payment_date = models.CharField(max_length=80,null=True,blank=True) 
-
-#     def __str__(self):
-#         return self.email
-
-
-
-class Payment(models.Model):
-    
+#For Stripe Payments:
+class Stripe_Payment(models.Model):
     payment_id = models.CharField(max_length=100 , null=True , blank=True)
     name = models.CharField(max_length=50, null=True , blank=True)
-    email = models.EmailField()
+    customer_email = models.CharField(null=True,blank=True, max_length=100)
     phone = models.CharField(max_length=50, null=True , blank=True)
-    product = models.CharField(max_length=100, null=True , blank=True)
+    product_name = models.CharField(max_length=100, null=True , blank=True)
     amount = models.CharField(max_length=50, null=True , blank=True)
-    created = models.DateTimeField(max_length=60, null=True , blank=True)
+    order_datetime = models.DateTimeField(max_length=60, null=True , blank=True)
     status = models.CharField(max_length=50, null=True , blank=True)
     currency = models.CharField(max_length=50, null=True , blank=True)
     source = models.CharField(max_length=50, null=True , blank=True)
     description = models.CharField(max_length=100, null=True , blank=True)
     address = models.CharField(max_length=300, null=True , blank=True)
-        
+    
     def __str__(self):
-        return self.email
+        return self.payment_id
+ 
+    
     class Meta:
-        
-        managed = False
-        db_table = 'automated_payments'
+        managed = True
         verbose_name = 'Stripe Payment'
-
+        ordering = ["-order_datetime"]
+        
 
 #For Easypaisa_Payments:
 class Easypaisa_Payment(models.Model):
-    
     ops_id = models.CharField(max_length=50, null=True,blank=True)
     product_name = models.CharField(max_length=200, null=True,blank=True)
     order_id = models.CharField(max_length=50, null=True,blank=True)
     transaction_id = models.CharField(max_length=50, null=True,blank=True)
-    order_datetime = models.CharField(max_length=50, null=True,blank=True)
+    order_datetime = models.DateTimeField(default=None, null=False , blank=False)
     customer_msidn = models.CharField(max_length=50, null=True,blank=True)
-    customer_email = models.EmailField()
-    amount_pkr = models.CharField(max_length=50, null=True,blank=True)
+    customer_email = models.EmailField(null=True,blank=True)
+    amount = models.CharField(max_length=50, null=True,blank=True)
     status = models.CharField(max_length=50, null=True,blank=True)
     source = models.CharField(max_length=50, null=True , blank=True)
     credit_card = models.CharField(max_length=50, null=True,blank=True)
@@ -59,21 +45,20 @@ class Easypaisa_Payment(models.Model):
     fee_pkr = models.CharField(max_length=50, null=True,blank=True)
     fed_pkr = models.CharField(max_length=50, null=True,blank=True)
     error_reason = models.CharField(max_length=200, null=True,blank=True)
-    token_paid_datetime = models.CharField(max_length=50, null=True,blank=True)
-        
+    token_paid_datetime = models.DateTimeField(default=None, null=False , blank=False)
+            
     def __str__(self):
         return self.customer_email
    
     class Meta:
-        managed = False
-        db_table = 'easypaisa_payments'
+        managed = True
         verbose_name = 'Easypaisa Payment'
+        ordering = ["-order_datetime"]
+        
 
-
-
+#For UBL_IPG_Payment:
 class UBL_IPG_Payment(models.Model):
-    
-    id = models.AutoField(primary_key=True)
+    # id = models.AutoField(primary_key=True)
     transaction_id = models.CharField(max_length=50, null=False,blank=False)
     customer_email = models.EmailField(null=True,blank=True)
     card_mask = models.CharField(max_length=100, null=True,blank=True)
@@ -92,6 +77,74 @@ class UBL_IPG_Payment(models.Model):
         return self.customer_email
 
     class Meta:
-        managed = False
-        db_table = 'ubl_ipg_payments'
+        managed = True
         verbose_name = "UBL IPG Payment"
+        ordering = ["-order_datetime"]
+
+
+#For MainSite(Al-Nafi) Payments:
+class AlNafi_Payment(models.Model):
+    payment_id = models.IntegerField(null=True, blank=False)
+    customer_email = models.CharField(max_length=100, null=True, blank=False)
+    product_name = models.CharField(max_length=50, null=True, blank=False)
+    amount_pkr = models.IntegerField(default=0)
+    amount_usd = models.IntegerField(default=0)
+    order_datetime = models.DateTimeField(default=datetime.now)
+    expiration_datetime = models.DateTimeField(null=True, blank=True)
+    source = models.CharField(max_length=50, null=True, blank=True)
+    order_id = models.CharField(max_length=50, null=True, blank=False)
+    date_of_activation = models.DateField(null=True, blank=False)
+    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    qarz = models.BooleanField(default=False)
+    remarks = models.CharField(max_length=100,null=True, blank=False)
+    payment_proof = models.CharField(max_length=100, null=True, blank=False)
+    send_invoice = models.BooleanField(default=True, null=True, blank=True)
+    pk_invoice_number= models.CharField(max_length = 10,null=True,blank=True)
+    us_invoice_number= models.CharField(max_length = 10,null=True,blank=True)
+    sponsored = models.BooleanField(default=False)
+    coupon_code = models.CharField(max_length=20, null=True, blank=False)
+    is_upgrade_payment = models.BooleanField(default=False)
+    affiliate = models.CharField(max_length=50,null=True, blank=False)
+
+    def __str__(self):
+        return self.customer_email
+    
+    class Meta:
+        managed = True
+        verbose_name = "Al-Nafi Payment"
+        ordering = ["-order_datetime"]
+
+#For UBL Manual Payments:
+class UBL_Manual_Payment(models.Model):
+    candidate_name = models.CharField(default= "" ,max_length=200, null=False, blank=True)
+    depositor_name = models.CharField(default= "", max_length=200, null=False, blank=True)
+    customer_email = models.CharField(default= "", max_length=200, null=False, blank=True)
+    phone = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    amount = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    product_name = models.CharField(default= "" ,max_length=200, null=False, blank=True)
+    status = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    order_datetime = models.DateField(default=datetime.now, null=False, blank=True)
+    activation_datetime = models.DateField(default=datetime.now ,null=False, blank=True)
+    payment_channel = models.CharField(default= ""  ,max_length=45, null=False, blank=True)
+    transaction_id = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    source = models.CharField(default= "" ,max_length=45, null=False, blank=True)
+    s3_file_url = models.CharField(default= "" ,max_length=600, null=False, blank=True)
+    s3_file_name = models.CharField(default= "" ,max_length=200, null=False, blank=True)
+
+    def __str__(self):
+        return self.customer_email
+    
+    class Meta:
+        managed = True
+        verbose_name = "UBL-Manual Payment"
+        ordering = ["-order_datetime"]
+        
+        
+class NavbarLink(models.Model):
+    name = models.CharField(max_length=100,null=True, blank=True)
+    path = models.CharField(max_length=100,null=True, blank=True)
+    image = models.ImageField(upload_to='navbar_images')
+    group = models.CharField(max_length=100,null=True, blank=True)
+
+    def __str__(self):
+        return self.name

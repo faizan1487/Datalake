@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
+        migrations.CreateModel( 
             name='AlnafiUser',
             fields=[
                 ('id', models.IntegerField(primary_key=True, serialize=False)),
@@ -33,7 +33,8 @@ class Migration(migrations.Migration):
                 'managed': True,
             },
         ),
-        migrations.DeleteModel(
-            name='User',
-        ),
+        # migrations.RenameModel(
+        #     old_name='User',
+        #     new_name='User1'
+        # ),
     ]
