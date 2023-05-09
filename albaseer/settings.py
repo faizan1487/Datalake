@@ -95,6 +95,7 @@ INSTALLED_APPS = [
     'user.apps.UserConfig',
     'thinkific.apps.ThinkificConfig',
     'products.apps.ProductsConfig',
+    'trainers.apps.TrainersConfig',
     "corsheaders",
 ]
 

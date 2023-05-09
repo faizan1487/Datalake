@@ -139,6 +139,10 @@ class UBL_Manual_Payment(models.Model):
         verbose_name = "UBL-Manual Payment"
         ordering = ["-order_datetime"]
         
+
+
+
+
         
 class NavbarLink(models.Model):
     name = models.CharField(max_length=100,null=True, blank=True)

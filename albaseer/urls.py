@@ -14,6 +14,7 @@ urlpatterns = [
     path("user/",include('user.urls')),
     path("thinkific/",include('thinkific.urls')),
     path("products/",include('products.urls')),    
+    path("trainers/",include('trainers.urls')),    
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 
