@@ -143,9 +143,6 @@ class UBL_Manual_Payment(models.Model):
         
 
 
-
-
-        
 class NavbarLink(models.Model):
     name = models.CharField(max_length=100,null=True, blank=True)
     path = models.CharField(max_length=100,null=True, blank=True)
@@ -165,8 +162,8 @@ class Main_Payment(models.Model):
         ('UBLIPG', 'UBLIPG'),
         ('UBLMANUAL', 'UBLMANUAL'),
     )
-    source_pyament_id = models.CharField(max_length=100 , null=True , blank=True)
-    alnafi_pyament_id = models.CharField(max_length=50, null=True,blank=True)
+    source_payment_id = models.CharField(max_length=100 , null=True , blank=True)
+    alnafi_payment_id = models.CharField(max_length=50, null=True,blank=True)
     easypaisa_ops_id = models.CharField(max_length=50, null=True,blank=True)
     easypaisa_customer_msidn = models.CharField(max_length=50, null=True,blank=True)
     card_mask = models.CharField(max_length=100, null=True,blank=True)

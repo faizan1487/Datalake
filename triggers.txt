@@ -1,0 +1,58 @@
+# For Payment Triggers:
+
+## FOR UBL_IPG to Main_Product:
+
+## ** For INSERT **
+
+```
+DELIMITER //
+
+CREATE TRIGGER ubl_ipg_to_main_payment_trigger
+AFTER INSERT ON payment_ubl_ipg_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+
+    INSERT INTO payment_main_payment(
+        source_payment_id,
+        alnafi_payment_id,
+        user_id,
+        card_mask,
+        product_id,
+        amount,
+        currency,
+        source,
+        status,
+        order_datetime,
+        ubl_captured,
+        ubl_reversed,
+        ubl_refund,
+        ubl_approval_code
+    ) VALUES (
+        NEW.transaction_id,
+        NEW.order_id,
+        user_id,
+        NEW.card_mask,
+        product_id,
+        NEW.amount,
+        'PKR',
+        'UBL_IPG',
+        NEW.status,
+        NEW.order_datetime,
+        NEW.captured,
+        NEW.reversed,
+        NEW.refund,
+        NEW.approval_code
+    );
+END//
+
+DELIMITER ;
+```
+
+## ** For UPDATE **
+
+## ** For DELETE **
+
