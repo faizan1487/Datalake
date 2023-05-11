@@ -245,21 +245,135 @@ DELIMITER ;
 **FOR INSERT**
 
 ```
+DELIMITER //
 
+CREATE TRIGGER alnafi_to_main_payment_trigger_insert
+AFTER INSERT ON payment_alnafi_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    DECLARE currency_type varchar(3);
+    DECLARE amount integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    IF NEW.amount_pkr > 0 THEN
+        SET currency_type = 'PKR';
+        SET amount = NEW.amount_pkr;
+    ELSE
+        SET currency_type = 'USD';
+        SET amount = NEW.amount_usd;
+    END IF;
+    INSERT INTO payment_main_payment(
+        source_payment_id,
+        user_id,
+        product_id,
+        amount,
+        currency,
+        order_datetime,
+        expiration_datetime,
+        source,
+        alnafi_payment_id,
+        activation_datetime,
+        created_datetime,
+        qarz,
+        remarks,
+        payment_proof,
+        send_invoice,
+        pk_invoice_number,
+        us_invoice_number,  
+        sponsored,
+        coupon_code,
+        is_upgrade_payment,
+        affiliate
+    ) VALUES (
+        NEW.payment_id,
+        user_id,
+        product_id,
+        amount,
+        currency_type,
+        NEW.order_datetime,
+        NEW.expiration_datetime,
+        "Al-Nafi",
+        NEW.order_id,
+        NEW.date_of_activation,
+        NEW.created_at,
+        NEW.qarz,
+        NEW.remarks,
+        NEW.payment_proof,
+        NEW.send_invoice,
+        NEW.pk_invoice_number,
+        NEW.us_invoice_number,
+        NEW.sponsored,
+        NEW.coupon_code,
+        NEW.is_upgrade_payment,
+        NEW.affiliate
+    );
+END//
+
+DELIMITER ;
 
 ```
 
 **FOR UPDATE**
 
 ```
-
+DELIMITER //
+CREATE TRIGGER alnafi_to_main_payment_trigger_update
+AFTER UPDATE ON payment_alnafi_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    DECLARE currency_type varchar(3);
+    DECLARE amount integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    IF NEW.amount_pkr > 0 THEN
+        SET currency_type = 'PKR';
+        SET amount = NEW.amount_pkr;
+    ELSE
+        SET currency_type = 'USD';
+        SET amount = NEW.amount_usd;
+    END IF;
+    UPDATE payment_main_payment SET
+        user_id = user_id,
+        product_id = product_id,
+        amount = amount,
+        currency = currency_type,
+        order_datetime = NEW.order_datetime,
+        expiration_datetime = NEW.expiration_datetime,
+        source = "Al-Nafi",
+        alnafi_payment_id = NEW.order_id,
+        activation_datetime = NEW.date_of_activation,
+        created_datetime = NEW.created_at,
+        qarz = NEW.qarz,
+        remarks = NEW.remarks,
+        payment_proof = NEW.payment_proof,
+        send_invoice = NEW.send_invoice,
+        pk_invoice_number = NEW.pk_invoice_number,
+        us_invoice_number = NEW.us_invoice_number,
+        sponsored = NEW.sponsored,
+        coupon_code = NEW.coupon_code,
+        is_upgrade_payment = NEW.is_upgrade_payment,
+        affiliate = NEW.affiliate
+    WHERE source_payment_id = OLD.payment_id AND source = 'Al-Nafi';
+END//
+DELIMITER ;
 
 ```
 
 **FOR DELETE**
 
 ```
-
+DELIMITER //
+CREATE TRIGGER alnafi_to_main_payment_trigger_delete
+AFTER DELETE ON payment_alnafi_payment
+FOR EACH ROW
+BEGIN
+    DELETE FROM payment_main_payment WHERE  source_payment_id = OLD.payment_id AND source = 'Al-Nafi';
+END//
+DELIMITER ;
 
 ```
 
