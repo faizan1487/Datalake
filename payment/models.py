@@ -155,13 +155,6 @@ class NavbarLink(models.Model):
 
 #FOR MURGED ALL PAYMENT IN ONE TABLE MAIN_PAYMENT:
 class Main_Payment(models.Model):
-    SOURCE_CHOICES = (
-        ('Easypaisa', 'Easypaisa'),
-        ('Stripe', 'Stripe'),
-        ('AlnafiMain','AlnafiMain'),
-        ('UBLIPG', 'UBLIPG'),
-        ('UBLMANUAL', 'UBLMANUAL'),
-    )
     source_payment_id = models.CharField(max_length=100 , null=True , blank=True)
     alnafi_payment_id = models.CharField(max_length=50, null=True,blank=True)
     easypaisa_ops_id = models.CharField(max_length=50, null=True,blank=True)
@@ -171,7 +164,7 @@ class Main_Payment(models.Model):
     product = models.ForeignKey("products.Main_Product", on_delete=models.SET_NULL, null=True, blank=True, related_name="Payment_Product")
     amount = models.CharField(max_length=50, null=True,blank=True)
     currency = models.CharField(max_length=50, null=True , blank=True)
-    source = models.CharField(max_length=50, choices=SOURCE_CHOICES, null=True , blank=True)
+    source = models.CharField(max_length=50, null=True , blank=True)
     status = models.CharField(max_length=50, null=True , blank=True)
     order_datetime = models.DateTimeField(null=True , blank=True)
     expiration_datetime = models.DateTimeField(null=True, blank=True)
@@ -203,7 +196,7 @@ class Main_Payment(models.Model):
     error_reason = models.CharField(max_length=200, null=True,blank=True)
 
     def __str__(self):
-        return self.user
+        return self.source_payment_id
     
     class Meta:
         managed = True

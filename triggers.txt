@@ -1,8 +1,10 @@
-# For Payment Triggers:
+# TRIGGERS FOR AL-BASEER DATABASE:
 
-## FOR UBL_IPG to Main_Product:
+## For Payment Triggers:
 
-## ** For INSERT **
+### UBL_IPG to Main_Payment:
+
+**FOR INSERT**
 
 ```
 DELIMITER //
@@ -52,7 +54,235 @@ END//
 DELIMITER ;
 ```
 
-## ** For UPDATE **
+**FOR UPDATE**
 
-## ** For DELETE **
+```
+DELIMITER //
+CREATE TRIGGER ubl_ipg_to_main_payment_trigger_update
+AFTER UPDATE ON payment_ubl_ipg_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
 
+    UPDATE payment_main_payment SET
+        alnafi_payment_id = NEW.order_id,
+        user_id = user_id,
+        card_mask = NEW.card_mask,
+        product_id = product_id,
+        amount = NEW.amount,
+        status = NEW.status,
+        order_datetime = NEW.order_datetime,
+        ubl_captured = NEW.captured,
+        ubl_reversed = NEW.reversed,
+        ubl_refund = NEW.refund,
+        ubl_approval_code = NEW.approval_code
+    WHERE source_payment_id = NEW.transaction_id AND source = 'UBL_IPG';
+END//
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+CREATE TRIGGER ubl_ipg_to_main_payment_trigger_delete
+AFTER DELETE ON payment_ubl_ipg_payment
+FOR EACH ROW
+BEGIN
+    DELETE FROM payment_main_payment
+    WHERE source_payment_id = OLD.transaction_id AND source = 'UBL_IPG';
+END//
+DELIMITER ;
+
+```
+
+
+### Easypaisa to Main_Payment:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER easypaisa_to_main_payment_trigger_insert
+AFTER INSERT ON payment_easypaisa_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+
+    INSERT INTO payment_main_payment(
+        easypaisa_ops_id,
+        product_id,
+        alnafi_payment_id,
+        source_payment_id,
+        order_datetime,
+        easypaisa_customer_msidn,
+        user_id,
+        amount,
+        currency,
+        status,
+        source,
+        card_mask,
+        bin_bank_name,
+        easypaisa_fee_pkr,
+        easypaisa_fed_pkr,
+        error_reason,
+        token_paid_datetime
+    ) VALUES (
+        NEW.ops_id,
+        product_id,
+        NEW.order_id,
+        NEW.transaction_id,
+        NEW.order_datetime,
+        NEW.customer_msidn,
+        user_id,
+        NEW.amount,
+        "PKR",
+        NEW.status,
+        "Easypaisa",
+        NEW.credit_card,
+        NEW.bin_bank_name,
+        NEW.fee_pkr,
+        NEW.fed_pkr,
+        NEW.error_reason,
+        NEW.token_paid_datetime
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER easypaisa_to_main_payment_trigger_update
+AFTER UPDATE ON payment_easypaisa_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+
+    UPDATE payment_main_payment SET
+        easypaisa_ops_id = NEW.ops_id,
+        product_id = product_id,
+        alnafi_payment_id = NEW.order_id,
+        source_payment_id = NEW.transaction_id,
+        order_datetime = NEW.order_datetime,
+        easypaisa_customer_msidn = NEW.customer_msidn,
+        user_id = user_id,
+        amount = NEW.amount,
+        currency = "PKR",
+        status = NEW.status,
+        source = "Easypaisa",
+        card_mask = NEW.credit_card,
+        bin_bank_name = NEW.bin_bank_name,
+        easypaisa_fee_pkr = NEW.fee_pkr,
+        easypaisa_fed_pkr = NEW.fed_pkr,
+        error_reason = NEW.error_reason,
+        token_paid_datetime = NEW.token_paid_datetime
+    WHERE source_payment_id = NEW.transaction_id AND source = 'Easypaisa';
+END//
+
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER easypaisa_to_main_payment_trigger_delete
+AFTER DELETE ON payment_easypaisa_payment
+FOR EACH ROW
+BEGIN
+    DELETE FROM payment_main_payment WHERE source_payment_id = OLD.transaction_id AND source = 'Easypaisa';
+END//
+
+DELIMITER ;
+
+```
+
+
+### Stripe to Main_Payment:
+
+**FOR INSERT**
+
+```
+
+
+```
+
+**FOR UPDATE**
+
+```
+
+
+```
+
+**FOR DELETE**
+
+```
+
+
+```
+
+
+### AlNafi_Payment to Main_Payment:
+
+**FOR INSERT**
+
+```
+
+
+```
+
+**FOR UPDATE**
+
+```
+
+
+```
+
+**FOR DELETE**
+
+```
+
+
+```
+
+
+### UBL_MANUAL to Main_Payment:
+
+**FOR INSERT**
+
+```
+
+
+```
+
+**FOR UPDATE**
+
+```
+
+
+```
+
+**FOR DELETE**
+
+```
+
+
+```
