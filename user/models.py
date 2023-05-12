@@ -54,15 +54,11 @@ class IslamicAcademy_User(models.Model):
 
 #FOR MERGE USERS TABLES MAIN_USER:
 class Main_User(models.Model):
-    SOURCE_CHOICES = (
-        ('AlNafi_User', 'AlNafi User'),
-        ('IslamicAcademy_User', 'Islamic Academy User'),
-    )
     username = models.CharField(max_length=255, null=True, blank=True)
     first_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
-    source = models.CharField(max_length=255, choices=SOURCE_CHOICES, null=True, blank=True)
+    source = models.CharField(max_length=255,null=True, blank=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)

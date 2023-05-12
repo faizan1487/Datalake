@@ -1,6 +1,6 @@
 # TRIGGERS FOR AL-BASEER DATABASE:
 
-## For Payment Triggers:
+## FOR PAYMENTS TRIGGER:
 
 ### UBL_IPG to Main_Payment:
 
@@ -398,5 +398,415 @@ DELIMITER ;
 
 ```
 
+
+```
+
+## FOR USERS TRIGGERS:
+
+### Al-Nafi to Main_User:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER alnafi_user_to_main_user_trigger_insert
+AFTER INSERT ON user_alnafi_user
+FOR EACH ROW
+BEGIN
+    INSERT INTO user_main_user(
+        username,
+        first_name,
+        last_name,
+        email,
+        phone,
+        address,
+        source,
+        country,
+        language,
+        verification_code,
+        isAffiliate,
+        how_did_you_hear_about_us,
+        affiliate_code,
+        isMentor,
+        created_at
+    ) VALUES (
+        NEW.username,
+        NEW.first_name,
+        NEW.last_name,
+        NEW.email,
+        NEW.phone,
+        NEW.address,
+        "Al-Nafi",
+        NEW.country,
+        NEW.language,
+        NEW.verification_code,
+        NEW.isAffiliate,
+        NEW.how_did_you_hear_about_us,
+        NEW.affiliate_code,
+        NEW.isMentor,
+        NEW.created_at
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER alnafi_user_to_main_user_trigger_update
+AFTER UPDATE ON user_alnafi_user
+FOR EACH ROW
+BEGIN
+    DECLARE temp_id INT;
+    SELECT id INTO temp_id FROM user_main_user WHERE email = OLD.email;
+
+    UPDATE user_main_user
+    SET 
+        username = NEW.username,
+        first_name = NEW.first_name,
+        last_name = NEW.last_name,
+        email = NEW.email,
+        phone = NEW.phone,
+        address = NEW.address,
+        country = NEW.country,
+        language = NEW.language,
+        verification_code = NEW.verification_code,
+        isAffiliate = NEW.isAffiliate,
+        how_did_you_hear_about_us = NEW.how_did_you_hear_about_us,
+        affiliate_code = NEW.affiliate_code,
+        isMentor = NEW.isMentor,
+        created_at = NEW.created_at
+    WHERE
+        id = temp_id;
+END//
+
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+CREATE TRIGGER alnafi_user_to_main_user_trigger_delete
+AFTER DELETE ON user_alnafi_user
+FOR EACH ROW
+BEGIN
+    DELETE FROM user_main_user WHERE email = OLD.email;
+END//
+DELIMITER ;
+
+```
+
+
+### Islami_Academy to Main_User:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_user_to_main_user_trigger_insert
+AFTER INSERT ON user_islamicacademy_user
+FOR EACH ROW
+BEGIN
+    INSERT INTO user_main_user(
+        is_paying_customer,
+        username,
+        email,
+        first_name,
+        last_name,
+        created_at,
+        modified_at,
+        role,
+        phone,
+        address,
+        source
+    ) VALUES (
+        NEW.is_paying_customer,
+        NEW.username,
+        NEW.email,
+        NEW.first_name,
+        NEW.last_name,
+        NEW.created_at,
+        NEW.modified_at,
+        NEW.role,
+        NEW.phone,
+        NEW.address,
+        "Islamic Academy"
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_user_to_main_user_trigger_update
+AFTER UPDATE ON user_islamicacademy_user
+FOR EACH ROW
+BEGIN
+    UPDATE user_main_user
+    SET 
+        is_paying_customer = NEW.is_paying_customer,
+        username = NEW.username,
+        email = NEW.email,
+        first_name = NEW.first_name,
+        last_name = NEW.last_name,
+        created_at = NEW.created_at,
+        modified_at = NEW.modified_at,
+        role = NEW.role,
+        phone = NEW.phone,
+        address = NEW.address
+    WHERE
+        email = OLD.email AND source = 'Islamic Academy';
+END//
+
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_user_to_main_user_trigger_delete
+AFTER DELETE ON user_islamicacademy_user
+FOR EACH ROW
+BEGIN
+    DELETE FROM user_main_user WHERE email = OLD.email AND source = 'Islamic Academy';
+END//
+
+DELIMITER ;
+
+
+```
+
+
+## FOR PRODUCTS TRIGGERS:
+
+### Al-Nafi to Main_Product:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER alnafi_product_to_main_product_trigger_insert
+AFTER INSERT ON products_alnafi_product
+FOR EACH ROW
+BEGIN
+    INSERT INTO products_main_product(
+        product_type,
+        product_slug,
+        product_plan,
+        product_name,
+        bundle_ids,
+        product_language,
+        image,
+        amount_pkr,
+        amount_usd,
+        amount_gbp,
+        legacy_available,
+        legacy_fee_pkr,
+        legacy_fee_usd,
+        old_amount_pkr,
+        old_amount_usd,
+        lms_id,
+        qarz_fee_pkr,
+        qarz_fee_usd,
+        qarz_product,
+        allow_coupon,
+        created_at,
+        has_legacy_version,
+        is_certificate_product,
+        courses,
+        source
+    ) VALUES (
+        NEW.product_type,
+        NEW.product_slug,
+        NEW.plan,
+        NEW.name,
+        NEW.bundle_Ids,
+        NEW.language,
+        NEW.image,
+        NEW.amount_pkr,
+        NEW.amount_usd,
+        NEW.amount_gbp,
+        NEW.legacy_available,
+        NEW.legacy_fee_pkr,
+        NEW.legacy_fee_usd,
+        NEW.old_amount_pkr,
+        NEW.old_amount_usd,
+        NEW.lms_id,
+        NEW.qarz_fee_pkr,
+        NEW.qarz_fee_usd,
+        NEW.qarz_product,
+        NEW.allow_coupon,
+        NEW.created_at,
+        NEW.has_legacy_version,
+        NEW.is_certificate_product,
+        NEW.courses,
+        "Al-Nafi"
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+CREATE TRIGGER alnafi_product_to_main_product_trigger_update
+AFTER UPDATE ON products_alnafi_product
+FOR EACH ROW
+BEGIN
+
+    DECLARE temp_id INT;
+    SELECT id INTO temp_id FROM products_main_product WHERE product_name = OLD.name LIMIT 1;
+
+    UPDATE products_main_product
+    SET 
+        product_type = NEW.product_type,
+        product_slug = NEW.product_slug,
+        product_plan = NEW.plan,
+        product_name = NEW.name,
+        bundle_ids = NEW.bundle_Ids,
+        product_language = NEW.language,
+        image = NEW.image,
+        amount_pkr = NEW.amount_pkr,
+        amount_usd = NEW.amount_usd,
+        amount_gbp = NEW.amount_gbp,
+        legacy_available = NEW.legacy_available,
+        legacy_fee_pkr = NEW.legacy_fee_pkr,
+        legacy_fee_usd = NEW.legacy_fee_usd,
+        old_amount_pkr = NEW.old_amount_pkr,
+        old_amount_usd = NEW.old_amount_usd,
+        lms_id = NEW.lms_id,
+        qarz_fee_pkr = NEW.qarz_fee_pkr,
+        qarz_fee_usd = NEW.qarz_fee_usd,
+        qarz_product = NEW.qarz_product,
+        allow_coupon = NEW.allow_coupon,
+        created_at = NEW.created_at,
+        has_legacy_version = NEW.has_legacy_version,
+        is_certificate_product = NEW.is_certificate_product,
+        courses = NEW.courses
+    WHERE
+        id = temp_id;
+END//
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+CREATE TRIGGER alnafi_product_to_main_product_trigger_delete
+AFTER DELETE ON products_alnafi_product
+FOR EACH ROW
+BEGIN
+    DELETE FROM products_main_product WHERE product_name = OLD.name;
+END//
+DELIMITER ;
+
+```
+
+
+### Islami_Academy to Main_Product:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_product_to_main_product_trigger_insert
+AFTER INSERT ON products_islamicacademy_product
+FOR EACH ROW
+BEGIN
+    INSERT INTO products_main_product(
+        product_name,
+        product_slug,
+        created_at,
+        modified_at,
+        product_type,
+        status,
+        description,
+        amount_usd,
+        stock_status,
+        source
+    ) VALUES (
+        NEW.name,
+        NEW.product_slug,
+        NEW.created_at,
+        NEW.modified_at,
+        NEW.type,
+        NEW.status,
+        NEW.description,
+        NEW.price,
+        NEW.stock_status,
+        "Islamic Academy"
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_product_to_main_product_trigger_update
+AFTER UPDATE ON products_islamicacademy_product
+FOR EACH ROW
+BEGIN
+    UPDATE products_main_product
+    SET 
+        product_name = NEW.name,
+        product_slug = NEW.product_slug,
+        created_at = NEW.created_at,
+        modified_at = NEW.modified_at,
+        product_type = NEW.type,
+        status = NEW.status,
+        description = NEW.description,
+        amount_usd = NEW.price,
+        stock_status = NEW.stock_status
+    WHERE
+        product_name = OLD.name;
+END//
+
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_product_to_main_product_trigger_delete
+AFTER DELETE ON products_islamicacademy_product
+FOR EACH ROW
+BEGIN
+    DELETE FROM products_main_product
+    WHERE
+        product_name = OLD.name;
+END//
+
+DELIMITER ;
 
 ```

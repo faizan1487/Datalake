@@ -78,16 +78,11 @@ class IslamicAcademy_Product(models.Model):
 
 # FOR MAIN PRODUCTS COMBINE PRODUCT ALL TABLE IN ONE:
 class Main_Product(models.Model):
-    SOURCE_CHOICES = (
-        ('AL-NAFI', 'Al-Nafi'),
-        ('ISLAMIC-ACADEMY', 'Islamic Academy')
-    )
     STATUS_CHOICES = (
         ('draft', 'Draft'),
         ('publish', 'Publish'),
     )
-    id = models.IntegerField(primary_key=True)
-    source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
+    source = models.CharField(max_length=20, null=True, blank=True)
     product_name = models.CharField(max_length=255)
     product_slug = models.SlugField()
     created_at = models.DateTimeField(auto_now_add=True)
