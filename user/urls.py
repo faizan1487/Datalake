@@ -10,7 +10,7 @@ urlpatterns = [
     path('userdelete/', UsersDelete.as_view(), name='user-delete'),
     path('users/', GetUserDetails.as_view(), name='user-list'),
     path('nofusers/', GetNoOfUsers.as_view(), name='no-of-users'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
+    # path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     path('register/', UserRegistrationView.as_view()),
     path('login/', UserLoginView.as_view(),name='login'),
     path('logout/', User_logout,name='logout'),

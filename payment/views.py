@@ -233,8 +233,8 @@ class SearchAlNafiPayments(APIView):
             return paginator.get_paginated_response(paginated_queryset)
             
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
     required_group = 'Sales'
     def get(self, request):
         query = self.request.GET.get('q', None) or None
