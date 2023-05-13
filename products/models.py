@@ -31,7 +31,7 @@ class Alnafi_Product(models.Model):
     qarz_fee_usd = models.IntegerField(null=True, blank=True)
     lms_id = models.CharField(max_length=255, null=True, blank=True)
     language = models.CharField(max_length=255, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     has_legacy_version = models.BooleanField(default=False)
     is_certificate_product = models.BooleanField(default=False)
     allow_coupon = models.BooleanField(default=False)
