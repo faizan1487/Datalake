@@ -319,90 +319,146 @@ def stripe_pay(q, start_date, end_date,plan,product):
 
 
 
-def search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin):
+# def search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin):
+#     payments = Main_Payment.objects.all().values()
+#     # return payments
+#     # print(payments.count())
+#     if origin:
+#         if origin == 'local':
+#             sources = ['Easypaisa', 'UBL_IPG']
+#             payments = payments.filter(source__in=sources)
+#         else:
+#             payments = payments.filter(source='stripe')
+            
+#     if source:
+#         payments = payments.filter(source=source)
+        
+        
+#     if not start_date:
+#         if payments:
+#             first_payment = payments.exclude(order_datetime=None).last()
+#             date_time_obj = first_payment['order_datetime'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
+#             new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                    
+#             start_date = new_date_obj + timedelta(days=20)       
+#     if not end_date:
+#         if payments:
+#             last_payment = payments.exclude(order_datetime=None).first()
+#             date_time_obj = last_payment['order_datetime'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
+#             new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+#             end_date = new_date_obj - timedelta(days=20)
+            
+#     if query:
+#         payments = payments.filter(
+#             Q(customer_email__iexact=query) | Q(order_id__iexact=query))
+#         payments = payments.filter(Q(order_datetime__date__lte = end_date) & Q(order_datetime__date__gte = start_date))
+        
+#     if product:
+#         product_obj = Main_Product.objects.get(product_name=product)
+#         payments = product_obj.product_payments.all()
+#         payments = payments.filter(Q(order_datetime__date__lte = end_date) & Q(order_datetime__date__gte = start_date))
+
+#     payment_plan = []
+#     payment_cycle = []
+    
+#     # all_paid_users_ids = list(Main_Payment.objects.all().values_list("user__id", flat=True))
+#     # all_paid_users = query_time.filter(id__in=all_paid_users_ids).values("id","username","email", "first_name", "last_name","source","phone","address","country","created_at")    
+#     # all_unpaid_users = query_time.exclude(id__in=all_paid_users_ids)
+    
+    
+#     for payment in payments:
+#         payment_dict = dict(payment)
+        
+#         product = Main_Product.objects.filter(id=payment['product_id']).values("product_plan").first()
+#         if product:
+#             if plan == 'yearly':
+#                 if product['product_plan']:
+#                     if product['product_plan'] == 'Yearly':
+#                         payment_plan.append(payment)
+#                         payment_cycle.append('Yearly')
+#             elif plan == 'halfyearly':
+#                 if product['product_plan']:
+#                     if product['product_plan'] == 'Half Yearly':
+#                         payment_plan.append(payment)
+#                         payment_cycle.append('Half yearly')
+#             elif plan == 'quarterly':           
+#                 if product['product_plan']:
+#                     if product['product_plan'] == 'Quarterly':
+#                         payment_plan.append(payment)
+#                         payment_cycle.append('Quarterly')
+#             elif plan == 'monthly':           
+#                 if product['product_plan']:
+#                     if product['product_plan'] == 'Monthly':
+#                         payment_plan.append(payment)
+#                         payment_cycle.append('Monthly')
+#             else:
+#                 if product['product_plan']:
+#                     if product['product_plan'] == 'Yearly':
+#                         payment_plan.append(payment)
+#                         payment_cycle.append('Yearly')
+#                     if product['product_plan'] == 'Half Yearly':
+#                         payment_plan.append(payment)
+#                         payment_cycle.append('Half yearly')
+#                     if product['product_plan'] == 'Quarterly':
+#                         payment_plan.append(payment)
+#                         payment_cycle.append('Quarterly')
+#                     if product['product_plan'] == 'Monthly':
+#                         payment_plan.append(payment)
+#                         payment_cycle.append('Monthly')
+    
+#     payments = payment_plan
+    
+#     # print(len(payments))
+#     response_data = {"payments":payments,
+#                         "payment_cycle":payment_cycle}     
+    
+#     return response_data
+
+from django.db.models import Q
+
+def search_payment(export, query, start_date, end_date, plan, request, url, product, source, origin):
     payments = Main_Payment.objects.all()
-    # print(payments.count())
+
     if origin:
         if origin == 'local':
-            sources = ['Easypaisa', 'UBL_IPG']
-            payments = payments.filter(source__in=sources)
+            payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG'])
         else:
             payments = payments.filter(source='stripe')
-            
+
     if source:
         payments = payments.filter(source=source)
-        
-        
+
     if not start_date:
-        if payments:
-            first_payment = payments.exclude(order_datetime=None).last()
-            date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-            new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                    
-            start_date = new_date_obj + timedelta(days=20)       
+        first_payment = payments.exclude(order_datetime=None).last()
+        start_date = first_payment.order_datetime + timedelta(days=20) if first_payment else None
+
     if not end_date:
-        if payments:
-            last_payment = payments.exclude(order_datetime=None).first()
-            date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-            new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
-            end_date = new_date_obj - timedelta(days=20)
-            
+        last_payment = payments.exclude(order_datetime=None).first()
+        end_date = last_payment.order_datetime - timedelta(days=20) if last_payment else None
+
     if query:
         payments = payments.filter(
-            Q(customer_email__iexact=query) | Q(order_id__iexact=query))
-        payments = payments.filter(Q(order_datetime__date__lte = end_date) & Q(order_datetime__date__gte = start_date))
-        
+            Q(user__email__iexact=query) | Q(product__product_name__iexact=query))
+        payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
+
     if product:
         product_obj = Main_Product.objects.get(product_name=product)
-        payments = product_obj.product_payments.all()
-        payments = payments.filter(Q(order_datetime__date__lte = end_date) & Q(order_datetime__date__gte = start_date))
+        payments = product_obj.product_payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
 
-    payment_plan = []
-    payment_cycle = []
-    for payment in payments:
-        product = payment.product
-        if product:
-            if plan == 'yearly':
-                if product.product_plan:
-                    if product.product_plan == 'Yearly':
-                        payment_plan.append(payment)
-                        payment_cycle.append('Yearly')
-            elif plan == 'halfyearly':
-                if product.product_plan:
-                    if product.product_plan == 'Half Yearly':
-                        payment_plan.append(payment)
-                        payment_cycle.append('Half yearly')
-            elif plan == 'quarterly':           
-                if product.product_plan:
-                    if product.product_plan == 'Quarterly':
-                        payment_plan.append(payment)
-                        payment_cycle.append('Quarterly')
-            elif plan == 'monthly':           
-                if product.product_plan:
-                    if product.product_plan == 'Monthly':
-                        payment_plan.append(payment)
-                        payment_cycle.append('Monthly')
-            else:
-                if product.product_plan:
-                    if product.product_plan == 'Yearly':
-                        payment_plan.append(payment)
-                        payment_cycle.append('Yearly')
-                    if product.product_plan == 'Half Yearly':
-                        payment_plan.append(payment)
-                        payment_cycle.append('Half yearly')
-                    if product.product_plan == 'Quarterly':
-                        payment_plan.append(payment)
-                        payment_cycle.append('Quarterly')
-                    if product.product_plan == 'Monthly':
-                        payment_plan.append(payment)
-                        payment_cycle.append('Monthly')
-    
-    payments = payment_plan
-    
-    # print(len(payments))
-    response_data = {"payments":payments,
-                        "payment_cycle":payment_cycle}     
-    
+    if plan:
+        if plan == 'yearly':
+            payments = payments.filter(product__product_plan='Yearly')
+        elif plan == 'halfyearly':
+            payments = payments.filter(product__product_plan='Half Yearly')
+        elif plan == 'quarterly':
+            payments = payments.filter(product__product_plan='Quarterly')
+        elif plan == 'monthly':
+            payments = payments.filter(product__product_plan='Monthly')
+
+    payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
+    response_data = {"payments": payments, "payment_cycle": payment_cycle}
+
     return response_data
+
 
 def easypaisa_pay(q,start_date,end_date,plan,product):
     if not start_date:

@@ -32,6 +32,24 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
+# delete this api before production
+class AlnafiPayment(APIView):
+    # def get(self,request):
+    #     alnafi_payment = AlNafi_Payment.objects.values('id', 'order_id', 'payment_id')
+    #     serializer = GetAlnafipaymentSerializer(alnafi_payment, many=True)
+    #     return Response(serializer.data)
+    
+    def post(self, request):
+        data = request.data
+        serializer = AlNafiPaymentSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class MainPaymentAPIView(APIView):
     def post(self, request):
         file = request.FILES['file']
@@ -60,48 +78,36 @@ class PaymentDelete(APIView):
         return Response('deleted')
 
 
-def payment_search(export,query,start_date,end_date,plan,request,url,product,source,origin):
-    payments = cache.get(url+'payments')
-    if payments is None:
-        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
-        cache.set(url+'payments', payments) 
+# def payment_search(export,query,start_date,end_date,plan,request,url,product,source,origin):
+#     payments = cache.get(url+'payments')
+#     if payments is None:
+#         payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
+#         cache.set(url+'payments', payments) 
     
-    serializer = MainPaymentSerializer(payments['payments'],many=True)
-    if export=='true':
-        file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-        # Build the full path to the media directory
-        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-        df = pd.DataFrame(serializer.data).to_csv(index=False)
-        # print(df)
-        s3 = upload_csv_to_s3(df,file_name)
-        data = {'file_link': file_path,'export':'true'}
-        return Response(data)
-    else:
-        for i in range(len(serializer.data)):
-            serializer.data[i]['payment_cycle'] = payments['payment_cycle'][i]
-        paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-        return paginator.get_paginated_response(paginated_queryset)
+#     serializer = MainPaymentSerializer(payments['payments'],many=True)
+#     if export=='true':
+#         file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+#         # Build the full path to the media directory
+#         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+#         df = pd.DataFrame(serializer.data).to_csv(index=False)
+#         # print(df)
+#         s3 = upload_csv_to_s3(df,file_name)
+#         data = {'file_link': file_path,'export':'true'}
+#         return Response(data)
+#     else:
+#         for i in range(len(serializer.data)):
+#             serializer.data[i]['payment_cycle'] = payments['payment_cycle'][i]
+#         paginator = MyPagination()
+#         paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+#         return paginator.get_paginated_response(paginated_queryset)
 
 
-
-
-# delete this api before production
-class AlnafiPayment(APIView):
-    # def get(self,request):
-    #     alnafi_payment = AlNafi_Payment.objects.values('id', 'order_id', 'payment_id')
-    #     serializer = GetAlnafipaymentSerializer(alnafi_payment, many=True)
-    #     return Response(serializer.data)
-    
-    def post(self, request):
-        data = request.data
-        serializer = AlNafiPaymentSerializer(data=data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+from django.core.cache import cache
+from django.conf import settings
+from datetime import datetime
+import os
+import pandas as pd
+from rest_framework.response import Response
 
 
 #main site data required
@@ -236,32 +242,32 @@ class SearchPayments(APIView):
         plan = self.request.GET.get('plan', None) or None   
         product = self.request.GET.get('product', None) or None  
         url = request.build_absolute_uri()
-        if origin:
-            payments = payment_search(export,query,start_date,end_date,plan,request,url,product,source,origin)
-            return payments
-        else:
-            payments = cache.get(url+'payments')
-            if payments is None:
-                payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
-                cache.set(url+'payments', payments)   
-            
-            serializer = MainPaymentSerializer(payments['payments'],many=True)       
-            if export=='true':
-                df = pd.DataFrame(serializer.data)
-                # Merge dataframes
-                file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                df = df.to_csv(index=False)
-                s3 = upload_csv_to_s3(df,file_name)
-                data = {'file_link': file_path,'export':'true'}
-                return Response(data)
-            else:                
-                for i in range(len(serializer.data)):
+
+        payments = cache.get(url+'payments')
+        if payments is None:
+            payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
+            cache.set(url+'payments', payments)   
+        
+        serializer = MainPaymentSerializer(payments['payments'],many=True)       
+        if export=='true':
+            df = pd.DataFrame(serializer.data)
+            # Merge dataframes
+            file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            df = df.to_csv(index=False)
+            s3 = upload_csv_to_s3(df,file_name)
+            data = {'file_link': file_path,'export':'true'}
+            return Response(data)
+        else:                
+            for i in range(len(serializer.data)):
+                try:
                     serializer.data[i]['payment_cycle'] = payments['payment_cycle'][i]
-                            
-                paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-                return paginator.get_paginated_response(paginated_queryset) 
+                except Exception as e:
+                    print(e)    
+            paginator = MyPagination()
+            paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+            return paginator.get_paginated_response(paginated_queryset) 
+         
 
 
 #Optimized
