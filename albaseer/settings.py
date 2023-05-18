@@ -274,19 +274,19 @@ CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 
-# if DEBUG:
-#     STATIC_URL = '/static/'
-#     MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
+if DEBUG:
+    STATIC_URL = '/static/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
     
-# else:
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
-AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
-AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
-AWS_QUERYSTRING_AUTH = False
-STATIC_URL = env("S3_STATIC_URL")
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-MEDIA_ROOT = env("S3_MEDIA")
+else:
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+    AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+    AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+    AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+    AWS_QUERYSTRING_AUTH = False
+    STATIC_URL = env("S3_STATIC_URL")
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    MEDIA_ROOT = env("S3_MEDIA")
 
 
 if not DEBUG:
@@ -355,3 +355,6 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 52428800

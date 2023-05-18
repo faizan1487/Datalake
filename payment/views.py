@@ -223,9 +223,9 @@ class SearchAlNafiPayments(APIView):
  
 #optimized but main site data required           
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_group = 'Sales'
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_group = 'Sales'
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None

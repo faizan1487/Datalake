@@ -46,6 +46,12 @@ class MainUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = Main_User
         fields = ("id","username","email", "first_name", "last_name","source","phone","address","country","created_at")
+    
+class MainUserCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Main_User
+        fields = '__all__'
+            
         
 #For albaseer users        
 class UserRegistrationSerializer(serializers.ModelSerializer):
