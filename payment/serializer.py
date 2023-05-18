@@ -1,8 +1,5 @@
 from rest_framework.serializers import ModelSerializer, Serializer
-from .models import Stripe_Payment
-from .models import Easypaisa_Payment
-from .models import UBL_Manual_Payment
-from .models import UBL_IPG_Payment, AlNafi_Payment
+from .models import UBL_IPG_Payment, AlNafi_Payment, Main_Payment,Easypaisa_Payment, Stripe_Payment, UBL_Manual_Payment
 
 
 
@@ -71,6 +68,11 @@ class UBL_Manual_PaymentSerializer(ModelSerializer):
     class Meta:
         managed = True
         model = UBL_Manual_Payment
+        fields = '__all__'
+
+class MainPaymentSerializer(ModelSerializer):
+    class Meta:
+        model = Main_Payment
         fields = '__all__'
 
 class PaymentCombinedSerializer(Serializer):

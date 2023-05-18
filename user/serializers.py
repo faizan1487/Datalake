@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import AlNafi_User
-from .models import IslamicAcademy_User, User, NavbarLink
+from .models import IslamicAcademy_User, User, NavbarLink, AlNafi_User,Main_User
 from .utils import Util
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -40,6 +40,12 @@ class IslamicAcademyUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = IslamicAcademy_User
         fields = ('username','first_name','last_name','email','phone','is_paying_customer','created_at',)
+        
+        
+class MainUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Main_User
+        fields = ("id","username","email", "first_name", "last_name","source","phone","address","country","created_at")
         
 #For albaseer users        
 class UserRegistrationSerializer(serializers.ModelSerializer):

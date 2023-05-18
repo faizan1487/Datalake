@@ -1,11 +1,13 @@
 from django.urls import path
 from .views import (SearchPayments, GetUBLPayments, AlnafiPayment,SearchAlNafiPayments,GetEasypaisaPayments,
-                    NoOfPayments,RenewalNoOfPayments,PaymentValidation)
+                    NoOfPayments,RenewalNoOfPayments,PaymentValidation,PaymentDelete,MainPaymentAPIView)
 from payment.webhooks import enrollment_created_webhook
 
 urlpatterns = [
     path("enrollmentwebhook/", enrollment_created_webhook),
+    path("deletepayment/", PaymentDelete.as_view(), name='payment-dalete'),
     path("alnafipayment/", AlnafiPayment.as_view(), name='alnafi-payment'),
+    path('createpayments/', MainPaymentAPIView.as_view(), name='main-payments-api'),
     path("searchpayment/", SearchPayments.as_view(), name='search-payments'),
     path("searchalnafipayment/", SearchAlNafiPayments.as_view(), name='search-alnafi-payments'),
     path("nofpayments/", NoOfPayments.as_view(), name='no-of-payments'),

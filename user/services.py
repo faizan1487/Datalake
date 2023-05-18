@@ -1,12 +1,12 @@
 from django.middleware import csrf
 from django.shortcuts import render
-from .models import AlNafi_User, IslamicAcademy_User
+from .models import AlNafi_User, IslamicAcademy_User, Main_User
 from django.db.models import Q
 from django.conf import settings
 from django.utils.timezone import is_naive, make_aware, utc
 from rest_framework_simplejwt.tokens import RefreshToken
 from datetime import date, datetime, timedelta
-from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment
+from payment.models import UBL_IPG_Payment, Stripe_Payment, Easypaisa_Payment, Main_Payment
 from rest_framework.permissions import BasePermission
 from rest_framework.exceptions import PermissionDenied
 from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer    
@@ -24,28 +24,102 @@ def upload_csv_to_s3(df,file_name):
     upload_to_s3 = s3.put_object(Bucket=bucket_name, Key=object_name, Body=df)
     return s3
 
+def paying_users_details(query_time, is_converted):
+    converted_users = []
+    converted = []
+    all_paid_users_ids = list(Main_Payment.objects.all().values_list("user__id", flat=True))
+    all_paid_users = query_time.filter(id__in=all_paid_users_ids).values("id","username","email", "first_name", "last_name","source","phone","address","country","created_at")    
+    all_unpaid_users = query_time.exclude(id__in=all_paid_users_ids)
+    if is_converted =='true':
+        for user in all_paid_users:
+            converted_users.append(user)
+            converted.append(True)
+    elif is_converted == 'false':
+        for user in all_unpaid_users:
+            converted_users.append(user)
+            converted.append(False)
+    else:
+        for user in all_paid_users:
+            converted_users.append(user)
+            converted.append(True)
+            
+        for user in all_unpaid_users:
+            converted_users.append(user)
+            converted.append(False) 
+                     
+    
+    # for user in query_time:
+    #     paying_user = Main_Payment.objects.filter(user=user).exists()      
+    #     if is_converted == 'true':
+    #         if paying_user:
+    #             converted_users.append(user)
+    #             converted.append(True)
+    #     elif is_converted == 'false':
+    #         if not paying_user:
+    #             converted_users.append(user)
+    #             converted.append(False)
+    #     else:
+    #         if paying_user:
+    #             converted_users.append(user)
+    #             converted.append(True)
+    #         else:
+    #             converted_users.append(user)
+    #             converted.append(False)   
+                     
+    response = {"converted_users":converted_users, "converted": converted}
+    return response
 
 
-def alnafi_user(q, start_date, end_date, is_converted):
+def search_user(q, start_date, end_date, is_converted,source):
+    users = Main_User.objects.all()
+    if source:
+        users = users.filter(source=source)
+    
     if not start_date:
-        first_user = AlNafi_User.objects.exclude(created_at=None).first()
+        first_user = users.exclude(created_at=None).last()
         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = new_date_obj
 
     if not end_date:
-        last_user = AlNafi_User.objects.exclude(created_at=None).last()
+        last_user = users.exclude(created_at=None).first()
+        date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
+        end_date = new_date_obj
+        
+        
+    if q:
+        users = users.filter(
+            Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))
+        
+        users = users.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
+        users = paying_users_details(users, is_converted)
+    else:
+        users = users.filter(created_at__date__gte = start_date, created_at__date__lte = end_date)
+        users = paying_users_details(users, is_converted)
+        
+    return users 
+
+def alnafi_user(q, start_date, end_date, is_converted):
+    if not start_date:
+        first_user = Main_User.objects.exclude(created_at=None).first()
+        date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+        start_date = new_date_obj
+
+    if not end_date:
+        last_user = Main_User.objects.exclude(created_at=None).last()
         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
 
     if q:
-        queryset = AlNafi_User.objects.filter(
+        queryset = Main_User.objects.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q))
         query_time = queryset.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
         paying_user_queryset = paying_users_details(query_time, is_converted)
     else:
-        query_time = AlNafi_User.objects.filter(created_at__date__gte = start_date, created_at__date__lte = end_date)
+        query_time = Main_User.objects.filter(created_at__date__gte = start_date, created_at__date__lte = end_date)
         paying_user_queryset = paying_users_details(query_time, is_converted)
         
     return paying_user_queryset
@@ -252,34 +326,34 @@ class GroupPermission(BasePermission):
                 }
             raise PermissionDenied(data)
 
-def paying_users_details(query_time, is_converted):
-    converted_users = []
-    converted = []
-    for user in query_time:
-        ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
-        # easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
-        # stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)  
+# def paying_users_details(query_time, is_converted):
+#     converted_users = []
+#     converted = []
+#     for user in query_time:
+#         ubl_user = UBL_IPG_Payment.objects.filter(customer_email=user.email)
+#         # easypaisa_user = Easypaisa_Payment.objects.filter(customer_email=user.email)
+#         # stripe_user = Stripe_Payment.objects.filter(customer_email=user.email)  
               
-        if is_converted == 'true':
-            #  or easypaisa_user or stripe_user
-            if ubl_user:
-                converted_users.append(user)
-                converted.append(True)
-        elif is_converted == 'false':
-            #  or easypaisa_user or stripe_user
-            if not ubl_user:
-                converted_users.append(user)
-                converted.append(False)
-        else:
-            if ubl_user:
-                converted_users.append(user)
-                converted.append(True)
-            else:
-                converted_users.append(user)
-                converted.append(False)   
+#         if is_converted == 'true':
+#             #  or easypaisa_user or stripe_user
+#             if ubl_user:
+#                 converted_users.append(user)
+#                 converted.append(True)
+#         elif is_converted == 'false':
+#             #  or easypaisa_user or stripe_user
+#             if not ubl_user:
+#                 converted_users.append(user)
+#                 converted.append(False)
+#         else:
+#             if ubl_user:
+#                 converted_users.append(user)
+#                 converted.append(True)
+#             else:
+#                 converted_users.append(user)
+#                 converted.append(False)   
                      
-    response = {"converted_users":converted_users, "converted": converted}
-    return response
+#     response = {"converted_users":converted_users, "converted": converted}
+#     return response
 
 
 # def paying_user(query_time, is_converted):

@@ -100,6 +100,9 @@ INSTALLED_APPS = [
     "corsheaders",
 ]
 
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -111,6 +114,13 @@ MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
 ]
+
+if DEBUG:
+    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware", ]
+    INTERNAL_IPS = [
+        "127.0.0.1",
+    ]
+
 
 ROOT_URLCONF = 'albaseer.urls'
 
@@ -134,30 +144,30 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
-# if DEBUG:
-#     print("SQL Lite CONNECTED")
-#     DATABASES = {
-#         'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': BASE_DIR / 'db.sqlite3',
-#         }
-#     }
-# else:
-    # print("RDS CONNECTED")
-DATABASES = {
-    'default': {
-        'ENGINE': env("DATABASE_ENGINE"),
-        'NAME': env("DATABASE_NAME"),
-        'USER': env("DATABASE_USER"),
-        'PASSWORD': env("DATABASE_PASSWORD"),
-        'HOST': env("DATABASE_HOST"),
-        'PORT': env('DATABASE_PORT'),
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+if DEBUG:
+    print("SQL Lite CONNECTED")
+    DATABASES = {
+        'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
-} 
-        
+else:
+    # print("RDS CONNECTED")
+    DATABASES = {
+        'default': {
+            'ENGINE': env("DATABASE_ENGINE"),
+            'NAME': env("DATABASE_NAME"),
+            'USER': env("DATABASE_USER"),
+            'PASSWORD': env("DATABASE_PASSWORD"),
+            'HOST': env("DATABASE_HOST"),
+            'PORT': env('DATABASE_PORT'),
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+            }
+        }
+    } 
+            
 
 if DEBUG:
     # CACHES = {
@@ -226,7 +236,6 @@ TIME_INPUT_FORMAT = ['%H:%M:%S']
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -262,6 +271,9 @@ CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2
     'https://al-baseer.alnafi.com','https://api-al-baseer.alnafi.com','http://ec2-52-6-12-123.compute-1.amazonaws.com']
 
 
+MEDIA_URL = '/media/'
+STATIC_ROOT = os.path.join(BASE_DIR, "static/")
+
 # if DEBUG:
 #     STATIC_URL = '/static/'
 #     MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
@@ -276,9 +288,6 @@ STATIC_URL = env("S3_STATIC_URL")
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
 MEDIA_ROOT = env("S3_MEDIA")
 
-MEDIA_URL = '/media/'
-STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-# MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
 
 if not DEBUG:
     pass

@@ -1,10 +1,11 @@
 from rest_framework import status
 from user.models import User
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
-                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer)
+                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer)
 from .services import (easypaisa_pay, ubl_pay, stripe_pay, json_to_csv,stripe_no_payments,ubl_no_payments,easypaisa_no_payments,
-                       no_of_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation)
+                       no_of_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,search_payment,
+                       payment_validation,main_no_of_payments)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -23,6 +24,7 @@ from products.models import  IslamicAcademy_Product, Alnafi_Product
 from itertools import chain
 from django.core.cache import cache
 from user.services import upload_csv_to_s3
+import numpy as np
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -30,17 +32,43 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
+class MainPaymentAPIView(APIView):
+    def post(self, request):
+        file = request.FILES['file']
+        df = pd.read_csv(file)
+        # print(int(df.to_dict('records')[0]['product']))
+        
+        # Replace non-finite values with NaN
+        df['product'] = pd.to_numeric(df['product'], errors='coerce')
+        
+        # Convert NaN values to None (null) instead of a default value
+        df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
+        
+        print(df['product'])
+        serializer = MainPaymentSerializer(data=df.to_dict('records'), many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status= 400)
 
 
-def easypaisa_payment(export,query,start_date,end_date,plan,request,url,product):
-    obj = cache.get(url+'easypaisa')
-    if obj is None:
-        obj = easypaisa_pay(query,start_date,end_date,plan,product)
-        cache.set(url+'easypaisa', obj) 
+
+class PaymentDelete(APIView):
+    def get(self, request):
+        objs = Main_Payment.objects.all()
+        objs.delete()
+        return Response('deleted')
+
+
+def payment_search(export,query,start_date,end_date,plan,request,url,product,source,origin):
+    payments = cache.get(url+'payments')
+    if payments is None:
+        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
+        cache.set(url+'payments', payments) 
     
-    serializer = Easypaisa_PaymentsSerializer(obj['data'],many=True)
+    serializer = MainPaymentSerializer(payments['payments'],many=True)
     if export=='true':
-        file_name = f"Easypaisa_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+        file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
         # Build the full path to the media directory
         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
         df = pd.DataFrame(serializer.data).to_csv(index=False)
@@ -50,53 +78,12 @@ def easypaisa_payment(export,query,start_date,end_date,plan,request,url,product)
         return Response(data)
     else:
         for i in range(len(serializer.data)):
-            serializer.data[i]['payment_cycle'] = obj['payment_cycle'][i]
+            serializer.data[i]['payment_cycle'] = payments['payment_cycle'][i]
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(serializer.data, request)
         return paginator.get_paginated_response(paginated_queryset)
 
-def ubl_payment(export,query,start_date,end_date,plan,request,url,product):
-    obj = cache.get(url+'ubl')
-    if obj is None:
-        obj = ubl_pay(query, start_date, end_date,plan,product)
-        cache.set(url+'ubl', obj) 
-        
-    serializer = Ubl_Ipg_PaymentsSerializer(obj['data'],many=True)
-    if export=='true':
-        file_name = f"Ubl_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-        df = pd.DataFrame(serializer.data).to_csv(index=False)
-        s3 = upload_csv_to_s3(df,file_name)
-        data = {'file_link': file_path,'export':'true'}
-        return Response(data)
-    else:
-        for i in range(len(serializer.data)):
-            print(obj['payment_cycle'][i])
-            serializer.data[i]['payment_cycle'] = obj['payment_cycle'][i]
-        paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-        return paginator.get_paginated_response(paginated_queryset)
-            
-def stripe_payment(export,query,start_date,end_date,plan,request,url,product):
-    obj = cache.get(url+'stripe')
-    if obj is None:
-        obj = stripe_pay(query, start_date, end_date,plan,product)
-        cache.set(url+'stripe', obj) 
-    serializer = StripePaymentSerializer(obj['data'],many=True)
-    if export=='true':
-        file_name = f"Stripe_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-        # Build the full path to the media directory
-        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-        df = pd.DataFrame(serializer.data).to_csv(index=False)
-        s3 = upload_csv_to_s3(df,file_name)
-        data = {'file_link': file_path,'export':'true'}
-        return Response(data)
-    else:
-        for i in range(len(serializer.data)):
-            serializer.data[i]['payment_cycle'] = obj['payment_cycle'][i]
-        paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-        return paginator.get_paginated_response(paginated_queryset)
+
 
 
 # delete this api before production
@@ -116,6 +103,8 @@ class AlnafiPayment(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+#main site data required
 class SearchAlNafiPayments(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
@@ -231,7 +220,8 @@ class SearchAlNafiPayments(APIView):
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(alnafi_payments_serializer.data, request)
             return paginator.get_paginated_response(paginated_queryset)
-            
+ 
+#optimized but main site data required           
 class SearchPayments(APIView):
     permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
@@ -246,130 +236,35 @@ class SearchPayments(APIView):
         plan = self.request.GET.get('plan', None) or None   
         product = self.request.GET.get('product', None) or None  
         url = request.build_absolute_uri()
-        
-        if origin =='local':
-            if source=='easypaisa':
-                response = easypaisa_payment(export,query,start_date,end_date,plan,request,url,product)
-                return response
-                
-            elif source == 'ubl':
-                response = ubl_payment(export,query,start_date,end_date,plan,request,url,product)
-                return response
-            else:
-                easypaisa = cache.get(url+'easypaisa')
-                if easypaisa is None:
-                    easypaisa = easypaisa_pay(query, start_date, end_date,plan,product)
-                    cache.set(url+'easypaisa', easypaisa)  
-                        
-                ubl = cache.get(url+'ubl')
-                if ubl is None:
-                    ubl = ubl_pay(query, start_date, end_date,plan,product)
-                    cache.set(url+'ubl', ubl)         
-                if export=='true':
-                    easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)
-                    ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl,many=True)
-                    
-                    df1 = pd.DataFrame(easypaisa_serializer.data)
-                    df2 = pd.DataFrame(ubl_serializer.data)
-                    
-                    # Merge dataframes
-                    file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    merged_df = pd.concat([df1, df2], axis=1)
-                    df = merged_df.to_csv(index=False)
-                    s3 = upload_csv_to_s3(df,file_name)
-                    data = {'file_link': file_path,'export':'true'}
-                    return Response(data)
-                else:   
-                    ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl['data'],many=True)
-                    easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa['data'],many=True)
-                      
-                    combined_data = {
-                        'data1': ubl_serializer.data,
-                        'data2': easypaisa_serializer.data,
-                    }
-                    serialized_data = LocalPaymentCombinedSerializer(combined_data).data
-                    
-                    for i in range(len(serialized_data['data1'])):
-                         serialized_data['data1'][i]['payment_cycle'] = ubl['payment_cycle'][i]
-                         
-                    for i in range(len(serialized_data['data2'])):
-                        serialized_data['data2'][i]['payment_cycle'] = easypaisa['payment_cycle'][i]
-                    
-                    combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2']))
-                    paginator = MyPagination()
-                    paginated_queryset = paginator.paginate_queryset(combined_queryset, request)
-                    return paginator.get_paginated_response(paginated_queryset)          
-                
-                        
-        elif origin =='overseas':                
-            response = stripe_payment(export,query,start_date,end_date,plan,request,url,product)
-            return response
+        if origin:
+            payments = payment_search(export,query,start_date,end_date,plan,request,url,product,source,origin)
+            return payments
         else:
-            if source=='easypaisa':
-                response = easypaisa_payment(export,query,start_date,end_date,plan,request,url,product)
-                return response
-            elif source == 'ubl':
-                response = ubl_payment(export,query,start_date,end_date,plan,request,url,product)
-                return response
-            elif source=='stripe':
-                response = stripe_payment(export,query,start_date,end_date,plan,request,url,product)
-                return response
-            else:
-                easypaisa = cache.get(url+'easypaisa')
-                if easypaisa is None:
-                    easypaisa = easypaisa_pay(query, start_date, end_date,plan,product)
-                    cache.set(url+'easypaisa', easypaisa)      
-                stripe = cache.get(url+'stripe')
-                if stripe is None:
-                    stripe = stripe_pay(query, start_date, end_date,plan,product)
-                    cache.set(url+'stripe', stripe) 
-                ubl = cache.get(url+'ubl')
-                if ubl is None:
-                    ubl = ubl_pay(query, start_date, end_date,plan,product)
-                    cache.set(url+'ubl', ubl)         
-                if export=='true':
-                    easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa,many=True)
-                    stripe_serializer = StripePaymentSerializer(stripe,many=True)
-                    ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl,many=True)
-                    
-                    df1 = pd.DataFrame(easypaisa_serializer.data)
-                    df2 = pd.DataFrame(stripe_serializer.data)
-                    df3 = pd.DataFrame(ubl_serializer.data)
-                    
-                    # Merge dataframes
-                    file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    merged_df = pd.concat([df1, df2, df3], axis=1)
-                    df = merged_df.to_csv(index=False)
-                    s3 = upload_csv_to_s3(df,file_name)
-                    data = {'file_link': file_path,'export':'true'}
-                    return Response(data)
-                else:
-                    easypaisa_serializer = Easypaisa_PaymentsSerializer(easypaisa['data'],many=True)
-                    stripe_serializer = StripePaymentSerializer(stripe['data'],many=True)
-                    ubl_serializer = Ubl_Ipg_PaymentsSerializer(ubl['data'],many=True)
-                      
-                    combined_data = {
-                        'data1': stripe_serializer.data,
-                        'data2': ubl_serializer.data,
-                        'data3': easypaisa_serializer.data,
-                    }
-                    serialized_data = PaymentCombinedSerializer(combined_data).data
-                    for i in range(len(serialized_data['data1'])):
-                         serialized_data['data1'][i]['payment_cycle'] = stripe['payment_cycle'][i]
-                    
-                    for i in range(len(serialized_data['data2'])):
-                         serialized_data['data2'][i]['payment_cycle'] = ubl['payment_cycle'][i]
-                         
-                    for i in range(len(serialized_data['data3'])):
-                        serialized_data['data3'][i]['payment_cycle'] = easypaisa['payment_cycle'][i]
-                    
-                    combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2'], serialized_data['data3']))
-                    paginator = MyPagination()
-                    paginated_queryset = paginator.paginate_queryset(combined_queryset, request)
-                    return paginator.get_paginated_response(paginated_queryset)        
- 
+            payments = cache.get(url+'payments')
+            if payments is None:
+                payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
+                cache.set(url+'payments', payments)   
+            
+            serializer = MainPaymentSerializer(payments['payments'],many=True)       
+            if export=='true':
+                df = pd.DataFrame(serializer.data)
+                # Merge dataframes
+                file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                df = df.to_csv(index=False)
+                s3 = upload_csv_to_s3(df,file_name)
+                data = {'file_link': file_path,'export':'true'}
+                return Response(data)
+            else:                
+                for i in range(len(serializer.data)):
+                    serializer.data[i]['payment_cycle'] = payments['payment_cycle'][i]
+                            
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+                return paginator.get_paginated_response(paginated_queryset) 
+
+
+#Optimized
 class NoOfPayments(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
@@ -379,22 +274,23 @@ class NoOfPayments(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         
-        if source=='stripe':
-            response_data = stripe_no_payments(start_date,end_date)
-        elif source =='ubl':
-            response_data = ubl_no_payments(start_date,end_date)
-        elif source =='easypaisa':
-            response_data = easypaisa_no_payments(start_date,end_date)
+        if source:
+            payments = main_no_of_payments(start_date,end_date,source)
+            # response_data = stripe_no_payments(start_date,end_date)
+        # elif source =='ubl':
+        #     response_data = ubl_no_payments(start_date,end_date)
+        # elif source =='easypaisa':
+        #     response_data = easypaisa_no_payments(start_date,end_date)
         else:
-            stripe_payments = stripe_no_payments(start_date,end_date)
-            ubl_payments = ubl_no_payments(start_date,end_date)
-            easypaisa_payments = easypaisa_no_payments(start_date,end_date)
-            response_data = {"stripe_payments": stripe_payments,
-                             "ubl_payments": ubl_payments,
-                             "easypaisa_payments":easypaisa_payments
-                             }
+            # stripe_payments = stripe_no_payments(start_date,end_date)
+            # ubl_payments = ubl_no_payments(start_date,end_date)
+            # easypaisa_payments = easypaisa_no_payments(start_date,end_date)
+            payments = main_no_of_payments(start_date,end_date,source)
+        response_data = {"payments": payments}
         return Response(response_data)
-            
+    
+    
+#main site payment data required        
 class RenewalNoOfPayments(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
@@ -447,7 +343,9 @@ class GetEasypaisaPayments(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+
+#main site payment data required                
 class PaymentValidation(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
@@ -462,67 +360,69 @@ class PaymentValidation(APIView):
         time_threshold = timezone.now() - timezone.timedelta(days=90)
         time_threshold_str = time_threshold.strftime('%Y-%m-%d')
         url = request.build_absolute_uri()
-        if source == 'ubl':
-            ubl = cache.get(url)
-            if ubl is None:
-                ubl = ubl_payment_validation(time_threshold_str,q)
-                cache.set(url, ubl) 
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(ubl['payments'].data, request)
-            return paginator.get_paginated_response(paginated_queryset)
         
-        elif source == 'easypaisa':
-            easypaisa = cache.get(url)
-            if easypaisa is None:
-                easypaisa = easypaisa_payment_validation(time_threshold_str,q)
-                cache.set(url, easypaisa) 
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(easypaisa['payments'].data, request)
-            return paginator.get_paginated_response(paginated_queryset)
-        elif source == 'stripe':
-            stripe = cache.get(url)
-            if stripe is None:
-                stripe = stripe_payment_validation(time_threshold_str,q)
-                cache.set(url, stripe) 
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(stripe['payments'].data, request)
-            return paginator.get_paginated_response(paginated_queryset)
-        else:
-            ubl = cache.get(url+'ubl')
-            if ubl is None:
-                ubl = ubl_payment_validation(time_threshold_str,q)
-                cache.set(url+'ubl', ubl) 
+        
+        
+        payments = cache.get(url)
+        if payments is None:
+            payments = payment_validation(time_threshold_str,q,source)
+            cache.set(url, payments) 
+        paginator = MyPagination()
+        paginated_queryset = paginator.paginate_queryset(payments['payments'].data, request)
+        return paginator.get_paginated_response(paginated_queryset)
+        
+        # elif source == 'easypaisa':
+        #     easypaisa = cache.get(url)
+        #     if easypaisa is None:
+        #         easypaisa = easypaisa_payment_validation(time_threshold_str,q)
+        #         cache.set(url, easypaisa) 
+        #     paginator = MyPagination()
+        #     paginated_queryset = paginator.paginate_queryset(easypaisa['payments'].data, request)
+        #     return paginator.get_paginated_response(paginated_queryset)
+        # elif source == 'stripe':
+        #     stripe = cache.get(url)
+        #     if stripe is None:
+        #         stripe = stripe_payment_validation(time_threshold_str,q)
+        #         cache.set(url, stripe) 
+        #     paginator = MyPagination()
+        #     paginated_queryset = paginator.paginate_queryset(stripe['payments'].data, request)
+        #     return paginator.get_paginated_response(paginated_queryset)
+        # else:
+            # ubl = cache.get(url+'ubl')
+            # if ubl is None:
+            #     ubl = ubl_payment_validation(time_threshold_str,q)
+            #     cache.set(url+'ubl', ubl) 
                             
-            easypaisa = cache.get(url+'easypaisa')
-            if easypaisa is None:
-                easypaisa = easypaisa_payment_validation(time_threshold_str,q)
-                cache.set(url+'easypaisa', easypaisa) 
+            # easypaisa = cache.get(url+'easypaisa')
+            # if easypaisa is None:
+            #     easypaisa = easypaisa_payment_validation(time_threshold_str,q)
+            #     cache.set(url+'easypaisa', easypaisa) 
             
-            stripe = cache.get(url+'stripe')
-            if stripe is None:
-                stripe = stripe_payment_validation(time_threshold_str,q)
-                cache.set(url+'stripe', stripe)
+            # stripe = cache.get(url+'stripe')
+            # if stripe is None:
+            #     stripe = stripe_payment_validation(time_threshold_str,q)
+            #     cache.set(url+'stripe', stripe)
                         
-            combined_data = {
-                    'data1': stripe['payments'].data,
-                    'data2': ubl['payments'].data,
-                    'data3': easypaisa['payments'].data,
-                }
+            # combined_data = {
+            #         'data1': stripe['payments'].data,
+            #         'data2': ubl['payments'].data,
+            #         'data3': easypaisa['payments'].data,
+            #     }
             
-            serialized_data = PaymentCombinedSerializer(combined_data).data
-            for i in range(len(serialized_data['data1'])):
-                serialized_data['data1'][i]['is_valid_payment'] = stripe['valid_payments'][i]
+            # serialized_data = PaymentCombinedSerializer(combined_data).data
+            # for i in range(len(serialized_data['data1'])):
+            #     serialized_data['data1'][i]['is_valid_payment'] = stripe['valid_payments'][i]
             
-            for i in range(len(serialized_data['data2'])):
-                serialized_data['data2'][i]['is_valid_payment'] = ubl['valid_payments'][i]
+            # for i in range(len(serialized_data['data2'])):
+            #     serialized_data['data2'][i]['is_valid_payment'] = ubl['valid_payments'][i]
                 
-            for i in range(len(serialized_data['data3'])):
-                serialized_data['data3'][i]['is_valid_payment'] = easypaisa['valid_payments'][i]
+            # for i in range(len(serialized_data['data3'])):
+            #     serialized_data['data3'][i]['is_valid_payment'] = easypaisa['valid_payments'][i]
                                      
-            combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2'],serialized_data['data3']))
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(combined_queryset, request)
-            return paginator.get_paginated_response(paginated_queryset)
+            # combined_queryset = list(chain(serialized_data['data1'], serialized_data['data2'],serialized_data['data3']))
+            # paginator = MyPagination()
+            # paginated_queryset = paginator.paginate_queryset(combined_queryset, request)
+            # return paginator.get_paginated_response(paginated_queryset)
         
         
 #Creating API For Stripe Payments: 

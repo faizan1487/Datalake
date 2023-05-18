@@ -79,6 +79,7 @@ class Main_User(models.Model):
     class Meta:
         managed = True
         verbose_name = "Main User"
+        ordering = ['-created_at']
 
 
 

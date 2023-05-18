@@ -32,3 +32,21 @@ urlpatterns = [
         ), name='swagger-ui'),
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+
+if settings.DEBUG:
+    # def trigger_error(request):
+    #     1 / 0
+    urlpatterns += [
+        path('api_schema', get_schema_view(
+                title="Al Baseer Rest APIs Documentation",
+                description="Rest APIs for Al Baseer",
+            ),
+                name='api-schema'
+            ),
+        path('docs/', TemplateView.as_view(
+                template_name='docs.html',
+                extra_context={'schema_url': 'api-schema'}
+            ), name='swagger-ui'),
+        # path('sentry-debug/', trigger_error),  # type: ignore
+        path('debug/', include('debug_toolbar.urls')), ]
