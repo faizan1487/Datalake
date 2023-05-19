@@ -89,9 +89,9 @@ class PaymentDelete(APIView):
 #THis api gets expired users based on expiration days(days are integer)
 #optimized for 55 queries
 class RenewalPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
