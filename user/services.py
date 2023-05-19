@@ -314,16 +314,17 @@ def aware_utcnow():
 
 class GroupPermission(BasePermission):
     def has_permission(self, request, view):
-        required_group = getattr(view, 'required_group', None)
-        if required_group is None:
+        required_groups = getattr(view, 'required_groups', None)  # Change to 'required_groups'
+        if required_groups is None:
             return True
-        if request.user.groups.filter(name=required_group).exists():
+        user_groups = request.user.groups.values_list('name', flat=True)  # Get the names of all user groups
+        if any(group in user_groups for group in required_groups):  # Check if any required group is present in user_groups
             return True
         else:
             data = {
                 "detail": "You do not have permission to access this API.",
                 "has_perm": False
-                }
+            }
             raise PermissionDenied(data)
 
 # def paying_users_details(query_time, is_converted):

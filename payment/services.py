@@ -442,6 +442,7 @@ def search_payment(export, query, start_date, end_date, plan, request, url, prod
 
     if product:
         product_obj = Main_Product.objects.get(product_name=product)
+        print(product_obj.product_payments)
         payments = product_obj.product_payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
 
     if plan:
@@ -706,12 +707,10 @@ def payment_validation(time_threshold_str,q,source):
                             valid_payment = False
             
                 valid_payments.append(valid_payment)
-            
-            # print(ubl_payments)
+                
+            print(validated_payments)
             serializer = MainPaymentSerializer(validated_payments, many=True)
-            # print(serializer.data)
-            # print(ubl_payments)
-            # print(valid_payments)
+            print(valid_payments)
             # print("serialize data", serializer.data)
             for i in range(len(serializer.data)):
                 print(valid_payments[i])

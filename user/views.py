@@ -82,7 +82,7 @@ class AlnafiUser(APIView):
 class GetUserDetails(APIView):
     permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
-    required_group = 'Support'
+    required_groups = ['Support', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         is_converted = self.request.GET.get('is_converted', None) or None
@@ -126,7 +126,7 @@ class GetUserDetails(APIView):
 class GetNoOfUsers(APIView):
     permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
-    required_group = 'Support'
+    required_groups = ['Support', 'Admin']
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None   

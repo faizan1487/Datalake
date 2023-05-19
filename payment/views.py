@@ -26,6 +26,9 @@ from django.core.cache import cache
 from user.services import upload_csv_to_s3
 import numpy as np
 
+
+
+
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
@@ -78,43 +81,15 @@ class PaymentDelete(APIView):
         return Response('deleted')
 
 
-# def payment_search(export,query,start_date,end_date,plan,request,url,product,source,origin):
-#     payments = cache.get(url+'payments')
-#     if payments is None:
-#         payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
-#         cache.set(url+'payments', payments) 
-    
-#     serializer = MainPaymentSerializer(payments['payments'],many=True)
-#     if export=='true':
-#         file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-#         # Build the full path to the media directory
-#         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-#         df = pd.DataFrame(serializer.data).to_csv(index=False)
-#         # print(df)
-#         s3 = upload_csv_to_s3(df,file_name)
-#         data = {'file_link': file_path,'export':'true'}
-#         return Response(data)
-#     else:
-#         for i in range(len(serializer.data)):
-#             serializer.data[i]['payment_cycle'] = payments['payment_cycle'][i]
-#         paginator = MyPagination()
-#         paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-#         return paginator.get_paginated_response(paginated_queryset)
 
 
-from django.core.cache import cache
-from django.conf import settings
-from datetime import datetime
-import os
-import pandas as pd
-from rest_framework.response import Response
 
 
 #main site data required
 class SearchAlNafiPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    required_group = 'Sales'
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -227,11 +202,11 @@ class SearchAlNafiPayments(APIView):
             paginated_queryset = paginator.paginate_queryset(alnafi_payments_serializer.data, request)
             return paginator.get_paginated_response(paginated_queryset)
  
-#optimized but main site data required           
+#optimized       
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_group = 'Sales'
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -272,35 +247,24 @@ class SearchPayments(APIView):
 
 #Optimized
 class NoOfPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    required_group = 'Sales'
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         
-        if source:
-            payments = main_no_of_payments(start_date,end_date,source)
-            # response_data = stripe_no_payments(start_date,end_date)
-        # elif source =='ubl':
-        #     response_data = ubl_no_payments(start_date,end_date)
-        # elif source =='easypaisa':
-        #     response_data = easypaisa_no_payments(start_date,end_date)
-        else:
-            # stripe_payments = stripe_no_payments(start_date,end_date)
-            # ubl_payments = ubl_no_payments(start_date,end_date)
-            # easypaisa_payments = easypaisa_no_payments(start_date,end_date)
-            payments = main_no_of_payments(start_date,end_date,source)
+        payments = main_no_of_payments(start_date,end_date,source)
         response_data = {"payments": payments}
         return Response(response_data)
     
     
 #main site payment data required        
 class RenewalNoOfPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    required_group = 'Sales'
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -353,9 +317,9 @@ class GetEasypaisaPayments(APIView):
 
 #main site payment data required                
 class PaymentValidation(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    required_group = 'Sales'
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         # expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
