@@ -442,7 +442,7 @@ def search_payment(export, query, start_date, end_date, plan, request, url, prod
 
     if product:
         product_obj = Main_Product.objects.get(product_name=product)
-        print(product_obj.product_payments)
+        # print(product_obj.product_payments)
         payments = product_obj.product_payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
 
     if plan:

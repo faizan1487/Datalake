@@ -86,10 +86,12 @@ class PaymentDelete(APIView):
 
 
 #main site data required
-class SearchAlNafiPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+#THis api gets expired users based on expiration days(days are integer)
+#optimized for 55 queries
+class RenewalPayments(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -100,106 +102,93 @@ class SearchAlNafiPayments(APIView):
         url = request.build_absolute_uri()
         active = self.request.GET.get('is_active', None) or None
         product = self.request.GET.get('product', None) or None
+        
+        
+        payments = cache.get(url)
+        if payments is None:
+            payments = Main_Payment.objects.filter(source='Al-Nafi')
+            cache.set(url, payments)
+            
+            
         if q:
-            queryset = cache.get(url)
-            if queryset is None:
-                queryset = AlNafi_Payment.objects.filter(
-                    Q(customer_email__iexact=q) | Q(order_id__iexact=q))
-                cache.set(url, queryset)
-        else:
-            queryset = cache.get(url)
-            if queryset is None:
-                queryset = AlNafi_Payment.objects.all()
-                cache.set(url, queryset)
+            payments = payments.filter(user__email__iexact=q)
           
         if product:
-            queryset = queryset.filter(product_name__icontains=product)  
+            payments = payments.filter(product__name__icontains=product)  
               
-        if source:
-            queryset = queryset.filter(source__iexact=source)
             
         if expiration:
             if exact=='true':
                 expiration_date = date.today() + timedelta(days=int(expiration))
-                queryset = queryset.filter(expiration_datetime__date=expiration_date)
+                payments = payments.filter(expiration_datetime__date=expiration_date)
             else:
                 expiration_date = date.today() + timedelta(days=int(expiration))
-                queryset = queryset.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date)) 
+                print(expiration_date)
+                payments = payments.filter(Q(expiration_datetime__date__gte=date.today()) & Q(expiration_datetime__date__lte=expiration_date)) 
         
         
                    
         if active == 'true':
-            queryset = [obj for obj in queryset if obj.expiration_datetime.date() > date.today()]
+            payments = [obj for obj in payments if obj.expiration_datetime.date() > date.today()]
         elif active == 'false':
-            queryset = [obj for obj in queryset if obj.expiration_datetime.date() < date.today()]
+            payments = [obj for obj in payments if obj.expiration_datetime.date() < date.today()]
         
+        
+        plan_mapping = {
+            'yearly': 'Yearly',
+            'halfyearly': 'Half Yearly',
+            'quarterly': 'Quarterly',
+            'monthly': 'Monthly',
+        }
+
         payment_plan = []
         payment_cycle = []
-        for obj in queryset:
-            product = Alnafi_Product.objects.filter(name=obj.product_name)
-            if product:
-                if product[0].plan:
-                    if plan == 'yearly':
-                        if product[0].plan == 'Yearly':
-                            payment_plan.append(obj)
-                            payment_cycle.append('Yearly')
-                    elif plan == 'halfyearly':
-                        if product[0].plan == 'Half Yearly':
-                            payment_plan.append(obj)
-                            payment_cycle.append('Half yearly')
-                    elif plan == 'quarterly':           
-                        if product[0].plan == 'Quarterly':
-                            payment_plan.append(obj)
-                            payment_cycle.append('Quarterly')
-                    elif plan == 'monthly':           
-                        if product[0].plan == 'Monthly':
-                            payment_plan.append(obj)
-                            payment_cycle.append('Monthly')
-                    else:
-                        if product[0].plan == 'Yearly':
-                            payment_plan.append(obj)
-                            payment_cycle.append('Yearly')
-                        if product[0].plan == 'Half Yearly':
-                            payment_plan.append(obj)
-                            payment_cycle.append('Half yearly')
-                        if product[0].plan == 'Quarterly':
-                            payment_plan.append(obj)
-                            payment_cycle.append('Quarterly')
-                        if product[0].plan == 'Monthly':
-                            payment_plan.append(obj)
-                            payment_cycle.append('Monthly')   
-                                
-        queryset = payment_plan   
-                 
-        alnafi_payments_serializer = AlNafiPaymentSerializer(queryset, many=True)
-        for i in range(len(alnafi_payments_serializer.data)):
-            alnafi_payments_serializer.data[i]['payment_cycle'] = payment_cycle[i]
+
+        
+        for obj in payments:
+            product = obj.product
+            if product and product.product_plan:
+                if plan:
+                    if plan.lower() == plan_mapping.get(product.product_plan.lower(), '').lower() or plan.lower() == 'all':
+                        payment_cycle.append(product.product_plan.capitalize())
+                        payment_plan.append(obj)
+                else:
+                    payment_cycle.append(product.product_plan.capitalize())
+                    payment_plan.append(obj)
+
+        
+                             
+        payments = payment_plan            
+        serializer = MainPaymentSerializer(payments, many=True)
+        
+        for i in range(len(serializer.data)):
+            serializer.data[i]['payment_cycle'] = payment_cycle[i]
             if active == 'true':
-                alnafi_payments_serializer.data[i]['is_active'] = True
+                serializer.data[i]['is_active'] = True
             elif active == 'false':
-                alnafi_payments_serializer.data[i]['is_active'] = False
+                serializer.data[i]['is_active'] = False
             else:
-                date_string = alnafi_payments_serializer.data[i]['expiration_datetime']
+                date_string = serializer.data[i]['expiration_datetime']
                 try:
                     date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S").date()
                 except:
                     date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f").date()
                 if date_object < date.today():
-                    alnafi_payments_serializer.data[i]['is_active'] = False
+                    serializer.data[i]['is_active'] = False
                 else:
-                    alnafi_payments_serializer.data[i]['is_active'] = True
+                    serializer.data[i]['is_active'] = True
                   
         if export =='true':
-            file_name = f"Alanfi_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             # Build the full path to the media directory
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-            df = pd.DataFrame(alnafi_payments_serializer.data).to_csv(index=False)   
+            df = pd.DataFrame(serializer.data).to_csv(index=False)   
             s3 = upload_csv_to_s3(df,file_name)            
             data = {'file_link': file_path,'export':'true'}
             return Response(data)                       
         else:
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(alnafi_payments_serializer.data, request)
+            paginated_queryset = paginator.paginate_queryset(serializer.data, request)
             return paginator.get_paginated_response(paginated_queryset)
  
 #optimized       
