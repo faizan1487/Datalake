@@ -91,9 +91,9 @@ class PaymentDelete(APIView):
 
 #optimized 
 class RenewalPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -107,14 +107,14 @@ class RenewalPayments(APIView):
 
         payments = cache.get(url)
         if payments is None:
-            payments = Main_Payment.objects.select_related('product').all()
+            payments = Main_Payment.objects.select_related('product').all().values()
             cache.set(url, payments)
 
         if q:
             payments = payments.filter(user__email__iexact=q)
 
         if product:
-            payments = payments.filter(product__name__icontains=product)
+            payments = payments.filter(product__product_name__icontains=product)
 
         if expiration:
             expiration_date = date.today() + timedelta(days=int(expiration))
@@ -147,31 +147,49 @@ class RenewalPayments(APIView):
         else:
             payments = payments.filter(product__product_plan__isnull=False)
 
-        serializer = MainPaymentSerializer(payments, many=True)
+        # serializer = MainPaymentSerializer(payments, many=True)
 
-        for i, data in enumerate(serializer.data):
+        for i, data in enumerate(payments):
             date_string = data['expiration_datetime']
             if date_string:
-                try:
-                    date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S").date()
-                except ValueError:
-                    date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f").date()
-                serializer.data[i]['is_active'] = date_object >= date.today()
+                # try:
+                #     date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S").date()
+                # except ValueError:
+                #     date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f").date()
+                payments[i]['is_active'] = date_string.date() >= date.today()
             else:
-                serializer.data[i]['is_active'] = False
+                payments[i]['is_active'] = False
 
+        
+        def json_serializable(obj):
+                if isinstance(obj, datetime):
+                    return obj.isoformat()  # Convert datetime to ISO 8601 format
+                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+            
+        users = list(payments.values('user__email'))
+        products = list(payments.values('product__product_name'))
+        payment_list = list(payments.values())                          
+        for i in range(len(payment_list)):
+            try:
+                payment_list[i]['user_id'] = users[i]['user__email']
+                payment_list[i]['product_id'] = products[i]['product__product_name']
+            except Exception as e:
+                pass
+        
         if export == 'true':
             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-            df = pd.DataFrame(serializer.data).to_csv(index=False)
+            df = pd.DataFrame(payment_list).to_csv(index=False)
             s3 = upload_csv_to_s3(df, file_name)
             data = {'file_link': file_path, 'export': 'true'}
             return Response(data)
         else:
+            payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+            payment_objects = json.loads(payment_json)
+            
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-            return paginator.get_paginated_response(paginated_queryset)
-     
+            paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+            return paginator.get_paginated_response(paginated_queryset)     
     
 #optimized       
 class SearchPayments(APIView):
@@ -373,7 +391,11 @@ class NoOfPayments(APIView):
         response_data = {"payments": payments}
         return Response(response_data)
     
-    
+        """_summary_
+
+        Returns:
+            _type_: _description_
+        """    
 #Optimized      
 class RenewalNoOfPayments(APIView):
     permission_classes = [IsAuthenticated]
