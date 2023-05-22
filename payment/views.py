@@ -112,6 +112,10 @@ class RenewalPayments(APIView):
 
         if q:
             payments = payments.filter(user__email__iexact=q)
+            
+            
+        if source:
+            payments = payments.filter(source=source)
 
         if product:
             payments = payments.filter(product__product_name__icontains=product)
@@ -150,10 +154,11 @@ class RenewalPayments(APIView):
         for i, data in enumerate(payments):
             # date_string = data['expiration_datetime']
             date_string = payments[i]['expiration_datetime']
-            # print(date_string)
             if date_string:
+                print('fuck')
                 payments[i]['is_active'] = date_string.date() >= date.today()
             else:
+                print("you")
                 payments[i]['is_active'] = False
 
         
