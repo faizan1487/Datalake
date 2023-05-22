@@ -326,7 +326,9 @@ def stripe_pay(q, start_date, end_date,plan,product):
 
 def search_payment(export, query, start_date, end_date, plan, request, url, product, source, origin):
     payments = Main_Payment.objects.all()
-    # print("payments count", payments.count())
+    print("payments count", payments.count())
+    
+    
     if origin:
         if origin == 'local':
             payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG'])
@@ -335,20 +337,22 @@ def search_payment(export, query, start_date, end_date, plan, request, url, prod
 
     if source:
         payments = payments.filter(source=source.capitalize())
-    # print("payments count", payments.count())
+
     if not start_date:
         first_payment = payments.exclude(order_datetime=None).last()
-        start_date = first_payment.order_datetime + timedelta(days=20) if first_payment else None
+        start_date = first_payment.order_datetime.date() if first_payment else None
 
     if not end_date:
         last_payment = payments.exclude(order_datetime=None).first()
-        end_date = last_payment.order_datetime - timedelta(days=20) if last_payment else None
+        end_date = last_payment.order_datetime.date() if last_payment else None
 
     if query:
         payments = payments.filter(
             Q(user__email__iexact=query) | Q(product__product_name__iexact=query))
-        payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
+    
+    payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))    
 
+    
     if product:
         product_obj = Main_Product.objects.get(product_name=product)
         # print(product_obj.product_payments)
@@ -514,105 +518,6 @@ def ubl_pay(q, start_date, end_date,plan,product):
         
     return response_data
 
-
-
-
-
-
-# def payment_validation(time_threshold_str, q, source):
-#     payments = Main_Payment.objects.all().select_related('product')
-
-#     if source:
-#         payments = payments.filter(source=source)
-
-#     if q:
-#         payments = payments.filter(customer_email__iexact=q)
-
-#     response = {"payments": None, "valid_payments": []}
-#     if payments:
-#         validated_payments = []
-#         valid_payments = []
-
-#         product_ids = set(payments.values_list('product_id', flat=True))
-#         products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr', 'product_plan')
-
-#         alnafi_payments = payments.filter(source='Al-Nafi').order_by('-order_datetime').prefetch_related('user', 'product')
-
-#         latest_payments = {}
-#         for payment in alnafi_payments:
-#             key = (payment.user_id, payment.product_id)
-#             if key not in latest_payments:
-#                 latest_payments[key] = payment
-
-#         for payment in payments:
-#             valid_payment = False
-
-#             try:
-#                 product = next(filter(lambda p: p['id'] == payment.product_id, products), None)
-
-#                 if product and product['amount_pkr'] == payment.amount:
-#                     valid_payment = True
-
-#                 latest_payment = latest_payments.get((payment.user_id, payment.product_id))
-
-#                 if latest_payment:
-#                     tolerance = timedelta(days=1)
-#                     if (payment.order_datetime.date() - tolerance <= latest_payment.order_datetime.date() <= payment.order_datetime.date() + tolerance):
-#                         valid_payment = True
-
-#                 if product:
-#                     if product['product_plan'] == 'Yearly':
-#                         tolerance = timedelta(days=15)
-#                         if latest_payment:
-#                             expiry_date = latest_payment.expiration_datetime.date()
-#                             expected_expiry = latest_payment.order_datetime.date() + timedelta(days=380) - tolerance
-
-#                             if expected_expiry <= expiry_date <= (latest_payment.order_datetime.date() + timedelta(days=380) + tolerance):
-#                                 valid_payment = True
-
-#                     if product['product_plan'] == 'Half Yearly':
-#                         if latest_payment:
-#                             tolerance = timedelta(days=10)
-#                             expiry_date = latest_payment.expiration_datetime.date()
-#                             expected_expiry = latest_payment.order_datetime.date() + timedelta(days=180) - tolerance
-
-#                             if expected_expiry <= expiry_date <= (latest_payment.order_datetime.date() + timedelta(days=180) + tolerance):
-#                                 valid_payment = True
-
-#                     if product['product_plan'] == 'Quarterly':
-#                         if latest_payment:
-#                             tolerance = timedelta(days=7)
-#                             expiry_date = latest_payment.expiration_datetime.date()
-#                             expected_expiry = latest_payment.order_datetime.date() + timedelta(days=90) - tolerance
-
-#                             if expected_expiry <= expiry_date <= (latest_payment.order_datetime.date() + timedelta(days=90) + tolerance):
-#                                 valid_payment = True
-
-#                     if product['product_plan'] == 'Monthly':
-#                         if latest_payment:
-#                             tolerance = timedelta(days=5)
-#                             expiry_date = latest_payment.expiration_datetime.date()
-#                             expected_expiry = latest_payment.order_datetime.date() + timedelta(days=30) - tolerance
-
-#                             if expected_expiry <= expiry_date <= (latest_payment.order_datetime.date() + timedelta(days=30) + tolerance):
-#                                 valid_payment = True
-
-#             except ObjectDoesNotExist:
-#                 pass
-
-#             validated_payments.append(payment)
-#             valid_payments.append(valid_payment)
-
-#         serializer = MainPaymentSerializer(validated_payments, many=True)
-#         for i in range(len(serializer.data)):
-#             serializer.data[i]['is_valid_payment'] = valid_payments[i]
-
-#         response["payments"] = serializer.data
-
-#     else:
-#         response["payments"] = MainPaymentSerializer(payments, many=True).data
-
-#     return response
 
 
 def ubl_payment_validation(time_threshold_str,q):

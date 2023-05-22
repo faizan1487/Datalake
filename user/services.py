@@ -90,14 +90,10 @@ def search_user(q, start_date, end_date, is_converted,source):
         
     if q:
         users = users.filter(
-            Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))
-        
-        users = users.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
-        users = paying_users_details(users, is_converted)
-    else:
-        users = users.filter(created_at__date__gte = start_date, created_at__date__lte = end_date)
-        users = paying_users_details(users, is_converted)
-        
+            Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
+    users = users.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
+    users = paying_users_details(users, is_converted)
+
     return users 
 
 def alnafi_user(q, start_date, end_date, is_converted):

@@ -101,7 +101,6 @@ class GetUserDetails(APIView):
         serializer = MainUserSerializer(users['converted_users'], many=True)
         if export =='true':
             try:
-                # serializer = MainUserSerializer(obj['converted_users'], many=True)
                 file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
