@@ -147,9 +147,10 @@ class RenewalPayments(APIView):
         else:
             payments = payments.filter(product__product_plan__isnull=False)
 
-
         for i, data in enumerate(payments):
-            date_string = data['expiration_datetime']
+            # date_string = data['expiration_datetime']
+            date_string = payments[i]['expiration_datetime']
+            # print(date_string)
             if date_string:
                 payments[i]['is_active'] = date_string.date() >= date.today()
             else:
