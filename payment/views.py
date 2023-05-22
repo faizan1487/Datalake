@@ -91,9 +91,9 @@ class PaymentDelete(APIView):
 
 #optimized 
 class RenewalPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -147,15 +147,10 @@ class RenewalPayments(APIView):
         else:
             payments = payments.filter(product__product_plan__isnull=False)
 
-        # serializer = MainPaymentSerializer(payments, many=True)
 
         for i, data in enumerate(payments):
             date_string = data['expiration_datetime']
             if date_string:
-                # try:
-                #     date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S").date()
-                # except ValueError:
-                #     date_object = datetime.strptime(date_string, "%Y-%m-%dT%H:%M:%S.%f").date()
                 payments[i]['is_active'] = date_string.date() >= date.today()
             else:
                 payments[i]['is_active'] = False
