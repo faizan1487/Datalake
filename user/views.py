@@ -118,11 +118,12 @@ class GetUserDetails(APIView):
                 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+            print(type(paginated_queryset))
             return paginator.get_paginated_response(paginated_queryset)
         
         
                
-                
+#unoptimized                
 class GetNoOfUsers(APIView):
     permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
@@ -158,6 +159,10 @@ class GetNoOfUsers(APIView):
             response_data = {"alnafi_no_of_users": alnafi_no_of_users,
                             "academy_no_of_users": academy_no_of_users}
         return Response(response_data)
+
+
+
+
             
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]

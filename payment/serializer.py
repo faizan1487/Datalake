@@ -1,7 +1,6 @@
-from rest_framework.serializers import ModelSerializer, Serializer
+from rest_framework.serializers import ModelSerializer, Serializer, SerializerMethodField
 from .models import UBL_IPG_Payment, AlNafi_Payment, Main_Payment,Easypaisa_Payment, Stripe_Payment, UBL_Manual_Payment
-
-
+from user.models import Main_User
 
 
 #For AlNafi (MainSite) Payments:
@@ -70,10 +69,22 @@ class UBL_Manual_PaymentSerializer(ModelSerializer):
         model = UBL_Manual_Payment
         fields = '__all__'
 
+from user.serializers import MainUserSerializer
+
+    
+
+
 class MainPaymentSerializer(ModelSerializer):
+    # user = MainUserSerializer('user',fields=['email'],action='deserialize')
+    # user_email = SerializerMethodField()
     class Meta:
         model = Main_Payment
         fields = '__all__'
+        # fields = ("alnafi_payment_id","easypaisa_ops_id","source_payment_id","user_email")
+        
+    # def get_user_email(self, obj):
+    #     user = obj.user
+    #     return user.email if user else None
 
 class PaymentCombinedSerializer(Serializer):
     data1 = StripePaymentSerializer(many=True)
