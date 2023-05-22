@@ -194,8 +194,25 @@ class SearchPayments(APIView):
             cache.set(url+'payments', payments)   
         
         
+        def json_serializable(obj):
+                if isinstance(obj, datetime):
+                    return obj.isoformat()  # Convert datetime to ISO 8601 format
+                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+        users = list(payments['payments'].values('user__email'))
+        products = list(payments['payments'].values('product__product_name'))
+        payment_list = list(payments["payments"].values())                          
+        for i in range(len(payment_list)):
+            try:
+                payment_list[i]['payment_cycle'] = payments['payment_cycle'][i]
+                payment_list[i]['user_id'] = users[i]['user__email']
+                payment_list[i]['product_id'] = products[i]['product__product_name']
+            except Exception as e:
+                pass
+                
+        
         if export=='true':
-            df = pd.DataFrame(payments['payments'])
+            df = pd.DataFrame(payment_list)
             # Merge dataframes
             file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -204,22 +221,6 @@ class SearchPayments(APIView):
             data = {'file_link': file_path,'export':'true'}
             return Response(data)
         else:            
-            def json_serializable(obj):
-                if isinstance(obj, datetime):
-                    return obj.isoformat()  # Convert datetime to ISO 8601 format
-                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
-
-            users = list(payments['payments'].values('user__email'))
-            products = list(payments['payments'].values('product__product_name'))
-            payment_list = list(payments["payments"].values())                          
-            for i in range(len(payment_list)):
-                try:
-                    payment_list[i]['payment_cycle'] = payments['payment_cycle'][i]
-                    payment_list[i]['user_id'] = users[i]['user__email']
-                    payment_list[i]['product_id'] = products[i]['product__product_name']
-                except Exception as e:
-                    pass
-                
             payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
             payment_objects = json.loads(payment_json)
             
@@ -227,7 +228,7 @@ class SearchPayments(APIView):
             paginated_queryset = paginator.paginate_queryset(payment_objects, request)
             return paginator.get_paginated_response(paginated_queryset)
             
-#--------------------------------------------------------            
+
 #optimized
 class PaymentValidation(APIView):
     permission_classes = [IsAuthenticated]
@@ -256,7 +257,7 @@ class PaymentValidation(APIView):
             payments = payments.filter(source=source)
 
         if q:
-            payments = payments.filter(customer_email__iexact=q)
+            payments = payments.filter(user__email__iexact=q)
 
         response = {"payments": None, "valid_payments": []}
         

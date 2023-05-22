@@ -326,7 +326,7 @@ def stripe_pay(q, start_date, end_date,plan,product):
 
 def search_payment(export, query, start_date, end_date, plan, request, url, product, source, origin):
     payments = Main_Payment.objects.all()
-    print("payments count", payments.count())
+    # print("payments count", payments.count())
     if origin:
         if origin == 'local':
             payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG'])
@@ -335,7 +335,7 @@ def search_payment(export, query, start_date, end_date, plan, request, url, prod
 
     if source:
         payments = payments.filter(source=source.capitalize())
-    print("payments count", payments.count())
+    # print("payments count", payments.count())
     if not start_date:
         first_payment = payments.exclude(order_datetime=None).last()
         start_date = first_payment.order_datetime + timedelta(days=20) if first_payment else None
