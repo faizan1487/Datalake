@@ -129,30 +129,29 @@ class GetUser(APIView):
         email = self.request.GET.get('email', None) or None
         export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
-        
         user = cache.get(url)
+        
+        
         if user is None:
             user = Main_User.objects.filter(email=email)
             cache.set(url, user)
             
-            if user:
-                payments = user[0].user_payments.all().values()
-                payments = payments.order_by('-order_datetime')
-                latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
-                user = dict(user.values()[0])
-                
-                
-                if latest_payment.date() > date.today():
-                    user['is_active'] = 'true'    
-                else:
-                    user['is_active'] = 'false'
-                    
-                response_data = {"user": user, "user payments": payments,"Message":"Success"}
-                return Response(response_data)
+        payments = user[0].user_payments.all().values()
+        payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+        try:
+            latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
+            user = dict(user.values()[0])
+        
+            if latest_payment.date() > date.today():
+                user['is_active'] = 'true'    
             else:
-                response_data = {"User doesnt exist"}
-                
-            return HttpResponse(response_data)
+                user['is_active'] = 'false'
+            response_data = {"user": user, "user payments": payments,"Message":"Success"}
+            return Response(response_data)
+        except Exception as e:
+            return HttpResponse(e)
+        # response_data = {"user": user, "user payments": payments,"Message":"Success"}
+        # return Response(response_data)
                 
 
             
