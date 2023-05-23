@@ -33,6 +33,7 @@ from functools import reduce
 import numpy as np
 import json
 import environ
+from django.http import HttpResponse
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -147,10 +148,11 @@ class GetUser(APIView):
                     user['is_active'] = 'false'
                     
                 response_data = {"user": user, "user payments": payments,"Message":"Success"}
+                return Response(response_data)
             else:
-                response_data = {"Message": "User doesnt exist"}
+                response_data = {"User doesnt exist"}
                 
-            return Response(response_data)
+            return HttpResponse(response_data)
                 
 
             
