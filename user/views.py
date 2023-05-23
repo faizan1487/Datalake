@@ -25,7 +25,7 @@ from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, Us
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
 from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
-loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,upload_csv_to_s3,search_user,no_of_users,search_employees)
+loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,upload_csv_to_s3,search_users,no_of_users,search_employees)
 from .renderers import UserRenderer
 from itertools import chain
 from django.core.cache import cache
@@ -79,7 +79,7 @@ class AlnafiUser(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #Optimized
-class GetUserDetails(APIView):
+class GetUsers(APIView):
     permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
     required_groups = ['Support', 'Admin']
@@ -95,7 +95,7 @@ class GetUserDetails(APIView):
         
         users = cache.get(url)
         if users is None:
-            users = search_user(q,start_date,end_date,is_converted,source)
+            users = search_users(q,start_date,end_date,is_converted,source)
             cache.set(url, users) 
         
         serializer = MainUserSerializer(users['converted_users'], many=True)
@@ -119,7 +119,38 @@ class GetUserDetails(APIView):
             paginated_queryset = paginator.paginate_queryset(serializer.data, request)
             return paginator.get_paginated_response(paginated_queryset)
         
+
+class GetUser(APIView):
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Support', 'Admin', 'Sales']
+    def get(self, request):
+        email = self.request.GET.get('email', None) or None
+        export = self.request.GET.get('export', None) or None
+        url = request.build_absolute_uri()
         
+        user = cache.get(url)
+        if user is None:
+            user = Main_User.objects.filter(email=email)
+            cache.set(url, user)
+            
+            payments = user[0].user_payments.all().values()
+            payments = payments.order_by('-order_datetime')
+            latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
+            user = dict(user.values()[0])
+            
+            
+            if latest_payment.date() > date.today():
+                user['is_active'] = 'true'    
+            else:
+                user['is_active'] = 'false'
+                
+            response_data = {"user": user, "user payments": payments}
+            return Response(response_data)
+
+            
+            
+            
                
 #unoptimized                
 class GetNoOfUsers(APIView):
@@ -337,8 +368,11 @@ class AllEmployees(APIView):
             
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(employees, request)
-        print(type(paginated_queryset))
         return paginator.get_paginated_response(paginated_queryset)
+
+
+
+
   
 # env = environ.Env()
 # env.read_env()

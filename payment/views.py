@@ -69,7 +69,7 @@ class MainPaymentAPIView(APIView):
         # Convert NaN values to None (null) instead of a default value
         df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
         
-        print(df['product'])
+        # print(df['product'])
         serializer = MainPaymentSerializer(data=df.to_dict('records'), many=True)
         if serializer.is_valid():
             serializer.save()
@@ -100,12 +100,11 @@ class RenewalPayments(APIView):
 
         payments = cache.get(url)
         if payments is None:
-            payments = Main_Payment.objects.select_related('product').all().values()
+            payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).select_related('product').all().values()
             cache.set(url, payments)
 
         if q:
-            payments = payments.filter(user__email__iexact=q)
-            
+            payments = payments.filter(user__email__iexact=q)            
             
         if source:
             payments = payments.filter(source=source)
@@ -148,10 +147,8 @@ class RenewalPayments(APIView):
             # date_string = data['expiration_datetime']
             date_string = payments[i]['expiration_datetime']
             if date_string:
-                print('fuck')
                 payments[i]['is_active'] = date_string.date() >= date.today()
             else:
-                print("you")
                 payments[i]['is_active'] = False
 
         
@@ -208,40 +205,45 @@ class SearchPayments(APIView):
             cache.set(url+'payments', payments)   
         
         
-        def json_serializable(obj):
-                if isinstance(obj, datetime):
-                    return obj.isoformat()  # Convert datetime to ISO 8601 format
-                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+        if payments['success'] == 'true':
+            def json_serializable(obj):
+                    if isinstance(obj, datetime):
+                        return obj.isoformat()  # Convert datetime to ISO 8601 format
+                    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-        users = list(payments['payments'].values('user__email'))
-        products = list(payments['payments'].values('product__product_name'))
-        payment_list = list(payments["payments"].values())                          
-        for i in range(len(payment_list)):
-            try:
-                payment_list[i]['payment_cycle'] = payments['payment_cycle'][i]
-                payment_list[i]['user_id'] = users[i]['user__email']
-                payment_list[i]['product_id'] = products[i]['product__product_name']
-            except Exception as e:
-                pass
+            
+            users = list(payments['payments'].values('user__email'))
+            products = list(payments['payments'].values('product__product_name'))
+            payment_list = list(payments["payments"].values())                          
+            for i in range(len(payment_list)):
+                try:
+                    payment_list[i]['payment_cycle'] = payments['payment_cycle'][i]
+                    payment_list[i]['user_id'] = users[i]['user__email']
+                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                except Exception as e:
+                    pass
+                    
+            
+            if export=='true':
+                df = pd.DataFrame(payment_list)
+                # Merge dataframes
+                file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                df = df.to_csv(index=False)
+                s3 = upload_csv_to_s3(df,file_name)
+                data = {'file_link': file_path,'export':'true'}
+                return Response(data)
+            else:            
+                payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+                payment_objects = json.loads(payment_json)
                 
-        
-        if export=='true':
-            df = pd.DataFrame(payment_list)
-            # Merge dataframes
-            file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-            df = df.to_csv(index=False)
-            s3 = upload_csv_to_s3(df,file_name)
-            data = {'file_link': file_path,'export':'true'}
-            return Response(data)
-        else:            
-            payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
-            payment_objects = json.loads(payment_json)
-            
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-            return paginator.get_paginated_response(paginated_queryset)
-            
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+                return paginator.get_paginated_response(paginated_queryset)
+        else:
+            response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
+            return Response(response_data)
+                
 #optimized
 class PaymentValidation(APIView):
     permission_classes = [IsAuthenticated]
@@ -258,14 +260,10 @@ class PaymentValidation(APIView):
         
         payments = cache.get(url)
         if payments is None:
-            # payments = payment_validation(time_threshold_str,q,source)
-            # payments = Main_Payment.objects.all().select_related('product')
-            payments = Main_Payment.objects.all().values()
+            payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).values()
             cache.set(url, payments) 
         
         
-        
-
         if source:
             payments = payments.filter(source=source)
 
@@ -373,9 +371,9 @@ class PaymentValidation(APIView):
 #Optimized
 #shows no of payments on each date
 class NoOfPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -396,7 +394,7 @@ class RenewalNoOfPayments(APIView):
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
-        payments = Main_Payment.objects.filter(source='Al-Nafi')
+        payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source='Al-Nafi')
         response_data = renewal_no_of_payments(start_date,end_date,payments)
         return Response(response_data)
         

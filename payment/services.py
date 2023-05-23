@@ -24,7 +24,8 @@ def json_to_csv(serialized_data,name):
 
 
 def main_no_of_payments(start_date,end_date,source):
-    payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe'])
+    payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe'])
+    
     if source:
         payments = payments.filter(source=source)
         
@@ -326,8 +327,8 @@ def stripe_pay(q, start_date, end_date,plan,product):
 
 
 def search_payment(export, query, start_date, end_date, plan, request, url, product, source, origin):
-    payments = Main_Payment.objects.all()
-    print("payments count", payments.count())
+    payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1)
+    # print("payments count", payments.count())
     
     
     if origin:
@@ -347,17 +348,16 @@ def search_payment(export, query, start_date, end_date, plan, request, url, prod
         last_payment = payments.exclude(order_datetime=None).first()
         end_date = last_payment.order_datetime.date() if last_payment else None
 
+
+    payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))    
+
     if query:
         payments = payments.filter(
             Q(user__email__iexact=query) | Q(product__product_name__iexact=query))
     
-    payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))    
-
-    
     if product:
-        product_obj = Main_Product.objects.get(product_name=product)
-        # print(product_obj.product_payments)
-        payments = product_obj.product_payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
+        payments = payments.filter(product__product_name__icontains=product)
+    
 
     if plan:
         if plan == 'yearly':
@@ -368,9 +368,9 @@ def search_payment(export, query, start_date, end_date, plan, request, url, prod
             payments = payments.filter(product__product_plan='Quarterly')
         elif plan == 'monthly':
             payments = payments.filter(product__product_plan='Monthly')
-
+            
     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
-    response_data = {"payments": payments, "payment_cycle": payment_cycle}
+    response_data = {"payments": payments, "payment_cycle": payment_cycle, "success":"true"}
 
     return response_data
 

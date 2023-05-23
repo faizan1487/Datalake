@@ -153,7 +153,7 @@ if DEBUG:
         }
     }
 else:
-    print("RDS CONNECTED")
+    # print("RDS CONNECTED")
     DATABASES = {
         'default': {
             'ENGINE': env("DATABASE_ENGINE"),

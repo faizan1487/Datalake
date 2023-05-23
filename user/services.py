@@ -76,7 +76,7 @@ def paying_users_details(query_time, is_converted):
     return response
 
 
-def search_user(q, start_date, end_date, is_converted,source):
+def search_users(q, start_date, end_date, is_converted,source):
     users = Main_User.objects.all()
     if source:
         users = users.filter(source=source)
