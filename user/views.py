@@ -134,19 +134,24 @@ class GetUser(APIView):
             user = Main_User.objects.filter(email=email)
             cache.set(url, user)
             
-            payments = user[0].user_payments.all().values()
-            payments = payments.order_by('-order_datetime')
-            latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
-            user = dict(user.values()[0])
-            
-            
-            if latest_payment.date() > date.today():
-                user['is_active'] = 'true'    
-            else:
-                user['is_active'] = 'false'
+            if user:
+                payments = user[0].user_payments.all().values()
+                payments = payments.order_by('-order_datetime')
+                latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
+                user = dict(user.values()[0])
                 
-            response_data = {"user": user, "user payments": payments}
+                
+                if latest_payment.date() > date.today():
+                    user['is_active'] = 'true'    
+                else:
+                    user['is_active'] = 'false'
+                    
+                response_data = {"user": user, "user payments": payments,"Message":"Success"}
+            else:
+                response_data = {"Message": "User doesnt exist"}
+                
             return Response(response_data)
+                
 
             
             
