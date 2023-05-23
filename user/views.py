@@ -14,9 +14,8 @@ from jwt.exceptions import ExpiredSignatureError
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from django.db.models import Q
-from django.contrib.auth.models import AnonymousUser
+from django.contrib.auth.models import AnonymousUser, Group
 from django.contrib.auth import authenticate
-from django.contrib.auth.models import Group
 import os
 import pandas as pd
 from datetime import datetime, timedelta, date
@@ -26,13 +25,14 @@ from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, Us
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
 from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
-loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,upload_csv_to_s3,search_user)
+loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,upload_csv_to_s3,search_user,no_of_users,search_employees)
 from .renderers import UserRenderer
 from itertools import chain
 from django.core.cache import cache
 from functools import reduce
 import numpy as np
-
+import json
+import environ
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -117,7 +117,6 @@ class GetUserDetails(APIView):
                 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(serializer.data, request)
-            print(type(paginated_queryset))
             return paginator.get_paginated_response(paginated_queryset)
         
         
@@ -132,6 +131,11 @@ class GetNoOfUsers(APIView):
         end_date = self.request.GET.get('end_date', None) or None   
         source = self.request.GET.get('source', None) or None 
         url = request.build_absolute_uri()
+        
+        
+        # users = no_of_users(start_date,end_date,source)
+        # response_data = {"no_of_users": users}
+        # return Response(response_data)
         if source == 'alnafiuser':
             alnafi_no_of_users = cache.get(url)
             if alnafi_no_of_users is None:
@@ -157,9 +161,8 @@ class GetNoOfUsers(APIView):
             
             response_data = {"alnafi_no_of_users": alnafi_no_of_users,
                             "academy_no_of_users": academy_no_of_users}
+            
         return Response(response_data)
-
-
 
 
             
@@ -317,10 +320,45 @@ class Navbar(APIView):
     
         
         
-    
+
+class AllEmployees(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Admin']
+    def get(self, request):
+        q = self.request.GET.get('q', None) or None
+        url = request.build_absolute_uri()
+        
+        
+        employees = cache.get(url)
+        if employees is None:
+            employees = search_employees(q)
+            cache.set(url, employees) 
+            
+        paginator = MyPagination()
+        paginated_queryset = paginator.paginate_queryset(employees, request)
+        print(type(paginated_queryset))
+        return paginator.get_paginated_response(paginated_queryset)
+  
+# env = environ.Env()
+# env.read_env()
+# DEBUG = env('DEBUG',cast=bool)
+# import guacamole
+
+
+# class Guacamoli(APIView):
+#     def get(self, request):
+#         url = env('GUACAMOLE_SERVER_URL')
+#         source = env('GUACAMOLE_DATA_SOURCE')
+#         username = env('GUACAMOLE_USERNAME')
+#         password = env('GUACAMOLE_PASSWORD')
     
 
 
+#         session = guacamole.session("https://lab.alnafi.com/","postgresql","nafisuperadminlabsalnafi", "IO*91^%82**/>,.;'=_-|||")    
+#         print(session.get_user("appinventorpak1@gmail.com"))
+#         return Response("vbdisvu")
+   
 # class UserLogoutView(APIView):
 #     authentication_classes = [JWTAuthentication]
 

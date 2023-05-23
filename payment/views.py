@@ -5,7 +5,7 @@ from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer)
 from .services import (easypaisa_pay, ubl_pay, stripe_pay, json_to_csv,stripe_no_payments,ubl_no_payments,easypaisa_no_payments,
-                       no_of_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,search_payment,
+                       renewal_no_of_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,search_payment,
                        main_no_of_payments)
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -76,18 +76,11 @@ class MainPaymentAPIView(APIView):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status= 400)
 
-
-
 class PaymentDelete(APIView):
     def get(self, request):
         objs = Main_Payment.objects.all()
         objs.delete()
         return Response('deleted')
-
-
-
-
-
 
 #optimized 
 class RenewalPayments(APIView):
@@ -249,7 +242,6 @@ class SearchPayments(APIView):
             paginated_queryset = paginator.paginate_queryset(payment_objects, request)
             return paginator.get_paginated_response(paginated_queryset)
             
-
 #optimized
 class PaymentValidation(APIView):
     permission_classes = [IsAuthenticated]
@@ -378,13 +370,12 @@ class PaymentValidation(APIView):
         paginated_queryset = paginator.paginate_queryset(payment_objects, request)
         return paginator.get_paginated_response(paginated_queryset) 
        
-
-
 #Optimized
+#shows no of payments on each date
 class NoOfPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -394,12 +385,10 @@ class NoOfPayments(APIView):
         response_data = {"payments": payments}
         return Response(response_data)
     
-        """_summary_
-
-        Returns:
-            _type_: _description_
-        """    
-#Optimized      
+        
+        
+#Optimized  
+#shows alnafi/mainsite no of payments on each date
 class RenewalNoOfPayments(APIView):
     permission_classes = [IsAuthenticated]
     permission_classes = [GroupPermission]
@@ -408,7 +397,7 @@ class RenewalNoOfPayments(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         payments = Main_Payment.objects.filter(source='Al-Nafi')
-        response_data = no_of_payments(start_date,end_date,payments)
+        response_data = renewal_no_of_payments(start_date,end_date,payments)
         return Response(response_data)
         
         

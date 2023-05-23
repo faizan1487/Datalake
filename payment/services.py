@@ -24,7 +24,7 @@ def json_to_csv(serialized_data,name):
 
 
 def main_no_of_payments(start_date,end_date,source):
-    payments = Main_Payment.objects.all()
+    payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe'])
     if source:
         payments = payments.filter(source=source)
         
@@ -68,6 +68,7 @@ def main_no_of_payments(start_date,end_date,source):
             'payments': len(serialized_payments)
         })
     
+    print(payments.count())
     return response_data
 
 
@@ -202,7 +203,7 @@ def easypaisa_no_payments(start_date,end_date):
     return response_data
 
 
-def no_of_payments(start_date,end_date,payments):
+def renewal_no_of_payments(start_date,end_date,payments):
     if not start_date:
         first_payment = payments.exclude(order_datetime=None).last()
         date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
