@@ -100,8 +100,9 @@ class RenewalPayments(APIView):
 
         payments = cache.get(url)
         if payments is None:
-            payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').all().values()
+            payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
             payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
+            # payments = payments.filter(source='Al-Nafi') 
             cache.set(url, payments)
 
         if q:
