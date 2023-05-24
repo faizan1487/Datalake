@@ -135,7 +135,6 @@ class GetUser(APIView):
         if user is None:
             user = Main_User.objects.filter(id=user_id)
             cache.set(url, user)
-        
         try:
             payments = user[0].user_payments.all().values()
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
@@ -146,10 +145,12 @@ class GetUser(APIView):
                 user['is_active'] = 'true'    
             else:
                 user['is_active'] = 'false'
-            response_data = {"user": user, "user payments": payments,"Message":"Success"}
+            response_data = {"user": user, "user payments": payments,"no_of_payments": payments.count(),"Message":"Success"}
             return Response(response_data)
         except Exception as e:
-            response_data = {"user": user.values(), "user payments": None,"Message":"No payments data found"}
+            user = dict(user.values()[0])
+            user['is_active'] = 'false'
+            response_data = {"user": user, "user payments": None,"Message":"No payments data found"}
             return Response(response_data)
                     
 
