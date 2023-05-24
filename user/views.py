@@ -142,14 +142,30 @@ class GetUser(APIView):
             user = dict(user.values()[0])
         
             if latest_payment.date() > date.today():
-                user['is_paying_customer'] = 'true'    
-            # else:
-            #     user['is_active'] = 'false'
-            response_data = {"user": user, "user payments": payments,"no_of_payments": payments.count(),"Message":"Success"}
+                user['is_paying_customer'] = 'true'
+            
+            def json_serializable(obj):
+                if isinstance(obj, datetime):
+                    return obj.isoformat()  # Convert datetime to ISO 8601 format
+                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+            products = list(payments.values('product__product_name'))
+            payment_list = list(payments)
+            for i in range(len(payment_list)):
+                try:
+                    payment_list[i]['user_id'] = user['email']
+                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                except Exception as e:
+                    pass
+            
+            payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+            payment_objects = json.loads(payment_json)           
+            
+            response_data = {"user": user, "user payments": payment_objects,"no_of_payments": payments.count(),"Message":"Success"}
             return Response(response_data)
         except Exception as e:
-            # user = dict(user.values()[0])
-            # user['is_paying_customer'] = 'false'
+            user = dict(user.values()[0])
+            user['is_paying_customer'] = 'false'
             response_data = {"user": user.values(), "user payments": None, "no_of_payments": 0, "Message":"No payments data found"}
             return Response(response_data)
                     
