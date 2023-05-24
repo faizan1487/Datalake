@@ -84,9 +84,9 @@ class PaymentDelete(APIView):
 
 #optimized 
 class RenewalPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -100,11 +100,15 @@ class RenewalPayments(APIView):
 
         payments = cache.get(url)
         if payments is None:
-            payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).select_related('product').all().values()
+            payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').all().values()
+            payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
             cache.set(url, payments)
 
         if q:
-            payments = payments.filter(user__email__iexact=q)            
+            # queryset = Stripe_Payment.objects.filter(
+            # Q(customer_email__iexact=q) | Q(name__icontains=q)
+            # |Q(payment_id__iexact=q))
+            payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
             
         if source:
             payments = payments.filter(source=source)
@@ -157,12 +161,13 @@ class RenewalPayments(APIView):
                     return obj.isoformat()  # Convert datetime to ISO 8601 format
                 raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
             
-        users = list(payments.values('user__email'))
+        users = list(payments.values('user__email','user__phone'))
         products = list(payments.values('product__product_name'))
         payment_list = list(payments.values())                          
         for i in range(len(payment_list)):
             try:
                 payment_list[i]['user_id'] = users[i]['user__email']
+                payment_list[i]['phone'] = users[i]['user__phone']
                 payment_list[i]['product_id'] = products[i]['product__product_name']
             except Exception as e:
                 pass
@@ -184,9 +189,9 @@ class RenewalPayments(APIView):
     
 #optimized       
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -246,9 +251,9 @@ class SearchPayments(APIView):
                 
 #optimized
 class PaymentValidation(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -260,7 +265,8 @@ class PaymentValidation(APIView):
         
         payments = cache.get(url)
         if payments is None:
-            payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).values()
+            payments = Main_Payment.objects.exclude(product__product_name="test").values()
+            payments = payments.exclude(amount__in=[1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
             cache.set(url, payments) 
         
         
@@ -268,7 +274,7 @@ class PaymentValidation(APIView):
             payments = payments.filter(source=source)
 
         if q:
-            payments = payments.filter(user__email__iexact=q)
+            payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))   
 
         response = {"payments": None, "valid_payments": []}
         

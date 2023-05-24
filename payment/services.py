@@ -326,8 +326,10 @@ def stripe_pay(q, start_date, end_date,plan,product):
 
 
 
-def search_payment(export, query, start_date, end_date, plan, request, url, product, source, origin):
+def search_payment(export, q, start_date, end_date, plan, request, url, product, source, origin):
     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1)
+    payments = payments.exclude(amount__in=[2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
+    payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG']) 
     # print("payments count", payments.count())
     
     
@@ -338,7 +340,7 @@ def search_payment(export, query, start_date, end_date, plan, request, url, prod
             payments = payments.filter(source='stripe')
 
     if source:
-        payments = payments.filter(source=source.capitalize())
+        payments = payments.filter(source=source)
 
     if not start_date:
         first_payment = payments.exclude(order_datetime=None).last()
@@ -351,10 +353,10 @@ def search_payment(export, query, start_date, end_date, plan, request, url, prod
 
     payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))    
 
-    if query:
+    if q:
         payments = payments.filter(
-            Q(user__email__iexact=query) | Q(product__product_name__iexact=query))
-    
+            Q(user__email__iexact=q) | Q(product__product_name__iexact=q))
+        # payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q)) 
     if product:
         payments = payments.filter(product__product_name__icontains=product)
     
