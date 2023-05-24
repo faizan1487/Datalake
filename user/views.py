@@ -127,22 +127,18 @@ class GetUser(APIView):
     required_groups = ['Support', 'Admin', 'Sales']
     def get(self, request, id):
         user_id = id
-        print(user_id)
-        print(id)
-        print("vrnsov")
         # email = self.request.GET.get('email', None) or None
         # export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
         user = cache.get(url)
-        print(user)
         
         if user is None:
             user = Main_User.objects.filter(id=user_id)
             cache.set(url, user)
-        print(user)    
-        payments = user[0].user_payments.all().values()
-        payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+        
         try:
+            payments = user[0].user_payments.all().values()
+            payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
             latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
             user = dict(user.values()[0])
         
@@ -153,8 +149,9 @@ class GetUser(APIView):
             response_data = {"user": user, "user payments": payments,"Message":"Success"}
             return Response(response_data)
         except Exception as e:
-            return HttpResponse(e)
-                
+            response_data = {"user": user.values(), "user payments": None,"Message":"No payments data found"}
+            return Response(response_data)
+                    
 
             
             
