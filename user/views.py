@@ -142,15 +142,15 @@ class GetUser(APIView):
             user = dict(user.values()[0])
         
             if latest_payment.date() > date.today():
-                user['is_active'] = 'true'    
-            else:
-                user['is_active'] = 'false'
+                user['is_paying_customer'] = 'true'    
+            # else:
+            #     user['is_active'] = 'false'
             response_data = {"user": user, "user payments": payments,"no_of_payments": payments.count(),"Message":"Success"}
             return Response(response_data)
         except Exception as e:
-            user = dict(user.values()[0])
-            user['is_active'] = 'false'
-            response_data = {"user": user, "user payments": None,"Message":"No payments data found"}
+            # user = dict(user.values()[0])
+            # user['is_paying_customer'] = 'false'
+            response_data = {"user": user.values(), "user payments": None, "no_of_payments": 0, "Message":"No payments data found"}
             return Response(response_data)
                     
 
