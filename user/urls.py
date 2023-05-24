@@ -11,7 +11,7 @@ urlpatterns = [
     # path("guacamoli/",Guacamoli.as_view(), name='guacamoli'),
     
     path('users/', GetUsers.as_view(), name='user-list'),
-    path('userdetails/', GetUser.as_view(), name='user-details'),
+    path('userdetails/<int:id>/', GetUser.as_view(), name='user-details'),
     path('nofusers/', GetNoOfUsers.as_view(), name='no-of-users'),
     
     path('employees/', AllEmployees.as_view(), name='employees-list'),
