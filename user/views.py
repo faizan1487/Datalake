@@ -164,8 +164,6 @@ class GetUser(APIView):
             response_data = {"user": user, "user payments": payment_objects,"no_of_payments": payments.count(),"Message":"Success"}
             return Response(response_data)
         except Exception as e:
-            user = dict(user.values()[0])
-            user['is_paying_customer'] = 'false'
             response_data = {"user": user.values(), "user payments": None, "no_of_payments": 0, "Message":"No payments data found"}
             return Response(response_data)
                     
