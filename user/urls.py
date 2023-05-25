@@ -1,16 +1,22 @@
 from django.urls import path
-from .views import (GetUserDetails, UserRegistrationView,UserLoginView,UserProfileView,
+from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,
-                    TokenRefreshView,UsersDelete,GetNoOfUsers, Navbar,AlnafiUser)
+                    TokenRefreshView,UsersDelete,GetNoOfUsers, Navbar,AlnafiUser,AllEmployees,GetUser)
 from django.http import HttpResponse
 
 urlpatterns = [
     path("", lambda req: HttpResponse(status=200)),
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
     path('userdelete/', UsersDelete.as_view(), name='user-delete'),
-    path('users/', GetUserDetails.as_view(), name='user-list'),
+    # path("guacamoli/",Guacamoli.as_view(), name='guacamoli'),
+    
+    path('users/', GetUsers.as_view(), name='user-list'),
+    path('userdetails/<int:id>/', GetUser.as_view(), name='user-details'),
     path('nofusers/', GetNoOfUsers.as_view(), name='no-of-users'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
+    
+    path('employees/', AllEmployees.as_view(), name='employees-list'),
+    
+    # path('token/refresh/', TokenRefreshView.as_view(), name='token-refresh'),
     path('register/', UserRegistrationView.as_view()),
     path('login/', UserLoginView.as_view(),name='login'),
     path('logout/', User_logout,name='logout'),

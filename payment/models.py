@@ -1,6 +1,8 @@
 from django.db import models
 from datetime import datetime
-
+import django.utils.timezone
+from user.models import Main_User
+from products.models import Main_Product
 # Create your models here.
 
 #For Stripe Payments:
@@ -139,7 +141,8 @@ class UBL_Manual_Payment(models.Model):
         verbose_name = "UBL-Manual Payment"
         ordering = ["-order_datetime"]
         
-        
+
+
 class NavbarLink(models.Model):
     name = models.CharField(max_length=100,null=True, blank=True)
     path = models.CharField(max_length=100,null=True, blank=True)
@@ -148,3 +151,54 @@ class NavbarLink(models.Model):
 
     def __str__(self):
         return self.name
+
+
+#FOR MURGED ALL PAYMENT IN ONE TABLE MAIN_PAYMENT:
+class Main_Payment(models.Model):
+    source_payment_id = models.CharField(max_length=100 , null=True , blank=True)
+    alnafi_payment_id = models.CharField(max_length=50, null=True,blank=True)
+    easypaisa_ops_id = models.CharField(max_length=50, null=True,blank=True)
+    easypaisa_customer_msidn = models.CharField(max_length=50, null=True,blank=True)
+    card_mask = models.CharField(max_length=100, null=True,blank=True)
+    user =  models.ForeignKey(Main_User, on_delete=models.SET_NULL, null=True, related_name="user_payments")
+    product = models.ForeignKey(Main_Product, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_payments")
+    amount = models.CharField(max_length=50, null=True,blank=True)
+    currency = models.CharField(max_length=50, null=True , blank=True)
+    source = models.CharField(max_length=50, null=True , blank=True)
+    status = models.CharField(max_length=50, null=True , blank=True)
+    order_datetime = models.DateTimeField(null=True , blank=True)
+    expiration_datetime = models.DateTimeField(null=True, blank=True)
+    activation_datetime = models.DateTimeField(null=True, blank=True)
+    token_paid_datetime = models.DateTimeField(null=True, blank=True)
+    created_datetime = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    easypaisa_fee_pkr = models.CharField(max_length=50, null=True,blank=True)
+    easypaisa_fed_pkr = models.CharField(max_length=50, null=True,blank=True)
+    ubl_captured = models.CharField(max_length=50, null=True,blank=True)
+    ubl_reversed = models.CharField(max_length=50, null=True,blank=True)
+    ubl_refund = models.CharField(max_length=50, null=True , blank=True)
+    ubl_approval_code = models.CharField(max_length=50, null=True,blank=True)
+    description = models.CharField(max_length=300, null=True , blank=True)
+    qarz = models.BooleanField(default=False)
+    remarks = models.CharField(max_length=100,null=True, blank=False)
+    payment_proof = models.CharField(max_length=100, null=True, blank=False)
+    send_invoice = models.BooleanField(default=True, null=True, blank=True)
+    pk_invoice_number = models.CharField(max_length = 10,null=True,blank=True)
+    us_invoice_number = models.CharField(max_length = 10,null=True,blank=True)
+    sponsored = models.BooleanField(default=False)
+    coupon_code = models.CharField(max_length=20, null=True, blank=False)
+    is_upgrade_payment = models.BooleanField(default=False)
+    affiliate = models.CharField(max_length=50,null=True, blank=False)
+    s3_file_url = models.CharField(max_length=600, null=True, blank=True)
+    s3_file_name = models.CharField(max_length=200, null=True, blank=True)
+    ubl_depositor_name = models.CharField(max_length=200, null=True, blank=True)
+    ubl_payment_channel = models.CharField(max_length=45, null=True, blank=True)
+    bin_bank_name = models.CharField(max_length=50, null=True,blank=True)
+    error_reason = models.CharField(max_length=200, null=True,blank=True)
+
+    def __str__(self):
+        return self.source_payment_id
+    
+    class Meta:
+        managed = True
+        verbose_name = "Main Payment"
+        ordering = ["-order_datetime"]

@@ -51,10 +51,10 @@ CORS_ALLOWED_ORIGINS = [
     'http://ec2-34-194-10-51.compute-1.amazonaws.com',
     'https://ec2-34-194-10-51.compute-1.amazonaws.com',
     'http://stage-al-baseer.alnafi.com',
-    'https://stage-al-baseer.alnafi.com'
-    'http://ec2-3-233-91-36.compute-1.amazonaws.com'
-    'https://al-baseer.alnafi.com'
-    'https://api-al-baseer.alnafi.com'
+    'https://stage-al-baseer.alnafi.com',
+    'http://ec2-3-233-91-36.compute-1.amazonaws.com',
+    'https://al-baseer.alnafi.com',
+    'https://api-al-baseer.alnafi.com',
     'http://ec2-52-6-12-123.compute-1.amazonaws.com'
 ]
 
@@ -89,14 +89,19 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',
+    'rest_framework_swagger',
     'import_export',
     
     'payment.apps.PaymentConfig',
     'user.apps.UserConfig',
     'thinkific.apps.ThinkificConfig',
     'products.apps.ProductsConfig',
+    'trainers.apps.TrainersConfig',
     "corsheaders",
 ]
+
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -110,12 +115,19 @@ MIDDLEWARE = [
     "django.middleware.common.CommonMiddleware",
 ]
 
+if DEBUG:
+    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware", ]
+    INTERNAL_IPS = [
+        "127.0.0.1",
+    ]
+
+
 ROOT_URLCONF = 'albaseer.urls'
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -133,7 +145,7 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 if DEBUG:
-    print("SQL Lite CONNECTED")
+    # print("SQL Lite CONNECTED")
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -141,7 +153,7 @@ if DEBUG:
         }
     }
 else:
-    # print("RDS CONNECTED")
+    print("RDS CONNECTED")
     DATABASES = {
         'default': {
             'ENGINE': env("DATABASE_ENGINE"),
@@ -155,7 +167,7 @@ else:
             }
         }
     } 
-    
+            
 
 if DEBUG:
     # CACHES = {
@@ -185,7 +197,7 @@ else:
             }
         }
     } 
-# print(DATABASES)
+# print(DATABASES)  
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -224,7 +236,6 @@ TIME_INPUT_FORMAT = ['%H:%M:%S']
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.1/howto/static-files/
 
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
@@ -256,26 +267,27 @@ CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 
 
-CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io']
+CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io','http://ec2-3-233-91-36.compute-1.amazonaws.com',
+    'https://al-baseer.alnafi.com','https://api-al-baseer.alnafi.com','http://ec2-52-6-12-123.compute-1.amazonaws.com']
 
-
-# if DEBUG:
-#     STATIC_URL = '/static/'
-#     MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
-    
-# else:
-STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
-AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
-AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
-AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
-AWS_QUERYSTRING_AUTH = False
-STATIC_URL = env("S3_STATIC_URL")
-DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
-MEDIA_ROOT = env("S3_MEDIA")
 
 MEDIA_URL = '/media/'
 STATIC_ROOT = os.path.join(BASE_DIR, "static/")
-# MEDIA_ROOT = os.path.join(BASE_DIR, "media/")
+
+if DEBUG:
+    STATIC_URL = '/static/'
+    MEDIA_ROOT = os.path.join(BASE_DIR, "albaseer/media")
+    
+else:
+    STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
+    AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
+    AWS_ACCESS_KEY_ID = env("AWS_ACCESS_KEY_ID")
+    AWS_STORAGE_BUCKET_NAME = env("AWS_STORAGE_BUCKET_NAME")
+    AWS_QUERYSTRING_AUTH = False
+    STATIC_URL = env("S3_STATIC_URL")
+    DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+    MEDIA_ROOT = env("S3_MEDIA")
+
 
 if not DEBUG:
     pass
@@ -343,3 +355,7 @@ SIMPLE_JWT = {
     "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt.serializers.TokenObtainSlidingSerializer",
     "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt.serializers.TokenRefreshSlidingSerializer",
 }
+
+
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10000000000
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000

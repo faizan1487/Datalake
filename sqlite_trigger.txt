@@ -1,0 +1,170 @@
+CREATE TRIGGER islamicacademy_product_to_main_product_trigger_insert
+AFTER INSERT ON products_islamicacademy_product
+FOR EACH ROW
+BEGIN
+    INSERT INTO products_main_product(
+        product_name,
+        product_slug,
+        created_at,
+        modified_at,
+        product_type,
+        status,
+        description,
+        amount_usd,
+        stock_status,
+        source
+    ) VALUES (
+        NEW.name,
+        NEW.product_slug,
+        NEW.created_at,
+        NEW.modified_at,
+        NEW.type,
+        NEW.status,
+        NEW.description,
+        NEW.price,
+        NEW.stock_status,
+        'Islamic Academy'
+    );
+END;
+
+
+========================================================
+
+CREATE TRIGGER alnafi_product_to_main_product_trigger_insert
+AFTER INSERT ON products_alnafi_product
+FOR EACH ROW
+BEGIN
+    INSERT INTO products_main_product(
+        product_type,
+        product_slug,
+        product_plan,
+        product_name,
+        bundle_ids,
+        product_language,
+        image,
+        amount_pkr,
+        amount_usd,
+        amount_gbp,
+        legacy_available,
+        legacy_fee_pkr,
+        legacy_fee_usd,
+        old_amount_pkr,
+        old_amount_usd,
+        lms_id,
+        qarz_fee_pkr,
+        qarz_fee_usd,
+        qarz_product,
+        allow_coupon,
+        created_at,
+        has_legacy_version,
+        is_certificate_product,
+        courses,
+        source
+    ) VALUES (
+        NEW.product_type,
+        NEW.product_slug,
+        NEW.plan,
+        NEW.name,
+        NEW.bundle_Ids,
+        NEW.language,
+        NEW.image,
+        NEW.amount_pkr,
+        NEW.amount_usd,
+        NEW.amount_gbp,
+        NEW.legacy_available,
+        NEW.legacy_fee_pkr,
+        NEW.legacy_fee_usd,
+        NEW.old_amount_pkr,
+        NEW.old_amount_usd,
+        NEW.lms_id,
+        NEW.qarz_fee_pkr,
+        NEW.qarz_fee_usd,
+        NEW.qarz_product,
+        NEW.allow_coupon,
+        NEW.created_at,
+        NEW.has_legacy_version,
+        NEW.is_certificate_product,
+        NEW.courses,
+        'Al-Nafi'
+    );
+END;
+
+
+======================================================
+
+CREATE TRIGGER islamicacademy_user_to_main_user_trigger_insert
+AFTER INSERT ON user_islamicacademy_user
+FOR EACH ROW
+BEGIN
+    INSERT INTO user_main_user(
+        is_paying_customer,
+        username,
+        email,
+        first_name,
+        last_name,
+        created_at,
+        modified_at,
+        role,
+        phone,
+        address,
+        source
+    ) VALUES (
+        NEW.is_paying_customer,
+        NEW.username,
+        NEW.email,
+        NEW.first_name,
+        NEW.last_name,
+        NEW.created_at,
+        NEW.modified_at,
+        NEW.role,
+        NEW.phone,
+        NEW.address,
+        'Islamic Academy'
+    );
+END;
+
+
+=====================================================
+
+CREATE TRIGGER alnafi_user_to_main_user_trigger_insert
+AFTER INSERT ON user_alnafi_user
+FOR EACH ROW
+BEGIN
+    INSERT INTO user_main_user(
+        username,
+        first_name,
+        last_name,
+        email,
+        phone,
+        address,
+        source,
+        country,
+        language,
+        verification_code,
+        isAffiliate,
+        how_did_you_hear_about_us,
+        affiliate_code,
+        isMentor,
+        created_at
+    ) VALUES (
+        NEW.username,
+        NEW.first_name,
+        NEW.last_name,
+        NEW.email,
+        NEW.phone,
+        NEW.address,
+        'Al-Nafi',
+        NEW.country,
+        NEW.language,
+        NEW.verification_code,
+        NEW.isAffiliate,
+        NEW.how_did_you_hear_about_us,
+        NEW.affiliate_code,
+        NEW.isMentor,
+        NEW.created_at
+    );
+END;
+
+
+====================================================
+

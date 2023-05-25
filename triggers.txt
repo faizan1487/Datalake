@@ -1,0 +1,812 @@
+# TRIGGERS FOR AL-BASEER DATABASE:
+
+## FOR PAYMENTS TRIGGER:
+
+### UBL_IPG to Main_Payment:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER ubl_ipg_to_main_payment_trigger
+AFTER INSERT ON payment_ubl_ipg_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+
+    INSERT INTO payment_main_payment(
+        source_payment_id,
+        alnafi_payment_id,
+        user_id,
+        card_mask,
+        product_id,
+        amount,
+        currency,
+        source,
+        status,
+        order_datetime,
+        ubl_captured,
+        ubl_reversed,
+        ubl_refund,
+        ubl_approval_code
+    ) VALUES (
+        NEW.transaction_id,
+        NEW.order_id,
+        user_id,
+        NEW.card_mask,
+        product_id,
+        NEW.amount,
+        'PKR',
+        'UBL_IPG',
+        NEW.status,
+        NEW.order_datetime,
+        NEW.captured,
+        NEW.reversed,
+        NEW.refund,
+        NEW.approval_code
+    );
+END//
+
+DELIMITER ;
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+CREATE TRIGGER ubl_ipg_to_main_payment_trigger_update
+AFTER UPDATE ON payment_ubl_ipg_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+
+    UPDATE payment_main_payment SET
+        alnafi_payment_id = NEW.order_id,
+        user_id = user_id,
+        card_mask = NEW.card_mask,
+        product_id = product_id,
+        amount = NEW.amount,
+        status = NEW.status,
+        order_datetime = NEW.order_datetime,
+        ubl_captured = NEW.captured,
+        ubl_reversed = NEW.reversed,
+        ubl_refund = NEW.refund,
+        ubl_approval_code = NEW.approval_code
+    WHERE source_payment_id = NEW.transaction_id AND source = 'UBL_IPG';
+END//
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+CREATE TRIGGER ubl_ipg_to_main_payment_trigger_delete
+AFTER DELETE ON payment_ubl_ipg_payment
+FOR EACH ROW
+BEGIN
+    DELETE FROM payment_main_payment
+    WHERE source_payment_id = OLD.transaction_id AND source = 'UBL_IPG';
+END//
+DELIMITER ;
+
+```
+
+
+### Easypaisa to Main_Payment:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER easypaisa_to_main_payment_trigger_insert
+AFTER INSERT ON payment_easypaisa_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+
+    INSERT INTO payment_main_payment(
+        easypaisa_ops_id,
+        product_id,
+        alnafi_payment_id,
+        source_payment_id,
+        order_datetime,
+        easypaisa_customer_msidn,
+        user_id,
+        amount,
+        currency,
+        status,
+        source,
+        card_mask,
+        bin_bank_name,
+        easypaisa_fee_pkr,
+        easypaisa_fed_pkr,
+        error_reason,
+        token_paid_datetime
+    ) VALUES (
+        NEW.ops_id,
+        product_id,
+        NEW.order_id,
+        NEW.transaction_id,
+        NEW.order_datetime,
+        NEW.customer_msidn,
+        user_id,
+        NEW.amount,
+        "PKR",
+        NEW.status,
+        "Easypaisa",
+        NEW.credit_card,
+        NEW.bin_bank_name,
+        NEW.fee_pkr,
+        NEW.fed_pkr,
+        NEW.error_reason,
+        NEW.token_paid_datetime
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER easypaisa_to_main_payment_trigger_update
+AFTER UPDATE ON payment_easypaisa_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+
+    UPDATE payment_main_payment SET
+        easypaisa_ops_id = NEW.ops_id,
+        product_id = product_id,
+        alnafi_payment_id = NEW.order_id,
+        source_payment_id = NEW.transaction_id,
+        order_datetime = NEW.order_datetime,
+        easypaisa_customer_msidn = NEW.customer_msidn,
+        user_id = user_id,
+        amount = NEW.amount,
+        currency = "PKR",
+        status = NEW.status,
+        source = "Easypaisa",
+        card_mask = NEW.credit_card,
+        bin_bank_name = NEW.bin_bank_name,
+        easypaisa_fee_pkr = NEW.fee_pkr,
+        easypaisa_fed_pkr = NEW.fed_pkr,
+        error_reason = NEW.error_reason,
+        token_paid_datetime = NEW.token_paid_datetime
+    WHERE source_payment_id = NEW.transaction_id AND source = 'Easypaisa';
+END//
+
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER easypaisa_to_main_payment_trigger_delete
+AFTER DELETE ON payment_easypaisa_payment
+FOR EACH ROW
+BEGIN
+    DELETE FROM payment_main_payment WHERE source_payment_id = OLD.transaction_id AND source = 'Easypaisa';
+END//
+
+DELIMITER ;
+
+```
+
+
+### Stripe to Main_Payment:
+
+**FOR INSERT**
+
+```
+
+
+```
+
+**FOR UPDATE**
+
+```
+
+
+```
+
+**FOR DELETE**
+
+```
+
+
+```
+
+
+### AlNafi_Payment to Main_Payment:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER alnafi_to_main_payment_trigger_insert
+AFTER INSERT ON payment_alnafi_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    DECLARE currency_type varchar(3);
+    DECLARE amount integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    IF NEW.amount_pkr > 0 THEN
+        SET currency_type = 'PKR';
+        SET amount = NEW.amount_pkr;
+    ELSE
+        SET currency_type = 'USD';
+        SET amount = NEW.amount_usd;
+    END IF;
+    INSERT INTO payment_main_payment(
+        source_payment_id,
+        user_id,
+        product_id,
+        amount,
+        currency,
+        order_datetime,
+        expiration_datetime,
+        source,
+        alnafi_payment_id,
+        activation_datetime,
+        created_datetime,
+        qarz,
+        remarks,
+        payment_proof,
+        send_invoice,
+        pk_invoice_number,
+        us_invoice_number,  
+        sponsored,
+        coupon_code,
+        is_upgrade_payment,
+        affiliate
+    ) VALUES (
+        NEW.payment_id,
+        user_id,
+        product_id,
+        amount,
+        currency_type,
+        NEW.order_datetime,
+        NEW.expiration_datetime,
+        "Al-Nafi",
+        NEW.order_id,
+        NEW.date_of_activation,
+        NEW.created_at,
+        NEW.qarz,
+        NEW.remarks,
+        NEW.payment_proof,
+        NEW.send_invoice,
+        NEW.pk_invoice_number,
+        NEW.us_invoice_number,
+        NEW.sponsored,
+        NEW.coupon_code,
+        NEW.is_upgrade_payment,
+        NEW.affiliate
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+CREATE TRIGGER alnafi_to_main_payment_trigger_update
+AFTER UPDATE ON payment_alnafi_payment
+FOR EACH ROW
+BEGIN
+    DECLARE user_id integer;
+    DECLARE product_id integer;
+    DECLARE currency_type varchar(3);
+    DECLARE amount integer;
+    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
+    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    IF NEW.amount_pkr > 0 THEN
+        SET currency_type = 'PKR';
+        SET amount = NEW.amount_pkr;
+    ELSE
+        SET currency_type = 'USD';
+        SET amount = NEW.amount_usd;
+    END IF;
+    UPDATE payment_main_payment SET
+        user_id = user_id,
+        product_id = product_id,
+        amount = amount,
+        currency = currency_type,
+        order_datetime = NEW.order_datetime,
+        expiration_datetime = NEW.expiration_datetime,
+        source = "Al-Nafi",
+        alnafi_payment_id = NEW.order_id,
+        activation_datetime = NEW.date_of_activation,
+        created_datetime = NEW.created_at,
+        qarz = NEW.qarz,
+        remarks = NEW.remarks,
+        payment_proof = NEW.payment_proof,
+        send_invoice = NEW.send_invoice,
+        pk_invoice_number = NEW.pk_invoice_number,
+        us_invoice_number = NEW.us_invoice_number,
+        sponsored = NEW.sponsored,
+        coupon_code = NEW.coupon_code,
+        is_upgrade_payment = NEW.is_upgrade_payment,
+        affiliate = NEW.affiliate
+    WHERE source_payment_id = OLD.payment_id AND source = 'Al-Nafi';
+END//
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+CREATE TRIGGER alnafi_to_main_payment_trigger_delete
+AFTER DELETE ON payment_alnafi_payment
+FOR EACH ROW
+BEGIN
+    DELETE FROM payment_main_payment WHERE  source_payment_id = OLD.payment_id AND source = 'Al-Nafi';
+END//
+DELIMITER ;
+
+```
+
+
+### UBL_MANUAL to Main_Payment:
+
+**FOR INSERT**
+
+```
+
+
+```
+
+**FOR UPDATE**
+
+```
+
+
+```
+
+**FOR DELETE**
+
+```
+
+
+```
+
+## FOR USERS TRIGGERS:
+
+### Al-Nafi to Main_User:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER alnafi_user_to_main_user_trigger_insert
+AFTER INSERT ON user_alnafi_user
+FOR EACH ROW
+BEGIN
+    INSERT INTO user_main_user(
+        username,
+        first_name,
+        last_name,
+        email,
+        phone,
+        address,
+        source,
+        country,
+        language,
+        verification_code,
+        isAffiliate,
+        how_did_you_hear_about_us,
+        affiliate_code,
+        isMentor,
+        created_at
+    ) VALUES (
+        NEW.username,
+        NEW.first_name,
+        NEW.last_name,
+        NEW.email,
+        NEW.phone,
+        NEW.address,
+        "Al-Nafi",
+        NEW.country,
+        NEW.language,
+        NEW.verification_code,
+        NEW.isAffiliate,
+        NEW.how_did_you_hear_about_us,
+        NEW.affiliate_code,
+        NEW.isMentor,
+        NEW.created_at
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER alnafi_user_to_main_user_trigger_update
+AFTER UPDATE ON user_alnafi_user
+FOR EACH ROW
+BEGIN
+    DECLARE temp_id INT;
+    SELECT id INTO temp_id FROM user_main_user WHERE email = OLD.email;
+
+    UPDATE user_main_user
+    SET 
+        username = NEW.username,
+        first_name = NEW.first_name,
+        last_name = NEW.last_name,
+        email = NEW.email,
+        phone = NEW.phone,
+        address = NEW.address,
+        country = NEW.country,
+        language = NEW.language,
+        verification_code = NEW.verification_code,
+        isAffiliate = NEW.isAffiliate,
+        how_did_you_hear_about_us = NEW.how_did_you_hear_about_us,
+        affiliate_code = NEW.affiliate_code,
+        isMentor = NEW.isMentor,
+        created_at = NEW.created_at
+    WHERE
+        id = temp_id;
+END//
+
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+CREATE TRIGGER alnafi_user_to_main_user_trigger_delete
+AFTER DELETE ON user_alnafi_user
+FOR EACH ROW
+BEGIN
+    DELETE FROM user_main_user WHERE email = OLD.email;
+END//
+DELIMITER ;
+
+```
+
+
+### Islami_Academy to Main_User:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_user_to_main_user_trigger_insert
+AFTER INSERT ON user_islamicacademy_user
+FOR EACH ROW
+BEGIN
+    INSERT INTO user_main_user(
+        is_paying_customer,
+        username,
+        email,
+        first_name,
+        last_name,
+        created_at,
+        modified_at,
+        role,
+        phone,
+        address,
+        source
+    ) VALUES (
+        NEW.is_paying_customer,
+        NEW.username,
+        NEW.email,
+        NEW.first_name,
+        NEW.last_name,
+        NEW.created_at,
+        NEW.modified_at,
+        NEW.role,
+        NEW.phone,
+        NEW.address,
+        "Islamic Academy"
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_user_to_main_user_trigger_update
+AFTER UPDATE ON user_islamicacademy_user
+FOR EACH ROW
+BEGIN
+    UPDATE user_main_user
+    SET 
+        is_paying_customer = NEW.is_paying_customer,
+        username = NEW.username,
+        email = NEW.email,
+        first_name = NEW.first_name,
+        last_name = NEW.last_name,
+        created_at = NEW.created_at,
+        modified_at = NEW.modified_at,
+        role = NEW.role,
+        phone = NEW.phone,
+        address = NEW.address
+    WHERE
+        email = OLD.email AND source = 'Islamic Academy';
+END//
+
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_user_to_main_user_trigger_delete
+AFTER DELETE ON user_islamicacademy_user
+FOR EACH ROW
+BEGIN
+    DELETE FROM user_main_user WHERE email = OLD.email AND source = 'Islamic Academy';
+END//
+
+DELIMITER ;
+
+
+```
+
+
+## FOR PRODUCTS TRIGGERS:
+
+### Al-Nafi to Main_Product:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER alnafi_product_to_main_product_trigger_insert
+AFTER INSERT ON products_alnafi_product
+FOR EACH ROW
+BEGIN
+    INSERT INTO products_main_product(
+        product_type,
+        product_slug,
+        product_plan,
+        product_name,
+        bundle_ids,
+        product_language,
+        image,
+        amount_pkr,
+        amount_usd,
+        amount_gbp,
+        legacy_available,
+        legacy_fee_pkr,
+        legacy_fee_usd,
+        old_amount_pkr,
+        old_amount_usd,
+        lms_id,
+        qarz_fee_pkr,
+        qarz_fee_usd,
+        qarz_product,
+        allow_coupon,
+        created_at,
+        has_legacy_version,
+        is_certificate_product,
+        courses,
+        source
+    ) VALUES (
+        NEW.product_type,
+        NEW.product_slug,
+        NEW.plan,
+        NEW.name,
+        NEW.bundle_Ids,
+        NEW.language,
+        NEW.image,
+        NEW.amount_pkr,
+        NEW.amount_usd,
+        NEW.amount_gbp,
+        NEW.legacy_available,
+        NEW.legacy_fee_pkr,
+        NEW.legacy_fee_usd,
+        NEW.old_amount_pkr,
+        NEW.old_amount_usd,
+        NEW.lms_id,
+        NEW.qarz_fee_pkr,
+        NEW.qarz_fee_usd,
+        NEW.qarz_product,
+        NEW.allow_coupon,
+        NEW.created_at,
+        NEW.has_legacy_version,
+        NEW.is_certificate_product,
+        NEW.courses,
+        "Al-Nafi"
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+CREATE TRIGGER alnafi_product_to_main_product_trigger_update
+AFTER UPDATE ON products_alnafi_product
+FOR EACH ROW
+BEGIN
+
+    DECLARE temp_id INT;
+    SELECT id INTO temp_id FROM products_main_product WHERE product_name = OLD.name LIMIT 1;
+
+    UPDATE products_main_product
+    SET 
+        product_type = NEW.product_type,
+        product_slug = NEW.product_slug,
+        product_plan = NEW.plan,
+        product_name = NEW.name,
+        bundle_ids = NEW.bundle_Ids,
+        product_language = NEW.language,
+        image = NEW.image,
+        amount_pkr = NEW.amount_pkr,
+        amount_usd = NEW.amount_usd,
+        amount_gbp = NEW.amount_gbp,
+        legacy_available = NEW.legacy_available,
+        legacy_fee_pkr = NEW.legacy_fee_pkr,
+        legacy_fee_usd = NEW.legacy_fee_usd,
+        old_amount_pkr = NEW.old_amount_pkr,
+        old_amount_usd = NEW.old_amount_usd,
+        lms_id = NEW.lms_id,
+        qarz_fee_pkr = NEW.qarz_fee_pkr,
+        qarz_fee_usd = NEW.qarz_fee_usd,
+        qarz_product = NEW.qarz_product,
+        allow_coupon = NEW.allow_coupon,
+        created_at = NEW.created_at,
+        has_legacy_version = NEW.has_legacy_version,
+        is_certificate_product = NEW.is_certificate_product,
+        courses = NEW.courses
+    WHERE
+        id = temp_id;
+END//
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+CREATE TRIGGER alnafi_product_to_main_product_trigger_delete
+AFTER DELETE ON products_alnafi_product
+FOR EACH ROW
+BEGIN
+    DELETE FROM products_main_product WHERE product_name = OLD.name;
+END//
+DELIMITER ;
+
+```
+
+
+### Islami_Academy to Main_Product:
+
+**FOR INSERT**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_product_to_main_product_trigger_insert
+AFTER INSERT ON products_islamicacademy_product
+FOR EACH ROW
+BEGIN
+    INSERT INTO products_main_product(
+        product_name,
+        product_slug,
+        created_at,
+        modified_at,
+        product_type,
+        status,
+        description,
+        amount_usd,
+        stock_status,
+        source
+    ) VALUES (
+        NEW.name,
+        NEW.product_slug,
+        NEW.created_at,
+        NEW.modified_at,
+        NEW.type,
+        NEW.status,
+        NEW.description,
+        NEW.price,
+        NEW.stock_status,
+        "Islamic Academy"
+    );
+END//
+
+DELIMITER ;
+
+```
+
+**FOR UPDATE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_product_to_main_product_trigger_update
+AFTER UPDATE ON products_islamicacademy_product
+FOR EACH ROW
+BEGIN
+    UPDATE products_main_product
+    SET 
+        product_name = NEW.name,
+        product_slug = NEW.product_slug,
+        created_at = NEW.created_at,
+        modified_at = NEW.modified_at,
+        product_type = NEW.type,
+        status = NEW.status,
+        description = NEW.description,
+        amount_usd = NEW.price,
+        stock_status = NEW.stock_status
+    WHERE
+        product_name = OLD.name;
+END//
+
+DELIMITER ;
+
+```
+
+**FOR DELETE**
+
+```
+DELIMITER //
+
+CREATE TRIGGER islamicacademy_product_to_main_product_trigger_delete
+AFTER DELETE ON products_islamicacademy_product
+FOR EACH ROW
+BEGIN
+    DELETE FROM products_main_product
+    WHERE
+        product_name = OLD.name;
+END//
+
+DELIMITER ;
+
+```
