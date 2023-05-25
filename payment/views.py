@@ -264,11 +264,11 @@ class PaymentValidation(APIView):
         time_threshold_str = time_threshold.strftime('%Y-%m-%d')
         url = request.build_absolute_uri()  
         
-        payments = cache.get(url)
-        if payments is None:
-            payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).exclude(product__product_name="test").values()
-            payments = payments.exclude(amount__in=[1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
-            cache.set(url, payments) 
+        # payments = cache.get(url)
+        # if payments is None:
+        payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).exclude(product__product_name="test").values()
+        payments = payments.exclude(amount__in=[1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
+        # cache.set(url, payments) 
         
         
         if source:
