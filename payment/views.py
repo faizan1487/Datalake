@@ -266,7 +266,7 @@ class PaymentValidation(APIView):
         
         payments = cache.get(url)
         if payments is None:
-            payments = Main_Payment.objects.exclude(product__product_name="test").values()
+            payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).exclude(product__product_name="test").values()
             payments = payments.exclude(amount__in=[1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
             cache.set(url, payments) 
         
@@ -277,9 +277,7 @@ class PaymentValidation(APIView):
         if q:
             payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))   
 
-        response = {"payments": None, "valid_payments": []}
         
-        validated_payments = []
         valid_payments = []
 
         product_ids = set(payments.values_list('product_id', flat=True))
