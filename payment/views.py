@@ -267,10 +267,8 @@ class PaymentValidation(APIView):
         # payments = cache.get(url)
         # if payments is None:
         payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).exclude(product__product_name="test").values()
-        payments = payments.exclude(amount__in=[1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
-        # cache.set(url, payments) 
-        
-        
+        payments = payments.exclude(amount__in=[0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
+        # cache.set(url, payments)      
         if source:
             payments = payments.filter(source=source)
 
@@ -283,30 +281,54 @@ class PaymentValidation(APIView):
         product_ids = set(payments.values_list('product_id', flat=True))
         products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr', 'product_plan')
 
-        alnafi_payments = payments.filter(source='Al-Nafi').order_by('-order_datetime').prefetch_related('user', 'product')
-
+        alnafi_payments = Main_Payment.objects.filter(source='Al-Nafi').order_by('-order_datetime').prefetch_related('user', 'product').values()
         latest_payments = {}
+        ##Removes duplicates from alnafi_payments and only adds the latest payment into the latest payment dict
         for payment in alnafi_payments:
             key = (payment['user_id'], payment['product_id'])
             if key not in latest_payments:
                 latest_payments[key] = payment
-
+                
+        # print("latest payment len", len(latest_payments))     
         for payment in payments:
-            valid_payment = False
+            # valid_payment = False
+            valid_payment = {
+                'valid': True,
+                'reasons': []
+            }
 
             try:
                 product = next(filter(lambda p: p['id'] == payment['product_id'], products), None)
-
-                if product and product['amount_pkr'] == payment['amount']:
-                    valid_payment = True
-
+                payment_amount_without_zeros = int(payment['amount'].rstrip('0').rstrip('.'))
+                
+                if product and product['amount_pkr'] == payment_amount_without_zeros:
+                    pass
+                else:
+                    valid_payment['valid'] = False
+                    valid_payment['reasons'].append('Amount mismatch')
+                    
                 latest_payment = latest_payments.get((payment['user_id'], payment['product_id']))
+                
+                # This condition will be False when the order date of the latest payment (latest_payment['order_datetime'])
+                # is outside the range defined by subtracting the tolerance from the current payment's order date (payment['order_datetime'].date() - tolerance) 
+                # and adding the tolerance to it (payment['order_datetime'].date() + tolerance).
+                
+                # In other words, if the order date of the latest payment is earlier than payment['order_datetime'].date() - tolerance 
+                # or later than payment['order_datetime'].date() + tolerance, the condition will evaluate to False, indicating a mismatch 
+                # in the order dates.
 
+                # This condition is used to determine if the order dates of the current payment and the latest payment are close enough within 
+                # the specified tolerance. If they are within that range, the condition evaluates to True, indicating that the check is successful. 
+                # Otherwise, it evaluates to False, indicating a mismatch in the order dates.
+                
                 if latest_payment:
                     tolerance = timedelta(days=1)
                     if (payment['order_datetime'].date() - tolerance <= latest_payment['order_datetime'].date() <= payment['order_datetime'].date() + tolerance):
-                        valid_payment = True
-
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Order date mismatch')
+                        
                 if product:
                     if product['product_plan'] == 'Yearly':
                         tolerance = timedelta(days=15)
@@ -315,7 +337,10 @@ class PaymentValidation(APIView):
                             expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=380) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=380) + tolerance):
-                                valid_payment = True
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Yearly expiration date mismatch')
 
                     if product['product_plan'] == 'Half Yearly':
                         if latest_payment:
@@ -324,7 +349,10 @@ class PaymentValidation(APIView):
                             expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=180) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=180) + tolerance):
-                                valid_payment = True
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Half Yearly expiration date mismatch')
 
                     if product['product_plan'] == 'Quarterly':
                         if latest_payment:
@@ -333,7 +361,10 @@ class PaymentValidation(APIView):
                             expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=90) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=90) + tolerance):
-                                valid_payment = True
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Quarterly expiration date mismatch')
 
                     if product['product_plan'] == 'Monthly':
                         if latest_payment:
@@ -342,7 +373,10 @@ class PaymentValidation(APIView):
                             expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=30) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=30) + tolerance):
-                                valid_payment = True
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Monthly expiration date mismatch')
 
             except ObjectDoesNotExist:
                 pass
