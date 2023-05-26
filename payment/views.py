@@ -264,10 +264,10 @@ class PaymentValidation(APIView):
         time_threshold_str = time_threshold.strftime('%Y-%m-%d')
         url = request.build_absolute_uri()  
         
-        # payments = cache.get(url)
+        # payments = cache.get(url)'Al-Nafi'
         # if payments is None:
-        payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).exclude(product__product_name="test").values()
-        payments = payments.exclude(amount__in=[0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
+        payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").values()
+        payments = payments.exclude(amount__in=[0,0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
         # cache.set(url, payments)      
         if source:
             payments = payments.filter(source=source)
@@ -281,17 +281,15 @@ class PaymentValidation(APIView):
         product_ids = set(payments.values_list('product_id', flat=True))
         products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr', 'product_plan')
 
-        alnafi_payments = Main_Payment.objects.filter(source='Al-Nafi').order_by('-order_datetime').prefetch_related('user', 'product').values()
+        source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).order_by('-order_datetime').prefetch_related('user', 'product').values()
         latest_payments = {}
-        ##Removes duplicates from alnafi_payments and only adds the latest payment into the latest payment dict
-        for payment in alnafi_payments:
+        ##Removes duplicates from source_payments and only adds the latest payment into the latest payment dict
+        for payment in source_payments:
             key = (payment['user_id'], payment['product_id'])
             if key not in latest_payments:
                 latest_payments[key] = payment
                 
-        # print("latest payment len", len(latest_payments))     
         for payment in payments:
-            # valid_payment = False
             valid_payment = {
                 'valid': True,
                 'reasons': []
@@ -299,13 +297,13 @@ class PaymentValidation(APIView):
 
             try:
                 product = next(filter(lambda p: p['id'] == payment['product_id'], products), None)
-                payment_amount_without_zeros = int(payment['amount'].rstrip('0').rstrip('.'))
-                
-                if product and product['amount_pkr'] == payment_amount_without_zeros:
-                    pass
-                else:
-                    valid_payment['valid'] = False
-                    valid_payment['reasons'].append('Amount mismatch')
+                if product:
+                    product_amount_without_zeros = str(product['amount_pkr']).rstrip('0').rstrip('.')
+                    if product_amount_without_zeros == payment['amount']:
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Product and Payment Amount mismatch')
                     
                 latest_payment = latest_payments.get((payment['user_id'], payment['product_id']))
                 
@@ -333,8 +331,8 @@ class PaymentValidation(APIView):
                     if product['product_plan'] == 'Yearly':
                         tolerance = timedelta(days=15)
                         if latest_payment:
-                            expiry_date = latest_payment['expiration_datetime'].date()
-                            expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=380) - tolerance
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=380) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=380) + tolerance):
                                 pass
@@ -345,8 +343,8 @@ class PaymentValidation(APIView):
                     if product['product_plan'] == 'Half Yearly':
                         if latest_payment:
                             tolerance = timedelta(days=10)
-                            expiry_date = latest_payment['expiration_datetime'].date()
-                            expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=180) - tolerance
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=180) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=180) + tolerance):
                                 pass
@@ -357,8 +355,8 @@ class PaymentValidation(APIView):
                     if product['product_plan'] == 'Quarterly':
                         if latest_payment:
                             tolerance = timedelta(days=7)
-                            expiry_date = latest_payment['expiration_datetime'].date()
-                            expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=90) - tolerance
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=90) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=90) + tolerance):
                                 pass
@@ -369,8 +367,8 @@ class PaymentValidation(APIView):
                     if product['product_plan'] == 'Monthly':
                         if latest_payment:
                             tolerance = timedelta(days=5)
-                            expiry_date = latest_payment['expiration_datetime'].date()
-                            expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=30) - tolerance
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=30) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=30) + tolerance):
                                 pass
