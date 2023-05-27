@@ -84,9 +84,9 @@ class PaymentDelete(APIView):
 
 #optimized 
 class RenewalPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -102,13 +102,9 @@ class RenewalPayments(APIView):
         if payments is None:
             payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
             payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
-            # payments = payments.filter(source='Al-Nafi') 
             cache.set(url, payments)
 
         if q:
-            # queryset = Stripe_Payment.objects.filter(
-            # Q(customer_email__iexact=q) | Q(name__icontains=q)
-            # |Q(payment_id__iexact=q))
             payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
             
         if source:
@@ -137,9 +133,13 @@ class RenewalPayments(APIView):
             'quarterly': 'Quarterly',
             'monthly': 'Monthly',
         }
-
+        #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
+        # This field represents the uppercase version of the product_plan field of the associated product.
         payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
-
+        #If the plan is provided and it is not 'all', the queryset is further filtered using
+        # the filter() function. It applies a condition using the Q object, which checks if 
+        # the product_plan is an exact case-insensitive match to the given plan 
+        # or if it matches any plan name from the plan_mapping dictionary.
         if plan:
             if plan.lower() != 'all':
                 payments = payments.filter(
@@ -156,7 +156,6 @@ class RenewalPayments(APIView):
             else:
                 payments[i]['is_active'] = False
 
-        
         def json_serializable(obj):
                 if isinstance(obj, datetime):
                     return obj.isoformat()  # Convert datetime to ISO 8601 format
@@ -170,6 +169,7 @@ class RenewalPayments(APIView):
                 payment_list[i]['user_id'] = users[i]['user__email']
                 payment_list[i]['phone'] = users[i]['user__phone']
                 payment_list[i]['product_id'] = products[i]['product__product_name']
+                payment_list[i]['is_active'] = payments[i]['is_active']
             except Exception as e:
                 pass
         
@@ -190,9 +190,9 @@ class RenewalPayments(APIView):
     
 #optimized       
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -252,9 +252,9 @@ class SearchPayments(APIView):
                 
 #optimized
 class PaymentValidation(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
