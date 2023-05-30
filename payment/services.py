@@ -356,7 +356,7 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
 
     if q:
         payments = payments.filter(
-            Q(user__email__iexact=q) | Q(product__product_name__iexact=q))
+            Q(user__email__iexact=q) | Q(product__product_name__icontains=q))
         # payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q)) 
     if product:
         keywords = product.split()
