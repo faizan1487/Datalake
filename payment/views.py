@@ -252,9 +252,9 @@ class SearchPayments(APIView):
                 
 #optimized
 class PaymentValidation(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -279,7 +279,7 @@ class PaymentValidation(APIView):
         valid_payments = []
 
         product_ids = set(payments.values_list('product_id', flat=True))
-        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr', 'product_plan')
+        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan')
 
         source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).order_by('-order_datetime').prefetch_related('user', 'product').values()
         latest_payments = {}
@@ -298,13 +298,31 @@ class PaymentValidation(APIView):
             try:
                 product = next(filter(lambda p: p['id'] == payment['product_id'], products), None)
                 if product:
-                    product_amount_without_zeros = str(product['amount_pkr']).rstrip('0').rstrip('.')
-                    if product_amount_without_zeros == payment['amount']:
-                        pass
+                    if payment['currency'] == 'PKR':
+                        product_amount_without_zeros = str(product['amount_pkr']).rstrip('0').rstrip('.')
+                        if product_amount_without_zeros == payment['amount']:
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Product and Payment Amount mismatch')
+                    elif payment['currency'] == 'USD':
+                        product_amount_without_zeros = str(product['amount_usd']).rstrip('0').rstrip('.')
+                        if product_amount_without_zeros == payment['amount']:
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Product and Payment Amount mismatch')
+
                     else:
                         valid_payment['valid'] = False
-                        valid_payment['reasons'].append('Product and Payment Amount mismatch')
-                    
+                        valid_payment['reasons'].append('Invalid currency')
+
+                else:
+                    valid_payment['valid'] = False
+                    valid_payment['reasons'].append('Product not found')
+
+
+
                 latest_payment = latest_payments.get((payment['user_id'], payment['product_id']))
                 
                 # This condition will be False when the order date of the latest payment (latest_payment['order_datetime'])

@@ -81,9 +81,9 @@ class AlnafiUser(APIView):
 
 #Optimized
 class GetUsers(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Support', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Support', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         is_converted = self.request.GET.get('is_converted', None) or None
@@ -94,10 +94,10 @@ class GetUsers(APIView):
         url = request.build_absolute_uri()
         
         
-        users = cache.get(url)
-        if users is None:
-            users = search_users(q,start_date,end_date,is_converted,source)
-            cache.set(url, users) 
+        # users = cache.get(url)
+        # if users is None:
+        users = search_users(q,start_date,end_date,is_converted,source)
+        # cache.set(url, users) 
         
         serializer = MainUserSerializer(users['converted_users'], many=True)
         if export =='true':
@@ -122,19 +122,19 @@ class GetUsers(APIView):
         
 
 class GetUser(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Support', 'Admin', 'Sales']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Support', 'Admin', 'Sales']
     def get(self, request, id):
         user_id = id
         # email = self.request.GET.get('email', None) or None
         # export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
-        user = cache.get(url)
+        # user = cache.get(url)
         
-        if user is None:
-            user = Main_User.objects.filter(id=user_id)
-            cache.set(url, user)
+        # if user is None:
+        user = Main_User.objects.filter(id=user_id)
+            # cache.set(url, user)
         try:
             payments = user[0].user_payments.all().values()
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
