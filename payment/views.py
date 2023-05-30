@@ -84,9 +84,9 @@ class PaymentDelete(APIView):
 
 #optimized 
 class RenewalPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -98,11 +98,11 @@ class RenewalPayments(APIView):
         active = self.request.GET.get('is_active', None) or None
         product = self.request.GET.get('product', None) or None
 
-        payments = cache.get(url)
-        if payments is None:
-            payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
-            payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
-            cache.set(url, payments)
+        # payments = cache.get(url)
+        # if payments is None:
+        payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
+        payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
+            # cache.set(url, payments)
 
         if q:
             payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
@@ -190,9 +190,9 @@ class RenewalPayments(APIView):
     
 #optimized       
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -203,12 +203,10 @@ class SearchPayments(APIView):
         plan = self.request.GET.get('plan', None) or None   
         product = self.request.GET.get('product', None) or None  
         url = request.build_absolute_uri()
-        
-        
-        payments = cache.get(url+'payments')
-        if payments is None:
-            payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
-            cache.set(url+'payments', payments)   
+        # payments = cache.get(url+'payments')
+        # if payments is None:
+        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
+            # cache.set(url+'payments', payments)   
         
         
         if payments['success'] == 'true':
@@ -217,18 +215,18 @@ class SearchPayments(APIView):
                         return obj.isoformat()  # Convert datetime to ISO 8601 format
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-            
             users = list(payments['payments'].values('user__email'))
             products = list(payments['payments'].values('product__product_name'))
-            payment_list = list(payments["payments"].values())                          
-            for i in range(len(payment_list)):
+            payment_list = list(payments["payments"].values())
+
+            for i in range(len(payments['payments'])):
                 try:
-                    payment_list[i]['payment_cycle'] = payments['payment_cycle'][i]
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
                 except Exception as e:
-                    pass
-                    
+                    pass  
+
+
             
             if export=='true':
                 df = pd.DataFrame(payment_list)

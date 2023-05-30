@@ -13,6 +13,7 @@ import shutil
 from products.models import Alnafi_Product, Main_Product
 from django.db.models import F, Max, Q
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models import Case, CharField, Value, When
 
 
 def json_to_csv(serialized_data,name):
@@ -358,9 +359,14 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
             Q(user__email__iexact=q) | Q(product__product_name__iexact=q))
         # payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q)) 
     if product:
-        payments = payments.filter(product__product_name__icontains=product)
-    
+        product = 'Diploma Cloud Cyber Security'
+        keywords = product.split()
+        query = Q()
+        for keyword in keywords:
+            query &= Q(product__product_name__icontains=keyword)
+            payments = payments.filter(query)
 
+            
     if plan:
         if plan == 'yearly':
             payments = payments.filter(product__product_plan='Yearly')
@@ -372,7 +378,23 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
             payments = payments.filter(product__product_plan='Monthly')
             
     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
-    response_data = {"payments": payments, "payment_cycle": payment_cycle, "success":"true"}
+    payment_cycle_descriptions = {
+    'Monthly': 'Monthly',
+    'Yearly': 'Yearly',
+    'Half Yearly': 'Half-Yearly',
+    'Quarterly': 'Quarterly'
+    # Add more plan-value pairs as needed
+    }   
+
+    # Annotate the payment queryset with the payment cycle field
+    payments = payments.annotate(
+        payment_cycle=Case(
+            *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
+            default=Value('Unknown Plan'),
+            output_field=CharField()
+        )
+    )
+    response_data = {"payments": payments, "success":"true"}
 
     return response_data
 
