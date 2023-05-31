@@ -69,7 +69,8 @@ class TrainersData(APIView):
         # print(payments)
         # payments = payments.exclude(amount__in=[0,0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
         # distinct_users = payments.order_by('user').values('user').distinct()
-
+        if q:
+            trainers = Trainer.objects.filter(trainer_name__icontains=q)
 
         trainers = Trainer.objects.annotate(total_users=Count('products__product_payments__user', distinct=True)).values('trainer_name', 'products__product_name', 'products__product_payments__user__email','products__product_payments__user__username')
 
