@@ -93,7 +93,7 @@ class TrainersData(APIView):
                 result.append({
                     'trainer_name': trainer_name,
                     'product_name': product_name,
-                    'users': users,
+                    # 'users': users,
                     'user_count': len(users)-1 if users[0] == None else len(users)
                 })
                 # print("users",len(users))
