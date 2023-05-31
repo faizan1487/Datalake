@@ -1,6 +1,6 @@
 from rest_framework import status
 from user.models import User
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
@@ -97,7 +97,7 @@ class MainPaymentAPIView(APIView):
 
 class PaymentDelete(APIView):
     def get(self, request):
-        objs = Main_Payment.objects.all()
+        objs = UBL_Manual_Payment.objects.all()
         objs.delete()
         return Response('deleted')
 
