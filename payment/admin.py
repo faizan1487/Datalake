@@ -47,9 +47,9 @@ admin.site.register(AlNafi_Payment, AlNafiPaymentsAdmin)
     
 #For UBL Manual Payments:
 class UBLManualPaymentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['candidate_name', 'depositor_name', 'customer_email', 'phone', 'amount', 'product_name', 'status', 'order_datetime', 'activation_datetime', 'payment_channel', 'transaction_id', 'source', 's3_file_url', 's3_file_name']
-    search_fields = ('candidate_name', 'depositor_name', 'customer_email', 'phone', 'transaction_id')
-    list_filter = ('status','source', 'order_datetime')
+    list_display = ['candidate_name', 'customer_email', 'candidate_phone', 'amount', 'product_name', 'status', 'deposit_date', 'created_at', 'payment_channel', 'transaction_id', 'source']
+    search_fields = ('candidate_name', 'depositor_name', 'customer_email', 'candidate_phone', 'transaction_id')
+    list_filter = ('status','source', 'deposit_date')
 
 admin.site.register(UBL_Manual_Payment, UBLManualPaymentAdmin)
 

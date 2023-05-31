@@ -3,7 +3,7 @@ from user.models import User
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
-                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer)
+                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
 from .services import (easypaisa_pay, ubl_pay, stripe_pay, json_to_csv,stripe_no_payments,ubl_no_payments,easypaisa_no_payments,
                        renewal_no_of_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,search_payment,
                        main_no_of_payments)
@@ -55,6 +55,24 @@ class AlnafiPayment(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UBLManualPayment(APIView):
+    # def get(self,request):
+    #     alnafi_payment = AlNafi_Payment.objects.values('id', 'order_id', 'payment_id')
+    #     serializer = GetAlnafipaymentSerializer(alnafi_payment, many=True)
+    #     return Response(serializer.data)
+    
+    def post(self, request):
+        data = request.data
+        serializer = UBL_Manual_PaymentSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class MainPaymentAPIView(APIView):
@@ -258,8 +276,6 @@ class PaymentValidation(APIView):
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
         # create a datetime object for 24 hours ago
-        time_threshold = timezone.now() - timezone.timedelta(days=90)
-        time_threshold_str = time_threshold.strftime('%Y-%m-%d')
         url = request.build_absolute_uri()  
         
         # payments = cache.get(url)'Al-Nafi'

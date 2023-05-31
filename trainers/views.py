@@ -4,11 +4,15 @@ from rest_framework.pagination import PageNumberPagination
 from django.core.cache import cache
 
 # Create your views here.
-from payment.models import AlNafi_Payment
-from payment.serializer import AlNafiPaymentSerializer
-from products.models import Alnafi_Product
-from user.models import AlNafi_User
-from user.serializers import AlnafiUserSerializer
+from payment.models import Main_Payment
+from payment.serializer import MainPaymentSerializer
+from products.models import Alnafi_Product, Main_Product
+from trainers.models import Trainer
+from user.models import AlNafi_User, Main_User
+from user.serializers import MainUserSerializer
+from django.db.models import Count, OuterRef, Subquery
+from collections import defaultdict
+
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -48,3 +52,53 @@ class GetTrainerStudents(APIView):
             # print(serializer)
             # print(serializer.data)
             # return Response(trainer_students)
+
+
+class TrainersData(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
+    def get(self, request):
+        q = self.request.GET.get('q', None) or None
+        export = self.request.GET.get('export', None) or None
+        # create a datetime object for 24 hours ago
+        url = request.build_absolute_uri()  
+        
+      
+        payments = Main_Payment.objects.all().exclude(product__product_name="test").values()
+        payments = payments.exclude(amount__in=[0,0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
+        distinct_users = payments.order_by('user').values('user').distinct()
+
+
+        trainers = Trainer.objects.annotate(total_users=Count('products__product_payments__user', distinct=True)).values('trainer_name', 'products__product_name', 'products__product_payments__user__email')
+
+        # Create a dictionary to store the grouped data
+        grouped_data = defaultdict(lambda: defaultdict(list))
+
+        # Iterate over the queryset and group the data
+        for trainer in trainers:
+            trainer_name = trainer['trainer_name']
+            product_name = trainer['products__product_name']
+            user_email = trainer['products__product_payments__user__email']
+            grouped_data[trainer_name][product_name].append(user_email)
+
+        # Convert the grouped data to a list of dictionaries
+        result = []
+        for trainer_name, products in grouped_data.items():
+            for product_name, users in products.items():
+                result.append({
+                    'trainer_name': trainer_name,
+                    'product_name': product_name,
+                    'users': users,
+                    'user_count': len(users)
+                })
+
+        # Print the result
+        # print(result)
+
+
+        payments = payments.filter(user__id__in=Subquery(distinct_users)).values('product__id', 'product__product_name').annotate(total_payments=Count('id'))
+        return Response(result)
+
+
+        
