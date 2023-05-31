@@ -70,7 +70,7 @@ class TrainersData(APIView):
         # distinct_users = payments.order_by('user').values('user').distinct()
 
 
-        trainers = Trainer.objects.annotate(total_users=Count('products__product_payments__user', distinct=True)).values('trainer_name', 'products__product_name', 'products__product_payments__user__email')
+        trainers = Trainer.objects.annotate(total_users=Count('products__product_payments__user', distinct=True)).values('trainer_name', 'products__product_name', 'products__product_payments__user__email','products__product_payments__user__username')
 
         # Create a dictionary to store the grouped data
         grouped_data = defaultdict(lambda: defaultdict(list))
@@ -79,7 +79,7 @@ class TrainersData(APIView):
         for trainer in trainers:
             trainer_name = trainer['trainer_name']
             product_name = trainer['products__product_name']
-            user_email = trainer['products__product_payments__user__email']
+            user_email = trainer['products__product_payments__user__username' if 'products__product_payments__user__email' == None else 'products__product_payments__user__email']
             grouped_data[trainer_name][product_name].append(user_email)
 
         # print(grouped_data)
@@ -87,15 +87,18 @@ class TrainersData(APIView):
         # Convert the grouped data to a list of dictionaries
         result = []
         for trainer_name, products in grouped_data.items():
+            # print("trainer_namee",trainer_name)
+            # print("products",products)
             for product_name, users in products.items():
                 result.append({
                     'trainer_name': trainer_name,
                     'product_name': product_name,
-                    # 'users': users,
-                    'user_count': len(users)
+                    'users': users,
+                    'user_count': len(users)-1 if users[0] == None else len(users)
                 })
+                # print("users",len(users))
 
-        # print(result)
+        # print(result[-1])
         # payments = payments.filter(user__id__in=Subquery(distinct_users)).values('product__id', 'product__product_name').annotate(total_payments=Count('id'))
         return Response(result)
 
