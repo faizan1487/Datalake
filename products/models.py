@@ -82,7 +82,7 @@ class Main_Product(models.Model):
         ('draft', 'Draft'),
         ('publish', 'Publish'),
     )
-    trainers = models.ManyToManyField('trainers.Trainer',null=True,blank=True)
+    trainers = models.ManyToManyField('trainers.Trainer')
     source = models.CharField(max_length=20, null=True, blank=True)
     product_name = models.CharField(max_length=255)
     product_slug = models.SlugField()

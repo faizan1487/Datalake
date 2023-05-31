@@ -5,7 +5,7 @@ from products.models import *
 
 class Trainer(models.Model):
     trainer_name = models.CharField(max_length=255)
-    products = models.ManyToManyField('products.Main_Product',null=True, blank=True)
+    products = models.ManyToManyField('products.Main_Product')
 
     def __str__(self):
         return self.trainer_name
