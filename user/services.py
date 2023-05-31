@@ -355,9 +355,11 @@ def get_tokens_for_user(user):
     
 def checkSameDomain(request):
     backendDomain = request.get_host().split(":")[0]
+    print("request meta",request.META)
     sameDomain = False
     if 'HTTP_ORIGIN' in request.META:
         frontendDomain = request.META['HTTP_ORIGIN'].split(":")[0]
+        print("frontendDomain",frontendDomain)
         if (frontendDomain == backendDomain):
             sameDomain = True
     return sameDomain

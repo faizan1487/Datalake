@@ -2,7 +2,6 @@ from rest_framework.serializers import ModelSerializer, Serializer, SerializerMe
 from .models import UBL_IPG_Payment, AlNafi_Payment, Main_Payment,Easypaisa_Payment, Stripe_Payment, UBL_Manual_Payment
 from user.models import Main_User
 
-
 #For AlNafi (MainSite) Payments:
 class AlNafiPaymentSerializer(ModelSerializer):
     class Meta:
@@ -65,14 +64,9 @@ class Ubl_Ipg_PaymentsSerializer(ModelSerializer):
 #For UBL-Manual Payments:
 class UBL_Manual_PaymentSerializer(ModelSerializer):
     class Meta:
-        managed = True
+        # managed = True
         model = UBL_Manual_Payment
         fields = '__all__'
-
-from user.serializers import MainUserSerializer
-
-    
-
 
 class MainPaymentSerializer(ModelSerializer):
     # user = MainUserSerializer('user',fields=['email'],action='deserialize')

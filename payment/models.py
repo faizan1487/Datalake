@@ -130,7 +130,7 @@ class UBL_Manual_Payment(models.Model):
     payment_channel = models.CharField(default= ""  ,max_length=45, null=True, blank=True)
     transaction_id = models.CharField(default= "" ,max_length=45, null=True, blank=True)
     source = models.CharField(default= "" ,max_length=45, null=True, blank=True)
-    transaction_image = models.CharField(default= "" ,max_length=600, null=True, blank=True)
+    transaction_image = models.FileField(upload_to='UBL-manual-payment-receipts', null=True, blank=True)
 
     def __str__(self):
         return self.customer_email

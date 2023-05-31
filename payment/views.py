@@ -65,6 +65,7 @@ class UBLManualPayment(APIView):
     
     def post(self, request):
         data = request.data
+        print(data)
         serializer = UBL_Manual_PaymentSerializer(data=data)
         
         if serializer.is_valid():
