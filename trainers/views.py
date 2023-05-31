@@ -65,7 +65,8 @@ class TrainersData(APIView):
         url = request.build_absolute_uri()  
         
       
-        # payments = Main_Payment.objects.all().exclude(product__product_name="test").values()
+        # payments = Main_Payment.objects.filter(product__product_name__icontains='Python Automation - Tools and handson')
+        # print(payments)
         # payments = payments.exclude(amount__in=[0,0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
         # distinct_users = payments.order_by('user').values('user').distinct()
 
