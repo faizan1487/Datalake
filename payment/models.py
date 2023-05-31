@@ -118,18 +118,18 @@ class AlNafi_Payment(models.Model):
 
 #For UBL Manual Payments:
 class UBL_Manual_Payment(models.Model):
-    candidate_name = models.CharField(default= "" ,max_length=200, null=True, blank=True)
-    depositor_name = models.CharField(default= "", max_length=200, null=True, blank=True)
-    customer_email = models.CharField(default= "", max_length=200, null=True, blank=True)
-    candidate_phone = models.CharField(default= "" ,max_length=45, null=True, blank=True)
-    amount = models.CharField(default= "" ,max_length=45, null=True, blank=True)
-    product_name = models.CharField(default= "" ,max_length=200, null=True, blank=True)
-    status = models.CharField(default= "" ,max_length=45, null=True, blank=True)
-    deposit_date = models.DateTimeField(null=True, blank=True)
+    candidate_name = models.CharField(max_length=200, null=True, blank=True)
+    depositor_name = models.CharField(max_length=200, null=True, blank=True)
+    customer_email = models.CharField(max_length=200, null=True, blank=True)
+    candidate_phone = models.CharField(max_length=45, null=True, blank=True)
+    amount = models.IntegerField(null=True, blank=True)
+    product_name = models.CharField(max_length=200, null=True, blank=True)
+    status = models.BooleanField(default=False)
+    deposit_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True ,null=True, blank=True)
-    payment_channel = models.CharField(default= ""  ,max_length=45, null=True, blank=True)
-    transaction_id = models.CharField(default= "" ,max_length=45, null=True, blank=True)
-    source = models.CharField(default= "" ,max_length=45, null=True, blank=True)
+    payment_channel = models.CharField(max_length=45, null=True, blank=True)
+    transaction_id = models.CharField(max_length=45, null=True, blank=True)
+    source = models.CharField(max_length=45, null=True, blank=True)
     transaction_image = models.FileField(upload_to='UBL-manual-payment-receipts', null=True, blank=True)
 
     def __str__(self):
@@ -140,7 +140,6 @@ class UBL_Manual_Payment(models.Model):
         verbose_name = "UBL-Manual Payment"
         ordering = ["-deposit_date"]
         
-
 
 class NavbarLink(models.Model):
     name = models.CharField(max_length=100,null=True, blank=True)
