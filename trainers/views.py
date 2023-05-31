@@ -13,6 +13,7 @@ from user.serializers import MainUserSerializer
 from django.db.models import Count, OuterRef, Subquery
 from collections import defaultdict
 import json
+from django.db.models import F, Max, Q
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -60,6 +61,7 @@ class TrainersData(APIView):
     # required_groups = ['Sales', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
+        product = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
         # create a datetime object for 24 hours ago
         url = request.build_absolute_uri()  
@@ -69,11 +71,18 @@ class TrainersData(APIView):
         # print(payments)
         # payments = payments.exclude(amount__in=[0,0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
         # distinct_users = payments.order_by('user').values('user').distinct()
+        trainers = Trainer.objects.all()
         if q:
-            trainers = Trainer.objects.filter(trainer_name__icontains=q)
+            trainers = trainers.filter(trainer_name__icontains=q)
 
-        trainers = Trainer.objects.annotate(total_users=Count('products__product_payments__user', distinct=True)).values('trainer_name', 'products__product_name', 'products__product_payments__user__email','products__product_payments__user__username')
+        if product:
+            keywords = product.split()
+            query = Q()
+            for keyword in keywords:
+                query &= Q(products__product_name__icontains=keyword)
+                trainers = trainers.filter(query)
 
+        trainers = trainers.annotate(total_users=Count('products__product_payments__user', distinct=True)).values('trainer_name', 'products__product_name', 'products__product_payments__user__email','products__product_payments__user__username')
         # Create a dictionary to store the grouped data
         grouped_data = defaultdict(lambda: defaultdict(list))
 

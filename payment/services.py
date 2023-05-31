@@ -4,7 +4,6 @@ from .serializer import StripePaymentSerializer, Ubl_Ipg_PaymentsSerializer, Eas
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.http import HttpResponse
-from django.db.models import Q
 from datetime import date, datetime, time, timedelta
 import pandas as pd
 from django.conf import settings
