@@ -209,9 +209,9 @@ class RenewalPayments(APIView):
     
 #optimized       
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
