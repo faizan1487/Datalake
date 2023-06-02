@@ -209,9 +209,9 @@ class RenewalPayments(APIView):
     
 #optimized       
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -441,9 +441,9 @@ class PaymentValidation(APIView):
 #Optimized
 #shows no of payments on each date
 class NoOfPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -458,14 +458,14 @@ class NoOfPayments(APIView):
 #Optimized  
 #shows alnafi/mainsite no of payments on each date
 class RenewalNoOfPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source='Al-Nafi')
-        response_data = renewal_no_of_payments(start_date,end_date,payments)
+        response_data = renewal_no_of_payments(payments)
         return Response(response_data)
         
         

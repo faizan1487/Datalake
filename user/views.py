@@ -137,12 +137,12 @@ class GetUser(APIView):
             # cache.set(url, user)
         try:
             payments = user[0].user_payments.all().values()
-            payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+            # payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
             latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
             user = dict(user.values()[0])
         
-            if latest_payment.date() > date.today():
-                user['is_paying_customer'] = 'true'
+            # if latest_payment.date() > date.today():
+            user['is_paying_customer'] = True
             
             def json_serializable(obj):
                 if isinstance(obj, datetime):
@@ -156,7 +156,7 @@ class GetUser(APIView):
                     payment_list[i]['user_id'] = user['email']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
                 except Exception as e:
-                    pass
+                    print(e)
             
             payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
             payment_objects = json.loads(payment_json)           

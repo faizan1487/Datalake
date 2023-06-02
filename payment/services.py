@@ -13,7 +13,7 @@ from products.models import Alnafi_Product, Main_Product
 from django.db.models import F, Max, Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Case, CharField, Value, When
-
+import calendar
 
 def json_to_csv(serialized_data,name):
     file_name = f"{name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -69,7 +69,7 @@ def main_no_of_payments(start_date,end_date,source):
             'payments': len(serialized_payments)
         })
     
-    print(payments.count())
+    # print(payments.count())
     return response_data
 
 
@@ -204,50 +204,28 @@ def easypaisa_no_payments(start_date,end_date):
     return response_data
 
 
-def renewal_no_of_payments(start_date,end_date,payments):
-    if not start_date:
-        first_payment = payments.exclude(order_datetime=None).last()
-        date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
-        start_date = str(new_date_obj.date())    
-    if not end_date:
-        last_payment = payments.exclude(order_datetime=None).first()
-        date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-        end_date = str(new_date_obj.date())
-    
-    start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
-    end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()       
-    delta = end_date_obj - start_date_obj
-    dates = []
-    for i in range(delta.days + 1):
-        date = start_date_obj + timedelta(days=i)
-        dates.append(date)
-    
-    if payments:
-        payments = payments.filter(order_datetime__date__in=dates)    
-    else:
-        payments = Main_Payment.objects.filter(order_datetime__date__in=dates)
-    payment_dict = {}
-    for payment in payments:
-        if payment.order_datetime.date() in payment_dict:
-            payment_dict[payment.order_datetime.date()].append(payment)
-        else:
-            payment_dict[payment.order_datetime.date()] = [payment]
-            
-    response_data = []
-    for date in dates:
-        if date in payment_dict:
-            payments_for_date = payment_dict[date]
-            serialized_payments = MainPaymentSerializer(payments_for_date, many=True).data
-        else:
-            serialized_payments = []
+def renewal_no_of_payments(payments):
+    current_month = datetime.now().month
+    current_year = datetime.now().year
 
-        response_data.append({
-            'date': date,
-            'payments': len(serialized_payments)
-        })
+    _, num_days = calendar.monthrange(current_year, current_month)
+
+    dates_of_month = [datetime(current_year, current_month, day) for day in range(1, num_days + 1)]
+    response_data = []
+    total_payments = 0
+    count = payments.filter(expiration_datetime__year=dates_of_month[0].year).count()
+    for date in dates_of_month:
+        if date.month == current_month:
+            count = payments.filter(expiration_datetime__year=date.year, expiration_datetime__month=date.month,expiration_datetime__day=date.day).count()
+            total_payments += count
+            response_data.append({
+                'date': date,
+                'payments': count
+            })
+    response_data.insert(0,{'total_payments': total_payments})
     return response_data
+
+
     
 def stripe_pay(q, start_date, end_date,plan,product):
     if not start_date:

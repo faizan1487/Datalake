@@ -35,7 +35,9 @@ def paying_users_details(query_time, is_converted):
     converted = []
     all_paid_users_ids = list(Main_Payment.objects.all().values_list("user__id", flat=True))
     all_paid_users = query_time.filter(id__in=all_paid_users_ids).values("id","username","email", "first_name", "last_name","source","phone","address","country","created_at")    
+    print("all_paid_users",all_paid_users)
     all_unpaid_users = query_time.exclude(id__in=all_paid_users_ids)
+    print("all_unpaid_users",all_unpaid_users)
     if is_converted =='true':
         for user in all_paid_users:
             converted_users.append(user)
@@ -71,7 +73,7 @@ def paying_users_details(query_time, is_converted):
     #         else:
     #             converted_users.append(user)
     #             converted.append(False)   
-                     
+    print("converted_users",converted_users)            
     response = {"converted_users":converted_users, "converted": converted}
     return response
 
@@ -97,7 +99,9 @@ def search_users(q, start_date, end_date, is_converted,source):
     if q:
         users = users.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
+    print(users)
     users = users.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
+    print(users)
     users = paying_users_details(users, is_converted)
 
     return users 
