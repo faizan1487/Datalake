@@ -14,6 +14,10 @@ from django.db.models import F, Max, Q
 from django.core.exceptions import ObjectDoesNotExist
 from django.db.models import Case, CharField, Value, When
 import calendar
+from calendar import monthrange
+from django.db.models import Count
+from django.db.models.functions import TruncDate
+
 
 def json_to_csv(serialized_data,name):
     file_name = f"{name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -77,22 +81,31 @@ def renewal_no_of_payments(payments):
     current_month = datetime.now().month
     current_year = datetime.now().year
 
-    _, num_days = calendar.monthrange(current_year, current_month)
+    _, num_days = monthrange(current_year, current_month)
 
     dates_of_month = [datetime(current_year, current_month, day) for day in range(1, num_days + 1)]
+
+    payments_by_date = payments.filter(
+        expiration_datetime__year=current_year,
+        expiration_datetime__month=current_month,
+        expiration_datetime__day__in=range(1, num_days + 1)
+    ).annotate(date=TruncDate('expiration_datetime')).values('date').annotate(payments_count=Count('id'))
+
     response_data = []
     total_payments = 0
-    count = payments.filter(expiration_datetime__year=dates_of_month[0].year).count()
+
     for date in dates_of_month:
-        if date.month == current_month:
-            count = payments.filter(expiration_datetime__year=date.year, expiration_datetime__month=date.month,expiration_datetime__day=date.day).count()
-            total_payments += count
-            response_data.append({
-                'date': date,
-                'payments': count
-            })
-    response_data.insert(0,{'total_payments': total_payments})
+        payment_data = next((p for p in payments_by_date if p['date'] == date.date()), None)
+        count = payment_data['payments_count'] if payment_data else 0
+        total_payments += count
+        response_data.append({
+            'date': date,
+            'payments': count
+        })
+
+    response_data.insert(0, {'total_payments': total_payments})
     return response_data
+
 
 
 

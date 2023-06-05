@@ -87,6 +87,41 @@ class MyPagination(PageNumberPagination):
 
 
 
+# class TrainersData(APIView):
+#     def get(self, request):
+#         q = self.request.GET.get('q', None) or None
+#         product = self.request.GET.get('product', None)
+#         export = self.request.GET.get('export', None) or None
+#         url = request.build_absolute_uri()  
+        
+#         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
+#         if q:
+#             trainers = trainers.filter(trainer_name__icontains=q)
+
+#         if product:
+#             keywords = product.split()
+#             query = Q()
+#             for keyword in keywords:
+#                 query &= Q(products__product_name__icontains=keyword)
+#             trainers = trainers.filter(query)
+
+#         trainers_data = []
+
+#         for trainer in trainers:
+#             trainer_data = {
+#                 'trainer_name': trainer.trainer_name,
+#                 'products': {}
+#             }
+
+#             for product in trainer.products.all():
+#                 user_count = len(set(payment.user_id for payment in product.product_payments.all()))
+#                 trainer_data['products'][product.product_name] = user_count
+
+#             trainers_data.append(trainer_data)
+
+#         return Response(trainers_data)
+
+
 class TrainersData(APIView):
     def get(self, request):
         q = self.request.GET.get('q', None) or None
@@ -110,16 +145,24 @@ class TrainersData(APIView):
         for trainer in trainers:
             trainer_data = {
                 'trainer_name': trainer.trainer_name,
-                'products': {}
+                'trainer_data': []
             }
 
             for product in trainer.products.all():
                 user_count = len(set(payment.user_id for payment in product.product_payments.all()))
-                trainer_data['products'][product.product_name] = user_count
+                trainer_data['trainer_data'].append({'product_name':product.product_name,'users': user_count})
 
             trainers_data.append(trainer_data)
 
         return Response(trainers_data)
+
+
+
+
+
+
+
+
 
 
 

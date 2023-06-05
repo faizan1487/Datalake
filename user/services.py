@@ -87,57 +87,65 @@ def search_users(q, start_date, end_date, is_converted,source):
     return users 
 
 
+
+
 def no_users_month(users):
     current_month = datetime.now().month
     current_year = datetime.now().year
 
     _, num_days = monthrange(current_year, current_month)
 
-    dates = [datetime(current_year, current_month-1, day) for day in range(1, num_days + 1)]
+    dates = [datetime(current_year, current_month-1, day).date() for day in range(1, num_days + 1)]
 
     users = users.filter(created_at__date__in=dates)
-    converted_users = paying_users_details(users,None)
+    converted_users = paying_users_details(users, None)
     serializer = MainUserSerializer(converted_users['converted_users'], many=True)
     for i in range(len(serializer.data)):
-                serializer.data[i]['is_paying_customer'] = converted_users['converted'][i]
+        serializer.data[i]['is_paying_customer'] = converted_users['converted'][i]
 
+    paid_users = [data for data in serializer.data if data['is_paying_customer']]
+    unpaid_users = [data for data in serializer.data if not data['is_paying_customer']]
 
-    paid_users = []
-    unpaid_users = []
-    for data in serializer.data:
-            if data['is_paying_customer'] == True:
-                paid_users.append(data)
-            else:
-                unpaid_users.append(data)
+    paid_user_dict = {user['created_at'].split('T')[0]: [] for user in paid_users}
+    unpaid_user_dict = {user['created_at'].split('T')[0]: [] for user in unpaid_users}
+    user_dict = {user.created_at.date(): [] for user in users}
 
-    user_dict = {}
+    for user in paid_users:
+        paid_user_dict[user['created_at'].split('T')[0]].append(user)
+
+    for user in unpaid_users:
+        unpaid_user_dict[user['created_at'].split('T')[0]].append(user)
+
     for user in users:
-        if user.created_at.date() in user_dict:
-            user_dict[user.created_at.date()].append(user)
-        else:
-            user_dict[user.created_at.date()] = [user]
+        user_dict[user.created_at.date()].append(user)
 
     response_data = []
     total_users = 0
-    
-    for date in dates:
-        if date.date() in user_dict:
-            users_for_date = user_dict[date.date()]
-            serialized_users = MainUserSerializer(users_for_date, many=True).data
-        else:
-            serialized_users = []
 
+    for date in dates:
+        str_date_key = str(date)[:10]
+        paid_users_for_date = paid_user_dict.get(str_date_key, [])
+        unpaid_users_for_date = unpaid_user_dict.get(str_date_key, [])
+        all_users_for_date = user_dict.get(date, [])
+
+        serialized_users = MainUserSerializer(all_users_for_date, many=True).data
+        total_users += len(serialized_users)
         response_data.append({
             'date': date,
-            'users': len(serialized_users)
+            'paid_users': len(paid_users_for_date),
+            'unpaid_users': len(unpaid_users_for_date),
+            'all_users': len(serialized_users)
         })
-        total_users += len(serialized_users)
 
+    response_data.insert(0, {'total_users': total_users})
+    response_data.insert(1, {'converted_users': len(paid_users)})
+    response_data.insert(2, {'unconverted_users': len(unpaid_users)})
 
-    response_data.insert(0,{'total_users': total_users})
-    response_data.insert(1,{'converted_users': len(paid_users)})
-    response_data.insert(2,{'unconverted_users': len(unpaid_users)})
     return response_data
+
+
+
+
 
 
     
