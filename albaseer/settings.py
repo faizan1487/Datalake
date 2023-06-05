@@ -91,12 +91,14 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_swagger',
     'import_export',
+    'rangefilter',
     
     'payment.apps.PaymentConfig',
     'user.apps.UserConfig',
     'thinkific.apps.ThinkificConfig',
     'products.apps.ProductsConfig',
     'trainers.apps.TrainersConfig',
+    'newsletter.apps.NewsletterConfig',
     "corsheaders",
 ]
 
@@ -145,7 +147,7 @@ WSGI_APPLICATION = 'albaseer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.1/ref/settings/#databases
 if DEBUG:
-    # print("SQL Lite CONNECTED")
+    print("SQL Lite CONNECTED")
     DATABASES = {
         'default': {
         'ENGINE': 'django.db.backends.sqlite3',
@@ -169,34 +171,34 @@ else:
     } 
             
 
-if DEBUG:
-    # CACHES = {
-    #     'default': {
-    #         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-    #         'TIMEOUT':1800,
-    #     },
-    # }
-    CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
-            'TIMEOUT':1,
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            }
-        }
-    } 
-else:
-    CACHES = {
-        'default': {
-            'BACKEND': 'django_redis.cache.RedisCache',
-            'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
-            'TIMEOUT':1800,
-            'OPTIONS': {
-                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-            }
-        }
-    } 
+# if DEBUG:
+#     # CACHES = {
+#     #     'default': {
+#     #         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+#     #         'TIMEOUT':1800,
+#     #     },
+#     # }
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django_redis.cache.RedisCache',
+#             'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
+#             'TIMEOUT':1,
+#             'OPTIONS': {
+#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#             }
+#         }
+#     } 
+# else:
+#     CACHES = {
+#         'default': {
+#             'BACKEND': 'django_redis.cache.RedisCache',
+#             'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
+#             'TIMEOUT':1800,
+#             'OPTIONS': {
+#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+#             }
+#         }
+#     } 
 # print(DATABASES)  
 
 # Password validation

@@ -85,7 +85,7 @@ class Main_User(models.Model):
 
 #  Custom User Manager
 class UserManager(BaseUserManager):
-    def create_user(self, email, name, password=None, password2=None):
+    def create_user(self, email, name,phone,department, password=None, password2=None):
         """
         Creates and saves a User with the given email, name and password.
         """
@@ -95,6 +95,8 @@ class UserManager(BaseUserManager):
         user = self.model(
             email=self.normalize_email(email),
             name=name,
+            phone=phone,
+            department=department,
         )
 
         user.set_password(password)
@@ -122,7 +124,9 @@ class User(AbstractBaseUser, PermissionsMixin):
         max_length=255,
         unique=True,
     )
-    name = models.CharField(max_length=200)
+    name = models.CharField(max_length=200,null=True,blank=True)
+    phone = models.CharField(max_length=100,null=True,blank=True)
+    department = models.CharField(max_length=100,null=True,blank=True)
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

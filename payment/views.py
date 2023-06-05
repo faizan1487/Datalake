@@ -1,12 +1,11 @@
 from rest_framework import status
 from user.models import User
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
-                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer)
-from .services import (easypaisa_pay, ubl_pay, stripe_pay, json_to_csv,stripe_no_payments,ubl_no_payments,easypaisa_no_payments,
-                       renewal_no_of_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,search_payment,
-                       main_no_of_payments)
+                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
+from .services import (json_to_csv, renewal_no_of_payments,search_payment,main_no_of_payments)
+# easypaisa_pay, ubl_pay, stripe_pay, stripe_no_payments,ubl_no_payments,easypaisa_no_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -57,6 +56,25 @@ class AlnafiPayment(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+class UBLManualPayment(APIView):
+    # def get(self,request):
+    #     alnafi_payment = AlNafi_Payment.objects.values('id', 'order_id', 'payment_id')
+    #     serializer = GetAlnafipaymentSerializer(alnafi_payment, many=True)
+    #     return Response(serializer.data)
+    
+    def post(self, request):
+        data = request.data
+        print(data)
+        serializer = UBL_Manual_PaymentSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({'status':"Success!"})
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class MainPaymentAPIView(APIView):
     def post(self, request):
         file = request.FILES['file']
@@ -78,7 +96,7 @@ class MainPaymentAPIView(APIView):
 
 class PaymentDelete(APIView):
     def get(self, request):
-        objs = Main_Payment.objects.all()
+        objs = UBL_Manual_Payment.objects.all()
         objs.delete()
         return Response('deleted')
 
@@ -98,17 +116,13 @@ class RenewalPayments(APIView):
         active = self.request.GET.get('is_active', None) or None
         product = self.request.GET.get('product', None) or None
 
-        payments = cache.get(url)
-        if payments is None:
-            payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
-            payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
-            # payments = payments.filter(source='Al-Nafi') 
-            cache.set(url, payments)
+        # payments = cache.get(url)
+        # if payments is None:
+        payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
+        payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
+            # cache.set(url, payments)
 
         if q:
-            # queryset = Stripe_Payment.objects.filter(
-            # Q(customer_email__iexact=q) | Q(name__icontains=q)
-            # |Q(payment_id__iexact=q))
             payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
             
         if source:
@@ -137,9 +151,13 @@ class RenewalPayments(APIView):
             'quarterly': 'Quarterly',
             'monthly': 'Monthly',
         }
-
+        #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
+        # This field represents the uppercase version of the product_plan field of the associated product.
         payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
-
+        #If the plan is provided and it is not 'all', the queryset is further filtered using
+        # the filter() function. It applies a condition using the Q object, which checks if 
+        # the product_plan is an exact case-insensitive match to the given plan 
+        # or if it matches any plan name from the plan_mapping dictionary.
         if plan:
             if plan.lower() != 'all':
                 payments = payments.filter(
@@ -156,7 +174,6 @@ class RenewalPayments(APIView):
             else:
                 payments[i]['is_active'] = False
 
-        
         def json_serializable(obj):
                 if isinstance(obj, datetime):
                     return obj.isoformat()  # Convert datetime to ISO 8601 format
@@ -170,6 +187,7 @@ class RenewalPayments(APIView):
                 payment_list[i]['user_id'] = users[i]['user__email']
                 payment_list[i]['phone'] = users[i]['user__phone']
                 payment_list[i]['product_id'] = products[i]['product__product_name']
+                payment_list[i]['is_active'] = payments[i]['is_active']
             except Exception as e:
                 pass
         
@@ -203,12 +221,10 @@ class SearchPayments(APIView):
         plan = self.request.GET.get('plan', None) or None   
         product = self.request.GET.get('product', None) or None  
         url = request.build_absolute_uri()
-        
-        
-        payments = cache.get(url+'payments')
-        if payments is None:
-            payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
-            cache.set(url+'payments', payments)   
+        # payments = cache.get(url+'payments')
+        # if payments is None:
+        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
+            # cache.set(url+'payments', payments)   
         
         
         if payments['success'] == 'true':
@@ -217,18 +233,18 @@ class SearchPayments(APIView):
                         return obj.isoformat()  # Convert datetime to ISO 8601 format
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-            
             users = list(payments['payments'].values('user__email'))
             products = list(payments['payments'].values('product__product_name'))
-            payment_list = list(payments["payments"].values())                          
-            for i in range(len(payment_list)):
+            payment_list = list(payments["payments"].values())
+
+            for i in range(len(payments['payments'])):
                 try:
-                    payment_list[i]['payment_cycle'] = payments['payment_cycle'][i]
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
                 except Exception as e:
-                    pass
-                    
+                    pass  
+
+
             
             if export=='true':
                 df = pd.DataFrame(payment_list)
@@ -260,17 +276,13 @@ class PaymentValidation(APIView):
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
         # create a datetime object for 24 hours ago
-        time_threshold = timezone.now() - timezone.timedelta(days=90)
-        time_threshold_str = time_threshold.strftime('%Y-%m-%d')
         url = request.build_absolute_uri()  
         
-        # payments = cache.get(url)
+        # payments = cache.get(url)'Al-Nafi'
         # if payments is None:
-        payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).exclude(product__product_name="test").values()
-        payments = payments.exclude(amount__in=[1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
-        # cache.set(url, payments) 
-        
-        
+        payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").values()
+        payments = payments.exclude(amount__in=[0,0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
+        # cache.set(url, payments)      
         if source:
             payments = payments.filter(source=source)
 
@@ -281,68 +293,120 @@ class PaymentValidation(APIView):
         valid_payments = []
 
         product_ids = set(payments.values_list('product_id', flat=True))
-        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr', 'product_plan')
+        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan')
 
-        alnafi_payments = payments.filter(source='Al-Nafi').order_by('-order_datetime').prefetch_related('user', 'product')
-
+        source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).order_by('-order_datetime').prefetch_related('user', 'product').values()
         latest_payments = {}
-        for payment in alnafi_payments:
+        ##Removes duplicates from source_payments and only adds the latest payment into the latest payment dict
+        for payment in source_payments:
             key = (payment['user_id'], payment['product_id'])
             if key not in latest_payments:
                 latest_payments[key] = payment
-
+                
         for payment in payments:
-            valid_payment = False
+            valid_payment = {
+                'valid': True,
+                'reasons': []
+            }
 
             try:
                 product = next(filter(lambda p: p['id'] == payment['product_id'], products), None)
+                if product:
+                    if payment['currency'] == 'PKR':
+                        product_amount_without_zeros = str(product['amount_pkr']).rstrip('0').rstrip('.')
+                        if product_amount_without_zeros == payment['amount']:
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Product and Payment Amount mismatch')
+                    elif payment['currency'] == 'USD':
+                        product_amount_without_zeros = str(product['amount_usd']).rstrip('0').rstrip('.')
+                        if product_amount_without_zeros == payment['amount']:
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Product and Payment Amount mismatch')
 
-                if product and product['amount_pkr'] == payment['amount']:
-                    valid_payment = True
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Invalid currency')
+
+                else:
+                    valid_payment['valid'] = False
+                    valid_payment['reasons'].append('Product not found')
+
+
 
                 latest_payment = latest_payments.get((payment['user_id'], payment['product_id']))
+                
+                # This condition will be False when the order date of the latest payment (latest_payment['order_datetime'])
+                # is outside the range defined by subtracting the tolerance from the current payment's order date (payment['order_datetime'].date() - tolerance) 
+                # and adding the tolerance to it (payment['order_datetime'].date() + tolerance).
+                
+                # In other words, if the order date of the latest payment is earlier than payment['order_datetime'].date() - tolerance 
+                # or later than payment['order_datetime'].date() + tolerance, the condition will evaluate to False, indicating a mismatch 
+                # in the order dates.
 
+                # This condition is used to determine if the order dates of the current payment and the latest payment are close enough within 
+                # the specified tolerance. If they are within that range, the condition evaluates to True, indicating that the check is successful. 
+                # Otherwise, it evaluates to False, indicating a mismatch in the order dates.
+                
                 if latest_payment:
                     tolerance = timedelta(days=1)
                     if (payment['order_datetime'].date() - tolerance <= latest_payment['order_datetime'].date() <= payment['order_datetime'].date() + tolerance):
-                        valid_payment = True
-
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Order date mismatch')
+                        
                 if product:
                     if product['product_plan'] == 'Yearly':
                         tolerance = timedelta(days=15)
                         if latest_payment:
-                            expiry_date = latest_payment['expiration_datetime'].date()
-                            expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=380) - tolerance
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=380) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=380) + tolerance):
-                                valid_payment = True
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Yearly expiration date mismatch')
 
                     if product['product_plan'] == 'Half Yearly':
                         if latest_payment:
                             tolerance = timedelta(days=10)
-                            expiry_date = latest_payment['expiration_datetime'].date()
-                            expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=180) - tolerance
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=180) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=180) + tolerance):
-                                valid_payment = True
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Half Yearly expiration date mismatch')
 
                     if product['product_plan'] == 'Quarterly':
                         if latest_payment:
                             tolerance = timedelta(days=7)
-                            expiry_date = latest_payment['expiration_datetime'].date()
-                            expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=90) - tolerance
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=90) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=90) + tolerance):
-                                valid_payment = True
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Quarterly expiration date mismatch')
 
                     if product['product_plan'] == 'Monthly':
                         if latest_payment:
                             tolerance = timedelta(days=5)
-                            expiry_date = latest_payment['expiration_datetime'].date()
-                            expected_expiry = latest_payment['order_datetime'].date() + timedelta(days=30) - tolerance
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=30) - tolerance
 
                             if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=30) + tolerance):
-                                valid_payment = True
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Monthly expiration date mismatch')
 
             except ObjectDoesNotExist:
                 pass
@@ -376,9 +440,9 @@ class PaymentValidation(APIView):
 #Optimized
 #shows no of payments on each date
 class NoOfPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -393,14 +457,14 @@ class NoOfPayments(APIView):
 #Optimized  
 #shows alnafi/mainsite no of payments on each date
 class RenewalNoOfPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source='Al-Nafi')
-        response_data = renewal_no_of_payments(start_date,end_date,payments)
+        response_data = renewal_no_of_payments(payments)
         return Response(response_data)
         
         

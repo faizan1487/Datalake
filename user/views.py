@@ -24,8 +24,8 @@ from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
-from .services import (alnafi_user, islamic_user, set_auth_token, checkSameDomain, GroupPermission,
-loginUser,get_tokens_for_user,aware_utcnow,alnafi_no_users,islamic_no_users,upload_csv_to_s3,search_users,no_of_users,search_employees)
+from .services import (set_auth_token, checkSameDomain, GroupPermission,
+loginUser,get_tokens_for_user,aware_utcnow,no_users_month,upload_csv_to_s3,search_users,search_employees)
 from .renderers import UserRenderer
 from itertools import chain
 from django.core.cache import cache
@@ -81,9 +81,9 @@ class AlnafiUser(APIView):
 
 #Optimized
 class GetUsers(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Support', 'Admin']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Support', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         is_converted = self.request.GET.get('is_converted', None) or None
@@ -94,10 +94,10 @@ class GetUsers(APIView):
         url = request.build_absolute_uri()
         
         
-        users = cache.get(url)
-        if users is None:
-            users = search_users(q,start_date,end_date,is_converted,source)
-            cache.set(url, users) 
+        # users = cache.get(url)
+        # if users is None:
+        users = search_users(q,start_date,end_date,is_converted,source)
+        # cache.set(url, users) 
         
         serializer = MainUserSerializer(users['converted_users'], many=True)
         if export =='true':
@@ -122,27 +122,27 @@ class GetUsers(APIView):
         
 
 class GetUser(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Support', 'Admin', 'Sales']
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Support', 'Admin', 'Sales']
     def get(self, request, id):
         user_id = id
         # email = self.request.GET.get('email', None) or None
         # export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
-        user = cache.get(url)
+        # user = cache.get(url)
         
-        if user is None:
-            user = Main_User.objects.filter(id=user_id)
-            cache.set(url, user)
+        # if user is None:
+        user = Main_User.objects.filter(id=user_id)
+            # cache.set(url, user)
         try:
             payments = user[0].user_payments.all().values()
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
             latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
             user = dict(user.values()[0])
         
-            if latest_payment.date() > date.today():
-                user['is_paying_customer'] = 'true'
+            # if latest_payment.date() > date.today():
+            user['is_paying_customer'] = True
             
             def json_serializable(obj):
                 if isinstance(obj, datetime):
@@ -156,7 +156,7 @@ class GetUser(APIView):
                     payment_list[i]['user_id'] = user['email']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
                 except Exception as e:
-                    pass
+                    print(e)
             
             payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
             payment_objects = json.loads(payment_json)           
@@ -168,53 +168,47 @@ class GetUser(APIView):
             response_data = {"user": user, "user payments": None, "no_of_payments": 0, "Message":"No payments data found"}
             return Response(response_data)
                     
-
-            
-            
-            
-               
+             
 #unoptimized                
-class GetNoOfUsers(APIView):
-    permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Support', 'Admin']
+# 
+class GetNoOfUsersMonth(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Support', 'Admin']
     def get(self, request):
-        start_date = self.request.GET.get('start_date', None) or None
-        end_date = self.request.GET.get('end_date', None) or None   
         source = self.request.GET.get('source', None) or None 
         url = request.build_absolute_uri()
-        
-        
-        # users = no_of_users(start_date,end_date,source)
-        # response_data = {"no_of_users": users}
-        # return Response(response_data)
-        if source == 'alnafiuser':
-            alnafi_no_of_users = cache.get(url)
-            if alnafi_no_of_users is None:
-                alnafi_no_of_users = alnafi_no_users(start_date, end_date)
-                cache.set(url, alnafi_no_of_users)
-            response_data = {"alnafi_no_of_users": alnafi_no_of_users}
-        elif source == 'islamicacademyuser':
-            academy_no_of_users = cache.get(url)
-            if academy_no_of_users is None:
-                academy_no_of_users = islamic_no_users(start_date,end_date)
-                cache.set(url, academy_no_of_users)   
-            response_data = {"academy_no_of_users": academy_no_of_users,}
+        if source == 'alnafi':
+            # alnafi_no_of_users = cache.get(url)
+            # if alnafi_no_of_users is None:
+            users = Main_User.objects.filter(source='Al-Nafi')
+            no_of_users = no_users_month(users)
+                # cache.set(url, alnafi_no_of_users)
+            response_data = {"alnafi_no_of_users": no_of_users}
+        elif source == 'islamicacademy':
+            users = Main_User.objects.filter(source='Islamic Academy')
+            no_of_users = no_users_month(users)
+            response_data = {"islamic_accademy_no_of_users": no_of_users}
         else:
-            alnafi_no_of_users = cache.get(url+'alnafi')
-            if alnafi_no_of_users is None:
-                alnafi_no_of_users = alnafi_no_users(start_date, end_date)
-                cache.set(url+'alnafi', alnafi_no_of_users) 
+            # alnafi_no_of_users = cache.get(url+'alnafi')
+            # if alnafi_no_of_users is None:
+            alnafi_users = Main_User.objects.filter(source='Al-Nafi')
+            islamic_users = Main_User.objects.filter(source='Islamic Academy')
+            alnafi_no_of_users = no_users_month(alnafi_users)
+            islamic_no_of_users = no_users_month(islamic_users)
+            total_users = alnafi_no_of_users[0]['total_users'] + islamic_no_of_users[0]['total_users']
+            total_converted_users = alnafi_no_of_users[1]['converted_users'] + islamic_no_of_users[1]['converted_users']
+            total_unconverted_users = alnafi_no_of_users[2]['unconverted_users'] + islamic_no_of_users[2]['unconverted_users']
+                # cache.set(url+'alnafi', alnafi_no_of_users) 
                     
-            academy_no_of_users = cache.get(url+'academy')
-            if academy_no_of_users is None:
-                academy_no_of_users = islamic_no_users(start_date,end_date)
-                cache.set(url+'academy', academy_no_of_users) 
-            
-            response_data = {"alnafi_no_of_users": alnafi_no_of_users,
-                            "academy_no_of_users": academy_no_of_users}
+            response_data = {"total_users": total_users,
+                            "total_converted_users": total_converted_users,
+                            "total_unconverted_users": total_unconverted_users,
+                            "alnafi_no_of_users": alnafi_no_of_users,
+                            'islamic_no_of_users':islamic_no_of_users}
             
         return Response(response_data)
+
 
 
             
@@ -226,6 +220,7 @@ class UserRegistrationView(APIView):
         try:
             serializer.save()
         except Exception as _:
+            print(_)
             return Response({"Invalid": "user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.instance
@@ -428,3 +423,48 @@ class AllEmployees(APIView):
 #             return Response({"message": "Logout successful"}, status=200)
 #         except Exception as e:
 #             return Response({"error": str(e)}, status=400)
+
+
+
+# class GetNoOfUsers(APIView):
+#     # permission_classes = [IsAuthenticated]
+#     # permission_classes = [GroupPermission]
+#     # required_groups = ['Support', 'Admin']
+#     def get(self, request):
+#         start_date = self.request.GET.get('start_date', None) or None
+#         end_date = self.request.GET.get('end_date', None) or None   
+#         source = self.request.GET.get('source', None) or None 
+#         url = request.build_absolute_uri()
+        
+        
+#         # users = no_of_users(start_date,end_date,source)
+#         # response_data = {"no_of_users": users}
+#         # return Response(response_data)
+#         if source == 'alnafiuser':
+#             alnafi_no_of_users = cache.get(url)
+#             if alnafi_no_of_users is None:
+#                 alnafi_no_of_users = alnafi_no_users(start_date, end_date)
+#                 cache.set(url, alnafi_no_of_users)
+#             response_data = {"alnafi_no_of_users": alnafi_no_of_users}
+#         elif source == 'islamicacademyuser':
+#             academy_no_of_users = cache.get(url)
+#             if academy_no_of_users is None:
+#                 academy_no_of_users = islamic_no_users(start_date,end_date)
+#                 cache.set(url, academy_no_of_users)   
+#             response_data = {"academy_no_of_users": academy_no_of_users,}
+#         else:
+#             alnafi_no_of_users = cache.get(url+'alnafi')
+#             if alnafi_no_of_users is None:
+#                 alnafi_no_of_users = alnafi_no_users(start_date, end_date)
+#                 cache.set(url+'alnafi', alnafi_no_of_users) 
+                    
+#             academy_no_of_users = cache.get(url+'academy')
+#             if academy_no_of_users is None:
+#                 academy_no_of_users = islamic_no_users(start_date,end_date)
+#                 cache.set(url+'academy', academy_no_of_users) 
+            
+#             response_data = {"alnafi_no_of_users": alnafi_no_of_users,
+#                             "academy_no_of_users": academy_no_of_users}
+            
+#         return Response(response_data)
+
