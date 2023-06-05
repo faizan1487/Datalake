@@ -32,48 +32,54 @@ def main_no_of_payments(start_date,end_date,source):
     
     if source:
         payments = payments.filter(source=source)
-        
-    if not start_date:
-        if payments:
-            first_payment = payments.exclude(order_datetime=None).last()
-            date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-            new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                    
-            start_date = new_date_obj + timedelta(days=20)       
-    if not end_date:
-        if payments:
-            last_payment = payments.exclude(order_datetime=None).first()
-            date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-            new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
-            end_date = new_date_obj - timedelta(days=20)
-               
-    delta = end_date - start_date
-    dates = []
-    for i in range(delta.days + 1):
-        date = start_date + timedelta(days=i)
-        dates.append(date)
-        
-    payments = payments.filter(order_datetime__date__in=dates)
-    payment_dict = {}
-    for payment in payments:
-        if payment.order_datetime.date() in payment_dict:
-            payment_dict[payment.order_datetime.date()].append(payment)
-        else:
-            payment_dict[payment.order_datetime.date()] = [payment]
-
-    response_data = []
-    for date in dates:
-        if date.date() in payment_dict:
-            payments_for_date = payment_dict[date.date()]
-            serialized_payments = MainPaymentSerializer(payments_for_date, many=True).data
-        else:
-            serialized_payments = []
-
-        response_data.append({
-            'date': date.date(),
-            'payments': len(serialized_payments)
-        })
     
-    # print(payments.count())
+    try:
+        if not start_date:
+            if payments:
+                first_payment = payments.exclude(order_datetime=None).last()
+                date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                    
+                start_date = new_date_obj + timedelta(days=20)       
+        if not end_date:
+            if payments:
+                last_payment = payments.exclude(order_datetime=None).first()
+                date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
+                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                end_date = new_date_obj - timedelta(days=20)
+                
+        delta = end_date - start_date
+        dates = []
+        for i in range(delta.days + 1):
+            date = start_date + timedelta(days=i)
+            dates.append(date)
+            
+        payments = payments.filter(order_datetime__date__in=dates)
+        payment_dict = {}
+        for payment in payments:
+            if payment.order_datetime.date() in payment_dict:
+                payment_dict[payment.order_datetime.date()].append(payment)
+            else:
+                payment_dict[payment.order_datetime.date()] = [payment]
+
+        response_data = []
+        for date in dates:
+            if date.date() in payment_dict:
+                payments_for_date = payment_dict[date.date()]
+                serialized_payments = MainPaymentSerializer(payments_for_date, many=True).data
+            else:
+                serialized_payments = []
+
+            response_data.append({
+                'date': date.date(),
+                'payments': len(serialized_payments)
+            })
+    except TypeError:
+        error_message = "Source is incorrect"
+        response_data = {'error': error_message}
+    except Exception as e:
+        error_message = str(e)
+        response_data = {'error': error_message}
+
     return response_data
 
 

@@ -91,12 +91,14 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt.token_blacklist',
     'rest_framework_swagger',
     'import_export',
+    'rangefilter',
     
     'payment.apps.PaymentConfig',
     'user.apps.UserConfig',
     'thinkific.apps.ThinkificConfig',
     'products.apps.ProductsConfig',
     'trainers.apps.TrainersConfig',
+    'newsletter.apps.NewsletterConfig',
     "corsheaders",
 ]
 
