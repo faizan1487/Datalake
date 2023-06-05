@@ -4,9 +4,8 @@ from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_P
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
-from .services import (easypaisa_pay, ubl_pay, stripe_pay, json_to_csv,stripe_no_payments,ubl_no_payments,easypaisa_no_payments,
-                       renewal_no_of_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,search_payment,
-                       main_no_of_payments)
+from .services import (json_to_csv, renewal_no_of_payments,search_payment,main_no_of_payments)
+# easypaisa_pay, ubl_pay, stripe_pay, stripe_no_payments,ubl_no_payments,easypaisa_no_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
