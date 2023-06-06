@@ -83,6 +83,31 @@ class Main_User(models.Model):
 
 
 
+class PSWFormRecords(models.Model):
+    hear_about_us = models.CharField(max_length=100, blank=True, null=True)
+    know_about_alnafi = models.CharField(max_length=100,default='No')
+    full_name = models.CharField(max_length=100, blank=True, null=True)
+    gender = models.CharField(max_length=100, blank=True, null=True)
+    study_field = models.CharField(max_length=255,blank=True, null=True)
+    email_address = models.CharField(max_length=100, blank=True, null=True)
+    contact_number = models.CharField(max_length=100, blank=True, null=True)
+    university_name = models.CharField(max_length=255,blank=True, null=True)
+    level_of_education = models.CharField(max_length=100, blank=True, null=True)
+    title_of_degree = models.CharField(max_length=100, blank=True, null=True)
+    user_status_of_PSW = models.CharField(max_length=100, blank=True, null=True)
+    student_visa_expiry = models.CharField(max_length=100, blank=True, null=True)
+    skillset = models.CharField(max_length=255,blank=True, null=True)
+    language = models.CharField(max_length=255,blank=True, null=True)
+    nationality = models.CharField(max_length=255,blank=True, null=True)
+    move_another_country = models.CharField(max_length=100, blank=True, null=True)
+    resume = models.FileField(upload_to="media/psw_form/resumes", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    def _str_(self):
+        return self.full_name
+
+
+
 #  Custom User Manager
 class UserManager(BaseUserManager):
     def create_user(self, email, name,phone,department, password=None, password2=None):

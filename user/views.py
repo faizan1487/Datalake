@@ -20,7 +20,7 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta, date
 
-from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink
+from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
@@ -41,6 +41,54 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100
 
+
+class PSWFormRecord(APIView):
+    def post(self,request):
+        hear_about_us = request.data['hear_about_us']
+        know_about_alnafi = request.data['know_about_alnafi']
+        full_name = request.data['full_name']
+        gender = request.data['gender']
+        study_field = request.data['study_field']
+        email_address = request.data['email_address']
+        contact_number = request.data['contact_number']
+        university_name = request.data['university_name']
+        level_of_education = request.data['level_of_education']
+        title_of_degree = request.data['title_of_degree']
+        user_status_of_PSW = request.data['user_status_of_PSW']
+        student_visa_expiry = request.data['student_visa_expiry']
+        skillset = request.data['skillset']
+        language = request.data['language']
+        nationality = request.data['nationality']
+        move_another_country = request.data['move_another_country']
+        resume = request.data['resume']
+
+        form = PSWFormRecords.objects.create(
+            hear_about_us=hear_about_us,
+            know_about_alnafi=know_about_alnafi,
+            full_name=full_name,
+            gender=gender,
+            study_field=study_field,
+            email_address=email_address,
+            contact_number=contact_number,
+            university_name=university_name,
+            level_of_education=level_of_education,
+            title_of_degree=title_of_degree,
+            user_status_of_PSW=user_status_of_PSW,
+            student_visa_expiry=student_visa_expiry,
+            skillset=skillset,
+            language=language,
+            nationality=nationality,
+            move_another_country=move_another_country,
+            resume=resume
+        )
+        try:
+            if form:
+                form.save()
+                return Response({"message":"Form Submitted Successfully"})
+            else:
+                return Response({"message":"Something went wrong"})
+        except Exception as e:
+            return Response({"message":"Something went wrong"})
 
 class MainUserAPIView(APIView):
     def post(self, request):

@@ -1,12 +1,22 @@
 from django.contrib import admin
 from .models import AlNafi_User
 from .models import Main_User
-from user.models import IslamicAcademy_User, User, NavbarLink
+from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin
 
 
 # Register your models here
+
+# For PSWFormRecords:
+class PSWFormRecordsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('id', 'full_name', 'email_address')
+    search_fields = ('id', 'full_name', 'email_address')
+    list_filter = ('id', 'full_name', 'email_address')
+
+admin.site.register(PSWFormRecords, PSWFormRecordsAdmin)
+
+
 
 # For MainSite Users:
 class AlnafiUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):

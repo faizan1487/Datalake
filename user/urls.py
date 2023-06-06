@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,
                     TokenRefreshView,UsersDelete,Navbar,AlnafiUser,AllEmployees,GetUser,
-                    GetNoOfUsersMonth)
+                    GetNoOfUsersMonth,PSWFormRecord)
 from django.http import HttpResponse
 
 urlpatterns = [
@@ -10,7 +10,8 @@ urlpatterns = [
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
     path('userdelete/', UsersDelete.as_view(), name='user-delete'),
     # path("guacamoli/",Guacamoli.as_view(), name='guacamoli'),
-    
+    path('formrecord/', PSWFormRecord.as_view(), name='pswfform-record'),
+
     path('users/', GetUsers.as_view(), name='user-list'),
     path('userdetails/<int:id>/', GetUser.as_view(), name='user-details'),
     path('nofusers/', GetNoOfUsersMonth.as_view(), name='no-of-users'),

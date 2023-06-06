@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     'products.apps.ProductsConfig',
     'trainers.apps.TrainersConfig',
     'newsletter.apps.NewsletterConfig',
+    'stream.apps.StreamConfig',
     "corsheaders",
 ]
 

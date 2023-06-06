@@ -1,0 +1,20 @@
+https://stage-api-al-baseer.alnafi.com/payments/nofrenewalpayments/
+this api shows no of renewal payments in the current month and also shows no of renewaal payments on each day of the current month
+
+
+https://stage-api-al-baseer.alnafi.com/payments/nofpayments/
+this api shows all payments created with respect to date
+PARAMETERS
+?source=Easypaisa or UBL_IPG
+start_date
+end_date
+
+
+https://stage-api-al-baseer.alnafi.com/user/nofusers/
+this api shows total,converted,unconverted,alnafi,islamic academy in a month and on each day of current month
+
+
+https://stage-api-al-baseer.alnafi.com/trainers/analytictrainers
+this api shows how trainers students are increasing overtime 
+
+
