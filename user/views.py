@@ -59,7 +59,7 @@ class PSWFormRecord(APIView):
         skillset = request.data['skillset']
         language = request.data['language']
         nationality = request.data['nationality']
-        move_another_country = request.data['move_another_country']
+        move_another_country = request.data['move_another_eu_country']
         resume = request.data['resume']
 
         form = PSWFormRecords.objects.create(
