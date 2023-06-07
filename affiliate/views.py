@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 # Create your views here.
-from .models import StreamUser
+from .models import AffiliateUser
 from django.db.models import Q
 
 
@@ -15,7 +15,7 @@ class MyPagination(PageNumberPagination):
 
 
 
-class StreamUsers(APIView):
+class AffiliateUsers(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
     # required_groups = ['Sales', 'Admin']
@@ -27,10 +27,10 @@ class StreamUsers(APIView):
         url = request.build_absolute_uri()
         # payments = cache.get(url+'payments')
         # if payments is None:
-        users = StreamUser.objects.all().values()
+        users = AffiliateUser.objects.all().values()
         
         if q:
-            users = users.filter(Q(email__icontains=q) | Q(username__icontains=q))
+            users = users.filter(email__icontains=q)
 
         if not start_date:
             first_user = users.exclude(created_at=None).last()

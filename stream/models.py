@@ -1,12 +1,12 @@
 from django.db import models
 # Create your models here.
 class StreamUser(models.Model):
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    email = models.EmailField(unique=True)
-    username = models.CharField(max_length=100)
-    phone = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
+    first_name = models.CharField(max_length=100 , null=True , blank=True)
+    last_name = models.CharField(max_length=100 , null=True , blank=True)
+    email = models.EmailField(unique=True , null=True , blank=True)
+    username = models.CharField(max_length=100 , null=True , blank=True)
+    phone = models.CharField(max_length=100 , null=True , blank=True)
+    country = models.CharField(max_length=100 , null=True , blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

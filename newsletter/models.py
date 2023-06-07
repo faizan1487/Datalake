@@ -1,8 +1,8 @@
 from django.db import models
 # Create your models here.
 class Newsletter(models.Model):
-    full_name = models.CharField(max_length=100)
-    phone_number = models.CharField(max_length=100)
+    full_name = models.CharField(max_length=100 , null=True , blank=True)
+    phone_number = models.CharField(max_length=100 , null=True , blank=True)
     email = models.EmailField(unique=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

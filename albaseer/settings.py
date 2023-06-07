@@ -100,6 +100,7 @@ INSTALLED_APPS = [
     'trainers.apps.TrainersConfig',
     'newsletter.apps.NewsletterConfig',
     'stream.apps.StreamConfig',
+    'affiliate.apps.AffiliateConfig',
     "corsheaders",
 ]
 

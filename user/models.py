@@ -100,6 +100,7 @@ class PSWFormRecords(models.Model):
     language = models.CharField(max_length=255,blank=True, null=True)
     nationality = models.CharField(max_length=255,blank=True, null=True)
     move_another_country = models.CharField(max_length=100, blank=True, null=True)
+    leaving_country = models.CharField(max_length=100, blank=True, null=True)
     resume = models.FileField(upload_to="media/psw_form/resumes", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
