@@ -22,9 +22,9 @@ def send_payment_post_request(sender, instance, created, **kwargs):
             response.raise_for_status()
             data = response.json()
             for i in range(len(data['data'])):
-                first_name = instance.user.first_name
-                last_name = instance.user.last_name
-                full_name = first_name + ' ' + last_name
+                first_name = instance.user.first_name if instance.user.first_name else ''
+                last_name = instance.user.last_name if instance.user.last_name else ''
+                full_name = f'{first_name} {last_name}'.strip()
                 if data['data'][i]['name'] == full_name:
                     payment = create_payment(instance,headers)
                     break
@@ -35,7 +35,7 @@ def send_payment_post_request(sender, instance, created, **kwargs):
 
                 #Customer data
                 customer_data = {
-                    "customer_name": instance.user.first_name + ' ' + instance.user.last_name,
+                    "customer_name": full_name,
                     "customer_type": "Individual",
                     "customer_group": "Commercial",
                     "territory": instance.user.country,
@@ -58,9 +58,9 @@ def send_payment_post_request(sender, instance, created, **kwargs):
 def create_payment(instance,headers):
     url = 'https://crm.alnafi.com/api/resource/Payment Entry'
         
-    first_name = instance.user.first_name
-    last_name = instance.user.last_name
-    full_name = first_name + ' ' + last_name
+    first_name = instance.user.first_name if instance.user.first_name else ''
+    last_name = instance.user.last_name if instance.user.last_name else ''
+    full_name = f'{first_name} {last_name}'.strip()
     data1 = {
         "payment_type": "Receive",
         "mode_of_payment": instance.source,
