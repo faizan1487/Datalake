@@ -63,11 +63,11 @@ def create_payment(instance,headers):
         "payment_type": "Receive",
         "mode_of_payment": instance.source or "Unknown",
         "party_type": "Customer",
-        "party": full_name or None,
-        "party_name": full_name or None,
+        "party": full_name,
+        "party_name": full_name,
         "paid_to": "Cash - A",
-        "paid_amount": instance.amount or None,
-        "received_amount": instance.amount or None,
+        "paid_amount": instance.amount,
+        "received_amount": instance.amount,
     }
     try:
         response = requests.post(url, headers=headers, json=data1)
