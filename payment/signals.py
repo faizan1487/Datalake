@@ -44,13 +44,11 @@ def send_payment_post_request(sender, instance, created, **kwargs):
                 response = requests.post(url, headers=headers, json=customer_data)
                 if response.status_code == 200:
                     print("Customer created successfully!")
-                else:
-                    print('Error:', response.status_code)
-                    print('Error:', response.text)  
-                                
                 payment = create_payment(instance,headers)
         except RequestException as e:
             print('Error occurred while making the request:', str(e))
+            print('Error:', response.status_code)
+            print('Error:', response.text)  
     else:
         pass
 
@@ -75,9 +73,8 @@ def create_payment(instance,headers):
         response = requests.post(url, headers=headers, json=data1)
         response.raise_for_status() 
         if response.status_code == 200:
-            print("Payment created successfully!")
-        else:
-            print('Error:', response.status_code)
-            print('Error:', response.text)      
+            print("Payment created successfully!")     
     except RequestException as e:
-        print('Error occurred while creating payment:', str(e))          
+        print('Error occurred while creating payment:', str(e)) 
+        print('Error:', response.status_code)
+        print('Error:', response.text)          
