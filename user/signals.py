@@ -19,11 +19,11 @@ def send_lead_post_request(sender, instance, created, **kwargs):
         }
         
         data = {
-            "first_name": instance.first_name or "unknown",
-            "last_name": instance.last_name or "unknown",
-            "email_id": instance.email or "unknown",
-            "mobile_no": instance.phone or "unknown",
-            "country": instance.country or "unknown",
+            "first_name": instance.first_name or None,
+            "last_name": instance.last_name or None,
+            "email_id": instance.email or None,
+            "mobile_no": instance.phone or None,
+            "country": instance.country or None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
         try:
@@ -31,8 +31,7 @@ def send_lead_post_request(sender, instance, created, **kwargs):
             response.raise_for_status()
             if response.status_code == 200:
                 print("Lead created successfully!")
-            else:
-                print('Error:', response.status_code)
-                print('Error:', response.text)
         except RequestException as e:
             print('Error occurred while making the request:', str(e))
+            print('Error:', response.status_code)
+            print('Error:', response.text)
