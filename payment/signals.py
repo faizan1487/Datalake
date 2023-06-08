@@ -35,10 +35,10 @@ def send_payment_post_request(sender, instance, created, **kwargs):
 
                 #Customer data
                 customer_data = {
-                    "customer_name": full_name,
+                    "customer_name": full_name or "Unknown",
                     "customer_type": "Individual",
                     "customer_group": "Commercial",
-                    "territory": instance.user.country,
+                    "territory": instance.user.country or "Unknown",
                 }
 
                 response = requests.post(url, headers=headers, json=customer_data)
@@ -63,13 +63,13 @@ def create_payment(instance,headers):
     full_name = f'{first_name} {last_name}'.strip()
     data1 = {
         "payment_type": "Receive",
-        "mode_of_payment": instance.source,
+        "mode_of_payment": instance.source or "Unknown",
         "party_type": "Customer",
-        "party": full_name,
-        "party_name": full_name,
+        "party": full_name or "unknown",
+        "party_name": full_name or "unknown",
         "paid_to": "Cash - A",
-        "paid_amount": instance.amount,
-        "received_amount": instance.amount,
+        "paid_amount": instance.amount or "unknown",
+        "received_amount": instance.amount or "unknown",
     }
     try:
         response = requests.post(url, headers=headers, json=data1)

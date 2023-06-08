@@ -19,11 +19,11 @@ def send_lead_post_request(sender, instance, created, **kwargs):
         }
         
         data = {
-            "first_name": instance.first_name,
-            "last_name": instance.last_name,
-            "email_id": instance.email,
-            "mobile_no": instance.phone,
-            "country": instance.country,
+            "first_name": instance.first_name or "unknown",
+            "last_name": instance.last_name or "unknown",
+            "email_id": instance.email or "unknown",
+            "mobile_no": instance.phone or "unknown",
+            "country": instance.country or "unknown",
             # Add other fields from the Main_User model to the data dictionary as needed
         }
         try:
