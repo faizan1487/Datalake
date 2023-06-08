@@ -23,14 +23,11 @@ class AffiliateUniqueClick(models.Model):
     page_url = models.CharField(max_length=100 , null=True , blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     affiliate_id = models.ForeignKey(AffiliateUser, on_delete=models.SET_NULL, null=True, related_name="user_clicks")
-    last_name = models.CharField(max_length=100 , null=True , blank=True)
-    email = models.EmailField(unique=True , null=True , blank=True)
-    phone = models.CharField(max_length=100 , null=True , blank=True)
-    address = models.CharField(max_length=100 , null=True , blank=True)
-    country = models.CharField(max_length=100 , null=True , blank=True)
+    pkr_price = models.IntegerField(default=0)
+    usd_price = models.IntegerField(default=0)
     
     def __str__(self):
-        return self.email
+        return self.ip
     
     class Meta:
         verbose_name_plural = "AffiliateUniqueClicks"

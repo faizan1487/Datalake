@@ -5,13 +5,15 @@ from rest_framework.pagination import PageNumberPagination
 # Create your views here.
 from .models import AffiliateUser
 from django.db.models import Q
-
+from django.db.models import Count
 
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100  
+
+
 
 
 
@@ -27,7 +29,7 @@ class AffiliateUsers(APIView):
         url = request.build_absolute_uri()
         # payments = cache.get(url+'payments')
         # if payments is None:
-        users = AffiliateUser.objects.all().values()
+        users = AffiliateUser.objects.annotate(user_clicks_count=Count('user_clicks')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count')
         
         if q:
             users = users.filter(email__icontains=q)
@@ -39,7 +41,7 @@ class AffiliateUsers(APIView):
         if not end_date:
             last_user = users.exclude(created_at=None).first()
             end_date = last_user['created_at'].date() if last_user else None
-
+        
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(users, request)
         return paginator.get_paginated_response(paginated_queryset)
