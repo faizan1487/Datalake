@@ -30,7 +30,14 @@ def send_lead_post_request(sender, instance, created, **kwargs):
             response = requests.post(url, headers=headers, json=data)
             response.raise_for_status()
             if response.status_code == 200:
-                print("Lead created successfully!")
+                lead_data = response.json()
+                # print('lead_data',lead_data)
+                # print("lead_data['data']['name']",lead_data['data']['name'])
+                erp_lead_id = lead_data['data']['name']
+                if erp_lead_id:
+                    instance.erp_lead_id = erp_lead_id
+                    instance.save(update_fields=['erp_lead_id'])
+                    print("Lead created successfully!")
         except RequestException as e:
             print('Error occurred while making the request:', str(e))
             print('Error:', response.status_code)

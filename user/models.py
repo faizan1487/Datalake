@@ -73,6 +73,7 @@ class Main_User(models.Model):
     isMentor = models.BooleanField(default=False)
     is_paying_customer = models.BooleanField(default=False)
     role = models.CharField(max_length=255, null=True, blank=True)
+    erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):
         return self.username
@@ -104,6 +105,7 @@ class PSWFormRecords(models.Model):
     living_country = models.CharField(max_length=100, blank=True, null=True)
     resume = models.FileField(upload_to="media/psw_form/resumes", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    
 
     def _str_(self):
         return self.full_name
