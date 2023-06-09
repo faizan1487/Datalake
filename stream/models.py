@@ -7,10 +7,9 @@ class StreamUser(models.Model):
     username = models.CharField(max_length=100 , null=True , blank=True)
     phone = models.CharField(max_length=100 , null=True , blank=True)
     country = models.CharField(max_length=100 , null=True , blank=True)
+    erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     
-    def __str__(self):
-        return self.email
     
     class Meta:
         verbose_name_plural = "StreamUsers"

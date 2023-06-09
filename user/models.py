@@ -21,7 +21,7 @@ class AlNafi_User(models.Model):
     affiliate_code = models.CharField(max_length=255, null=True, blank=True)
     isMentor = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
-
+    erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
     def __str__(self):
         return self.username
     
@@ -44,6 +44,7 @@ class IslamicAcademy_User(models.Model):
     role = models.CharField(max_length=255, null=True, blank=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
+    erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):
         return self.username
@@ -88,11 +89,11 @@ class Main_User(models.Model):
 class PSWFormRecords(models.Model):
     hear_about_us = models.CharField(max_length=100, blank=True, null=True)
     know_about_alnafi = models.CharField(max_length=100,default='No')
-    full_name = models.CharField(max_length=100, blank=True, null=True)
+    first_name = models.CharField(max_length=100, blank=True, null=True)
     gender = models.CharField(max_length=100, blank=True, null=True)
     study_field = models.CharField(max_length=255,blank=True, null=True)
-    email_address = models.CharField(max_length=100, blank=True, null=True)
-    contact_number = models.CharField(max_length=100, blank=True, null=True)
+    email = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=100, blank=True, null=True)
     university_name = models.CharField(max_length=255,blank=True, null=True)
     level_of_education = models.CharField(max_length=100, blank=True, null=True)
     title_of_degree = models.CharField(max_length=100, blank=True, null=True)
@@ -102,10 +103,10 @@ class PSWFormRecords(models.Model):
     language = models.CharField(max_length=255,blank=True, null=True)
     nationality = models.CharField(max_length=255,blank=True, null=True)
     move_another_country = models.CharField(max_length=100, blank=True, null=True)
-    living_country = models.CharField(max_length=100, blank=True, null=True)
+    country = models.CharField(max_length=100, blank=True, null=True)
     resume = models.FileField(upload_to="media/psw_form/resumes", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    
+    erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
     def _str_(self):
         return self.full_name

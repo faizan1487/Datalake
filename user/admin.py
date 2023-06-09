@@ -10,9 +10,9 @@ from import_export.admin import ImportExportModelAdmin
 
 # For PSWFormRecords:
 class PSWFormRecordsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('id', 'full_name', 'email_address')
-    search_fields = ('id', 'full_name', 'email_address')
-    list_filter = ('id', 'full_name', 'email_address')
+    list_display = ('id', 'first_name', 'email')
+    search_fields = ('id', 'first_name', 'email')
+    list_filter = ('id', 'first_name', 'email')
 
 admin.site.register(PSWFormRecords, PSWFormRecordsAdmin)
 

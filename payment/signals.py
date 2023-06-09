@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import requests
-from .models import Main_Payment
+from .models import *
 from rest_framework.response import Response
 from requests.exceptions import RequestException
 

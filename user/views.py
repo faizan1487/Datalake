@@ -66,11 +66,11 @@ class PSWFormRecord(APIView):
         form = PSWFormRecords.objects.create(
             hear_about_us=hear_about_us,
             know_about_alnafi=know_about_alnafi,
-            full_name=full_name,
+            first_name=full_name,
             gender=gender,
             study_field=study_field,
-            email_address=email_address,
-            contact_number=contact_number,
+            email=email_address,
+            phone=contact_number,
             university_name=university_name,
             level_of_education=level_of_education,
             title_of_degree=title_of_degree,
@@ -80,7 +80,7 @@ class PSWFormRecord(APIView):
             language=language,
             nationality=nationality,
             move_another_country=move_another_country,
-            living_country=living_country,
+            country=living_country,
             resume=resume
         )
         try:
