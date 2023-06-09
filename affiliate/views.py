@@ -6,15 +6,13 @@ from rest_framework.pagination import PageNumberPagination
 from .models import AffiliateUser
 from django.db.models import Q
 from django.db.models import Count
-
+from .serializers import AffiliateSerializer, AffiliateClickSerializer
+from rest_framework import status
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100  
-
-
-
 
 
 class AffiliateUsers(APIView):
@@ -45,3 +43,28 @@ class AffiliateUsers(APIView):
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(users, request)
         return paginator.get_paginated_response(paginated_queryset)
+    
+
+
+class CreateAffiliateUser(APIView):
+    def post(self, request):
+        data = request.data
+        serializer = AffiliateSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class CreateAffiliateClick(APIView):
+    def post(self, request):
+        data = request.data
+        serializer = AffiliateClickSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
