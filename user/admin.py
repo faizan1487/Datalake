@@ -38,8 +38,8 @@ admin.site.register(IslamicAcademy_User, IslamicAcademyUserAdmin)
 
 #FOR MERGE USERS TABLES MAIN_USER:
 class Main_UserAdmin(ImportExportModelAdmin,admin.ModelAdmin):
-    list_display = ["id","username", "first_name", "last_name", "email", "source", "phone", "address", "country", "language", "created_at", "modified_at", "verification_code", "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer", "role"]
-    search_fields = ("username", "first_name", "last_name", "email", "source", "phone", "address", "country", "language", "created_at", "modified_at", "verification_code", "isAffiliate", "affiliate_code", "isMentor", "is_paying_customer", "role")
+    list_display = ["id","username", "first_name", "last_name", "email", "source", "internal_source", "phone", "address", "country", "language", "created_at", "modified_at", "verification_code", "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer", "role"]
+    search_fields = ("username", "first_name", "last_name", "email", "source", "internal_source", "phone", "address", "country", "language", "created_at", "modified_at", "verification_code", "isAffiliate", "affiliate_code", "isMentor", "is_paying_customer", "role")
     list_filter = ("source", "country", "language", "created_at", "modified_at", "verification_code", "isMentor", "is_paying_customer", "role")
 
 admin.site.register(Main_User, Main_UserAdmin)

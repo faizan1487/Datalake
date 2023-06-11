@@ -61,6 +61,7 @@ class Main_User(models.Model):
     last_name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
     source = models.CharField(max_length=255,null=True, blank=True)
+    internal_source = models.CharField(max_length=255,null=True, blank=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
     address = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
