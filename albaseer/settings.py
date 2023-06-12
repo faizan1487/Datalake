@@ -173,34 +173,34 @@ else:
     } 
             
 
-# if DEBUG:
-#     # CACHES = {
-#     #     'default': {
-#     #         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
-#     #         'TIMEOUT':1800,
-#     #     },
-#     # }
-#     CACHES = {
-#         'default': {
-#             'BACKEND': 'django_redis.cache.RedisCache',
-#             'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
-#             'TIMEOUT':1,
-#             'OPTIONS': {
-#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#             }
-#         }
-#     } 
-# else:
-#     CACHES = {
-#         'default': {
-#             'BACKEND': 'django_redis.cache.RedisCache',
-#             'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6080)), # Change IP and port if needed
-#             'TIMEOUT':1800,
-#             'OPTIONS': {
-#                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
-#             }
-#         }
-#     } 
+if DEBUG:
+    # CACHES = {
+    #     'default': {
+    #         'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+    #         'TIMEOUT':1800,
+    #     },
+    # }
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6379)), # Change IP and port if needed
+            'TIMEOUT':1,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    } 
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django_redis.cache.RedisCache',
+            'LOCATION': 'redis://127.0.0.1:'+str(env("REDIS_PORT", default=6379)), # Change IP and port if needed
+            'TIMEOUT':1800,
+            'OPTIONS': {
+                'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+            }
+        }
+    } 
 # print(DATABASES)  
 
 # Password validation
@@ -363,3 +363,5 @@ SIMPLE_JWT = {
 
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10000000000
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000000
+
+EXCHANGE_RATE_API_KEY = 'b98736397ffdc67487a547b8'
