@@ -26,7 +26,7 @@ def send_payment_post_request(sender, instance, created, **kwargs):
             response.raise_for_status()
             data = response.json()
             payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
-            # print(payment_user)
+            print(payment_user)
             for i in range(len(data['data'])):
                 first_name = payment_user[0].first_name if payment_user[0].first_name else ''
                 last_name = payment_user[0].last_name if payment_user[0].last_name else ''

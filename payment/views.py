@@ -37,7 +37,8 @@ class MyPagination(PageNumberPagination):
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100           
-
+from django.dispatch import Signal
+post_save = Signal()
 # delete this api before production
 class AlnafiPayment(APIView):
     # def get(self,request):
@@ -51,6 +52,7 @@ class AlnafiPayment(APIView):
         
         if serializer.is_valid():
             serializer.save()
+            post_save.send(sender=AlNafi_Payment, instance=serializer)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
