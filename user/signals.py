@@ -7,7 +7,7 @@ from requests.exceptions import RequestException
 
 @receiver(post_save, sender=AlNafi_User)
 def send_lead_post_request(sender, instance, created, **kwargs):
-    print("alnafi user signal")
+    # print("alnafi user signal")
     if created:
         url = 'https://crm.alnafi.com/api/resource/Lead'
         api_key = '2b4b9755ecc2dc7'

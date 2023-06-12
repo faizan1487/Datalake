@@ -61,6 +61,19 @@ def send_payment_post_request(sender, instance, created, **kwargs):
     else:
         pass
 
+
+
+
+
+
+
+
+
+
+
+
+
+
 def create_lead(instance,payment_user):
     lead_url = 'https://crm.alnafi.com/api/resource/Lead'
     api_key = '2b4b9755ecc2dc7'
