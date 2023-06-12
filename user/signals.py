@@ -18,8 +18,7 @@ def send_lead_post_request(sender, instance, created, **kwargs):
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
-        alnafi_user = usersignal(instance,url,headers)
-        
+        alnafi_user = usersignal(instance,url,headers)    
 
 @receiver(post_save, sender=IslamicAcademy_User)
 def send_lead_post_request(sender, instance, created, **kwargs):
