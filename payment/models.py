@@ -194,10 +194,12 @@ class Main_Payment(models.Model):
     bin_bank_name = models.CharField(max_length=50, null=True,blank=True)
     error_reason = models.CharField(max_length=200, null=True,blank=True)
 
-    def __str__(self):
-        return self.source_payment_id
+    
     
     class Meta:
         managed = True
         verbose_name = "Main Payment"
         ordering = ["-order_datetime"]
+
+    def __str__(self):
+        return self.status or "-"
