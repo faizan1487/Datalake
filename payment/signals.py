@@ -64,16 +64,6 @@ def send_payment_post_request(sender, instance, created, **kwargs):
 
 
 
-
-
-
-
-
-
-
-
-
-
 def create_lead(instance,payment_user):
     lead_url = 'https://crm.alnafi.com/api/resource/Lead'
     api_key = '2b4b9755ecc2dc7'
@@ -139,9 +129,28 @@ def create_payment(instance,headers,payment_user):
     #account paid from Debtor  - A (pkr) or Debtors - B - A(usd)
     #account paid to Bank Account - A (pkr) or Back - Account - B - A (usd)
     usd_rate = get_USD_rate()
+    plan = ""
+
+    if "monthly" in instance.product_name.lower():
+        plan = "Monthly"
+    elif "half yearly" in instance.product_name.lower():
+        plan = "Half Yearly"
+    elif "yearly" in instance.product_name.lower() or "annual" in instance.product_name.lower():
+        plan = "Yearly"
+    elif "18 Months" in instance.product_name.lower():
+        plan = "18 Months"
+    elif "quarterly" in instance.product_name.lower():
+        plan = "Quarterly"
+
+
     data1 = {
         "payment_type": "Receive",
+        "posting_date": str(instance.order_datetime),
+        "product_name": instance.product_name or "Test",
         "mode_of_payment": instance.source or "Unknown",
+        "customer_email": instance.customer_email or "Test@example.com",
+        "al_nafi_payment_id": instance.payment_id,
+        "plan": plan,
         "party_type": "Customer",
         "party": full_name,
         "party_name": full_name,
@@ -153,13 +162,13 @@ def create_payment(instance,headers,payment_user):
         "reference_no": instance.payment_id,
         "reference_date": str(instance.created_at),
     }
-    print("received_amount",data1["received_amount"])
-    print("data1[paid_amount]",data1["paid_amount"])
+    # print("received_amount",data1["received_amount"])
+    # print("data1[paid_amount]",data1["paid_amount"])
     if instance.amount_pkr == 0:
         data1["paid_from"] = "Debtors - B - A"
     else:
         data1["paid_from"] = "Debtors - A"
-    print("paid from",data1["paid_from"])
+    # print("paid from",data1["paid_from"])
     
     try:
         response = requests.post(url, headers=headers, json=data1)
