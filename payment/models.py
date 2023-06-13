@@ -188,9 +188,9 @@ class Main_Payment(models.Model):
     coupon_code = models.CharField(max_length=20, null=True, blank=False)
     is_upgrade_payment = models.BooleanField(default=False)
     affiliate = models.CharField(max_length=50,null=True, blank=False)
-    ubl_candidate_name = models.CharField(max_length=200, null=True, blank=True)
+    candidate_name = models.CharField(max_length=200, null=True, blank=True)
     ubl_depositor_name = models.CharField(max_length=200, null=True, blank=True)
-    ubl_candidate_phone = models.CharField(max_length=45, null=True, blank=True)
+    candidate_phone = models.CharField(max_length=45, null=True, blank=True)
     bin_bank_name = models.CharField(max_length=50, null=True,blank=True)
     error_reason = models.CharField(max_length=200, null=True,blank=True)
 
