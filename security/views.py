@@ -6,6 +6,7 @@ from .serializers import ScanSerializer
 from .models import Scan
 from user.models import User
 # Create your views here.
+import boto3
 
 
 
@@ -15,11 +16,17 @@ class CreateScan(APIView):
                                     'assigned_to','scan_progress','testing_method','target','http_or_https',
                                     'application_type','findings_and_recommendations','file_upload','poc')
         # serializer = GetAlnafipaymentSerializer(alnafi_payment, many=True)
+        for scan in scans:
+            scan['file_upload'] = 'https://alnafi-main-backend.s3.amazonaws.com/' + scan['file_upload']
+            scan['poc'] = 'https://alnafi-main-backend.s3.amazonaws.com/' + scan['poc']
         return Response(scans)
     
     def post(self, request):
         data = request.data
         # print(data)
+        # print("type(data['file_upload'])",type(data['file_upload']))
+        # print(data['poc'])
+        # print(type(data['poc']))
         # print(data['assigned_to'])
         team_member = User.objects.get(email=data['assigned_to'])
         # print(team_member.id)
