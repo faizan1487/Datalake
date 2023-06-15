@@ -148,7 +148,7 @@ class UserManager(BaseUserManager):
         return user
 
 
-    
+#Albaseer Users
 class User(AbstractBaseUser, PermissionsMixin):
     email = models.EmailField(
         verbose_name='Email',

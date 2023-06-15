@@ -99,6 +99,7 @@ INSTALLED_APPS = [
     'rangefilter',
     
     'payment.apps.PaymentConfig',
+    'security.apps.SecurityConfig',
     'chatwoot.apps.ChatwootConfig',
     'user.apps.UserConfig',
     'thinkific.apps.ThinkificConfig',
