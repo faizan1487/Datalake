@@ -246,7 +246,7 @@ class SearchPayments(APIView):
                     pass  
 
 
-            
+            print("exporting")
             if export=='true':
                 df = pd.DataFrame(payment_list)
                 # Merge dataframes
