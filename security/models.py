@@ -65,6 +65,40 @@ class Scan(models.Model):
 
     def __str__(self):
         return f"Scan {self.id}"
+    
+    class Meta:
+        verbose_name_plural = "Scans"
 
 
 
+
+
+class Comment(models.Model):
+    scan = models.ForeignKey(
+        Scan, on_delete=models.CASCADE, related_name='comments')
+    parent_comment = models.ForeignKey(
+        'self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
+    isPrimaryComment = models.BooleanField(default=False)
+    isSecondaryComment = models.BooleanField(default=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    comment = models.TextField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f'{self.user.email} - {self.scan.scan_type}'
+        
+    class Meta:
+        verbose_name_plural = "Comments"
+
+
+
+# class Reply(models.Model):
+#     comment = models.ForeignKey(Comment, on_delete=models.CASCADE, related_name='replies')
+#     user = models.ForeignKey(User, on_delete=models.CASCADE)
+#     content = models.TextField()
+#     created_at = models.DateTimeField(auto_now_add=True)
+
+#     class Meta:
+#         verbose_name_plural = "Replies"
+    
