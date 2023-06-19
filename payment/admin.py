@@ -59,4 +59,4 @@ class MainPaymentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ('user__email','source_payment_id', 'alnafi_payment_id', 'easypaisa_ops_id', 'easypaisa_customer_msidn', 'card_mask','amount', 'currency', 'source', 'internal_source', 'status', 'easypaisa_fee_pkr', 'easypaisa_fed_pkr', 'ubl_captured', 'ubl_reversed', 'ubl_refund', 'ubl_approval_code', 'description', 'remarks', 'payment_proof', 'send_invoice', 'pk_invoice_number', 'us_invoice_number', 'sponsored', 'coupon_code', 'candidate_name','ubl_depositor_name', 'candidate_phone', 'bin_bank_name', 'error_reason')
     list_filter = ('source', 'internal_source', 'status', 'order_datetime', 'expiration_datetime', 'activation_datetime', 'token_paid_datetime', 'qarz', 'is_upgrade_payment')
 
-admin.site.register(Main_Payment)
+admin.site.register(Main_Payment, MainPaymentAdmin)

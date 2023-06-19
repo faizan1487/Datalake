@@ -31,7 +31,6 @@ class AlNafi_User(models.Model):
         verbose_name = "Al-Nafi User"
 
 
-
 #For Islamic Academy User/Customer:
 class IslamicAcademy_User(models.Model):
     id = models.IntegerField(primary_key=True)
