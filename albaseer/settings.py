@@ -372,22 +372,22 @@ EXCHANGE_RATE_API_KEY = 'b98736397ffdc67487a547b8'
 
 
 
-if DEBUG:
-    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-    EMAIL_HOST = 'smtp.mailtrap.io'
-    EMAIL_HOST_USER = 'b688d22fbcecbf'
-    EMAIL_HOST_PASSWORD = '8992648cb5dd18'
-    EMAIL_PORT = '2525'
-    EMAIL_USE_TLS = True
-    EMAIL_USE_SSL = False
+# if DEBUG:
+#     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+#     EMAIL_HOST = 'smtp.mailtrap.io'
+#     EMAIL_HOST_USER = 'b688d22fbcecbf'
+#     EMAIL_HOST_PASSWORD = '8992648cb5dd18'
+#     EMAIL_PORT = '2525'
+#     EMAIL_USE_TLS = True
+#     EMAIL_USE_SSL = False
 
-else:
-    # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-    EMAIL_BACKEND = 'django_ses.SESBackend'
-    MAIL_MAILER=env("MAIL_MAILER")
-    MAIL_HOST=env("MAIL_HOST")
-    MAIL_PORT=env("MAIL_PORT")
-    MAIL_USERNAME=env("MAIL_USERNAME")
-    MAIL_PASSWORD=env("MAIL_PASSWORD")
-    MAIL_ENCRYPTION=env("MAIL_ENCRYPTION")
-    MAIL_FROM_ADDRESS=env("MAIL_FROM_ADDRESS")
+# else:
+#     # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+#     EMAIL_BACKEND = 'django_ses.SESBackend'
+#     MAIL_MAILER=env("MAIL_MAILER")
+#     MAIL_HOST=env("MAIL_HOST")
+#     MAIL_PORT=env("MAIL_PORT")
+#     MAIL_USERNAME=env("MAIL_USERNAME")
+#     MAIL_PASSWORD=env("MAIL_PASSWORD")
+#     MAIL_ENCRYPTION=env("MAIL_ENCRYPTION")
+#     MAIL_FROM_ADDRESS=env("MAIL_FROM_ADDRESS")
