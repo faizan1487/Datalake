@@ -28,7 +28,7 @@ def json_to_csv(serialized_data,name):
 
 
 def main_no_of_payments(start_date,end_date,source):
-    payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe'])
+    payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual'])
     
     if source:
         payments = payments.filter(source=source)
@@ -118,13 +118,13 @@ def renewal_no_of_payments(payments):
 def search_payment(export, q, start_date, end_date, plan, request, url, product, source, origin):
     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1)
     payments = payments.exclude(amount__in=[2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
-    payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','stripe']) 
+    payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','stripe', 'UBL_Manual']) 
     # print("payments count", payments.count())
     
     
     if origin:
         if origin == 'local':
-            payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG'])
+            payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','UBL_Manual'])
         else:
             payments = payments.filter(source='stripe')
 
