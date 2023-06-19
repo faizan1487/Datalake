@@ -199,5 +199,5 @@ class Main_Payment(models.Model):
         verbose_name = "Main Payment"
         ordering = ["-order_datetime"]
 
-    def __str__(self):
-        return f"{self.status}"
+    # def __str__(self):
+    #     return f"{self.status}"
