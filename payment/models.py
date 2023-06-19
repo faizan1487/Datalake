@@ -1,6 +1,5 @@
 from django.db import models
 from datetime import datetime
-import django.utils.timezone
 from user.models import Main_User
 from products.models import Main_Product
 # Create your models here.
@@ -22,8 +21,7 @@ class Stripe_Payment(models.Model):
     address = models.CharField(max_length=300, null=True , blank=True)
     
     def __str__(self):
-        return self.payment_id
- 
+        return f"{self.customer_email}"
     
     class Meta:
         managed = True
@@ -51,8 +49,8 @@ class Easypaisa_Payment(models.Model):
     token_paid_datetime = models.DateTimeField(default=None, null=False , blank=False)
             
     def __str__(self):
-        return self.customer_email
-   
+        return f"{self.customer_email}"
+    
     class Meta:
         managed = True
         verbose_name = 'Easypaisa Payment'
@@ -77,8 +75,8 @@ class UBL_IPG_Payment(models.Model):
     status = models.CharField(max_length=50, null=True,blank=True)
         
     def __str__(self):
-        return self.customer_email
-
+        return f"{self.customer_email}"
+    
     class Meta:
         managed = True
         verbose_name = "UBL IPG Payment"
@@ -110,7 +108,7 @@ class AlNafi_Payment(models.Model):
     affiliate = models.CharField(max_length=50,null=True, blank=False)
 
     def __str__(self):
-        return self.customer_email
+        return f"{self.customer_email}"
     
     class Meta:
         managed = True
@@ -134,22 +132,13 @@ class UBL_Manual_Payment(models.Model):
     transaction_image = models.CharField(max_length=300, null=True, blank=True)
 
     def __str__(self):
-        return self.customer_email
+        return f"{self.customer_email}"
     
     class Meta:
         managed = True
         verbose_name = "UBL-Manual Payment"
         ordering = ["-deposit_date"]
         
-
-class NavbarLink(models.Model):
-    name = models.CharField(max_length=100,null=True, blank=True)
-    path = models.CharField(max_length=100,null=True, blank=True)
-    image = models.ImageField(upload_to='navbar_images')
-    group = models.CharField(max_length=100,null=True, blank=True)
-
-    def __str__(self):
-        return self.name
 
 
 #FOR MURGED ALL PAYMENT IN ONE TABLE MAIN_PAYMENT:
@@ -199,5 +188,16 @@ class Main_Payment(models.Model):
         verbose_name = "Main Payment"
         ordering = ["-order_datetime"]
 
-    # def __str__(self):
-    #     return f"{self.status}"
+    def __str__(self):
+        return f"ID: {self.id}"
+    
+
+class NavbarLink(models.Model):
+    name = models.CharField(max_length=100,null=True, blank=True)
+    path = models.CharField(max_length=100,null=True, blank=True)
+    image = models.ImageField(upload_to='navbar_images')
+    group = models.CharField(max_length=100,null=True, blank=True)
+
+    def __str__(self):
+        return self.name
+

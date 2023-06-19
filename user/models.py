@@ -22,8 +22,9 @@ class AlNafi_User(models.Model):
     isMentor = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
+
     def __str__(self):
-        return self.username
+        return f"{self.username}"
     
     class Meta:
         managed = True
@@ -47,7 +48,8 @@ class IslamicAcademy_User(models.Model):
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):
-        return self.username
+        return f"{self.username}"
+    
     
     class Meta:
         managed = True
@@ -78,7 +80,8 @@ class Main_User(models.Model):
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):
-        return self.username
+        return f"{self.email}"
+    
     
     class Meta:
         managed = True
@@ -108,9 +111,10 @@ class PSWFormRecords(models.Model):
     resume = models.FileField(upload_to="media/psw_form/resumes", blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
-
-    def _str_(self):
-        return self.full_name
+    
+    def __str__(self):
+        return f"{self.full_clean}"
+    
 
 
 
@@ -171,7 +175,8 @@ class User(AbstractBaseUser, PermissionsMixin):
     REQUIRED_FIELDS = ['name']
 
     def __str__(self):
-        return self.email
+        return f"{self.email}"
+    
 
     def has_perm(self, perm, obj=None):
         "Does the user have a specific permission?"
@@ -199,4 +204,3 @@ class NavbarLink(models.Model):
     def __str__(self):
         return self.name
     
-
