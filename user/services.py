@@ -32,6 +32,7 @@ def upload_csv_to_s3(df,file_name):
     bucket_name = env("AWS_STORAGE_BUCKET_NAME")
     object_name = file_name
     upload_to_s3 = s3.put_object(Bucket=bucket_name, Key=object_name, Body=df)
+    print(upload_to_s3)
     return s3
 
 def paying_users_details(query_time, is_converted):

@@ -202,7 +202,4 @@ class Main_Payment(models.Model):
         ordering = ["-order_datetime"]
 
     def __str__(self):
-        if self.status:
-            return self.status
-        else:
-            return "-"
+        return self.source
