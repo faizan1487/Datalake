@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (SearchPayments, GetUBLPayments, AlnafiPayment,RenewalPayments,GetEasypaisaPayments,
-                    NoOfPayments,RenewalNoOfPayments,PaymentValidation,PaymentDelete,MainPaymentAPIView,UBLManualPayment)
+                    NoOfPayments,RenewalNoOfPayments,PaymentValidation,PaymentDelete,MainPaymentAPIView,UBLManualPayment,TotalNoOfPayments)
 from payment.webhooks import enrollment_created_webhook
 
 urlpatterns = [
@@ -12,6 +12,7 @@ urlpatterns = [
     path("searchpayment/", SearchPayments.as_view(), name='search-payments'),
     path("searchalnafipayment/", RenewalPayments.as_view(), name='search-alnafi-payments'),
     path("nofpayments/", NoOfPayments.as_view(), name='no-of-payments'),
+    path("totalpayments/", TotalNoOfPayments.as_view(), name='totla-payments'),
     path("nofrenewalpayments/", RenewalNoOfPayments.as_view(), name='no-of-renewal-payments'),
     path("paymentvalidation/", PaymentValidation.as_view(), name='payment-validation'),
     # path("stripe/", GetStripePayments.as_view(), name='all'),  #For all stripe payemnts

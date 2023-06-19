@@ -82,6 +82,14 @@ def main_no_of_payments(start_date,end_date,source):
 
     return response_data
 
+def no_of_payments(source):
+    payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual'])
+
+    if source:
+        payments = payments.filter(source=source)
+        
+    return payments.count()
+
 
 def renewal_no_of_payments(payments):
     current_month = datetime.now().month

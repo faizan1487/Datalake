@@ -4,7 +4,7 @@ from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_P
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
-from .services import (json_to_csv, renewal_no_of_payments,search_payment,main_no_of_payments)
+from .services import (json_to_csv, renewal_no_of_payments,search_payment,main_no_of_payments,no_of_payments)
 # easypaisa_pay, ubl_pay, stripe_pay, stripe_no_payments,ubl_no_payments,easypaisa_no_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -453,7 +453,15 @@ class NoOfPayments(APIView):
         response_data = {"payments": payments}
         return Response(response_data)
     
+
+class TotalNoOfPayments(APIView):
+    def get(self, request):
+        source = self.request.GET.get('source', None) or None
         
+        payments = no_of_payments(source)
+        response_data = {"payments": payments}
+        return Response(response_data)
+
         
 #Optimized  
 #shows alnafi/mainsite no of payments on each date
