@@ -60,13 +60,20 @@ def user_created_webhook(request):
     # print("data string", data_string)
     json_data = json.loads(data_string)
     # print("json_data", json_data)
-    payload_data = {}
+    # payload_data = {}
+    # payload_data['first_name'] = json_data['name']
+    # payload_data['phone'] = json_data['phone_number']
+    # payload_data['email'] = json_data['email']
+    # payload_data['city'] = json_data['additional_attributes']['city']
+    # payload_data['country'] = json_data['additional_attributes']['country']
 
-    payload_data['first_name'] = json_data['name']
-    payload_data['phone'] = json_data['phone_number']
-    payload_data['email'] = json_data['email']
-    payload_data['city'] = json_data['additional_attributes']['city']
-    payload_data['country'] = json_data['additional_attributes']['country']
+    payload_data = {
+        'first_name': json_data['name'] if 'name' in json_data else None,
+        'phone': json_data['phone_number'] if 'phone_number' in json_data else None,
+        'email': json_data['email'] if 'email' in json_data else None,
+        'city': json_data['additional_attributes']['city'] if 'additional_attributes' in json_data and 'city' in json_data['additional_attributes'] else None,
+        'country': json_data['additional_attributes']['country'] if 'additional_attributes' in json_data and 'country' in json_data['additional_attributes'] else None
+        }
 
     try:
         user = ChatwoorUser.objects.get(email=payload_data['email'])
