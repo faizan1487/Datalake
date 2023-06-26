@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 # Create your views here.
-from .models import AffiliateUser
+from .models import AffiliateUser, AffiliateUniqueClick
 from django.db.models import Q
 from django.db.models import Count
 from .serializers import AffiliateSerializer, AffiliateClickSerializer
@@ -68,3 +68,12 @@ class CreateAffiliateClick(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+class UserDelete(APIView):
+    def get(self, request):
+        objs = AffiliateUniqueClick.objects.all()
+        objs.delete()
+        return Response('deleted')
