@@ -29,7 +29,7 @@ import json
 from django.db.models import F, Max, Q
 from django.db.models.functions import Upper
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.dispatch import Signal
 
 
 class MyPagination(PageNumberPagination):
@@ -37,7 +37,7 @@ class MyPagination(PageNumberPagination):
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100           
-from django.dispatch import Signal
+
 post_save = Signal()
 # delete this api before production
 class AlnafiPayment(APIView):
@@ -102,10 +102,11 @@ class PaymentDelete(APIView):
         return Response('deleted')
 
 #optimized 
+
 class RenewalPayments(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    # required_groups = ['Sales', 'Admin','Support']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -211,7 +212,7 @@ class RenewalPayments(APIView):
 class SearchPayments(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    # required_groups = ['Sales', 'Admin','Support','MOC']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None

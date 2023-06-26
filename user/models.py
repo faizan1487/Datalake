@@ -21,6 +21,7 @@ class AlNafi_User(models.Model):
     affiliate_code = models.CharField(max_length=255, null=True, blank=True)
     isMentor = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+    login_source = models.CharField(max_length=100, null=True, blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):

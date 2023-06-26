@@ -133,7 +133,7 @@ class AlnafiUser(APIView):
 class GetUsers(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
-    # required_groups = ['Support', 'Admin']
+    # required_groups = ['Support', 'Admin','MOC']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         is_converted = self.request.GET.get('is_converted', None) or None
@@ -174,7 +174,7 @@ class GetUsers(APIView):
 class GetUser(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
-    # required_groups = ['Support', 'Admin', 'Sales']
+    # required_groups = ['Support', 'Admin', 'MOC']
     def get(self, request, id):
         user_id = id
         # email = self.request.GET.get('email', None) or None
@@ -258,7 +258,6 @@ class GetNoOfUsersMonth(APIView):
                             'islamic_no_of_users':islamic_no_of_users}
             
         return Response(response_data)
-
 
 
             

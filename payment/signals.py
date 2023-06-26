@@ -202,5 +202,3 @@ def get_USD_rate():
     cache.set("usd_details", json.dumps(usd_details), 60*120)
     # print("usd_details",usd_details)
     return usd_details
-
-
