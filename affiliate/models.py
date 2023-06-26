@@ -2,6 +2,7 @@ from django.db import models
 
 # Create your models here.
 class AffiliateUser(models.Model):
+    source_id = models.CharField(max_length=100 , null=True , blank=True)
     username = models.CharField(max_length=100 , null=True , blank=True)
     first_name = models.CharField(max_length=100 , null=True , blank=True)
     last_name = models.CharField(max_length=100 , null=True , blank=True)
@@ -20,9 +21,6 @@ class AffiliateUser(models.Model):
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True , blank=True)
     
-
-
-
     def __str__(self):
         return f"{self.email}"
     
@@ -32,6 +30,7 @@ class AffiliateUser(models.Model):
 
 
 class AffiliateUniqueClick(models.Model):
+    source_id = models.CharField(max_length=100 , null=True , blank=True)
     ip = models.CharField(max_length=100 , null=True , blank=True)
     page_url = models.CharField(max_length=100 , null=True , blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
