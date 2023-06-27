@@ -8,7 +8,7 @@ from requests.exceptions import RequestException
 @receiver(post_save, sender=AlNafi_User)
 def send_alnafi_lead_post_request(sender, instance, **kwargs):
     print("signal running")
-    alnafi_user = usersignal(instance,sender)    
+    alnafi_user = usersignal(instance)    
 
 @receiver(post_save, sender=IslamicAcademy_User)
 def send_islamic_lead_post_request(sender, instance, created, **kwargs):
@@ -25,7 +25,7 @@ def send_psw_lead_post_request(sender, instance, created, **kwargs):
 
 
 
-def usersignal(instance,sender):
+def usersignal(instance):
     # Disconnect the signal temporarily
     post_save.disconnect(send_alnafi_lead_post_request, sender=AlNafi_User)
 
