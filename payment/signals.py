@@ -102,8 +102,8 @@ def create_lead(instance,headers,stage_headers,payment_user):
                 print("Lead created successfully!")
     except RequestException as e:
         print('Error occurred while making the request:', str(e))
-        # print('Error:', response.status_code)
-        # print('Error:', response.text)
+        print('Error:', response.status_code)
+        print('Error:', response.text)
         print('Error:', stage_response.status_code)
         print('Error:', stage_response.text)
 
@@ -124,20 +124,20 @@ def create_customer(instance,headers,stage_headers,full_name,payment_user):
     stage_response = requests.post(stage_customer_url, headers=stage_headers, json=customer_data)
     if response.status_code == 200 & stage_response.status_code==200:
         print("Customer created successfully!")
+    else:
+        print('Error occurred while creating customer:')      
+        print('Error:', stage_response.status_code)
+        print('Error:', stage_response.text)
+        print('Error:', response.status_code)
+        print('Error:', response.text)
 
 
 def create_payment(instance,headers,stage_headers,payment_user):
-    url = 'https://crm.alnafi.com/api/resource/Payment Entry?fields=["al_nafi_payment_id"]'
-    stage_url = 'http://13.59.168.46/api/resource/Payment Entry'
-
-    stage_response = requests.get(stage_url, headers=stage_headers)
-    response = requests.get(url, headers=headers)
+    # url = 'https://crm.alnafi.com/api/resource/Payment Entry?fields=["al_nafi_payment_id"]'
+    # response = requests.get(url, headers=headers)
     #get payment using alnafi payment id from instance
-    payment_data = response.json()
-    stage_payment_data = stage_response.json()
+    # payment_data = response.json()
     # print("prod", payment_data)
-    # print("stage",len(stage_payment_data['data']))
-    # print("stage",stage_payment_data)
 
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
@@ -187,16 +187,38 @@ def create_payment(instance,headers,stage_headers,payment_user):
         data1["paid_from"] = "Debtors - A"
     # print("paid from",data1["paid_from"])
     
-    try:
-        response = requests.post(url, headers=headers, json=data1)
-        response_stage = requests.post(stage_url, headers=stage_headers, json=data1)
-        response.raise_for_status() 
-        response_stage.raise_for_status() 
-        payment_data = response.json()
-        stage_payment_data = response.json()
-        # print(payment_data)
-        if response.status_code == 200 & response_stage.status_code == 200:
-            print("Payment created successfully!")     
+    stage_url = 'http://13.59.168.46/api/resource/Payment Entry?fields=["al_nafi_payment_id"]'
+    stage_response = requests.get(stage_url, headers=stage_headers)
+    stage_payment_data = stage_response.json()
+    print("stage",len(stage_payment_data['data']))
+    print("stage",stage_payment_data)
+
+    try: 
+        # url = 'https://crm.alnafi.com/api/resource/Payment Entry'
+        stage_url = 'http://13.59.168.46/api/resource/Payment Entry'
+
+        payment_id = instance.payment_id
+        for item in stage_payment_data['data']:
+            print(type(item['al_nafi_payment_id']))
+            print("payment id",type(payment_id))
+            if item['al_nafi_payment_id'] == str(payment_id):
+                print("put request")
+                # Perform the desired action when the payment_id matches
+                # response = requests.post(url, headers=headers, json=data1)
+                response_stage = requests.put(stage_url, headers=stage_headers, json=data1)
+                print("Payment ID found!")
+                break
+        else:
+            # response = requests.post(url, headers=headers, json=data1)
+            response_stage = requests.post(stage_url, headers=stage_headers, json=data1)
+            # response.raise_for_status() 
+            response_stage.raise_for_status() 
+            # payment_data = response.json()
+            stage_payment_data = response_stage.json()
+            # print(payment_data)
+            if response_stage.status_code == 200:
+                # response.status_code == 200 & 
+                print("Payment created successfully!")     
     except RequestException as e:
         print('Error occurred while creating payment:', str(e)) 
         # print('Error:', response.status_code)
@@ -207,14 +229,11 @@ def create_payment(instance,headers,stage_headers,payment_user):
 
 
 def get_USD_rate():
-
     usd_details = cache.get("usd_details")
-
     if usd_details:
         # print(usd_details)
         # print("usd_details", usd_details["PKR"])
         return json.loads(usd_details)
-
     usd_details = {}
     url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/USD"
     response = requests.get(url).json()

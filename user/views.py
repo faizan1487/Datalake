@@ -148,7 +148,13 @@ class GetUsers(APIView):
         # if users is None:
         users = search_users(q,start_date,end_date,is_converted,source)
         # cache.set(url, users) 
-        
+        # print(users['converted_users'])
+        # for user in users['converted_users']:
+        #     print(user)
+        #     payment = user['email'].user_payments.values("product")
+        #     print(payment)
+
+
         serializer = MainUserSerializer(users['converted_users'], many=True)
         if export =='true':
             try:
@@ -165,7 +171,16 @@ class GetUsers(APIView):
         else:
             for i in range(len(serializer.data)):
                 serializer.data[i]['is_paying_customer'] = users['converted'][i]
-                
+            
+            for info in users['products']:
+                email = info.get('user__email')
+                product_name = info.get('product__product_name')
+
+                for user_dict in serializer.data:
+                    if user_dict.get('email') == email:
+                        user_dict['product'] = product_name
+                     
+
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(serializer.data, request)
             return paginator.get_paginated_response(paginated_queryset)
