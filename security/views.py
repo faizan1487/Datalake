@@ -26,14 +26,11 @@ env.read_env()
 
 class CreateScan(APIView):
     def get(self, request):
-        
-
         scans = Scan.objects.values(
             'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__email',
             'scan_progress', 'testing_method', 'target', 'http_or_https', 'application_type',
             'findings_and_recommendations', 'file_upload', 'poc'
         )
-
         scan_ids = [scan['id'] for scan in scans]
 
         # Prefetch comments and related data
@@ -75,23 +72,26 @@ class CreateScan(APIView):
             scan_data.append(scan_dict)
 
         result = {"scans": scan_data}
-
-        
-
-
         return Response(result)
 
     
     def post(self, request):
         data = request.data
-        team_member = User.objects.get(email=data['assigned_to'])
-        data['assigned_to'] = team_member.id
+        assigned_to_email = data.get('assigned_to')
+        if assigned_to_email:
+            try:
+                team_member = User.objects.get(email=data['assigned_to'])
+                data['assigned_to'] = team_member.id
+            except User.DoesNotExist:
+                data['assigned_to'] = None
+        else:
+            data['assigned_to'] = None
         serializer = ScanSerializer(data=data)
         
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        print(serializer.errors)
+        # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
     
     

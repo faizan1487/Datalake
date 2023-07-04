@@ -83,7 +83,7 @@ def main_no_of_payments(start_date,end_date,source):
     return response_data
 
 def no_of_payments(source):
-    payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual'])
+    payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual','UBL_DD'])
 
     if source:
         payments = payments.filter(source=source)

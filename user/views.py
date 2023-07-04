@@ -141,6 +141,7 @@ class GetUsers(APIView):
         end_date = self.request.GET.get('end_date', None) or None
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
+        product = self.request.GET.get('product', None) or None
         url = request.build_absolute_uri()
         
         
@@ -179,7 +180,10 @@ class GetUsers(APIView):
                 for user_dict in serializer.data:
                     if user_dict.get('email') == email:
                         user_dict['product'] = product_name
-                     
+
+
+            
+
 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(serializer.data, request)
