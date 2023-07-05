@@ -10,8 +10,8 @@ def create_or_update_main_product_from_alnafi_product(sender, instance, **kwargs
     try:
         main_product = Main_Product.objects.get(
             source='AL-NAFI', id=instance.id)      
-        main_product.amount_pkr = 
-        main_product.amount_usd = 
+        main_product.amount_pkr = instance.amount_pkr
+        main_product.amount_usd = instance.amount_usd
         main_product.product_language = instance.language
         main_product.allow_coupon = instance.allow_coupon
         main_product.save()
