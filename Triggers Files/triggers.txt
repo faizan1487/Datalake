@@ -9,14 +9,14 @@
 ```
 DELIMITER //
 
-CREATE TRIGGER ubl_ipg_to_main_payment_trigger
-AFTER INSERT ON payment_ubl_ipg_payment
+CREATE TRIGGER ubl_ipg_to_main_payment_trigger_insert
+AFTER INSERT ON payment_stripe_payment
 FOR EACH ROW
 BEGIN
     DECLARE user_id integer;
     DECLARE product_id integer;
-    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
-    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    SELECT id INTO user_id FROM user_main_user WHERE BINARY email = NEW.customer_email LIMIT 1;
+    SELECT id INTO product_id FROM products_main_product WHERE BINARY product_name = BINARY NEW.product_name LIMIT 1;
 
     INSERT INTO payment_main_payment(
         source_payment_id,
@@ -64,8 +64,8 @@ FOR EACH ROW
 BEGIN
     DECLARE user_id integer;
     DECLARE product_id integer;
-    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
-    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    SELECT id INTO user_id FROM user_main_user WHERE BINARY email = NEW.customer_email LIMIT 1;
+    SELECT id INTO product_id FROM products_main_product WHERE BINARY product_name = BINARY NEW.product_name LIMIT 1;
 
     UPDATE payment_main_payment SET
         alnafi_payment_id = NEW.order_id,
@@ -114,8 +114,8 @@ FOR EACH ROW
 BEGIN
     DECLARE user_id integer;
     DECLARE product_id integer;
-    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
-    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    SELECT id INTO user_id FROM user_main_user WHERE BINARY email = NEW.customer_email LIMIT 1;
+    SELECT id INTO product_id FROM products_main_product WHERE BINARY product_name = BINARY NEW.product_name LIMIT 1;
 
     INSERT INTO payment_main_payment(
         easypaisa_ops_id,
@@ -171,8 +171,8 @@ FOR EACH ROW
 BEGIN
     DECLARE user_id integer;
     DECLARE product_id integer;
-    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
-    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    SELECT id INTO user_id FROM user_main_user WHERE BINARY email = NEW.customer_email LIMIT 1;
+    SELECT id INTO product_id FROM products_main_product WHERE BINARY product_name = BINARY NEW.product_name LIMIT 1;
 
     UPDATE payment_main_payment SET
         easypaisa_ops_id = NEW.ops_id,
@@ -255,8 +255,8 @@ BEGIN
     DECLARE product_id integer;
     DECLARE currency_type varchar(3);
     DECLARE amount integer;
-    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
-    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    SELECT id INTO user_id FROM user_main_user WHERE BINARY email = NEW.customer_email LIMIT 1;
+    SELECT id INTO product_id FROM products_main_product WHERE BINARY product_name = BINARY NEW.product_name LIMIT 1;
     IF NEW.amount_pkr > 0 THEN
         SET currency_type = 'PKR';
         SET amount = NEW.amount_pkr;
@@ -327,8 +327,8 @@ BEGIN
     DECLARE product_id integer;
     DECLARE currency_type varchar(3);
     DECLARE amount integer;
-    SELECT id INTO user_id FROM user_main_user WHERE email = NEW.customer_email;
-    SELECT id INTO product_id FROM products_main_product WHERE product_name = NEW.product_name;
+    SELECT id INTO user_id FROM user_main_user WHERE BINARY email = NEW.customer_email LIMIT 1;
+    SELECT id INTO product_id FROM products_main_product WHERE BINARY product_name = BINARY NEW.product_name LIMIT 1;
     IF NEW.amount_pkr > 0 THEN
         SET currency_type = 'PKR';
         SET amount = NEW.amount_pkr;
