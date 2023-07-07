@@ -13,7 +13,7 @@ class AlnafiProduct(APIView):
         try:
             instance = Alnafi_Product.objects.get(id=product_id)
             serializer = AlNafiMainSiteProductSerializer(instance, data=data)
-        except Alnafi_Product.DoesNotExist:
+        except:
             serializer = AlNafiMainSiteProductSerializer(data=data)
 
         if serializer.is_valid():

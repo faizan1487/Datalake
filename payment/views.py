@@ -58,22 +58,26 @@ class AlnafiPayment(APIView):
 
 
 class UBLManualPayment(APIView):
-    # def get(self,request):
-    #     alnafi_payment = AlNafi_Payment.objects.values('id', 'order_id', 'payment_id')
-    #     serializer = GetAlnafipaymentSerializer(alnafi_payment, many=True)
-    #     return Response(serializer.data)
+    def get(self,request):
+        alnafi_payment = UBL_Manual_Payment.objects.all()
+        serializer = UBL_Manual_PaymentSerializer(alnafi_payment, many=True)
+        return Response(serializer.data)
     
     def post(self, request):
         data = request.data
-        print(data)
-        serializer = UBL_Manual_PaymentSerializer(data=data)
-        
+        transaction_id = data.get('transaction_id')
+
+        try:
+            instance = UBL_Manual_Payment.objects.get(transaction_id=transaction_id)
+            serializer = UBL_Manual_PaymentSerializer(instance, data=data)
+        except:
+            serializer = UBL_Manual_PaymentSerializer(data=data)
+
         if serializer.is_valid():
             serializer.save()
-            return Response({'status':"Success!"})
-
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class MainPaymentAPIView(APIView):

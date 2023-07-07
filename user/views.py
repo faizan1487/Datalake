@@ -126,7 +126,7 @@ class AlnafiUser(APIView):
         try:
             instance = AlNafi_User.objects.get(email=email)
             serializer = AlnafiUserSerializer(instance, data=data)
-        except AlNafi_User.DoesNotExist:
+        except:
             serializer = AlnafiUserSerializer(data=data)
 
         if serializer.is_valid():
