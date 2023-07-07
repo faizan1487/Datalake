@@ -222,10 +222,11 @@ class SearchPayments(APIView):
         export = self.request.GET.get('export', None) or None
         plan = self.request.GET.get('plan', None) or None   
         product = self.request.GET.get('product', None) or None  
+        status = self.request.GET.get('status', None) or None
         url = request.build_absolute_uri()
         # payments = cache.get(url+'payments')
         # if payments is None:
-        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin)
+        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)
             # cache.set(url+'payments', payments)   
         
         

@@ -123,21 +123,28 @@ def renewal_no_of_payments(payments):
 
 
 
-def search_payment(export, q, start_date, end_date, plan, request, url, product, source, origin):
+def search_payment(export, q, start_date, end_date, plan, request, url, product, source, origin,status):
     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1)
     payments = payments.exclude(amount__in=[2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
     payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','stripe', 'UBL_DD']) 
-    # print("payments count", payments.count())
-    
-    
+    payments = payments.exclude(source='UBL_DD', status="0")
+
+    # if status:
+    #     payments = payments.filter(status=status)
+
     if origin:
         if origin == 'local':
             payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','UBL_DD'])
         else:
             payments = payments.filter(source='stripe')
 
+    # print(payments)
     if source:
         payments = payments.filter(source=source)
+
+
+
+    # print(payments)
 
     if not start_date:
         first_payment = payments.exclude(order_datetime=None).last()
@@ -161,6 +168,7 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
             query &= Q(product__product_name__icontains=keyword)
             payments = payments.filter(query)
 
+    
             
     if plan:
         if plan == 'yearly':

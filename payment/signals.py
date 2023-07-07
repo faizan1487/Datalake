@@ -8,6 +8,7 @@ from user.models import Main_User
 from django.core.cache import cache
 from django.conf import settings
 import json
+from datetime import datetime
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def send_payment_post_request(sender, instance, **kwargs):
@@ -36,7 +37,7 @@ def send_payment_post_request(sender, instance, **kwargs):
             
             # uncomment this check condition for customer
             if data['data'][i]['name'] == full_name:
-                # print("customer exists")
+                print("customer exists")
                 payment = create_payment(instance,headers,payment_user)
                 break
         else:
@@ -48,7 +49,7 @@ def send_payment_post_request(sender, instance, **kwargs):
             # print("payment_user[0].erp_lead_id",payment_user[0].erp_lead_id)
             for i in range(len(lead_data['data'])):
                 if lead_data['data'][i]['name'] == payment_user[0].erp_lead_id:
-                    # print("lead exists")
+                    print("lead exists")
                     #createe customer with lead id
                     customer = create_customer(instance,headers,full_name,payment_user)
                     #then create payment from that customer
@@ -117,6 +118,7 @@ def create_lead(instance,headers,payment_user):
 
 def create_customer(instance,headers,full_name,payment_user):
     customer_url = 'https://crm.alnafi.com/api/resource/Customer'
+    print("payment_user",payment_user)
     print("payment_user[0].erp_lead_id",payment_user[0].erp_lead_id)
     customer_data = {
         "customer_name": full_name or None,
@@ -174,8 +176,10 @@ def create_payment(instance,headers,payment_user):
         "received_amount": instance.amount_usd * usd_rate['PKR'] if instance.amount_usd != 0 else instance.amount_pkr,
         "source_exchange_rate": usd_rate['PKR'],
         "reference_no": instance.payment_id,
-        "reference_date": str(instance.created_at),
+        "reference_date": str(instance.created_at) if instance.created_at is not None else str(datetime.now()),
     }
+    # print("instance.amount_usd",instance.amount_usd)
+    # print('instance.amount_pkr',instance.amount_pkr)
     # print("received_amount",data1["received_amount"])
     # print("data1[paid_amount]",data1["paid_amount"])
     if instance.amount_pkr == 0:
@@ -184,9 +188,11 @@ def create_payment(instance,headers,payment_user):
         data1["paid_from"] = "Debtors - A"
     # print("paid from",data1["paid_from"])
     
-    url = 'https://crm.alnafi.com/api/resource/Payment Entry?fields=["al_nafi_payment_id"]'
+    url = 'https://crm.alnafi.com/api/resource/Payment Entry?fields=["al_nafi_payment_id"]&limit_start=0&limit_page_length=5000'
     response = requests.get(url, headers=headers)
     payment_data = response.json()
+    # print("payment_data",payment_data)
+    # print("len payment data",len(payment_data['data']))
     try: 
         url = 'https://crm.alnafi.com/api/resource/Payment Entry'
         
