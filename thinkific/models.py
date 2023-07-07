@@ -20,9 +20,9 @@ class Thinkific_User(models.Model):
     affiliate_payout_email = models.EmailField(max_length=255, null=True, blank=True)
     administered_course_ids = models.JSONField(null=True, blank=True)
     custom_profile_fields = models.JSONField(null=True, blank=True)
-
+    
     def __str__(self):
-        return self.email
+        return f"{self.email}"
     
     class Meta:
         managed = True
@@ -48,8 +48,7 @@ class Thinkific_Users_Enrollments(models.Model):
     course_name = models.CharField(max_length=255, null=True, blank=True)
     
     def __str__(self):
-        return self.email
-    
+        return f"{self.email}"
     class Meta:
         managed = True
         verbose_name = "Thinkific Users Enrollment"

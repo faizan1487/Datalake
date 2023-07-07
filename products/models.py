@@ -69,7 +69,7 @@ class IslamicAcademy_Product(models.Model):
     stock_status = models.CharField(max_length=20, default='instock')
 
     def __str__(self):
-        return self.name
+        return f"{self.name}"
 
     class Meta:
         managed = True
@@ -112,9 +112,9 @@ class Main_Product(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
     description = models.CharField(max_length=255, null=True, blank=True)
     stock_status = models.CharField(max_length=20, default='instock')
-
+    
     def __str__(self):
-        return self.product_name
+        return f"{self.product_name}"
 
     class Meta:
         managed = True

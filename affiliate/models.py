@@ -39,7 +39,7 @@ class AffiliateUniqueClick(models.Model):
     usd_price = models.IntegerField(default=0)
     
     def __str__(self):
-        return self.ip
+        return f"{self.ip}"
     
     class Meta:
         verbose_name_plural = "AffiliateUniqueClicks"
