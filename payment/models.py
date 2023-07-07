@@ -94,18 +94,18 @@ class AlNafi_Payment(models.Model):
     expiration_datetime = models.DateTimeField(null=True, blank=True)
     source = models.CharField(max_length=150, null=True, blank=True)
     order_id = models.CharField(max_length=150, null=True, blank=False)
-    date_of_activation = models.DateField(null=True, blank=False)
+    date_of_activation = models.DateField(null=True, blank=True)
     created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
     qarz = models.BooleanField(default=False)
-    remarks = models.CharField(max_length=150,null=True, blank=False)
-    payment_proof = models.CharField(max_length=150, null=True, blank=False)
+    remarks = models.CharField(max_length=150,null=True, blank=True)
+    payment_proof = models.CharField(max_length=150, null=True, blank=True)
     send_invoice = models.BooleanField(default=True, null=True, blank=True)
     pk_invoice_number= models.CharField(max_length = 101,null=True,blank=True)
     us_invoice_number= models.CharField(max_length = 101,null=True,blank=True)
     sponsored = models.BooleanField(default=False)
-    coupon_code = models.CharField(max_length=200, null=True, blank=False)
+    coupon_code = models.CharField(max_length=200, null=True, blank=True)
     is_upgrade_payment = models.BooleanField(default=False)
-    affiliate = models.CharField(max_length=200,null=True, blank=False)
+    affiliate = models.CharField(max_length=200,null=True, blank=True)
 
     def __str__(self):
         return f"{self.customer_email}"
