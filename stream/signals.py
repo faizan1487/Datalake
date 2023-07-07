@@ -7,6 +7,6 @@ from user.signals import usersignal
 
 @receiver(post_save, sender=StreamUser)
 def send_lead_post_request(sender, instance, created, **kwargs):
-    if created:
-        stream_user = usersignal(instance)
+    source='Stream'
+    stream_user = usersignal(instance,source)
         

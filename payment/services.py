@@ -127,10 +127,13 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1)
     payments = payments.exclude(amount__in=[2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
     payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','stripe', 'UBL_DD']) 
-    payments = payments.exclude(source='UBL_DD', status="0")
+    
+    statuses = ["0",False,0]
+    payments = payments.exclude(source='UBL_DD', status__in=statuses)
+    # payments = payments.exclude(Q(source='UBL_DD') & Q(status="0"))
 
-    # if status:
-    #     payments = payments.filter(status=status)
+    if status:
+        payments = payments.filter(status=status)
 
     if origin:
         if origin == 'local':

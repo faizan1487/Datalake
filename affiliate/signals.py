@@ -7,5 +7,5 @@ from user.signals import usersignal
 
 @receiver(post_save, sender=AffiliateUser)
 def send_lead_post_request(sender, instance, created, **kwargs):
-    if created:
-        affiliate_user = usersignal(instance)
+    source='Affiliate'
+    affiliate_user = usersignal(instance,source)

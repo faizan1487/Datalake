@@ -7,6 +7,5 @@ from user.signals import usersignal
 
 @receiver(post_save, sender=ChatwoorUser)
 def send_lead_post_request(sender, instance, created, **kwargs):
-    if created:
-        chatwoot_user = usersignal(instance)
-        
+    source='Chatwoot'
+    chatwoot_user = usersignal(instance,source)

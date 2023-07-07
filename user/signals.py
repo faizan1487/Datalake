@@ -15,13 +15,13 @@ def send_alnafi_lead_post_request(sender, instance, **kwargs):
 def send_islamic_lead_post_request(sender, instance, created, **kwargs):
     # print("islamic user signal")
     source='Islamic Academy'
-    islamic_user = usersignal(instance)
+    islamic_user = usersignal(instance,source)
 
 
 @receiver(post_save, sender=PSWFormRecords)
 def send_psw_lead_post_request(sender, instance, created, **kwargs):
     source='PSWFormRecords'
-    psw_form_user = usersignal(instance)
+    psw_form_user = usersignal(instance,source)
 
 
 
