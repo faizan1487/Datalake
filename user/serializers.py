@@ -15,26 +15,30 @@ class AlnafiUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AlNafi_User
         fields = ('username','first_name','last_name','email','phone','isAffiliate','isMentor','country','created_at',)
-    def create(self,validated_data):
-      email = validated_data.get("email")
+        
+    def create(self, validated_data):
+        email = validated_data.get("email")
+        instance = self.instance
+
+        if email and instance:
+            try:
+                obj = AlNafi_User.objects.exclude(pk=instance.pk).get(email=email)
+            except AlNafi_User.DoesNotExist:
+                obj = None
+        else:
+            obj = None
+
+        # If the object exists, update its fields with the validated data
+        if obj:
+            for key, value in validated_data.items():
+                setattr(obj, key, value)
+            obj.save()
+            return obj
+
+        return super().create(validated_data)
+          # obj = AlNafi_User.objects.create(**validated_data)
       
-      if email:
-        try:
-          obj = AlNafi_User.objects.get(email=email)
-        except AlNafi_User.DoesNotExist:
-              obj = None
-      else:
-          obj = None
       
-      # If the object exists, update its fields with the validated data
-      if obj:
-          for key, value in validated_data.items():
-              setattr(obj, key, value)
-          obj.save()
-      else:
-          obj = AlNafi_User.objects.create(**validated_data)
-      
-      return obj
 # For Islamic Academy Users:
 class IslamicAcademyUserSerializer(serializers.ModelSerializer):
     class Meta:

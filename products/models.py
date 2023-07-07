@@ -38,7 +38,7 @@ class Alnafi_Product(models.Model):
     courses = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self):
-        return self.name
+        return f"name {self.name}"
 
     class Meta:
         managed = True
@@ -84,17 +84,17 @@ class Main_Product(models.Model):
     )
     trainers = models.ManyToManyField('trainers.Trainer')
     source = models.CharField(max_length=20, null=True, blank=True)
-    product_name = models.CharField(max_length=255)
-    product_slug = models.SlugField()
-    created_at = models.DateTimeField(auto_now_add=True)
+    product_name = models.CharField(max_length=255,null=True, blank=True)
+    product_slug = models.SlugField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
     modified_at = models.DateTimeField(auto_now=True, null=True, blank=True)
-    product_type = models.CharField(max_length=50)
-    product_plan = models.CharField(max_length=50)
-    amount_pkr = models.DecimalField(max_digits=10, decimal_places=2)
-    amount_usd = models.DecimalField(max_digits=10, decimal_places=2)
-    amount_gbp = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    old_amount_pkr = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-    old_amount_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    product_type = models.CharField(max_length=250,null=True, blank=True)
+    product_plan = models.CharField(max_length=250,null=True, blank=True)
+    amount_pkr = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
+    amount_usd = models.DecimalField(max_digits=10, decimal_places=2,null=True, blank=True)
+    amount_gbp = models.DecimalField(max_digits=10, decimal_places=2, default=0,null=True, blank=True)
+    old_amount_pkr = models.DecimalField(max_digits=10, decimal_places=2, default=0,null=True, blank=True)
+    old_amount_usd = models.DecimalField(max_digits=10, decimal_places=2, default=0,null=True, blank=True)
     legacy_fee_pkr = models.IntegerField(default=0, null=True, blank=True)
     legacy_fee_usd = models.IntegerField(default=0, null=True, blank=True)
     legacy_available = models.BooleanField(default=False)

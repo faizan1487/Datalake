@@ -121,7 +121,13 @@ class UsersDelete(APIView):
 class AlnafiUser(APIView):
     def post(self, request):
         data = request.data
-        serializer = AlnafiUserSerializer(data=data)
+        email = data.get("email")
+
+        try:
+            instance = AlNafi_User.objects.get(email=email)
+            serializer = AlnafiUserSerializer(instance, data=data)
+        except AlNafi_User.DoesNotExist:
+            serializer = AlnafiUserSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
