@@ -76,8 +76,10 @@ class CreateScan(APIView):
 
     
     def post(self, request):
-        data = request.data
+        data = request.data.copy()
         assigned_to_email = data.get('assigned_to')
+        scan_id = data.get('id')
+
         if assigned_to_email:
             try:
                 team_member = User.objects.get(email=data['assigned_to'])
@@ -86,12 +88,18 @@ class CreateScan(APIView):
                 data['assigned_to'] = None
         else:
             data['assigned_to'] = None
-        serializer = ScanSerializer(data=data)
+        
+        try:
+            instance = Scan.objects.get(id=scan_id)
+            serializer = ScanSerializer(instance, data=data)
+        except:
+            serializer = ScanSerializer(data=data)
+
         
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # print(serializer.errors)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
     
     

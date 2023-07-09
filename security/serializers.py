@@ -6,6 +6,24 @@ class ScanSerializer(serializers.ModelSerializer):
         model = Scan
         fields = '__all__'
 
+    def update(self, instance, validated_data):
+        instance.scan_type = validated_data.get('scan_type', instance.scan_type)
+        instance.scan_date = validated_data.get('scan_date', instance.scan_date)
+        instance.severity = validated_data.get('severity', instance.severity)
+        instance.remediation = validated_data.get('remediation', instance.remediation)
+        instance.assigned_to = validated_data.get('assigned_to', instance.assigned_to)
+        instance.scan_progress = validated_data.get('scan_progress', instance.scan_progress)
+        instance.testing_method = validated_data.get('testing_method', instance.testing_method)
+        instance.target = validated_data.get('target', instance.target)
+        instance.http_or_https = validated_data.get('http_or_https', instance.http_or_https)
+        instance.application_type = validated_data.get('application_type', instance.application_type)
+        instance.findings_and_recommendations = validated_data.get('findings_and_recommendations', instance.findings_and_recommendations)
+        instance.file_upload = validated_data.get('file_upload', instance.file_upload)
+        instance.poc = validated_data.get('poc', instance.poc)
+
+        instance.save()
+        return instance
+
 
 class CommentSerializer(serializers.ModelSerializer):
     class Meta:
