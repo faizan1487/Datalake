@@ -129,8 +129,15 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
     def put(self, request, pk):
         # data = request.data
         mutable_data = request.data.copy()
-        team_member = User.objects.get(email=mutable_data['assigned_to'])
-        mutable_data['assigned_to'] = team_member.id
+        assigned_to_email = mutable_data.get('assigned_to')
+
+        if assigned_to_email:
+            try:
+                team_member = User.objects.get(email=mutable_data['assigned_to'])
+                mutable_data['assigned_to'] = team_member.id
+            except User.DoesNotExist:
+                mutable_data['assigned_to'] = None
+
 
         try:
             scan = Scan.objects.get(id=pk)
