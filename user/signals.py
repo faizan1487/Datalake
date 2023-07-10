@@ -74,9 +74,9 @@ def usersignal(instance,source):
                     # print("Lead created successfully!")
                     post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
     except Exception as e:
-        # print('Error occurred while making the request:', str(e))
-        # print('Error:', response.status_code)
-        # print('Error:', response.text)
+        print('Error occurred while making the request:', str(e))
+        print('Error:', response.status_code)
+        print('Error:', response.text)
         # Reconnect the signal
         print("reconnect the signal")
         post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
