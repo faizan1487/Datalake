@@ -151,36 +151,33 @@ class GetUsers(APIView):
         url = request.build_absolute_uri()
         
         
-        # users = cache.get(url)
-        # if users is None:
+      
         users = search_users(q,start_date,end_date,is_converted,source)
-        # cache.set(url, users) 
+
+        # return Response("vnvjds")
         # print(users['converted_users'])
-        # for user in users['converted_users']:
-        #     print(user)
-        #     payment = user['email'].user_payments.values("product")
-        #     print(payment)
 
+        # serializer = MainUserSerializer(users['converted_users'], many=True)
 
-        serializer = MainUserSerializer(users['converted_users'], many=True)
-
+        # return Response("vnvjds")
+        #replacing serializer.data with users['converted_users']
       
         if export =='true':
-            for i in range(len(serializer.data)):
-                serializer.data[i]['Converted'] = users['converted'][i]
+            for i in range(len(users['converted_users'])):
+                users['converted_users'][i]['Converted'] = users['converted'][i]
             
             for info in users['products']:
                 email = info.get('user__email')
                 product_name = info.get('product__product_name')
 
-                for user_dict in serializer.data:
+                for user_dict in users['converted_users']:
                     if user_dict.get('email') == email:
                         user_dict['product'] = product_name
             try:    
                 file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                df = pd.DataFrame(serializer.data)
+                df = pd.DataFrame(users['converted_users'])
                 df_str = df.to_csv(index=False)
                 s3 = upload_csv_to_s3(df_str,file_name)
                 data = {'file_link': file_path,'export':'true'}
@@ -188,19 +185,19 @@ class GetUsers(APIView):
             except Exception as e:
                 return Response(e)
         else:
-            for i in range(len(serializer.data)):
-                serializer.data[i]['is_paying_customer'] = users['converted'][i]
+            for i in range(len(users['converted_users'])):
+                users['converted_users'][i]['is_paying_customer'] = users['converted'][i]
             
             for info in users['products']:
                 email = info.get('user__email')
                 product_name = info.get('product__product_name')
 
-                for user_dict in serializer.data:
+                for user_dict in users['converted_users']:
                     if user_dict.get('email') == email:
                         user_dict['product'] = product_name
 
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(serializer.data, request)
+            paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
             return paginator.get_paginated_response(paginated_queryset)
         
 
