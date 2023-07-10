@@ -58,25 +58,25 @@ def usersignal(instance,source):
                 instance.erp_lead_id = erp_lead_id
                 instance.save(update_fields=['erp_lead_id'])
                 post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
-                print("lead updated")
+                # print("lead updated")
                 break
         else:
             post_url = 'https://crm.alnafi.com/api/resource/Lead'
             response = requests.post(post_url, headers=headers, json=data)
             response.raise_for_status()
-            print("response.status_code",response.status_code)
+            # print("response.status_code",response.status_code)
             if response.status_code == 200:
                 lead_data = response.json()
                 erp_lead_id = lead_data['data']['name']
                 if erp_lead_id:
                     instance.erp_lead_id = erp_lead_id
                     instance.save(update_fields=['erp_lead_id'])
-                    print("Lead created successfully!")
+                    # print("Lead created successfully!")
                     post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
     except Exception as e:
-        print('Error occurred while making the request:', str(e))
-        print('Error:', response.status_code)
-        print('Error:', response.text)
+        # print('Error occurred while making the request:', str(e))
+        # print('Error:', response.status_code)
+        # print('Error:', response.text)
         # Reconnect the signal
         print("reconnect the signal")
         post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)

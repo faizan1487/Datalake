@@ -49,9 +49,9 @@ import csv
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
 def user_created_webhook(request):
-    print(request.method)
+    # print(request.method)
     if request.method != "POST":
-        print("bad request")
+        # print("bad request")
         return HttpResponse(status=400)
     
     data = request.body
@@ -85,5 +85,5 @@ def user_created_webhook(request):
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
-        print(serializer.errors)
+        # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

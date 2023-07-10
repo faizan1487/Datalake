@@ -302,7 +302,7 @@ class UserRegistrationView(APIView):
         try:
             serializer.save()
         except Exception as _:
-            print(_)
+            # print(_)
             return Response({"Invalid": "user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
 
         user = serializer.instance

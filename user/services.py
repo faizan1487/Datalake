@@ -33,7 +33,7 @@ def upload_csv_to_s3(df,file_name):
     bucket_name = env("AWS_STORAGE_BUCKET_NAME")
     object_name = file_name
     upload_to_s3 = s3.put_object(Bucket=bucket_name, Key=object_name, Body=df)
-    print(upload_to_s3)
+    # print(upload_to_s3)
     return s3
 
 def paying_users_details(query_time, is_converted):
@@ -209,11 +209,11 @@ def get_tokens_for_user(user):
     
 def checkSameDomain(request):
     backendDomain = request.get_host().split(":")[0]
-    print("request meta",request.META)
+    # print("request meta",request.META)
     sameDomain = False
     if 'HTTP_ORIGIN' in request.META:
         frontendDomain = request.META['HTTP_ORIGIN'].split(":")[0]
-        print("frontendDomain",frontendDomain)
+        # print("frontendDomain",frontendDomain)
         if (frontendDomain == backendDomain):
             sameDomain = True
     return sameDomain

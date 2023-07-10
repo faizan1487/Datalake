@@ -12,7 +12,7 @@ from datetime import datetime
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def send_payment_post_request(sender, instance, **kwargs):
-    print("signal running")
+    # print("signal running")
     url = 'https://crm.alnafi.com/api/resource/Customer?limit_start=0&limit_page_length=5000'
     api_key = '2b4b9755ecc2dc7'
     api_secret = '8d71fb9b172e2aa'
@@ -37,7 +37,7 @@ def send_payment_post_request(sender, instance, **kwargs):
             
             # uncomment this check condition for customer
             if data['data'][i]['name'] == full_name:
-                print("customer exists")
+                # print("customer exists")
                 payment = create_payment(instance,headers,payment_user)
                 break
         else:
@@ -49,7 +49,7 @@ def send_payment_post_request(sender, instance, **kwargs):
             # print("payment_user[0].erp_lead_id",payment_user[0].erp_lead_id)
             for i in range(len(lead_data['data'])):
                 if lead_data['data'][i]['name'] == payment_user[0].erp_lead_id:
-                    print("lead exists")
+                    # print("lead exists")
                     #createe customer with lead id
                     customer = create_customer(instance,headers,full_name,payment_user)
                     #then create payment from that customer
@@ -368,11 +368,11 @@ def create_lead(instance,headers,payment_user):
             if erp_lead_id:
                 payment_user[0].erp_lead_id = erp_lead_id
                 payment_user[0].save(update_fields=['erp_lead_id'])
-            print("Lead created successfully!")
+            # print("Lead created successfully!")
     except RequestException as e:
         print('Error occurred while making the request:', str(e))
-        print('Error:', response.status_code)
-        print('Error:', response.text)
+        # print('Error:', response.status_code)
+        # print('Error:', response.text)
         
 
 def create_customer(instance,headers,full_name,payment_user):
@@ -400,8 +400,8 @@ def create_customer(instance,headers,full_name,payment_user):
         print("Customer created successfully!")
     else:
         print('Error occurred while creating customer:')      
-        print('Error:', response.status_code)
-        print('Error:', response.text)
+        # print('Error:', response.status_code)
+        # print('Error:', response.text)
 
 
 def create_payment(instance,headers,payment_user):
@@ -468,11 +468,11 @@ def create_payment(instance,headers,payment_user):
             # print(type(item['al_nafi_payment_id']))
             # print("payment id",type(payment_id))
             if item['al_nafi_payment_id'] == str(payment_id):
-                print("put request")
+                # print("put request")
                 # Perform the desired action when the payment_id matches
                 # response = requests.post(url, headers=headers, json=data1)
                 response = requests.put(url, headers=headers, json=data1)
-                print("Payment ID found!")
+                # print("Payment ID found!")
                 break
         else:
             # response = requests.post(url, headers=headers, json=data1)
@@ -489,8 +489,8 @@ def create_payment(instance,headers,payment_user):
         print('Error occurred while creating payment:', str(e)) 
         # print('Error:', response.status_code)
         # print('Error:', response.text)
-        print('Error:', response.status_code)
-        print('Error:', response.text)
+        # print('Error:', response.status_code)
+        # print('Error:', response.text)
 
 
 
