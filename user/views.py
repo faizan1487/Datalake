@@ -163,8 +163,20 @@ class GetUsers(APIView):
 
 
         serializer = MainUserSerializer(users['converted_users'], many=True)
+
+      
         if export =='true':
-            try:
+            for i in range(len(serializer.data)):
+                serializer.data[i]['Converted'] = users['converted'][i]
+            
+            for info in users['products']:
+                email = info.get('user__email')
+                product_name = info.get('product__product_name')
+
+                for user_dict in serializer.data:
+                    if user_dict.get('email') == email:
+                        user_dict['product'] = product_name
+            try:    
                 file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -186,10 +198,6 @@ class GetUsers(APIView):
                 for user_dict in serializer.data:
                     if user_dict.get('email') == email:
                         user_dict['product'] = product_name
-
-
-            
-
 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(serializer.data, request)

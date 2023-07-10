@@ -107,8 +107,12 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
     def get(self, request, pk):
         export = self.request.GET.get('export', None) or None
         try:
-            scan = Scan.objects.filter(id=pk).values()
-
+            # scan = Scan.objects.filter(id=pk).values()
+            scan = Scan.objects.filter(id=pk).values(
+            'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__email',
+            'scan_progress', 'testing_method', 'target', 'http_or_https', 'application_type',
+            'findings_and_recommendations', 'file_upload', 'poc'
+            )
             if export=='true':
                 df = pd.DataFrame(scan)
                 # Merge dataframes
