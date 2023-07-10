@@ -149,19 +149,9 @@ class GetUsers(APIView):
         export = self.request.GET.get('export', None) or None
         product = self.request.GET.get('product', None) or None
         url = request.build_absolute_uri()
-        
-        
-      
+           
         users = search_users(q,start_date,end_date,is_converted,source)
-
-        # return Response("vnvjds")
-        # print(users['converted_users'])
-
-        # serializer = MainUserSerializer(users['converted_users'], many=True)
-
-        # return Response("vnvjds")
-        #replacing serializer.data with users['converted_users']
-      
+        # print(users)
         if export =='true':
             for i in range(len(users['converted_users'])):
                 users['converted_users'][i]['Converted'] = users['converted'][i]
@@ -188,18 +178,17 @@ class GetUsers(APIView):
             for i in range(len(users['converted_users'])):
                 users['converted_users'][i]['is_paying_customer'] = users['converted'][i]
             
-            for info in users['products']:
-                email = info.get('user__email')
-                product_name = info.get('product__product_name')
+            # for info in users['products']:
+            #     email = info.get('user__email')
+            #     product_name = info.get('product__product_name')
 
-                for user_dict in users['converted_users']:
-                    if user_dict.get('email') == email:
-                        user_dict['product'] = product_name
+            #     for user_dict in users['converted_users']:
+            #         if user_dict.get('email') == email:
+            #             user_dict['product'] = product_name
 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
             return paginator.get_paginated_response(paginated_queryset)
-        
 
 class GetUser(APIView):
     # permission_classes = [IsAuthenticated]

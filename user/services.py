@@ -40,7 +40,7 @@ def paying_users_details(query_time, is_converted):
     converted_users = []
     converted = []
     # return Response("vdfidfjk")
-    all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
+    # all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
     # return Response("vdfidfjk")
     # print(all_paid_users_products)
     all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
@@ -66,13 +66,19 @@ def paying_users_details(query_time, is_converted):
             converted_users.append(user)
             converted.append(False) 
        
-    response = {"converted_users":converted_users, "converted": converted, "products":all_paid_users_products}
+    response = {"converted_users":converted_users, "converted": converted}
+    # , "products":all_paid_users_products
     return response
 
 
 def search_users(q, start_date, end_date, is_converted,source):
-    # users = Main_User.objects.all()
-    users = Main_User.objects.all().values()
+    # users = Main_User.objects.all().values()
+    users = Main_User.objects.values(
+        "id", "email", "username", "first_name", "last_name", "source", "internal_source",
+        "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
+        "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer",
+        "role", "erp_lead_id"
+    )
     # print(users)
     if source:
         users = users.filter(source=source)
@@ -237,214 +243,68 @@ class GroupPermission(BasePermission):
             raise PermissionDenied(data)
 
 
-# def alnafi_user(q, start_date, end_date, is_converted):
+
+
+
+
+# from django.db.models import Subquery, OuterRef
+
+# def paying_users_details(query_time, is_converted):
+#     converted_users = []
+#     converted = []
+
+#     all_paid_users = query_time.filter(
+#         id__in=Main_Payment.objects.filter(source='Al-Nafi').values_list('user_id', flat=True)
+#     ).values('id', 'username', 'email', 'first_name', 'last_name', 'source', 'phone', 'address', 'country', 'created_at')
+
+#     all_unpaid_users = query_time.exclude(source='Al-Nafi')
+
+#     if is_converted == 'true':
+#         converted_users = list(all_paid_users)
+#         converted = [True] * len(converted_users)
+#     elif is_converted == 'false':
+#         converted_users = list(all_unpaid_users)
+#         converted = [False] * len(converted_users)
+#     else:
+#         converted_users = list(all_paid_users) + list(all_unpaid_users)
+#         converted = [True] * len(all_paid_users) + [False] * len(all_unpaid_users)
+
+#     all_paid_users_products = Main_Payment.objects.filter(
+#         source='Al-Nafi', user_id__in=all_paid_users.values_list('id', flat=True)
+#     ).values('user__email', 'product__product_name')
+
+#     response = {"converted_users": converted_users, "converted": converted, "products": all_paid_users_products}
+#     return response
+
+
+
+# def search_users(q, start_date, end_date, is_converted, source):
+#     users = Main_User.objects.all().values()
+
+#     if source:
+#         users = users.filter(source=source)
+
 #     if not start_date:
-#         first_user = Main_User.objects.exclude(created_at=None).first()
-#         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+#         first_user = users.exclude(created_at=None).last()
+#         date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
+#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
 #         start_date = new_date_obj
 
 #     if not end_date:
-#         last_user = Main_User.objects.exclude(created_at=None).last()
-#         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
+#         last_user = users.exclude(created_at=None).first()
+#         date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
+#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
 #         end_date = new_date_obj
 
 #     if q:
-#         queryset = Main_User.objects.filter(
-#             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q))
-#         query_time = queryset.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
-#         paying_user_queryset = paying_users_details(query_time, is_converted)
-#     else:
-#         query_time = Main_User.objects.filter(created_at__date__gte = start_date, created_at__date__lte = end_date)
-#         paying_user_queryset = paying_users_details(query_time, is_converted)
-        
-#     return paying_user_queryset
+#         users = users.filter(
+#             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q) | Q(id__iexact=q))
 
-# def islamic_user(q, start_date, end_date, is_converted): 
-#     if not start_date:
-#         first_user = IslamicAcademy_User.objects.exclude(created_at=None).first()
-#         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                      
-#         start_date = new_date_obj
+#     users = users.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
+#     converted_users = paying_users_details(users, is_converted)
     
-#     if not end_date:
-#         last_user = IslamicAcademy_User.objects.exclude(created_at=None).last()
-#         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-#         end_date = new_date_obj  
-         
-#     if q:
-#         if is_converted == 'true':
-#             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
-#             queryset = paying_users.filter(
-#             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-#             query_time = queryset.filter(Q(created_at__date__gte = start_date) & Q(created_at__date__lte = end_date))
-#         elif is_converted == 'false':
-#             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=False)
-#             queryset = paying_users.filter(
-#             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-#             query_time = queryset.filter(Q(created_at__date__gte = start_date) & Q(created_at__date__lte = end_date))
-#         else:
-#             queryset = IslamicAcademy_User.objects.filter(
-#             Q(email__iexact=q) | Q(username__iexact=q)| Q(first_name__iexact=q)) 
-#             query_time = queryset.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
-            
-        
-#     else:
-#         if is_converted == 'true':
-#             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=True)
-#             query_time = paying_users.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
-#         elif is_converted == 'false':
-#             paying_users = IslamicAcademy_User.objects.filter(is_paying_customer=False)
-#             query_time = paying_users.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
-#         else:
-#             queryset = IslamicAcademy_User.objects.all()
-#             query_time = queryset.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
-            
-#     return query_time
+#     converted_dict = {user['email']: converted for user, converted in zip(users, converted_users)}
 
-# def islamic_no_users(start_date,end_date):
-#     if not start_date:
-#         first_user = IslamicAcademy_User.objects.first()
-#         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-#         start_date = str(new_date_obj.date())
-        
-#     if not end_date:
-#         last_user = IslamicAcademy_User.objects.last()
-#         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-#         end_date = str(new_date_obj.date())
-    
-#     start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
-#     end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()       
-#     delta = end_date_obj - start_date_obj
-#     dates = []
-#     for i in range(delta.days + 1):
-#         date = start_date_obj + timedelta(days=i)
-#         dates.append(date)
-        
-#     users = IslamicAcademy_User.objects.filter(created_at__date__in=dates)
-#     user_dict = {}
-#     for user in users:
-#         if user.created_at.date() in user_dict:
-#             user_dict[user.created_at.date()].append(user)
-#         else:
-#             user_dict[user.created_at.date()] = [user]
-            
-#     response_data = []
-#     for date in dates:
-#         if date in user_dict:
-#             users_for_date = user_dict[date]
-#             serialized_users = IslamicAcademyUserSerializer(users_for_date, many=True).data
-#         else:
-#             serialized_users = []
+#     response = {"converted_users": users, "converted": converted_dict, "products": converted_users['products']}
+#     return response
 
-#         response_data.append({
-#             'date': date,
-#             'users': len(serialized_users)
-#         })
-#     return response_data
-
-
-# def alnafi_no_users(start_date,end_date):
-#     if not start_date:
-#         first_user = AlNafi_User.objects.exclude(created_at=None).first()
-#         date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-#         start_date = str(new_date_obj.date())
-        
-#     if not end_date:
-#         last_user = AlNafi_User.objects.exclude(created_at=None).last()
-#         date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-#         end_date = str(new_date_obj.date())
-        
-#     # print("start_date", start_date)
-#     # print("end_date", end_date)
-#     start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
-#     end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date()       
-#     delta = end_date_obj - start_date_obj
-#     dates = []
-#     for i in range(delta.days + 1):
-#         date = start_date_obj + timedelta(days=i)
-#         dates.append(date)
-        
-#     users = AlNafi_User.objects.filter(created_at__date__in=dates)
-#     user_dict = {}
-#     for user in users:
-#         if user.created_at.date() in user_dict:
-#             user_dict[user.created_at.date()].append(user)
-#         else:
-#             user_dict[user.created_at.date()] = [user]
-#     response_data = []
-    
-    
-#     for date in dates:
-#         if date in user_dict:
-#             users_for_date = user_dict[date]
-#             serialized_users = AlnafiUserSerializer(users_for_date, many=True).data
-#         else:
-#             serialized_users = []
-
-#         response_data.append({
-#             'date': date,
-#             'users': len(serialized_users)
-#         })
-#     return response_data
-
-
-
-
-# def no_of_users(start_date,end_date,source):
-#     users = Main_User.objects.all().values()
-#     if source:
-#         users = users.filter(source=source)
-        
-#     if not start_date:
-#         first_user = users.exclude(created_at=None).first()
-#         date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-#         start_date = str(new_date_obj.date())
-      
-    
-#     if not end_date:
-#         last_user = users.exclude(created_at=None).last()
-#         date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-#         end_date = str(new_date_obj.date())  
-          
-#     start_date_obj = datetime.strptime(start_date, '%Y-%m-%d').date()
-#     end_date_obj = datetime.strptime(end_date, '%Y-%m-%d').date() 
-    
-#     # print(start_date)
-#     # print(end_date)      
-#     delta = end_date_obj - start_date_obj
-#     dates = []
-#     for i in range(delta.days + 1):
-#         date = start_date_obj + timedelta(days=i)
-#         dates.append(date)
-    
-#     users = users.filter(created_at__date__in=dates)
-#     user_dict = {}
-#     for user in users:
-#         if user.created_at.date() in user_dict:
-#             user_dict[user.created_at.date()].append(user)
-#         else:
-#             user_dict[user.created_at.date()] = [user]
-#     response_data = []
-    
-#     for date in dates:
-#         if date in user_dict:
-#             users_for_date = user_dict[date]
-#             # serialized_users = MainUserSerializer(users_for_date, many=True).data
-#         else:
-#             users_for_date = []
-
-#         response_data.append({
-#             'date': date,
-#             'users': len(users_for_date)
-#         })
-#     print(response_data)
-#     return response_data
