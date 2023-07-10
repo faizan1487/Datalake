@@ -49,7 +49,7 @@ def send_payment_post_request(sender, instance, **kwargs):
             # print("payment_user[0].erp_lead_id",payment_user[0].erp_lead_id)
             for i in range(len(lead_data['data'])):
                 if lead_data['data'][i]['name'] == payment_user[0].erp_lead_id:
-                    # print("lead exists")
+                    print("lead exists")
                     #createe customer with lead id
                     customer = create_customer(instance,headers,full_name,payment_user)
                     #then create payment from that customer
@@ -64,8 +64,8 @@ def send_payment_post_request(sender, instance, **kwargs):
                 payment = create_payment(instance,headers,payment_user)
     except RequestException as e:
         print('Error occurred while making the request:', str(e))
-        # print('Error:', response.status_code)
-        # print('Error:', response.text) 
+        print('Error:', response.status_code)
+        print('Error:', response.text) 
         
 
 country_codes = {
@@ -368,11 +368,11 @@ def create_lead(instance,headers,payment_user):
             if erp_lead_id:
                 payment_user[0].erp_lead_id = erp_lead_id
                 payment_user[0].save(update_fields=['erp_lead_id'])
-            # print("Lead created successfully!")
+            print("Lead created successfully!")
     except RequestException as e:
         print('Error occurred while making the request:', str(e))
-        # print('Error:', response.status_code)
-        # print('Error:', response.text)
+        print('Error:', response.status_code)
+        print('Error:', response.text)
         
 
 def create_customer(instance,headers,full_name,payment_user):
@@ -400,8 +400,8 @@ def create_customer(instance,headers,full_name,payment_user):
         print("Customer created successfully!")
     else:
         print('Error occurred while creating customer:')      
-        # print('Error:', response.status_code)
-        # print('Error:', response.text)
+        print('Error:', response.status_code)
+        print('Error:', response.text)
 
 
 def create_payment(instance,headers,payment_user):
@@ -487,11 +487,8 @@ def create_payment(instance,headers,payment_user):
                 print("Payment created successfully!")     
     except RequestException as e:
         print('Error occurred while creating payment:', str(e)) 
-        # print('Error:', response.status_code)
-        # print('Error:', response.text)
-        # print('Error:', response.status_code)
-        # print('Error:', response.text)
-
+        print('Error:', response.status_code)
+        print('Error:', response.text)
 
 
 def get_USD_rate():
