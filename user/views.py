@@ -178,6 +178,20 @@ class GetUsers(APIView):
             for i in range(len(users['converted_users'])):
                 users['converted_users'][i]['is_paying_customer'] = users['converted'][i]
             
+            # print(users['products'])
+            # print(users['converted_users'])
+            email_product_map = {}
+            for info in users['products']:
+                email = info.get('user__email')
+                product_name = info.get('product__product_name')
+                email_product_map[email] = product_name
+
+            # Assign the product to each converted user
+            for user_dict in users['converted_users']:
+                email = user_dict.get('email')
+                product_name = email_product_map.get(email)
+                user_dict['product'] = product_name
+
             # for info in users['products']:
             #     email = info.get('user__email')
             #     product_name = info.get('product__product_name')

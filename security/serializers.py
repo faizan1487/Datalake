@@ -15,9 +15,8 @@ class ScanSerializer(serializers.ModelSerializer):
         instance.scan_progress = validated_data.get('scan_progress', instance.scan_progress)
         instance.testing_method = validated_data.get('testing_method', instance.testing_method)
         instance.target = validated_data.get('target', instance.target)
-        instance.http_or_https = validated_data.get('http_or_https', instance.http_or_https)
+        instance.target_value = validated_data.get('target_value', instance.target_value)
         instance.application_type = validated_data.get('application_type', instance.application_type)
-        instance.findings_and_recommendations = validated_data.get('findings_and_recommendations', instance.findings_and_recommendations)
         instance.file_upload = validated_data.get('file_upload', instance.file_upload)
         instance.poc = validated_data.get('poc', instance.poc)
 

@@ -28,8 +28,8 @@ class CreateScan(APIView):
     def get(self, request):
         scans = Scan.objects.values(
             'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__email',
-            'scan_progress', 'testing_method', 'target', 'http_or_https', 'application_type',
-            'findings_and_recommendations', 'file_upload', 'poc'
+            'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
+            'file_upload', 'poc'
         )
         scan_ids = [scan['id'] for scan in scans]
 
@@ -56,9 +56,8 @@ class CreateScan(APIView):
                 'scan_progress': scan['scan_progress'],
                 'testing_method': scan['testing_method'],
                 'target': scan['target'],
-                'http_or_https': scan['http_or_https'],
+                'target_value': scan['target_value'],
                 'application_type': scan['application_type'],
-                'findings_and_recommendations': scan['findings_and_recommendations'],
                 'file_upload': 'https://alnafi-main-backend.s3.amazonaws.com/' + scan['file_upload'],
                 'poc': 'https://alnafi-main-backend.s3.amazonaws.com/' + scan['poc'],
                 'no_of_comments': 0,
@@ -110,8 +109,8 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
             # scan = Scan.objects.filter(id=pk).values()
             scan = Scan.objects.filter(id=pk).values(
             'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__email',
-            'scan_progress', 'testing_method', 'target', 'http_or_https', 'application_type',
-            'findings_and_recommendations', 'file_upload', 'poc'
+            'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
+            'file_upload', 'poc'
             )
             if export=='true':
                 df = pd.DataFrame(scan)

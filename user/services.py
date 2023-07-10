@@ -40,7 +40,7 @@ def paying_users_details(query_time, is_converted):
     converted_users = []
     converted = []
     # return Response("vdfidfjk")
-    # all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
+    all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
     # return Response("vdfidfjk")
     # print(all_paid_users_products)
     all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
@@ -66,8 +66,7 @@ def paying_users_details(query_time, is_converted):
             converted_users.append(user)
             converted.append(False) 
        
-    response = {"converted_users":converted_users, "converted": converted}
-    # , "products":all_paid_users_products
+    response = {"converted_users":converted_users, "converted": converted, "products":all_paid_users_products}
     return response
 
 
