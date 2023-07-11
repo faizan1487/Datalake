@@ -99,11 +99,11 @@ class MainPaymentAPIView(APIView):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status= 400)
 
-class PaymentDelete(APIView):
-    def get(self, request):
-        objs = UBL_Manual_Payment.objects.all()
-        objs.delete()
-        return Response('deleted')
+# class PaymentDelete(APIView):
+#     def get(self, request):
+#         objs = UBL_Manual_Payment.objects.all()
+#         objs.delete()
+#         return Response('deleted')
 
 #optimized 
 

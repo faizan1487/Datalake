@@ -1,7 +1,7 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
-from .models import Scan, Comment
+from .models import Scan, Comment, Department
 # Register your models here.    
 
 #For Navbar:
@@ -15,11 +15,21 @@ class ScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 admin.site.register(Scan, ScanAdmin)
 
+
+class DepartmentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ["name", "email", ]
+    search_fields = ["name", "email"]
+    
+admin.site.register(Department, DepartmentAdmin)
+
+
 class CommentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["user", "scan", ]
-    search_fields = ["user", "scan"]
+    list_display = ["department", "scan", ]
+    search_fields = ["department", "scan"]
     
 admin.site.register(Comment, CommentAdmin)
+
+
 
 # class ReplyAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 #     list_display = ('id','content')
