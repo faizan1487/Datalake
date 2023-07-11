@@ -37,7 +37,7 @@ def send_payment_post_request(sender, instance, **kwargs):
             
             # uncomment this check condition for customer
             if data['data'][i]['name'] == full_name:
-                # print("customer exists")
+                print("customer exists")
                 payment = create_payment(instance,headers,payment_user)
                 break
         else:
