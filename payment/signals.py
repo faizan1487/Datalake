@@ -468,11 +468,11 @@ def create_payment(instance,headers,payment_user):
             # print(type(item['al_nafi_payment_id']))
             # print("payment id",type(payment_id))
             if item['al_nafi_payment_id'] == str(payment_id):
-                # print("put request")
+                print("put request")
                 # Perform the desired action when the payment_id matches
                 # response = requests.post(url, headers=headers, json=data1)
                 response = requests.put(url, headers=headers, json=data1)
-                # print("Payment ID found!")
+                print("Payment ID found!")
                 break
         else:
             # response = requests.post(url, headers=headers, json=data1)

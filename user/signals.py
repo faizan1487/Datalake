@@ -58,7 +58,7 @@ def usersignal(instance,source):
                 instance.erp_lead_id = erp_lead_id
                 instance.save(update_fields=['erp_lead_id'])
                 post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
-                # print("lead updated")
+                print("lead updated")
                 break
         else:
             post_url = 'https://crm.alnafi.com/api/resource/Lead'
@@ -71,7 +71,7 @@ def usersignal(instance,source):
                 if erp_lead_id:
                     instance.erp_lead_id = erp_lead_id
                     instance.save(update_fields=['erp_lead_id'])
-                    # print("Lead created successfully!")
+                    print("Lead created successfully!")
                     post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
     except Exception as e:
         print('Error occurred while making the request:', str(e))
