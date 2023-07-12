@@ -53,6 +53,7 @@ class AlnafiPayment(APIView):
 
         try:
             instance = AlNafi_Payment.objects.filter(payment_id=payment_id)
+            # print(instance)
             serializer = AlNafiPaymentSerializer(instance.first(), data=data)
         except:
             serializer = AlNafiPaymentSerializer(data=data)

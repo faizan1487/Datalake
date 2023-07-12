@@ -130,7 +130,7 @@ def create_customer(instance,headers,full_name,payment_user):
     country_name = None
 
     if country_code:
-        for name, code in country_codes.items():
+        for name, code in COUNTRY_CODES.items():
             if code == country_code:
                 country_name = name
                 break
