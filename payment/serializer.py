@@ -9,7 +9,7 @@ class AlNafiPaymentSerializer(ModelSerializer):
         fields = '__all__'
 
     def update(self, instance, validated_data):
-        instance.customer_email = validated_data.get('customer_email', instance.customer_email)
+        # instance.customer_email = validated_data.get('customer_email', instance.customer_email)
         instance.product_name = validated_data.get('product_name', instance.product_name)
         instance.amount_pkr = validated_data.get('amount_pkr', instance.amount_pkr)
         instance.amount_usd = validated_data.get('amount_usd', instance.amount_usd)

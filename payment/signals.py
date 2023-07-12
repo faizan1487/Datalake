@@ -57,7 +57,7 @@ def send_payment_post_request(sender, instance, **kwargs):
                     break
             else:
                 #create lead
-                lead = create_lead(instance,headers,payment_user)
+                # lead = create_lead(instance,headers,payment_user)
                 #then create customer from that lead
                 customer = create_customer(instance,headers,full_name,payment_user)
                 #then create payment from that customer
@@ -321,58 +321,58 @@ country_codes = {
 }
 
 
-def create_lead(instance,headers,payment_user):
-    # print("payment_user[0].source",payment_user[0].source)
-    # print("payment_user[0]",payment_user[0])
-    country_code = payment_user[0].country or None
-    country_name = None
+# def create_lead(instance,headers,payment_user):
+#     # print("payment_user[0].source",payment_user[0].source)
+#     # print("payment_user[0]",payment_user[0])
+#     country_code = payment_user[0].country or None
+#     country_name = None
 
-    if country_code:
-        for name, code in country_codes.items():
-            if code == country_code:
-                country_name = name
-                break
+#     if country_code:
+#         for name, code in country_codes.items():
+#             if code == country_code:
+#                 country_name = name
+#                 break
 
-    data = {
-        "first_name": payment_user[0].first_name or None,
-        "last_name": payment_user[0].last_name or None,
-        "email_id": payment_user[0].email or None,
-        "mobile_no": payment_user[0].phone or None,
-        "country": country_name or "Unknown",
-        "source": payment_user[0].source if hasattr(instance, 'source') else None
-        # Add other fields from the Main_User model to the data dictionary as needed
-    }
+#     data = {
+#         "first_name": payment_user[0].first_name or None,
+#         "last_name": payment_user[0].last_name or None,
+#         "email_id": payment_user[0].email or None,
+#         "mobile_no": payment_user[0].phone or None,
+#         "country": country_name or "Unknown",
+#         "source": payment_user[0].source if hasattr(instance, 'source') else None
+#         # Add other fields from the Main_User model to the data dictionary as needed
+#     }
 
-    url = 'https://crm.alnafi.com/api/resource/Lead?limit_start=0&limit_page_length=5000&fields=["name","email_id"]'
-    response = requests.get(url, headers=headers)
-    lead_data = response.json()
+#     url = 'https://crm.alnafi.com/api/resource/Lead?limit_start=0&limit_page_length=5000&fields=["name","email_id"]'
+#     response = requests.get(url, headers=headers)
+#     lead_data = response.json()
 
-    try:
-    # for lead in lead_data['data']:
-    #     if lead['email_id'] == payment_user[0].email:
-    #         response = requests.put(url, headers=headers, json=data)
-    #         erp_lead_id = lead['name']
-    #         print("erp_lead_id",erp_lead_id)
-    #         payment_user[0].erp_lead_id = erp_lead_id
-    #         payment_user[0].save(update_fields=['erp_lead_id'])
-    #         # post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
-    #         print("lead updated")
-    #         break
-    # else:
-        lead_url = 'https://crm.alnafi.com/api/resource/Lead'
-        response = requests.post(lead_url, headers=headers, json=data)
-        response.raise_for_status()
-        if response.status_code == 200:
-            lead_data = response.json()
-            erp_lead_id = lead_data['data']['name']
-            if erp_lead_id:
-                payment_user[0].erp_lead_id = erp_lead_id
-                payment_user[0].save(update_fields=['erp_lead_id'])
-            print("Lead created successfully!")
-    except RequestException as e:
-        print('Error occurred while making the request:', str(e))
-        print('Error:', response.status_code)
-        print('Error:', response.text)
+#     try:
+#     # for lead in lead_data['data']:
+#     #     if lead['email_id'] == payment_user[0].email:
+#     #         response = requests.put(url, headers=headers, json=data)
+#     #         erp_lead_id = lead['name']
+#     #         print("erp_lead_id",erp_lead_id)
+#     #         payment_user[0].erp_lead_id = erp_lead_id
+#     #         payment_user[0].save(update_fields=['erp_lead_id'])
+#     #         # post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
+#     #         print("lead updated")
+#     #         break
+#     # else:
+#         lead_url = 'https://crm.alnafi.com/api/resource/Lead'
+#         response = requests.post(lead_url, headers=headers, json=data)
+#         response.raise_for_status()
+#         if response.status_code == 200:
+#             lead_data = response.json()
+#             erp_lead_id = lead_data['data']['name']
+#             if erp_lead_id:
+#                 payment_user[0].erp_lead_id = erp_lead_id
+#                 payment_user[0].save(update_fields=['erp_lead_id'])
+#             print("Lead created successfully!")
+#     except RequestException as e:
+#         print('Error occurred while making the request:', str(e))
+#         print('Error:', response.status_code)
+#         print('Error:', response.text)
         
 
 def create_customer(instance,headers,full_name,payment_user):

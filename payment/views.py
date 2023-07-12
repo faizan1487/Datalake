@@ -49,6 +49,7 @@ class AlnafiPayment(APIView):
     def post(self, request):
         data = request.data
         payment_id = data.get('payment_id')
+        print(payment_id)
 
         try:
             instance = AlNafi_Payment.objects.get(payment_id=payment_id)
@@ -58,7 +59,8 @@ class AlnafiPayment(APIView):
 
         
         if serializer.is_valid():
-            serializer.save()
+            # serializer.save()
+            print("valid")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

@@ -126,8 +126,8 @@ class UBL_Manual_Payment(models.Model):
     status = models.BooleanField(default=False)
     deposit_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True ,null=True, blank=True)
-    payment_channel = models.CharField(max_length=45, null=True, blank=True)
-    transaction_id = models.CharField(max_length=45, null=True, blank=True,unique=True)
+    payment_channel = models.CharField(max_length=250, null=True, blank=True)
+    transaction_id = models.CharField(max_length=250, null=True, blank=True,unique=True)
     source = models.CharField(max_length=45, null=True, blank=True)
     transaction_image = models.CharField(max_length=300, null=True, blank=True)
 
