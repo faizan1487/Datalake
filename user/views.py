@@ -122,7 +122,8 @@ class AlnafiUser(APIView):
     def post(self, request):
         data = request.data
         email = data.get("email")
-
+        print(data)
+        print("email",email)
         try:
             instance = AlNafi_User.objects.get(email=email)
             print(instance)
