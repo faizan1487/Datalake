@@ -8,25 +8,10 @@ class NewsletterSerializer(ModelSerializer):
         model = Newsletter
         fields = '__all__'
         
-    def create(self, validated_data):
-        # Get the ID of the object to update, if it exists
-        my_email = validated_data.get('email')
-        
-        # If an ID was provided, try to get the existing object
-        if my_email:
-            try:
-                obj = Newsletter.objects.get(email=my_email)
-            except Newsletter.DoesNotExist:
-                obj = None
-        else:
-            obj = None
-        
-        # If the object exists, update its fields with the validated data
-        if obj:
-            for key, value in validated_data.items():
-                setattr(obj, key, value)
-            obj.save()
-        else:
-            obj = Newsletter.objects.create(**validated_data)
-        
-        return obj
+    def update(self, instance, validated_data):
+      instance.first_name = validated_data.get('first_name', instance.first_name)
+      instance.phone = validated_data.get('phone', instance.phone)
+      # instance.email = validated_data.get('email', instance.email)      
+
+      instance.save()
+      return instance

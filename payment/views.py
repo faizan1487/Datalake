@@ -59,7 +59,7 @@ class AlnafiPayment(APIView):
 
         
         if serializer.is_valid():
-            # serializer.save()
+            serializer.save()
             print("valid")
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 

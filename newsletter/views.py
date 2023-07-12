@@ -44,10 +44,18 @@ class Subscribers(APIView):
         paginated_queryset = paginator.paginate_queryset(subscribers, request)
         return paginator.get_paginated_response(paginated_queryset)
 
+
 class CreateNewsletter(APIView):
     def post(self, request):
         data = request.data
-        serializer = NewsletterSerializer(data=data)
+        print(data)
+        email = data.get("email")
+
+        try:
+            instance = Newsletter.objects.get(email=email)
+            serializer = NewsletterSerializer(instance, data=data)
+        except:
+            serializer = NewsletterSerializer(data=data)
         
         if serializer.is_valid():
             serializer.save()
