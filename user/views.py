@@ -125,6 +125,7 @@ class AlnafiUser(APIView):
 
         try:
             instance = AlNafi_User.objects.get(email=email)
+            print(instance)
             serializer = AlnafiUserSerializer(instance, data=data)
         except:
             serializer = AlnafiUserSerializer(data=data)
