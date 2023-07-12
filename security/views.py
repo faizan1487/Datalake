@@ -1,22 +1,26 @@
 from django.shortcuts import render
+from django.template.loader import render_to_string
+from django.db.models import Prefetch
+from django.http import Http404
+from django.core.mail import send_mail, EmailMultiAlternatives
+from django.conf import settings
+from django.utils.html import strip_tags
+
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+
 from .serializers import ScanSerializer,CommentSerializer
 from .models import Scan, Comment, Department
 from user.models import User
-from django.db.models import Prefetch
 from user.services import upload_csv_to_s3
-
 import boto3
-from django.conf import settings
+
 import environ
-from rest_framework.permissions import IsAuthenticated
 import pandas as pd
 from datetime import datetime, timedelta, date
 import os
-from django.http import Http404
-
 
 env = environ.Env()
 env.read_env()
@@ -26,7 +30,7 @@ env.read_env()
 class CreateScan(APIView):
     def get(self, request):
         scans = Scan.objects.values(
-            'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__email',
+            'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__name',
             'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
             'file_upload', 'poc'
         )
@@ -51,7 +55,7 @@ class CreateScan(APIView):
                 'scan_date': scan['scan_date'],
                 'severity': scan['severity'],
                 'remediation': scan['remediation'],
-                'assigned_to__email': scan['assigned_to__email'],
+                'assigned_to__name': scan['assigned_to__name'],
                 'scan_progress': scan['scan_progress'],
                 'testing_method': scan['testing_method'],
                 'target': scan['target'],
@@ -76,11 +80,12 @@ class CreateScan(APIView):
     def post(self, request):
         data = request.data.copy()
         assigned_to_email = data.get('assigned_to')
+        # print(assigned_to_email)
         scan_id = data.get('id')
 
         if assigned_to_email:
             try:
-                department = Department.objects.get(email=data['assigned_to'])
+                department = Department.objects.get(name=data['assigned_to'])
                 data['assigned_to'] = department.id
             except Department.DoesNotExist:
                 data['assigned_to'] = None
@@ -96,6 +101,22 @@ class CreateScan(APIView):
         
         if serializer.is_valid():
             serializer.save()
+            # print(serializer.data)
+            subject = 'Scan assigned to your department'
+            params = {'subject': subject, 'scan_type': serializer.data['scan_type'], 'scan_date': serializer.data['scan_date'],
+                      'severity': serializer.data['severity'], 'remediation': serializer.data['remediation'], 
+                      'scan_progress': serializer.data['scan_progress'],'testing_method': serializer.data['testing_method'],
+                      'target': serializer.data['target'], 'sub_target': serializer.data['target_value'], 'application_type': serializer.data['application_type']}
+            html_content = render_to_string('emailtemplate.html', params)
+            text_content = strip_tags(html_content)
+            email_from = "sameer.akbar@annaafi.org"
+            recipient_list = department.email
+
+            msg = EmailMultiAlternatives(subject, text_content, email_from, [
+                                         recipient_list])
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            # send_mail(subject, emailfrom, recipient_list)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
@@ -107,7 +128,7 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
         try:
             # scan = Scan.objects.filter(id=pk).values()
             scan = Scan.objects.filter(id=pk).values(
-            'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__email',
+            'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__name',
             'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
             'file_upload', 'poc'
             )

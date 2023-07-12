@@ -15,27 +15,47 @@ class AlnafiUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AlNafi_User
         fields = ('username','first_name','last_name','email','phone','isAffiliate','isMentor','country','created_at',)
-        
-    def create(self, validated_data):
-        email = validated_data.get("email")
-        instance = self.instance
 
-        if email and instance:
-            try:
-                obj = AlNafi_User.objects.exclude(pk=instance.pk).get(email=email)
-            except AlNafi_User.DoesNotExist:
-                obj = None
-        else:
-            obj = None
+    def update(self, instance, validated_data):
+      instance.username = validated_data.get('username', instance.username)
+      instance.first_name = validated_data.get('first_name', instance.first_name)
+      instance.last_name = validated_data.get('last_name', instance.last_name)
+      instance.email = validated_data.get('email', instance.email)
+      instance.phone = validated_data.get('phone', instance.phone)
+      instance.address = validated_data.get('address', instance.address)
+      instance.country = validated_data.get('country', instance.country)
+      instance.language = validated_data.get('language', instance.language)
+      instance.verification_code = validated_data.get('verification_code', instance.verification_code)
+      instance.isAffiliate = validated_data.get('isAffiliate', instance.isAffiliate)
+      instance.how_did_you_hear_about_us = validated_data.get('how_did_you_hear_about_us', instance.how_did_you_hear_about_us)
+      instance.affiliate_code = validated_data.get('affiliate_code', instance.affiliate_code)
+      instance.isMentor = validated_data.get('isMentor', instance.isMentor)
+      instance.login_source = validated_data.get('login_source', instance.login_source)
 
-        # If the object exists, update its fields with the validated data
-        if obj:
-            for key, value in validated_data.items():
-                setattr(obj, key, value)
-            obj.save()
-            return obj
+      instance.save()
+      return instance
 
-        return super().create(validated_data)
+
+    # def create(self, validated_data):
+    #     email = validated_data.get("email")
+    #     instance = self.instance
+
+    #     if email and instance:
+    #         try:
+    #             obj = AlNafi_User.objects.exclude(pk=instance.pk).get(email=email)
+    #         except AlNafi_User.DoesNotExist:
+    #             obj = None
+    #     else:
+    #         obj = None
+
+    #     # If the object exists, update its fields with the validated data
+    #     if obj:
+    #         for key, value in validated_data.items():
+    #             setattr(obj, key, value)
+    #         obj.save()
+    #         return obj
+
+    #     return super().create(validated_data)
           # obj = AlNafi_User.objects.create(**validated_data)
       
       

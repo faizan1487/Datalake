@@ -28,7 +28,6 @@
     <div style="display: flex !important;">
       <div class="details-wrapper">
         <h4 style="font-size: medium !important;font-weight: 700 !important;margin-top: 0em !important;">Al Baseer</h4>
-        {% comment %} <p style="font-size: 12px !important;font-weight: 300 !important;">A-163, Block 13-C, Gulshan-e-Iqbal Karachi, Pakistan</p> {% endcomment %}
         <div style="width: 60% !important;" class="contact-section">
           <table>
             <tr>
@@ -39,10 +38,6 @@
               <th style="text-align: start !important;font-size: 12px !important;padding-right: 20px !important;">Phone:</th>
               <td style="text-align: start !important;font-size: 12px !important;">+92 21 3499 1214</td>
             </tr>
-            {% comment %} <tr>
-              <th style="text-align: start !important;font-size: 12px !important;padding-right: 20px !important;">STRN:</th>
-              <td style="text-align: start !important;font-size: 12px !important;">S4868297-4</td>
-            </tr> {% endcomment %}
           </table>
         </div>
       </div>
@@ -54,6 +49,9 @@
       <h2 style='margin-bottom: 0px !important'>
         Scan Information
       </h2>
+      <h3 style='margin-bottom: 0px !important'>
+        {{ subject }}
+      </h3>
       <div style="display: flex !important;width: 100%;">
       
         <ul style="width:15% !important;list-style: none !important;padding: 0 !important;border: 1px solid gray !important;">
@@ -61,104 +59,23 @@
           <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Scan Date</li>
           <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Severity</li>
           <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Remediation</li>
-          <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Assigned To</li>
           <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Scan Progress</li>
           <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Testing Method</li>
           <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Target</li>
-          <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Protocol</li>
-          <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Application Type</li>
-          <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Findings and Recommendations</li>
+          <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important;">Sub Target</li>
+          <li style="margin-left:0 !important;font-weight: 600 !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 4px !important;padding-right: 7px !important;border-bottom: 1px solid gray !important; display: contents !important;">Application Type</li>
         </ul>
         <ul style="width: 85% !important;list-style: none !important;padding: 0 !important;">
           <li style="border-right: 1px solid gray !important;border-top:1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ scan_type }}</li>
           <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ scan_date }}</li>
           <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ severity }}</li>
           <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ remediation }}</li>
-          <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ assigned_to }}</li>
           <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ scan_progress }}</li>
           <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ testing_method }}</li>
           <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ target }}</li>
-          <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ http_or_https }}</li>
-          <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ application_type }}</li>
-          <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ findings_and_recommendations }}</li>
-          {% comment %} {% if stripe %}
-          
-          <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important;margin-left:0 !important;">US{{ invoiceNo }}</li>
-          {% else %}
-          <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important;margin-left:0 !important;">PK{{ invoiceNo }}</li>
-          {% endif %} {% endcomment %}
+          <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important;">{{ sub_target }}</li>
+          <li style="border-right: 1px solid gray !important;font-size: 10px !important;padding: 5px 0 !important;padding-left: 20px !important;border-bottom: 1px solid gray !important; margin-left:0 !important">{{ application_type }}</li>
         </ul>
-    </div>
-    </div>
-    <table style="font-size: 12px !important;border: 1px solid gray !important;border-spacing: 0 !important; width: 100%;" class="voice-description">
-      <thead>
-        <tr>
-          <th style="font-weight: 600 !important;text-align: center !important;border-bottom: 1px solid gray !important;padding: 5px !important;border-right: 1px solid gray !important;">S.no</th>
-          <th style="font-weight: 600 !important;text-align: center !important;border-bottom: 1px solid gray !important;padding: 5px !important;border-right: 1px solid gray !important;">Description</th>
-          <th style="font-weight: 600 !important;text-align: center !important;border-bottom: 1px solid gray !important;padding: 5px !important;border-right: 1px solid gray !important;">Qty</th>
-          <th style="font-weight: 600 !important;text-align: center !important;border-bottom: 1px solid gray !important;padding: 5px !important;border-right: 1px solid gray !important;">Rate</th>
-          <th style="font-weight: 600 !important;text-align: center !important;border-bottom: 1px solid gray !important;padding: 5px !important;">Amount</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td style="padding: 0 !important;padding: 5px !important;text-align: center !important;border-right: 1px solid gray !important;">1</td>
-          <td style="padding: 0 !important;padding: 5px !important;text-align: center !important;border-right: 1px solid gray !important;">{{ product }}</td>
-          <td style="padding: 0 !important;padding: 5px !important;text-align: center !important;border-right: 1px solid gray !important;"> {{ qty }} </td>
-          {% if stripe %}
-
-          <td style="padding: 0 !important;padding: 5px !important;text-align: center !important;border-right: 1px solid gray !important;">  {{ price_usd }} </td>
-          <td style="padding: 0 !important;padding: 5px !important;text-align: center !important;">  {{ price_usd }}</td>
-          {% else %}
-          <td style="padding: 0 !important;padding: 5px !important;text-align: center !important;border-right: 1px solid gray !important;">  {{ price_pkr }} </td>
-          <td style="padding: 0 !important;padding: 5px !important;text-align: center !important;">  {{ price_pkr }}</td>
-          {% endif %}
-
-        </tr>
-       
-      </tbody>
-    </table>
-    <div style="display: flex !important;float:right !important;justify-content: flex-end !important;">
-      
-      
-      {% if stripe %}
-      <div style="padding-left: 30px !important;font-size: 12px !important;" class="heading">
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin-bottom:0px !important;">Sub Total</p>
-        {% comment %} <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">Tax 5% </p> {% endcomment %}
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">Total</p>
-
-      </div>
-      <div style="padding-left: 30px !important;font-size: 12px !important;" class="curreny">
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin-bottom:0px !important;">$</p>
-        {% comment %} <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">$</p> {% endcomment %}
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">$</p>
-      </div>
-      
-      <div style="padding-left: 30px !important;font-size: 12px !important; text-align: end !important;font-weight: 600 !important;" class="price">
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin-bottom:0px !important;">{{price_usd}}</p>
-        {% comment %} <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">{{tax}}</p> {% endcomment %}
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">{{total_amount}}</p>
-      </div>
-      {% else %}
-      <div style="padding-left: 30px !important;font-size: 12px !important;" class="heading">
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin-bottom:0px !important;">Sub Total</p>
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">Tax 5% </p>
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">Total</p>
-
-      </div>
-      <div style="padding-left: 30px !important;font-size: 12px !important;" class="curreny">
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin-bottom:0px !important;">Rs</p>
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">Rs</p>
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">Rs</p>
-      </div>
-      
-      <div style="padding-left: 30px !important;font-size: 12px !important; text-align: end !important;font-weight: 600 !important;" class="price">
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin-bottom:0px !important;">{{price_pkr}}</p>
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">{{tax}}</p>
-        <p style="font-size: 12px !important;font-weight: 300 !important;margin:0px !important;">{{total_amount}}</p>
-      </div>
-      {% endif %}
-
     </div>
   </div>
 </body>

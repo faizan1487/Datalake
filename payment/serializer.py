@@ -7,6 +7,32 @@ class AlNafiPaymentSerializer(ModelSerializer):
     class Meta:
         model = AlNafi_Payment
         fields = '__all__'
+
+    def update(self, instance, validated_data):
+        instance.customer_email = validated_data.get('customer_email', instance.customer_email)
+        instance.product_name = validated_data.get('product_name', instance.product_name)
+        instance.amount_pkr = validated_data.get('amount_pkr', instance.amount_pkr)
+        instance.amount_usd = validated_data.get('amount_usd', instance.amount_usd)
+        instance.order_datetime = validated_data.get('order_datetime', instance.order_datetime)
+        instance.expiration_datetime = validated_data.get('expiration_datetime', instance.expiration_datetime)
+        instance.source = validated_data.get('source', instance.source)
+        instance.order_id = validated_data.get('order_id', instance.order_id)
+        instance.date_of_activation = validated_data.get('date_of_activation', instance.date_of_activation)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.qarz = validated_data.get('qarz', instance.qarz)
+        instance.remarks = validated_data.get('remarks', instance.remarks)
+        instance.payment_proof = validated_data.get('payment_proof', instance.payment_proof)
+        instance.send_invoice = validated_data.get('send_invoice', instance.send_invoice)
+        instance.pk_invoice_number = validated_data.get('pk_invoice_number', instance.pk_invoice_number)
+        instance.us_invoice_number = validated_data.get('us_invoice_number', instance.us_invoice_number)
+        instance.sponsored = validated_data.get('sponsored', instance.sponsored)
+        instance.coupon_code = validated_data.get('coupon_code', instance.coupon_code)
+        instance.is_upgrade_payment = validated_data.get('is_upgrade_payment', instance.is_upgrade_payment)
+        instance.affiliate = validated_data.get('affiliate', instance.affiliate)
+
+        instance.save()
+        return instance
+
         
     
 
