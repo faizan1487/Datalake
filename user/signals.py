@@ -67,10 +67,10 @@ def usersignal(instance,source,sender):
     if already_existed:
         response = requests.put(url, headers=headers, json=data)
         instance.erp_lead_id = lead_data['data'][0]['name']
-        print("lead updated")
+        # print("lead updated")
         instance.save(update_fields=['erp_lead_id'])
     else:
-        print("in else")
+        # print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
         response.raise_for_status()
@@ -79,10 +79,10 @@ def usersignal(instance,source,sender):
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']
             if erp_lead_id:
-                print("lead id exists")
+                # print("lead id exists")
                 instance.erp_lead_id = erp_lead_id
                 instance.save(update_fields=['erp_lead_id'])
-                print("Lead created successfully!")
+                # print("Lead created successfully!")
 
     post_save.connect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
     post_save.connect(send_psw_lead_post_request, sender=PSWFormRecords)
