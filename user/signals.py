@@ -6,27 +6,29 @@ from user.constants import COUNTRY_CODES
 from newsletter.signals import send_lead_post_request
 
 @receiver(post_save, sender=AlNafi_User)
-def send_lead_post_request(sender, instance, **kwargs):
+def send_alnafi_lead_post_request(sender, instance, **kwargs):
     # print("signal running")
     source='Alnafi'
     alnafi_user = usersignal(instance,source,sender)    
 
 @receiver(post_save, sender=IslamicAcademy_User)
-def send_lead_post_request(sender, instance, created, **kwargs):
+def send_islamic_lead_post_request(sender, instance, created, **kwargs):
     # print("islamic user signal")
     source='Islamic Academy'
     islamic_user = usersignal(instance,source,sender)
 
 
 @receiver(post_save, sender=PSWFormRecords)
-def send_lead_post_request(sender, instance, created, **kwargs):
+def send_psw_lead_post_request(sender, instance, created, **kwargs):
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
 
 
 
 def usersignal(instance,source,sender):
-    post_save.disconnect(send_lead_post_request, sender=sender)
+    post_save.disconnect(send_alnafi_lead_post_request, sender=AlNafi_User)
+    post_save.disconnect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
+    post_save.disconnect(send_psw_lead_post_request, sender=PSWFormRecords)
     # if instance.is_processing:
     #     return
     api_key = '2b4b9755ecc2dc7'
@@ -82,4 +84,6 @@ def usersignal(instance,source,sender):
                 instance.save(update_fields=['erp_lead_id'])
                 print("Lead created successfully!")
 
-    post_save.connect(send_lead_post_request, sender=sender)
+    post_save.connect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
+    post_save.connect(send_psw_lead_post_request, sender=PSWFormRecords)
+    post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)

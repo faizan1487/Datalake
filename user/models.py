@@ -113,7 +113,7 @@ class PSWFormRecords(models.Model):
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
     
     def __str__(self):
-        return f"{self.full_clean}"
+        return f"{self.email}"
     
 
 
