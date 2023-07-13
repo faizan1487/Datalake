@@ -6,7 +6,7 @@ class AffiliateUser(models.Model):
     username = models.CharField(max_length=100 , null=True , blank=True)
     first_name = models.CharField(max_length=100 , null=True , blank=True)
     last_name = models.CharField(max_length=100 , null=True , blank=True)
-    email = models.EmailField(unique=True , null=True , blank=True)
+    email = models.EmailField(unique=True)
     phone = models.CharField(max_length=100 , null=True , blank=True)
     address = models.CharField(max_length=100 , null=True , blank=True)
     country = models.CharField(max_length=100 , null=True , blank=True)

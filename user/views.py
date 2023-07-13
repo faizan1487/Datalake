@@ -124,9 +124,11 @@ class AlnafiUser(APIView):
         email = data.get("email")
         try:
             instance = AlNafi_User.objects.filter(email=email)
+            print("in update")
             serializer = AlnafiUserSerializer(instance.first(), data=data)
         except Exception as e:
-            # print(e)
+            print(e)
+            print("in post")
             serializer = AlnafiUserSerializer(data=data)
 
         if serializer.is_valid():
