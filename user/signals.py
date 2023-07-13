@@ -31,13 +31,15 @@ def usersignal(instance,source,sender):
     post_save.disconnect(send_psw_lead_post_request, sender=PSWFormRecords)
     # if instance.is_processing:
     #     return
+
     api_key = '2b4b9755ecc2dc7'
     api_secret = '8d71fb9b172e2aa'
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",
         "Accept": "application/json",
-    }    
+    }   
+
 
     country_code = getattr(instance, 'country', "Unknown")
     country_name = None
@@ -58,10 +60,25 @@ def usersignal(instance,source,sender):
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     
+    ############stage############
+    # api_key = '83c340ec469378b'
+    # api_secret = 'b65b7c2d6200a9a'
+
+    # headers = {
+    #     'Authorization': f'token {api_key}:{api_secret}',
+    #     "Content-Type": "application/json",
+    #     "Accept": "application/json",
+    # } 
+    # url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    # response = requests.get(url, headers=headers)
+    # lead_data = response.json()
+    # print(lead_data)
+
+
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     response = requests.get(url, headers=headers)
     lead_data = response.json()
-    # print(lead_data['data'])
+    print(lead_data['data'])
     
     already_existed = len(lead_data["data"]) > 0
     if already_existed:
@@ -71,6 +88,7 @@ def usersignal(instance,source,sender):
         instance.save(update_fields=['erp_lead_id'])
     else:
         # print("in else")
+        # post_url = 'https://3.142.247.16/api/resource/Lead'
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
         response.raise_for_status()

@@ -23,6 +23,7 @@ def send_payment_post_request(sender, instance, **kwargs):
         "Accept": "application/json",
     }
 
+
     try:
         response = requests.get(url, headers=headers)
         response.raise_for_status()
