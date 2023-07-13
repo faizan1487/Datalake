@@ -32,9 +32,9 @@ class GetThinkificUsers(APIView):
 class GetUserEnrollments(APIView):
     def get(self, request):
         query = self.request.GET.get('q', None) or None
-        queryset = Thinkific_Users_Enrollments.objects.filter(email__iexact=query)
+        # queryset = Thinkific_Users_Enrollments.objects.filter(email__iexact=query)
+        queryset = Thinkific_Users_Enrollments.objects.all()
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(queryset, request)
         user_enrollemnt_serializer = ThinkificUserEnrollmentSerializer(paginated_queryset, many=True)
-        return paginator.get_paginated_response(user_enrollemnt_serializer.data)
-        
+        return paginator.get_paginated_response(user_enrollemnt_serializer.data)    
