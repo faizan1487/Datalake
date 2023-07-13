@@ -32,32 +32,10 @@ class AlnafiUserSerializer(serializers.ModelSerializer):
       instance.affiliate_code = validated_data.get('affiliate_code', instance.affiliate_code)
       instance.isMentor = validated_data.get('isMentor', instance.isMentor)
       instance.login_source = validated_data.get('login_source', instance.login_source)
+      instance.created_at = validated_data.get('created_at', instance.created_at)
 
       instance.save()
       return instance
-
-
-    # def create(self, validated_data):
-    #     email = validated_data.get("email")
-    #     instance = self.instance
-
-    #     if email and instance:
-    #         try:
-    #             obj = AlNafi_User.objects.exclude(pk=instance.pk).get(email=email)
-    #         except AlNafi_User.DoesNotExist:
-    #             obj = None
-    #     else:
-    #         obj = None
-
-    #     # If the object exists, update its fields with the validated data
-    #     if obj:
-    #         for key, value in validated_data.items():
-    #             setattr(obj, key, value)
-    #         obj.save()
-    #         return obj
-
-    #     return super().create(validated_data)
-          # obj = AlNafi_User.objects.create(**validated_data)
       
       
 # For Islamic Academy Users:
