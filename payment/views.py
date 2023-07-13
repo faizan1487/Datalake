@@ -49,7 +49,7 @@ class AlnafiPayment(APIView):
     def post(self, request):
         data = request.data
         payment_id = data.get('payment_id')
-        # print(payment_id)
+        print(payment_id)
 
         try:
             instance = AlNafi_Payment.objects.filter(payment_id=payment_id)

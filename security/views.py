@@ -102,20 +102,21 @@ class CreateScan(APIView):
         if serializer.is_valid():
             serializer.save()
             # print(serializer.data)
-            subject = 'Scan assigned to your department'
-            params = {'subject': subject, 'scan_type': serializer.data['scan_type'], 'scan_date': serializer.data['scan_date'],
-                      'severity': serializer.data['severity'], 'remediation': serializer.data['remediation'], 
-                      'scan_progress': serializer.data['scan_progress'],'testing_method': serializer.data['testing_method'],
-                      'target': serializer.data['target'], 'sub_target': serializer.data['target_value'], 'application_type': serializer.data['application_type']}
-            html_content = render_to_string('emailtemplate.html', params)
-            text_content = strip_tags(html_content)
-            email_from = "sameer.akbar@annaafi.org"
-            recipient_list = department.email
+            if assigned_to_email:
+                subject = 'Scan assigned to your department'
+                params = {'subject': subject, 'scan_type': serializer.data['scan_type'], 'scan_date': serializer.data['scan_date'],
+                        'severity': serializer.data['severity'], 'remediation': serializer.data['remediation'], 
+                        'scan_progress': serializer.data['scan_progress'],'testing_method': serializer.data['testing_method'],
+                        'target': serializer.data['target'], 'sub_target': serializer.data['target_value'], 'application_type': serializer.data['application_type']}
+                html_content = render_to_string('emailtemplate.html', params)
+                text_content = strip_tags(html_content)
+                email_from = "sameer.akbar@annaafi.org"
+                recipient_list = department.email
 
-            msg = EmailMultiAlternatives(subject, text_content, email_from, [
-                                         recipient_list])
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
+                msg = EmailMultiAlternatives(subject, text_content, email_from, [
+                                            recipient_list])
+                msg.attach_alternative(html_content, "text/html")
+                msg.send()
             # send_mail(subject, emailfrom, recipient_list)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         # print(serializer.errors)

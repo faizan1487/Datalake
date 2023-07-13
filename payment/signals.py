@@ -31,6 +31,8 @@ def send_payment_post_request(sender, instance, **kwargs):
         payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
         # print(payment_user)
         # print(len(data['data']))
+        if not payment_user:
+            return
         for i in range(len(data['data'])):
             # print(payment_user)
             first_name = payment_user[0].first_name if payment_user[0].first_name else ''
