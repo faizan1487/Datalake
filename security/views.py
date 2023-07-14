@@ -32,7 +32,7 @@ class CreateScan(APIView):
         scans = Scan.objects.values(
             'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__name',
             'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
-            'file_upload_link', 'poc_link'
+            'file_upload', 'poc'
         )
         scan_ids = [scan['id'] for scan in scans]
 
@@ -49,6 +49,17 @@ class CreateScan(APIView):
         scan_data = []
         for scan in scans:
             scan_id = scan['id']
+
+            if not scan['file_upload']:
+                file_upload_link = ""
+            else:
+                file_upload_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['file_upload']
+            
+            if not scan['poc']:
+                poc_link = ""
+            else:
+                poc_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['poc']
+
             scan_dict = {
                 'id': scan_id,
                 'scan_type': scan['scan_type'],
@@ -61,8 +72,8 @@ class CreateScan(APIView):
                 'target': scan['target'],
                 'target_value': scan['target_value'],
                 'application_type': scan['application_type'],
-                'file_upload': 'https://alnafi-main-backend.s3.amazonaws.com/' + scan['file_upload'],
-                'poc': 'https://alnafi-main-backend.s3.amazonaws.com/' + scan['poc'],
+                'file_upload': file_upload_link,
+                'poc': poc_link,
                 'no_of_comments': 0,
                 'comments': [],
             }
