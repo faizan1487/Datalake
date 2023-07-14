@@ -32,7 +32,7 @@ class CreateScan(APIView):
         scans = Scan.objects.values(
             'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__name',
             'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
-            'file_upload', 'poc'
+            'file_upload_link', 'poc_link'
         )
         scan_ids = [scan['id'] for scan in scans]
 
@@ -81,6 +81,8 @@ class CreateScan(APIView):
         data = request.data.copy()
         assigned_to_email = data.get('assigned_to')
         # print(assigned_to_email)
+        # print(data)
+        # print(data.get('file_upload'))
         scan_id = data.get('id')
 
         if assigned_to_email:
@@ -98,10 +100,17 @@ class CreateScan(APIView):
         except:
             serializer = ScanSerializer(data=data)
 
-        
+        # serializer.initial_data['file_upload_link'] = serializer.data['file_upload']
+        # serializer.initial_data['poc_link'] = serializer.data['poc']
+
         if serializer.is_valid():
+            # print(serializer.validated_data)
             serializer.save()
-            # print(serializer.data)
+
+            serializer.data['file_upload_link'] == serializer.data['file_upload']
+            serializer.data['poc_link'] == serializer.data['poc']
+            print(serializer.data)
+
             if assigned_to_email:
                 subject = 'Scan assigned to your department'
                 params = {'subject': subject, 'scan_type': serializer.data['scan_type'], 'scan_date': serializer.data['scan_date'],
@@ -110,7 +119,7 @@ class CreateScan(APIView):
                         'target': serializer.data['target'], 'sub_target': serializer.data['target_value'], 'application_type': serializer.data['application_type']}
                 html_content = render_to_string('emailtemplate.html', params)
                 text_content = strip_tags(html_content)
-                email_from = "sameer.akbar@annaafi.org"
+                email_from = "secops@alnafi.edu.pk"
                 recipient_list = department.email
 
                 msg = EmailMultiAlternatives(subject, text_content, email_from, [
@@ -185,13 +194,19 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
         scan.delete()
         return Response({"message":"scan Deleted!"},status=status.HTTP_204_NO_CONTENT)
 
-
+class GetDepartment(APIView):
+    def get(self, request):
+        departments = Department.objects.values('name')
+        print(departments)
+        return Response(departments)
 
 class CommentDelete(APIView):
     def get(self, request):
         objs = Scan.objects.all()
         objs.delete()
         return Response(' comments deleted')
+
+
 
 # class CommentCreateUpdateAPIView(APIView):
 #     '''

@@ -12,7 +12,6 @@ class YourS3Storage(S3Boto3Storage):
     file_overwrite = False  # Optional: Set to True if you want to overwrite existing files
 
 
-
 class Scan(models.Model):
     SCAN_TYPE_CHOICES = [
         ('Application', 'Application'),
@@ -62,7 +61,9 @@ class Scan(models.Model):
     application_type = models.CharField(max_length=100, choices=APPLICATION_TYPE_CHOICES,null=True,blank=True)
     # findings_and_recommendations = models.TextField(null=True,blank=True)
     file_upload = models.FileField(upload_to="media/security/file_uploads",null=True, blank=True,storage=YourS3Storage())  # For general file uploads
+    file_upload_link = models.CharField(max_length=500,null=True,blank=True)
     poc = models.ImageField(upload_to='media/security/poc_uploads',null=True, blank=True,storage=YourS3Storage())  # For image uploads (e.g., PoC photo)
+    poc_link = models.CharField(max_length=500,null=True,blank=True)
 
     def __str__(self):
         return f"Scan {self.id}"
