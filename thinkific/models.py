@@ -20,7 +20,9 @@ class Thinkific_User(models.Model):
     affiliate_payout_email = models.EmailField(max_length=255, null=True, blank=True)
     administered_course_ids = models.JSONField(null=True, blank=True)
     custom_profile_fields = models.JSONField(null=True, blank=True)
-    
+    erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
+
+
     def __str__(self):
         return f"{self.email}"
     
@@ -33,14 +35,14 @@ class Thinkific_Users_Enrollments(models.Model):
     id = models.IntegerField(primary_key=True)
     created_at = models.DateTimeField(null=True, blank=True)
     expiry_date = models.DateTimeField(null=True, blank=True) 
-    course_id = models.IntegerField(null=True, blank=True)
     percentage_completed = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     completed_at = models.DateTimeField(null=True, blank=True)
     free_trial = models.BooleanField(default=False)
     started_at = models.DateTimeField(null=True, blank=True)
     activated_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
-    user_id = models.IntegerField(null=True, blank=True)
+    # thinkific_user_id = models.IntegerField(null=True, blank=True)
+    user_id =  models.ForeignKey(Thinkific_User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_enrollments")
     first_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(max_length=255, null=True, blank=True)
