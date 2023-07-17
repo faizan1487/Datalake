@@ -41,7 +41,7 @@ def usersignal(instance,source):
                     if code == country_code:
                         country_name = name
                         break
-
+            
             data = {
                     "first_name": user.first_name or None,
                     "last_name": user.last_name if hasattr(user, 'last_name') else None,
@@ -52,7 +52,6 @@ def usersignal(instance,source):
                     "product_name": instance.course_name if hasattr(instance, 'course_name') else None,
                     # Add other fields from the Main_User model to the data dictionary as needed
                 }
-            
             url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{user.email}"]]'
             response = requests.get(url, headers=headers)
             lead_data = response.json()
@@ -61,7 +60,9 @@ def usersignal(instance,source):
             already_existed = len(lead_data["data"]) > 0
             # print(already_existed)
             if already_existed:
+                url = 'https://crm.alnafi.com/api/resource/Lead'
                 response = requests.put(url, headers=headers, json=data)
+                print(response.json())
                 user.erp_lead_id = lead_data['data'][0]['name']
                 print("lead updated")
                 user.save(update_fields=['erp_lead_id'])

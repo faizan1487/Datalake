@@ -118,9 +118,9 @@ class CreateScan(APIView):
             # print(serializer.validated_data)
             serializer.save()
 
-            serializer.data['file_upload_link'] == serializer.data['file_upload']
-            serializer.data['poc_link'] == serializer.data['poc']
-            print(serializer.data)
+            # serializer.data['file_upload_link'] == serializer.data['file_upload']
+            # serializer.data['poc_link'] == serializer.data['poc']
+            # print(serializer.data)
 
             if assigned_to_email:
                 subject = 'Scan assigned to your department'
@@ -208,7 +208,7 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
 class GetDepartment(APIView):
     def get(self, request):
         departments = Department.objects.values('name')
-        print(departments)
+        # print(departments)
         return Response(departments)
 
 class CommentDelete(APIView):
