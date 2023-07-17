@@ -52,7 +52,7 @@ class Scan(models.Model):
     scan_date = models.DateTimeField(null=True,blank=True)
     severity = models.CharField(max_length=100, choices=SEVERITY_CHOICES,null=True,blank=True)
     remediation = models.TextField(null=True,blank=True)
-    assigned_to = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name="department_scans")
+    # assigned_to = models.ForeignKey('Department', on_delete=models.SET_NULL, null=True, blank=True, related_name="department_scans")
     scan_progress = models.CharField(max_length=100, choices=PROGRESS_CHOICES,null=True,blank=True)
     testing_method = models.CharField(max_length=100, choices=TESTING_METHOD_CHOICES,null=True,blank=True)
     target = models.CharField(max_length=100, choices=TARGET_CHOICES,null=True,blank=True)
@@ -61,9 +61,9 @@ class Scan(models.Model):
     application_type = models.CharField(max_length=100, choices=APPLICATION_TYPE_CHOICES,null=True,blank=True)
     # findings_and_recommendations = models.TextField(null=True,blank=True)
     file_upload = models.FileField(upload_to="media/security/file_uploads",null=True, blank=True,storage=YourS3Storage())  # For general file uploads
-    file_upload_link = models.CharField(max_length=500,null=True,blank=True)
+    # file_upload_link = models.CharField(max_length=500,null=True,blank=True)
     poc = models.ImageField(upload_to='media/security/poc_uploads',null=True, blank=True,storage=YourS3Storage())  # For image uploads (e.g., PoC photo)
-    poc_link = models.CharField(max_length=500,null=True,blank=True)
+    # poc_link = models.CharField(max_length=500,null=True,blank=True)
 
     def __str__(self):
         return f"Scan {self.id}"
@@ -89,7 +89,7 @@ class Comment(models.Model):
         'self', on_delete=models.CASCADE, null=True, blank=True, related_name='replies')
     isPrimaryComment = models.BooleanField(default=False)
     isSecondaryComment = models.BooleanField(default=True)
-    department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True,blank=True)
+    # department = models.ForeignKey(Department, on_delete=models.CASCADE, null=True,blank=True)
     comment = models.TextField(blank=True, null=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

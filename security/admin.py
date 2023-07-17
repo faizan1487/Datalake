@@ -9,7 +9,7 @@ from .models import Scan, Comment, Department
 
 #For Stripe Payments:
 class ScanAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('id', 'scan_type', 'scan_date', 'severity','scan_progress','assigned_to')
+    list_display = ('id', 'scan_type', 'scan_date', 'severity','scan_progress')
     list_filter = ('scan_type', 'severity', 'scan_progress')
     search_fields = ('id', 'scan_type')  # Assuming the ForeignKey field is related to the TeamMember model
 
@@ -24,8 +24,8 @@ admin.site.register(Department, DepartmentAdmin)
 
 
 class CommentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ["department", "scan", ]
-    search_fields = ["department", "scan"]
+    list_display = ["scan",]
+    search_fields = ["scan"]
     
 admin.site.register(Comment, CommentAdmin)
 
