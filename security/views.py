@@ -34,7 +34,7 @@ class CreateScan(APIView):
             'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
             'file_upload', 'poc'
         )
-        scan_ids = [scan['id'] for scan in scans]
+        # scan_ids = [scan['id'] for scan in scans]
 
         # Prefetch comments and related data
         # comments = Comment.objects.select_related('department').prefetch_related('replies')
@@ -46,46 +46,46 @@ class CreateScan(APIView):
         #         comment_mapping[comment.scan_id] = []
         #     comment_mapping[comment.scan_id].append(comment)
 
-        scan_data = []
-        for scan in scans:
-            scan_id = scan['id']
+        # scan_data = []
+        # for scan in scans:
+        #     scan_id = scan['id']
 
-            if not scan['file_upload']:
-                file_upload_link = ""
-            else:
-                file_upload_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['file_upload']
+        #     if not scan['file_upload']:
+        #         file_upload_link = ""
+        #     else:
+        #         file_upload_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['file_upload']
             
-            if not scan['poc']:
-                poc_link = ""
-            else:
-                poc_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['poc']
+        #     if not scan['poc']:
+        #         poc_link = ""
+        #     else:
+        #         poc_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['poc']
 
-            scan_dict = {
-                'id': scan_id,
-                'scan_type': scan['scan_type'],
-                'scan_date': scan['scan_date'],
-                'severity': scan['severity'],
-                'remediation': scan['remediation'],
-                'assigned_to__name': scan['assigned_to__name'],
-                'scan_progress': scan['scan_progress'],
-                'testing_method': scan['testing_method'],
-                'target': scan['target'],
-                'target_value': scan['target_value'],
-                'application_type': scan['application_type'],
-                'file_upload': file_upload_link,
-                'poc': poc_link,
-                'no_of_comments': 0,
-                'comments': [],
-            }
+        #     scan_dict = {
+        #         'id': scan_id,
+        #         'scan_type': scan['scan_type'],
+        #         'scan_date': scan['scan_date'],
+        #         'severity': scan['severity'],
+        #         'remediation': scan['remediation'],
+        #         'assigned_to__name': scan['assigned_to__name'],
+        #         'scan_progress': scan['scan_progress'],
+        #         'testing_method': scan['testing_method'],
+        #         'target': scan['target'],
+        #         'target_value': scan['target_value'],
+        #         'application_type': scan['application_type'],
+        #         'file_upload': file_upload_link,
+        #         'poc': poc_link,
+        #         'no_of_comments': 0,
+        #         'comments': [],
+        #     }
 
             # if scan_id in comment_mapping:
             #     scan_dict['no_of_comments'] = len(comment_mapping[scan_id])
             #     scan_dict['comments'] = get_comments_data(comment_mapping[scan_id])
 
-            scan_data.append(scan_dict)
+            # scan_data.append(scan_dict)
 
-        result = {"scans": scan_data}
-        return Response(result)
+        # result = {"scans": scan_data}
+        return Response(scans)
 
     
     def post(self, request):
@@ -111,17 +111,11 @@ class CreateScan(APIView):
         except:
             serializer = ScanSerializer(data=data)
 
-        # serializer.initial_data['file_upload_link'] = serializer.data['file_upload']
-        # serializer.initial_data['poc_link'] = serializer.data['poc']
+        
 
         if serializer.is_valid():
             # print(serializer.validated_data)
             serializer.save()
-
-            # serializer.data['file_upload_link'] == serializer.data['file_upload']
-            # serializer.data['poc_link'] == serializer.data['poc']
-            # print(serializer.data)
-
             if assigned_to_email:
                 subject = 'Scan assigned to your department'
                 params = {'subject': subject, 'scan_type': serializer.data['scan_type'], 'scan_date': serializer.data['scan_date'],

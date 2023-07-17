@@ -60,7 +60,7 @@ class Scan(models.Model):
     application_type = models.CharField(max_length=100, choices=APPLICATION_TYPE_CHOICES,null=True,blank=True)
     file_upload = models.FileField(upload_to="media/security/file_uploads",null=True, blank=True,storage=YourS3Storage())  # For general file uploads
     poc = models.ImageField(upload_to='media/security/poc_uploads',null=True, blank=True,storage=YourS3Storage())  # For image uploads (e.g., PoC photo)
-    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    # created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
 
     def __str__(self):
