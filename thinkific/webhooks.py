@@ -10,7 +10,6 @@ from rest_framework.decorators import renderer_classes
 from .models import Thinkific_User, Thinkific_Users_Enrollments
 import csv
 
-
 @csrf_exempt
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
@@ -107,5 +106,5 @@ def enrollment_created_webhook(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     except Exception as e:
         print(e)
-    # print(serializer.errors)
+    print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

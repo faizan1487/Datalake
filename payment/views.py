@@ -78,8 +78,8 @@ class UBLManualPayment(APIView):
         transaction_id = data.get('transaction_id')
 
         try:
-            instance = UBL_Manual_Payment.objects.get(transaction_id=transaction_id)
-            serializer = UBL_Manual_PaymentSerializer(instance, data=data)
+            instance = UBL_Manual_Payment.objects.filter(transaction_id=transaction_id)
+            serializer = UBL_Manual_PaymentSerializer(instance.first(), data=data)
         except:
             serializer = UBL_Manual_PaymentSerializer(data=data)
 

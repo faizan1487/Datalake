@@ -78,7 +78,7 @@ class Main_User(models.Model):
     is_paying_customer = models.BooleanField(default=False)
     role = models.CharField(max_length=255, null=True, blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
-
+    
     def __str__(self):
         return f"{self.email}"
     
