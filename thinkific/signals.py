@@ -60,9 +60,10 @@ def usersignal(instance,source):
             already_existed = len(lead_data["data"]) > 0
             # print(already_existed)
             if already_existed:
-                url = 'https://crm.alnafi.com/api/resource/Lead'
+                url = f'https://crm.alnafi.com/api/resource/Lead?filters=[["Lead","email_id","=","{user.email}"]]'
+                # url = 'https://crm.alnafi.com/api/resource/Lead'
                 response = requests.put(url, headers=headers, json=data)
-                print(response.json())
+                print(response)
                 user.erp_lead_id = lead_data['data'][0]['name']
                 print("lead updated")
                 user.save(update_fields=['erp_lead_id'])
