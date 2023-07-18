@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.template.loader import render_to_string
 from django.db.models import Prefetch
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.core.mail import send_mail, EmailMultiAlternatives
 from django.conf import settings
 from django.utils.html import strip_tags
@@ -197,7 +197,8 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
         # if scan.user != request.user:
         #     return Response({"message":"You are not authorized to delete this scan"},status=status.HTTP_401_UNAUTHORIZED)
         scan.delete()
-        return Response({"message":"scan Deleted!"},status=status.HTTP_204_NO_CONTENT)
+        return HttpResponse("Scan Deleted!")
+        return Response({"message":"Scan Deleted!"},status=status.HTTP_204_NO_CONTENT)
 
 class GetDepartment(APIView):
     def get(self, request):
