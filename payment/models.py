@@ -148,7 +148,7 @@ class Main_Payment(models.Model):
     easypaisa_ops_id = models.CharField(max_length=50, null=True,blank=True)
     easypaisa_customer_msidn = models.CharField(max_length=50, null=True,blank=True)
     card_mask = models.CharField(max_length=100, null=True,blank=True)
-    user =  models.ForeignKey(Main_User, on_delete=models.SET_NULL, null=True, blank=True, related_name="user_payments")
+    user =  models.ForeignKey(Main_User, on_delete=models.CASCADE, null=True, blank=True, related_name="user_payments")
     product = models.ForeignKey(Main_Product, on_delete=models.SET_NULL, null=True, blank=True, related_name="product_payments")
     amount = models.CharField(max_length=50, null=True,blank=True)
     currency = models.CharField(max_length=50, null=True , blank=True)
