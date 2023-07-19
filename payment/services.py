@@ -17,7 +17,9 @@ import calendar
 from calendar import monthrange
 from django.db.models import Count
 from django.db.models.functions import TruncDate
-
+from django.core.cache import cache
+import requests
+import json
 
 def json_to_csv(serialized_data,name):
     file_name = f"{name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -130,8 +132,6 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
     
     statuses = ["0",False,0]
     payments = payments.exclude(source='UBL_DD', status__in=statuses)
-    # payments = payments.exclude(Q(source='UBL_DD') & Q(status="0"))
-
     if status:
         payments = payments.filter(status=status)
 
@@ -141,14 +141,10 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
         else:
             payments = payments.filter(source='stripe')
 
-    # print(payments)
     if source:
         payments = payments.filter(source=source)
 
-
-
-    # print(payments)
-
+   
     if not start_date:
         first_payment = payments.exclude(order_datetime=None).last()
         start_date = first_payment.order_datetime.date() if first_payment else None
@@ -203,6 +199,31 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
     response_data = {"payments": payments, "success":"true"}
 
     return response_data
+
+
+
+
+
+
+
+
+def get_USD_rate():
+    usd_details = cache.get("usd_details")
+    if usd_details:
+        # print(usd_details)
+        # print("usd_details", usd_details["PKR"])
+        return json.loads(usd_details)
+    usd_details = {}
+    url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/USD"
+    response = requests.get(url).json()
+    usd_details["PKR"] = response["conversion_rates"]["PKR"]
+    usd_details["USD"] = response["conversion_rates"]["USD"]
+
+    cache.set("usd_details", json.dumps(usd_details), 60*120)
+    # print("usd_details",usd_details)
+    return usd_details
+
+
 
 
 # def stripe_no_payments(start_date,end_date):

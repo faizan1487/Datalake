@@ -91,10 +91,6 @@ def usersignal(instance,source):
             
             already_existed = len(lead_data["data"]) > 0
 
-            if DEBUG:
-                url = 'http://3.142.247.16/api/resource/Lead'
-            else:
-                url = 'https://crm.alnafi.com/api/resource/Lead'
 
             if already_existed:
                 lead_id = lead_data['data'][0]['name']
@@ -109,6 +105,12 @@ def usersignal(instance,source):
                 user.save(update_fields=['erp_lead_id'])
                 print("lead updadted")
             else:
+
+                if DEBUG:
+                    url = 'http://3.142.247.16/api/resource/Lead'
+                else:
+                    url = 'https://crm.alnafi.com/api/resource/Lead'
+
                 response = requests.post(url, headers=headers, json=data)
                 response.raise_for_status()
                 if response.status_code == 200:

@@ -4,6 +4,11 @@ import requests
 from .models import AlNafi_User, IslamicAcademy_User,PSWFormRecords
 from user.constants import COUNTRY_CODES
 from newsletter.signals import send_lead_post_request
+import environ
+
+env = environ.Env()
+env.read_env()
+DEBUG = env('DEBUG',cast=bool)
 
 @receiver(post_save, sender=AlNafi_User)
 def send_alnafi_lead_post_request(sender, instance, **kwargs):
@@ -12,14 +17,14 @@ def send_alnafi_lead_post_request(sender, instance, **kwargs):
     alnafi_user = usersignal(instance,source,sender)    
 
 @receiver(post_save, sender=IslamicAcademy_User)
-def send_islamic_lead_post_request(sender, instance, created, **kwargs):
+def send_islamic_lead_post_request(sender, instance, **kwargs):
     # print("islamic user signal")
     source='Islamic Academy'
     islamic_user = usersignal(instance,source,sender)
 
 
 @receiver(post_save, sender=PSWFormRecords)
-def send_psw_lead_post_request(sender, instance, created, **kwargs):
+def send_psw_lead_post_request(sender, instance, **kwargs):
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
 
@@ -29,17 +34,21 @@ def usersignal(instance,source,sender):
     post_save.disconnect(send_alnafi_lead_post_request, sender=AlNafi_User)
     post_save.disconnect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
     post_save.disconnect(send_psw_lead_post_request, sender=PSWFormRecords)
-    # if instance.is_processing:
-    #     return
 
-    api_key = '2b4b9755ecc2dc7'
-    api_secret = '8d71fb9b172e2aa'
+    if DEBUG:
+        api_key = '2768f34bb4bb7f7'
+        api_secret = '21754cee8dc0f42'
+        url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    else:
+        api_key = '2b4b9755ecc2dc7'
+        api_secret = '8d71fb9b172e2aa'
+        url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",
         "Accept": "application/json",
-    }   
-
+    }
 
     country_code = getattr(instance, 'country', "Unknown")
     country_name = None
@@ -60,37 +69,30 @@ def usersignal(instance,source,sender):
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     
-    ############stage############
-    # api_key = '83c340ec469378b'
-    # api_secret = 'b65b7c2d6200a9a'
-
-    # headers = {
-    #     'Authorization': f'token {api_key}:{api_secret}',
-    #     "Content-Type": "application/json",
-    #     "Accept": "application/json",
-    # } 
-    # url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
-    # response = requests.get(url, headers=headers)
-    # lead_data = response.json()
-    # print(lead_data)
 
 
-    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     response = requests.get(url, headers=headers)
     lead_data = response.json()
-    print(lead_data['data'])
     
     already_existed = len(lead_data["data"]) > 0
+
     if already_existed:
+        lead_id = lead_data['data'][0]['name']
+        if DEBUG:
+            url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
+        else:
+            url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+
         response = requests.put(url, headers=headers, json=data)
         instance.erp_lead_id = lead_data['data'][0]['name']
         # print("lead updated")
         instance.save(update_fields=['erp_lead_id'])
     else:
-        # print("in else")
-        # post_url = 'https://3.142.247.16/api/resource/Lead'
-        post_url = 'https://crm.alnafi.com/api/resource/Lead'
-        response = requests.post(post_url, headers=headers, json=data)
+        if DEBUG:
+            url = 'http://3.142.247.16/api/resource/Lead'
+        else:
+            url = 'https://crm.alnafi.com/api/resource/Lead'
+        response = requests.post(url, headers=headers, json=data)
         response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:

@@ -4,8 +4,7 @@ from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_P
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
-from .services import (json_to_csv, renewal_no_of_payments,search_payment,main_no_of_payments,no_of_payments)
-# easypaisa_pay, ubl_pay, stripe_pay, stripe_no_payments,ubl_no_payments,easypaisa_no_payments,ubl_payment_validation,easypaisa_payment_validation,stripe_payment_validation,
+from .services import (json_to_csv, renewal_no_of_payments,search_payment,main_no_of_payments,no_of_payments,get_USD_rate)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -49,7 +48,7 @@ class AlnafiPayment(APIView):
     def post(self, request):
         data = request.data
         payment_id = data.get('payment_id')
-        print(payment_id)
+        # print(payment_id)
 
         try:
             instance = AlNafi_Payment.objects.filter(payment_id=payment_id)
@@ -380,9 +379,23 @@ class SearchPayments(APIView):
                 payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
                 payment_objects = json.loads(payment_json)
                 
+                total_payments = 0
+                for i in payment_objects:
+                    # print(i['currency'])
+                    if i['currency'].lower() == 'pkr':
+                        # print(i['amount'])
+                        total_payments += int(float(i['amount']))
+                    elif i['currency'].lower() == 'usd':
+                        usd_rate = get_USD_rate()
+                        total_payments += int(float(i['amount'])) * usd_rate['PKR']
+                
+
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-                return paginator.get_paginated_response(paginated_queryset)
+                payments = {'total_payments_amount': total_payments, 'payments': paginated_queryset}
+                # return paginator.get_paginated_response(paginated_queryset)
+                return paginator.get_paginated_response(payments)
+
         else:
             response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
             return Response(response_data)

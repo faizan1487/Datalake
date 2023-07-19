@@ -34,6 +34,9 @@ import numpy as np
 import json
 import environ
 from django.http import HttpResponse
+from user.constants import COUNTRY_CODES
+import requests
+
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -470,7 +473,6 @@ class AllEmployees(APIView):
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(employees, request)
         return paginator.get_paginated_response(paginated_queryset)
-
 
 
 

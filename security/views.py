@@ -90,6 +90,7 @@ class CreateScan(APIView):
     
     def post(self, request):
         data = request.data.copy()
+        print("data",data)
         assigned_to_email = data.get('assigned_to')
         # print(assigned_to_email)
         # print(data)
