@@ -12,7 +12,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(post_save, sender=AlNafi_User)
 def send_alnafi_lead_post_request(sender, instance, **kwargs):
-    # print("signal running")
+    print("signal running")
     source='Alnafi'
     alnafi_user = usersignal(instance,source,sender)    
 
@@ -92,7 +92,9 @@ def usersignal(instance,source,sender):
             url = 'http://3.142.247.16/api/resource/Lead'
         else:
             url = 'https://crm.alnafi.com/api/resource/Lead'
+
         response = requests.post(url, headers=headers, json=data)
+        print("response.status_code",response.text)
         response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:

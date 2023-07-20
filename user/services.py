@@ -96,12 +96,15 @@ def search_users(q, start_date, end_date, is_converted,source):
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
         
-        
+
     if q:
         users = users.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
+    print(users)
     users = users.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
+    print("after date ffilter",users)
     users = paying_users_details(users, is_converted)
+    print("after paying ffilter",users['converted_users'])
     return users 
 
 
