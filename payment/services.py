@@ -127,7 +127,7 @@ def renewal_no_of_payments(payments):
 
 def search_payment(export, q, start_date, end_date, plan, request, url, product, source, origin,status):
     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1)
-    payments = payments.exclude(amount__in=[2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
+    payments = payments.exclude(amount__in=[2,0,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
     payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','stripe', 'UBL_DD']) 
     
     statuses = ["0",False,0]
