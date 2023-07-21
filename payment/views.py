@@ -378,21 +378,26 @@ class SearchPayments(APIView):
             else:            
                 payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
                 payment_objects = json.loads(payment_json)
-                
-                total_payments = 0
+                # print(payment_objects)
+                total_payments_in_pkr = 0
+                total_payments_in_usd = 0
+                usd_rate = get_USD_rate()
                 for i in payment_objects:
-                    # print(i['currency'])
-                    if i['source'].lower() == 'ubl_dd' or 'al-nafi' or 'easypaisa' or 'ubl_ipg':
-                        # print(i['amount'])
-                        total_payments += int(float(i['amount']))
-                    elif i['source'].lower() == 'stripe':
-                        usd_rate = get_USD_rate()
-                        total_payments += int(float(i['amount'])) * usd_rate['PKR']
+                    # print(i['source'].lower())
+                    sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
+                    if i['source'].lower() in sources:
+                        total_payments_in_pkr += int(float(i['amount']))
+                        total_payments_in_usd += int(float(i['amount'])) // usd_rate['PKR']
+
+                    else:
+                        # print("in elif")
+                        total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
+                        total_payments_in_usd += int(float(i['amount']))
                 
 
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-                payments = {'total_payments_amount': total_payments, 'payments': paginated_queryset}
+                payments = {'total_payments_pkr': total_payments_in_pkr, 'total_payments_usd': total_payments_in_usd, 'payments': paginated_queryset}
                 # return paginator.get_paginated_response(paginated_queryset)
                 return paginator.get_paginated_response(payments)
 
