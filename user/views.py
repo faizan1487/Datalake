@@ -122,6 +122,26 @@ class UsersDelete(APIView):
 
 #Signal for mainsite user
 class AlnafiUser(APIView):
+    def get(self, request):
+        email_string = self.request.GET.get('emails', None) or None
+        if email_string:
+            emails = email_string.split(',')
+            # print(type(emails))
+            # print(emails)
+            users = AlNafi_User.objects.filter(email__in=emails)
+        else:
+            users = AlNafi_User.objects.all()
+
+        # print(users)
+        for user in users:
+            print("saving")
+            user.save()
+
+        return HttpResponse("working")
+     
+
+
+
     def post(self, request):
         data = request.data
         email = data.get("email")

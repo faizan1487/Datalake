@@ -10,20 +10,20 @@ env = environ.Env()
 env.read_env()
 DEBUG = env('DEBUG',cast=bool)
 
-@receiver(post_save, sender=AlNafi_User)
+# @receiver(post_save, sender=AlNafi_User)
 def send_alnafi_lead_post_request(sender, instance, **kwargs):
     print("signal running")
     source='Alnafi'
     alnafi_user = usersignal(instance,source,sender)    
 
-@receiver(post_save, sender=IslamicAcademy_User)
+# @receiver(post_save, sender=IslamicAcademy_User)
 def send_islamic_lead_post_request(sender, instance, **kwargs):
     # print("islamic user signal")
     source='Islamic Academy'
     islamic_user = usersignal(instance,source,sender)
 
 
-@receiver(post_save, sender=PSWFormRecords)
+# @receiver(post_save, sender=PSWFormRecords)
 def send_psw_lead_post_request(sender, instance, **kwargs):
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
@@ -35,14 +35,14 @@ def usersignal(instance,source,sender):
     post_save.disconnect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
     post_save.disconnect(send_psw_lead_post_request, sender=PSWFormRecords)
 
-    if DEBUG:
-        api_key = '2768f34bb4bb7f7'
-        api_secret = '21754cee8dc0f42'
-        url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
-    else:
-        api_key = '2b4b9755ecc2dc7'
-        api_secret = '8d71fb9b172e2aa'
-        url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    # if DEBUG:
+    #     api_key = '2768f34bb4bb7f7'
+    #     api_secret = '21754cee8dc0f42'
+    #     url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    # else:
+    api_key = '2b4b9755ecc2dc7'
+    api_secret = '8d71fb9b172e2aa'
+    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
@@ -73,25 +73,25 @@ def usersignal(instance,source,sender):
 
     response = requests.get(url, headers=headers)
     lead_data = response.json()
-    
+    # print(lead_data)
     already_existed = len(lead_data["data"]) > 0
 
     if already_existed:
         lead_id = lead_data['data'][0]['name']
-        if DEBUG:
-            url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
-        else:
-            url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+        # if DEBUG:
+        #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
+        # else:
+        url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
 
         response = requests.put(url, headers=headers, json=data)
         instance.erp_lead_id = lead_data['data'][0]['name']
         # print("lead updated")
         instance.save(update_fields=['erp_lead_id'])
     else:
-        if DEBUG:
-            url = 'http://3.142.247.16/api/resource/Lead'
-        else:
-            url = 'https://crm.alnafi.com/api/resource/Lead'
+        # if DEBUG:
+        #     url = 'http://3.142.247.16/api/resource/Lead'
+        # else:
+        url = 'https://crm.alnafi.com/api/resource/Lead'
 
         response = requests.post(url, headers=headers, json=data)
         print("response.status_code",response.text)
