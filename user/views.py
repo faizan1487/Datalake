@@ -1,3 +1,4 @@
+from threading import Thread
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -123,23 +124,24 @@ class UsersDelete(APIView):
 #Signal for mainsite user
 class AlnafiUser(APIView):
     def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+     
+    def get_thread(self, request):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
             emails = email_string.split(',')
-            print(type(emails))
-            print(emails)
+            # print(type(emails))
+            # print(emails)
             users = AlNafi_User.objects.filter(email__in=emails)
         else:
             users = AlNafi_User.objects.all()
 
-        print(users)
+        # print(users)
         for user in users:
-            print(user)
-            print("saving")
+            # print(user)
+            # print("saving")
             user.save()
-
-        return HttpResponse("working")
-     
 
 
 
