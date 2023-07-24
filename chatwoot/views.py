@@ -7,6 +7,7 @@ from threading import Thread
 from rest_framework.response import Response
 # Create your views here.
 import requests
+from datetime import datetime
 
 class ChatwootUsers(APIView):
     def get(self, request):
@@ -22,21 +23,47 @@ class ChatwootUsers(APIView):
             users = ChatwoorUser.objects.all()
 
         for user in users:
-            print(user)
+            # print(user)
             user.save()
 
 
-class Conversations(APIView):
+class ConversationsReport(APIView):
     def get(self, request):
-        url = 'https://chat.alnafi.com/api/v1/accounts/3/conversations/meta'
+        params = {
+            'type': 'account',
+        }
+
+        start_date = self.request.GET.get('start_date', None) or None
+        if start_date:
+            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
+            since = start_date_obj.timestamp()
+            params['since'] = since
+            print("since",since)
+
+        end_date = self.request.GET.get('end_date', None) or None
+        if end_date:
+            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
+            until = end_date_obj.timestamp()
+            params['until'] = until
+            print("until",until)
+
+        
+
+        
+        # since=1689686153
+        # until=1690204488
+        type = 'account'
+
         api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
+
 
         headers = {
         'api_access_token': api_access_token,
         "Content-Type": "application/json",
         "Accept": "application/json",
         }
-        response = requests.get(url, headers=headers)
+        url = 'https://chat.alnafi.com/api/v2/accounts/3/reports/summary'
+        response = requests.get(url, headers=headers, params=params)
         data = response.json()
-        # print(data)
+        print(data)
         return Response(data)

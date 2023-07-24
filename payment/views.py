@@ -379,21 +379,21 @@ class SearchPayments(APIView):
                 payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
                 payment_objects = json.loads(payment_json)
                 
-                # print(payment_objects)
-                # total_payments_in_pkr = 0
-                # total_payments_in_usd = 0
-                # usd_rate = get_USD_rate()
-                # for i in payment_objects:
-                #     # print(i['source'].lower())
-                #     sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
-                #     if i['source'].lower() in sources:
-                #         total_payments_in_pkr += int(float(i['amount']))
-                #         total_payments_in_usd += int(float(i['amount'])) // usd_rate['PKR']
+                print(payment_objects)
+                total_payments_in_pkr = 0
+                total_payments_in_usd = 0
+                usd_rate = get_USD_rate()
+                for i in payment_objects:
+                    # print(i['source'].lower())
+                    sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
+                    if i['source'].lower() in sources:
+                        total_payments_in_pkr += int(float(i['amount']))
+                        total_payments_in_usd += int(float(i['amount'])) // usd_rate['PKR']
 
-                #     else:
-                #         # print("in elif")
-                #         total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
-                #         total_payments_in_usd += int(float(i['amount']))
+                    else:
+                        # print("in elif")
+                        total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
+                        total_payments_in_usd += int(float(i['amount']))
                 
 
                 paginator = MyPagination()
