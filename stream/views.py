@@ -47,7 +47,7 @@ class StreamUsers(APIView):
 
 
 
-class StreamUser(APIView):
+class UpdateStreamUser(APIView):
     def get(self, request):
         Thread(target=self.get_thread, args=(request,)).start()
         return HttpResponse("working")
