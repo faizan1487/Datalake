@@ -97,4 +97,5 @@ class AffiliateUser(APIView):
             users = AffiliateUser.objects.all()
 
         for user in users:
+            print(user)
             user.save()

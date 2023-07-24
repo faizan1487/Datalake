@@ -4,6 +4,7 @@ from rest_framework.views import APIView
 from .models import ChatwoorUser
 from django.http import HttpResponse
 from threading import Thread
+from rest_framework.response import Response
 # Create your views here.
 import requests
 
@@ -21,6 +22,7 @@ class ChatwootUsers(APIView):
             users = ChatwoorUser.objects.all()
 
         for user in users:
+            print(user)
             user.save()
 
 
@@ -36,5 +38,5 @@ class Conversations(APIView):
         }
         response = requests.get(url, headers=headers)
         data = response.json()
-        print(data)
-        return HttpResponse("working")
+        # print(data)
+        return Response(data)

@@ -85,4 +85,5 @@ class NewsletterUser(APIView):
             users = Newsletter.objects.all()
 
         for user in users:
+            print(user)
             user.save()

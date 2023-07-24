@@ -136,6 +136,7 @@ class AlnafiUser(APIView):
             users = AlNafi_User.objects.all()
 
         for user in users:
+            print(user)
             user.save()
 
     def post(self, request):
@@ -172,6 +173,7 @@ class IslamicUser(APIView):
             users = IslamicAcademy_User.objects.all()
 
         for user in users:
+            print(user)
             user.save()
 
 #Optimized
