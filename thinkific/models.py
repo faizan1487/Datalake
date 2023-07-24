@@ -21,6 +21,7 @@ class Thinkific_User(models.Model):
     administered_course_ids = models.JSONField(null=True, blank=True)
     custom_profile_fields = models.JSONField(null=True, blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
+    phone = models.CharField(max_length=255, null=True, blank=True)
 
 
     def __str__(self):

@@ -1,3 +1,4 @@
+
 https://stage-api-al-baseer.alnafi.com/payments/nofrenewalpayments/
 this api shows no of renewal payments in the current month and also shows no of renewaal payments on each day of the current month
 

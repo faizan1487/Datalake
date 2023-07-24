@@ -9,6 +9,7 @@ from rest_framework.decorators import api_view
 from rest_framework.decorators import renderer_classes
 from .models import Thinkific_User, Thinkific_Users_Enrollments
 import csv
+from user.models import AlNafi_User
 
 @csrf_exempt
 @api_view(['POST'])
@@ -20,6 +21,17 @@ def user_created_webhook(request):
     data = request.body
     data_string = data.decode('utf-8')
     json_data = json.loads(data_string)
+    # print(json_data)
+    email = json_data['payload']['email']
+
+    user = AlNafi_User.objects.filter(email=email).values('phone')
+    if user:
+        # print(user)
+        # print(user[0]['phone'])
+        # print(user.phone)
+        json_data['payload']['phone'] = user[0]['phone']
+
+    print(json_data)
     serializer = ThinkificUserSerializer(data=json_data['payload'])
     
     if serializer.is_valid():

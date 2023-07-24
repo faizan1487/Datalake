@@ -5,7 +5,7 @@ from .models import ChatwoorUser
 from django.http import HttpResponse
 from threading import Thread
 # Create your views here.
-
+import requests
 
 class ChatwootUsers(APIView):
     def get(self, request):
@@ -22,3 +22,19 @@ class ChatwootUsers(APIView):
 
         for user in users:
             user.save()
+
+
+class Conversations(APIView):
+    def get(self, request):
+        url = 'https://chat.alnafi.com/api/v1/accounts/3/conversations/meta'
+        api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
+
+        headers = {
+        'api_access_token': api_access_token,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        }
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        print(data)
+        return HttpResponse("working")

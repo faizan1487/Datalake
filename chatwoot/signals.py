@@ -24,7 +24,7 @@ def usersignal(instance,source):
         "Content-Type": "application/json",
         "Accept": "application/json",
     }    
-
+    
     country_code = getattr(instance, 'country', "Unknown")
     country_name = None
 
