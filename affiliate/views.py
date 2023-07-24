@@ -83,7 +83,7 @@ class UserDelete(APIView):
         return Response('deleted')
     
 
-class AffiliateUser(APIView):
+class UpdateAffiliateUser(APIView):
     def get(self, request):
         Thread(target=self.get_thread, args=(request,)).start()
         return HttpResponse("working")
