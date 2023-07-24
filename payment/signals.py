@@ -11,7 +11,7 @@ import json
 from datetime import datetime
 from user.constants import COUNTRY_CODES
 
-@receiver(pre_save, sender=AlNafi_Payment)
+# @receiver(pre_save, sender=AlNafi_Payment)
 def send_payment_post_request(sender, instance, **kwargs):
     # print("signal running")
     url = 'https://crm.alnafi.com/api/resource/Customer?limit_start=0&limit_page_length=5000'

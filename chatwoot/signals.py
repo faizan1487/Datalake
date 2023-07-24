@@ -5,7 +5,7 @@ from .models import ChatwoorUser
 from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
 
-@receiver(post_save, sender=ChatwoorUser)
+# @receiver(post_save, sender=ChatwoorUser)
 def send_lead_post_request(sender, instance, created, **kwargs):
     source='Chatwoot'
     chatwoot_user = usersignal(instance,source)

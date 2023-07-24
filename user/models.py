@@ -37,7 +37,7 @@ class IslamicAcademy_User(models.Model):
     id = models.IntegerField(primary_key=True)
     is_paying_customer = models.BooleanField(default=False)
     username = models.CharField(max_length=255, null=True, blank=True)
-    email = models.EmailField(null=True, blank=True)
+    email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=255, null=True, blank=True)
     last_name = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(null=True, blank=True)

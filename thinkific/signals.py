@@ -10,7 +10,7 @@ env = environ.Env()
 env.read_env()
 DEBUG = env('DEBUG',cast=bool)
 
-@receiver(post_save, sender=Thinkific_Users_Enrollments)
+# @receiver(post_save, sender=Thinkific_Users_Enrollments)
 def send_lead_post_request(sender, instance, **kwargs):
     source='Thinkific'
     thinkific_user = usersignal(instance,source)

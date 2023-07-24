@@ -5,7 +5,7 @@ from .models import Newsletter
 from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
 
-@receiver(post_save, sender=Newsletter)
+# @receiver(post_save, sender=Newsletter)
 def send_lead_post_request(sender, instance, created, **kwargs):
     source='Newsletter'
     newsletter = usersignal(instance,source)        

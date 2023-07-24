@@ -5,7 +5,7 @@ from .models import StreamUser
 from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
 
-@receiver(post_save, sender=StreamUser)
+# @receiver(post_save, sender=StreamUser)
 def send_lead_post_request(sender, instance, created, **kwargs):
     source='Stream'
     stream_user = usersignal(instance,source)

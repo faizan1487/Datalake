@@ -5,7 +5,7 @@ from .models import AffiliateUser
 from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
 
-@receiver(post_save, sender=AffiliateUser)
+# @receiver(post_save, sender=AffiliateUser)
 def send_lead_post_request(sender, instance, created, **kwargs):
     source='Affiliate'
     affiliate_user = usersignal(instance,source)
