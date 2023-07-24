@@ -2,12 +2,13 @@ from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,
                     TokenRefreshView,UsersDelete,Navbar,AlnafiUser,AllEmployees,GetUser,
-                    GetNoOfUsersMonth,PSWFormRecord)
+                    GetNoOfUsersMonth,PSWFormRecord,IslamicUser)
 from django.http import HttpResponse
 
 urlpatterns = [
     path("", lambda req: HttpResponse(status=200)),
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
+    path('islamicuser/',IslamicUser.as_view(), name='islamic-user'),
     path('userdelete/', UsersDelete.as_view(), name='user-delete'),
     # path("guacamoli/",Guacamoli.as_view(), name='guacamoli'),
     path('formrecord/', PSWFormRecord.as_view(), name='pswfform-record'),

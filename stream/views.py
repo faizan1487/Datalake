@@ -5,7 +5,8 @@ from rest_framework.pagination import PageNumberPagination
 # Create your views here.
 from .models import StreamUser
 from django.db.models import Q
-
+from django.http import HttpResponse
+from threading import Thread
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -43,3 +44,21 @@ class StreamUsers(APIView):
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(users, request)
         return paginator.get_paginated_response(paginated_queryset)
+
+
+
+class StreamUser(APIView):
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+
+    def get_thread(self, request):
+        email_string = self.request.GET.get('emails', None) or None
+        if email_string:
+            emails = email_string.split(',')
+            users = StreamUser.objects.filter(email__in=emails)
+        else:
+            users = StreamUser.objects.all()
+
+        for user in users:
+            user.save()

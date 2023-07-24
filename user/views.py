@@ -131,38 +131,48 @@ class AlnafiUser(APIView):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
             emails = email_string.split(',')
-            # print(type(emails))
-            # print(emails)
             users = AlNafi_User.objects.filter(email__in=emails)
         else:
             users = AlNafi_User.objects.all()
 
-        # print(users)
         for user in users:
-            # print(user)
-            # print("saving")
             user.save()
-
-
 
     def post(self, request):
         data = request.data
         email = data.get("email")
         try:
             instance = AlNafi_User.objects.filter(email=email)
-            print("in update")
+            # print("in update")
             serializer = AlnafiUserSerializer(instance.first(), data=data)
         except Exception as e:
-            print(e)
-            print("in post")
+            # print(e)
+            # print("in post")
             serializer = AlnafiUserSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        print(serializer.errors)
+        # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class IslamicUser(APIView):
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+     
+    def get_thread(self, request):
+        email_string = self.request.GET.get('emails', None) or None
+        if email_string:
+            emails = email_string.split(',')
+            users = IslamicAcademy_User.objects.filter(email__in=emails)
+        else:
+            users = IslamicAcademy_User.objects.all()
+
+        for user in users:
+            user.save()
 
 #Optimized
 class GetUsers(APIView):

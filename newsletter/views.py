@@ -7,6 +7,9 @@ from .models import Newsletter
 from django.db.models import Q
 from .serializers import NewsletterSerializer
 from rest_framework import status
+from django.http import HttpResponse
+from threading import Thread
+
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
@@ -62,3 +65,24 @@ class CreateNewsletter(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+# Create your views here.
+
+
+class NewsletterUser(APIView):
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+
+    def get_thread(self, request):
+        email_string = self.request.GET.get('emails', None) or None
+        if email_string:
+            emails = email_string.split(',')
+            users = Newsletter.objects.filter(email__in=emails)
+        else:
+            users = Newsletter.objects.all()
+
+        for user in users:
+            user.save()

@@ -8,6 +8,9 @@ from django.db.models import Q
 from django.db.models import Count
 from .serializers import AffiliateSerializer, AffiliateClickSerializer
 from rest_framework import status
+from django.http import HttpResponse
+from threading import Thread
+
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
@@ -58,6 +61,7 @@ class CreateAffiliateUser(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+
 class CreateAffiliateClick(APIView):
     def post(self, request):
         data = request.data
@@ -77,3 +81,20 @@ class UserDelete(APIView):
         objs = AffiliateUniqueClick.objects.all()
         objs.delete()
         return Response('deleted')
+    
+
+class AffiliateUser(APIView):
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+     
+    def get_thread(self, request):
+        email_string = self.request.GET.get('emails', None) or None
+        if email_string:
+            emails = email_string.split(',')
+            users = AffiliateUser.objects.filter(email__in=emails)
+        else:
+            users = AffiliateUser.objects.all()
+
+        for user in users:
+            user.save()
