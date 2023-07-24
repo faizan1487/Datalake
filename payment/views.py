@@ -379,7 +379,7 @@ class SearchPayments(APIView):
                 payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
                 payment_objects = json.loads(payment_json)
                 
-                print(payment_objects)
+                # print(payment_objects)
                 total_payments_in_pkr = 0
                 total_payments_in_usd = 0
                 usd_rate = get_USD_rate()
@@ -398,9 +398,9 @@ class SearchPayments(APIView):
 
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-                # payments = {'total_payments_pkr': total_payments_in_pkr, 'total_payments_usd': total_payments_in_usd, 'payments': paginated_queryset}
-                return paginator.get_paginated_response(paginated_queryset)
-                # return paginator.get_paginated_response(payments)
+                payments = {'total_payments_pkr': total_payments_in_pkr, 'total_payments_usd': total_payments_in_usd, 'payments': paginated_queryset}
+                # return paginator.get_paginated_response(paginated_queryset)
+                return paginator.get_paginated_response(payments)
 
         else:
             response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
