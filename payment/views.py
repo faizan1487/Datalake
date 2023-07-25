@@ -29,7 +29,7 @@ from django.db.models import F, Max, Q
 from django.db.models.functions import Upper
 from django.core.exceptions import ObjectDoesNotExist
 from django.dispatch import Signal
-
+from threading import Thread
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -40,10 +40,21 @@ class MyPagination(PageNumberPagination):
 post_save = Signal()
 # delete this api before production
 class AlnafiPayment(APIView):
-    # def get(self,request):
-    #     alnafi_payment = AlNafi_Payment.objects.values('id', 'order_id', 'payment_id')
-    #     serializer = GetAlnafipaymentSerializer(alnafi_payment, many=True)
-    #     return Response(serializer.data)
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+
+    def get_thread(self,request):
+        ids = self.request.GET.get('id', None) or None
+        if ids:
+            id = ids.split(',')
+            payment = AlNafi_Payment.objects.filter(id__in=id)
+        else:
+            payments = AlNafi_Payment.objects.all()
+
+        for payment in payments:
+            print(payment)
+            payment.save()
     
     def post(self, request):
         data = request.data

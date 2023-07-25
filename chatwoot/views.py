@@ -49,7 +49,7 @@ class ConversationsReport(APIView):
 
         
 
-        
+        print(params)        
         # since=1689686153
         # until=1690204488
         type = 'account'

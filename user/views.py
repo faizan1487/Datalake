@@ -233,13 +233,13 @@ class GetUsers(APIView):
                 product_name = email_product_map.get(email)
                 user_dict['product'] = product_name
 
-            # for info in users['products']:
-            #     email = info.get('user__email')
-            #     product_name = info.get('product__product_name')
+            for info in users['products']:
+                email = info.get('user__email')
+                product_name = info.get('product__product_name')
 
-            #     for user_dict in users['converted_users']:
-            #         if user_dict.get('email') == email:
-            #             user_dict['product'] = product_name
+                for user_dict in users['converted_users']:
+                    if user_dict.get('email') == email:
+                        user_dict['product'] = product_name
 
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
