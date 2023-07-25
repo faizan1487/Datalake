@@ -33,6 +33,7 @@ class TrainersData(APIView):
         q = self.request.GET.get('q', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
+        active = self.request.GET.get('active', None) or None
         url = request.build_absolute_uri()  
         
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
@@ -56,6 +57,7 @@ class TrainersData(APIView):
         
         trainers_data = []
         # print(trainers)
+        current_datetime = datetime.now()
         for trainer in trainers:
             # print(trainer)
             trainer_data = {
@@ -71,25 +73,35 @@ class TrainersData(APIView):
             # print("proiducts", products)    
             for product in products:
                 # print(product)
-                user_count = len(set(payment.user_id for payment in product.product_payments.all()))
-                # Removing duplicates payments of a single user
+                #Replace userid and productid with user email and product name
                 product_payments = product.product_payments.all()
-
                 users = list(product_payments.values('user__email','user__phone'))
                 products = list(product_payments.values('product__product_name'))
                 payment_list = list(product_payments.values())
-
                 for i in range(len(payment_list)):
                     try:
                         payment_list[i]['user_id'] = users[i]['user__email']
                         payment_list[i]['product_id'] = products[i]['product__product_name']
                     except Exception as e:
                         pass
-                # print(payment_list)
+                
+                print(len(payment_list))
+                if active == 'true':
+                    payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime]
+                elif active == 'false':
+                    payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime]
+
+                print("active payments",len(payment_list))
+                
+                
+                #count users in a product
+                # user_count = len(set(payment.user_id for payment in product.product_payments.all()))
+                user_count = len(set(payment['user_id'] for payment in payment_list))
+
+                # Removing duplicates payments of a single user
                 payments_list = []
                 # for payment in product.product_payments.all():
                 for payment in payment_list:
-                    # print(payment)
                     is_unique = True
                     for pay in payments_list:
                         if payment['user_id'] == pay['user_id']:
@@ -104,7 +116,7 @@ class TrainersData(APIView):
                 # payments = MainPaymentSerializer(payments_list, many=True)
                 trainer_data['trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
             trainers_data.append(trainer_data)
-
+        # print(trainer_data)
         return Response(trainers_data)
 
 
