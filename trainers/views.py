@@ -40,7 +40,7 @@ class TrainersData(APIView):
         if q:
             trainers = trainers.filter(trainer_name__icontains=q)
         else:
-            trainers = trainers.filter(trainer_name__icontains='Faizan Ahmed')            
+            trainers = trainers.filter(trainer_name__icontains='Farhan Khan')            
 
         if product_name:
             # print(product)
