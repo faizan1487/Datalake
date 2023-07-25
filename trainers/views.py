@@ -5,7 +5,7 @@ from django.core.cache import cache
 
 # Create your views here.
 from payment.models import Main_Payment
-from payment.serializer import MainPaymentSerializer
+from payment.serializer import MainPaymentSerializer, AlNafiPaymentSerializer
 from products.models import Alnafi_Product, Main_Product
 from trainers.models import Trainer
 from user.models import AlNafi_User, Main_User
@@ -16,12 +16,137 @@ import json
 from django.db.models import F, Max, Q
 from datetime import date, datetime, time, timedelta
 from django.db.models import Prefetch
+from user.serializers import MainUserSerializer
+
 
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100     
+
+
+
+
+class TrainersData(APIView):
+    def get(self, request):
+        q = self.request.GET.get('q', None) or None
+        product_name = self.request.GET.get('product', None)
+        export = self.request.GET.get('export', None) or None
+        url = request.build_absolute_uri()  
+        
+        trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
+
+        if q:
+            trainers = trainers.filter(trainer_name__icontains=q)
+        else:
+            trainers = trainers.filter(trainer_name__icontains='Faizan Ahmed')            
+
+        if product_name:
+            # print(product)
+            # keywords = product.split()
+            # query = Q()
+            # for keyword in keywords:
+            #     query &= Q(products__product_name__icontains=keyword)
+
+            trainers = trainers.filter(products__product_name__exact=product_name)
+
+            # print("query",query)
+            # trainers = trainers.filter(query)
+        
+        trainers_data = []
+        # print(trainers)
+        for trainer in trainers:
+            # print(trainer)
+            trainer_data = {
+                'trainer_name': trainer.trainer_name,
+                'trainer_data': []
+            }
+            
+            if product_name:
+                products = trainer.products.filter(product_name=product_name)
+            else:
+                products = trainer.products.all()
+
+            # print("proiducts", products)    
+            for product in products:
+                # print(product)
+                user_count = len(set(payment.user_id for payment in product.product_payments.all()))
+                # Removing duplicates payments of a single user
+                product_payments = product.product_payments.all()
+
+                users = list(product_payments.values('user__email','user__phone'))
+                products = list(product_payments.values('product__product_name'))
+                payment_list = list(product_payments.values())
+
+                for i in range(len(payment_list)):
+                    try:
+                        payment_list[i]['user_id'] = users[i]['user__email']
+                        payment_list[i]['product_id'] = products[i]['product__product_name']
+                    except Exception as e:
+                        pass
+                # print(payment_list)
+                payments_list = []
+                # for payment in product.product_payments.all():
+                for payment in payment_list:
+                    # print(payment)
+                    is_unique = True
+                    for pay in payments_list:
+                        if payment['user_id'] == pay['user_id']:
+                            is_unique = False
+                            break
+                    if is_unique:
+                        payments_list.append(payment)
+                
+
+
+
+                # payments = MainPaymentSerializer(payments_list, many=True)
+                trainer_data['trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
+            trainers_data.append(trainer_data)
+
+        return Response(trainers_data)
+
+
+class AnalyticsTrainers(APIView):
+    def get(self, request):
+        q = self.request.GET.get('q', None) or None
+        trainers = Trainer.objects.all()
+        if q:
+            trainers = trainers.filter(trainer_name__icontains=q)
+
+        trainers_data = []
+
+        for trainer in trainers:
+            trainer_data = {
+                'trainer_name': trainer.trainer_name,
+                'user_counts': []
+            }
+
+            user_count = 0
+
+            products = trainer.products.all().prefetch_related('product_payments')
+            payments = Main_Payment.objects.filter(product__in=products).order_by('order_datetime')
+
+            for payment in payments:
+                user_count += 1
+                trainer_data['user_counts'].append({
+                    'order_datetime': payment.order_datetime,
+                    'user_count': user_count
+                })
+            trainers_data.append(trainer_data)
+        
+
+        # print(trainers_data)
+        return Response(trainers_data)
+
+
+
+
+
+
+
+
 
 
 
@@ -121,82 +246,6 @@ class MyPagination(PageNumberPagination):
 
 #         return Response(trainers_data)
 
-
-class TrainersData(APIView):
-    def get(self, request):
-        q = self.request.GET.get('q', None) or None
-        product = self.request.GET.get('product', None)
-        export = self.request.GET.get('export', None) or None
-        url = request.build_absolute_uri()  
-        
-        trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
-        if q:
-            trainers = trainers.filter(trainer_name__icontains=q)
-
-        if product:
-            keywords = product.split()
-            query = Q()
-            for keyword in keywords:
-                query &= Q(products__product_name__icontains=keyword)
-            trainers = trainers.filter(query)
-
-        trainers_data = []
-
-        for trainer in trainers:
-            trainer_data = {
-                'trainer_name': trainer.trainer_name,
-                'trainer_data': []
-            }
-
-            for product in trainer.products.all():
-                user_count = len(set(payment.user_id for payment in product.product_payments.all()))
-                trainer_data['trainer_data'].append({'product_name':product.product_name,'users': user_count})
-
-            trainers_data.append(trainer_data)
-
-        return Response(trainers_data)
-
-
-
-
-
-
-
-
-
-
-
-class AnalyticsTrainers(APIView):
-    def get(self, request):
-        q = self.request.GET.get('q', None) or None
-        trainers = Trainer.objects.all()
-        if q:
-            trainers = trainers.filter(trainer_name__icontains=q)
-
-        trainers_data = []
-
-        for trainer in trainers:
-            trainer_data = {
-                'trainer_name': trainer.trainer_name,
-                'user_counts': []
-            }
-
-            user_count = 0
-
-            products = trainer.products.all().prefetch_related('product_payments')
-            payments = Main_Payment.objects.filter(product__in=products).order_by('order_datetime')
-
-            for payment in payments:
-                user_count += 1
-                trainer_data['user_counts'].append({
-                    'order_datetime': payment.order_datetime,
-                    'user_count': user_count
-                })
-            trainers_data.append(trainer_data)
-        
-
-        # print(trainers_data)
-        return Response(trainers_data)
 
 
 
