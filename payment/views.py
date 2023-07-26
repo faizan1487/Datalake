@@ -177,6 +177,7 @@ class RenewalPayments(APIView):
             'quarterly': 'Quarterly',
             'monthly': 'Monthly',
         }
+        
         #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
         # This field represents the uppercase version of the product_plan field of the associated product.
         payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
@@ -399,11 +400,11 @@ class SearchPayments(APIView):
                     sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                     if i['source'].lower() in sources:
                         total_payments_in_pkr += int(float(i['amount']))
-                        total_payments_in_usd += int(float(i['amount'])) // usd_rate['PKR']
+                        # total_payments_in_usd += int(float(i['amount'])) // usd_rate['PKR']
 
                     else:
                         # print("in elif")
-                        total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
+                        # total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
                         total_payments_in_usd += int(float(i['amount']))
                 
 

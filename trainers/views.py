@@ -17,6 +17,7 @@ from django.db.models import F, Max, Q
 from datetime import date, datetime, time, timedelta
 from django.db.models import Prefetch
 from user.serializers import MainUserSerializer
+from django.db.models import Max, Min
 
 
 class MyPagination(PageNumberPagination):
@@ -34,6 +35,8 @@ class TrainersData(APIView):
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
         active = self.request.GET.get('active', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
         url = request.build_absolute_uri()  
         
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
@@ -75,6 +78,9 @@ class TrainersData(APIView):
                 # print(product)
                 #Replace userid and productid with user email and product name
                 product_payments = product.product_payments.all()
+                dates = product_payments.values('order_datetime')
+                product_payments = product.product_payments.filter(order_datetime__range=(start_date, end_date))
+
                 users = list(product_payments.values('user__email','user__phone'))
                 products = list(product_payments.values('product__product_name'))
                 payment_list = list(product_payments.values())
@@ -85,13 +91,13 @@ class TrainersData(APIView):
                     except Exception as e:
                         pass
                 
-                print(len(payment_list))
+                # print(len(payment_list))
                 if active == 'true':
                     payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime]
                 elif active == 'false':
                     payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime]
 
-                print("active payments",len(payment_list))
+                # print("active payments",len(payment_list))
                 
                 
                 #count users in a product
