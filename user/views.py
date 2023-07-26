@@ -123,11 +123,11 @@ class UsersDelete(APIView):
 
 #Signal for mainsite user
 class AlnafiUser(APIView):
-    # def get(self, request):
-    #     Thread(target=self.get_thread, args=(request,)).start()
-    #     return HttpResponse("working")
-     
     def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+     
+    def get_thread(self, request):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
             emails = email_string.split(',')
@@ -136,10 +136,14 @@ class AlnafiUser(APIView):
             users = AlNafi_User.objects.all()
 
         for user in users:
-            print(user.email)
+            # print(user.email)
             # user.save()
-            if user.email != 'owais.azad@annaafi.org':
+            # emails = ['suhaibt021@gmail.com','mirza_rehan@hotmail.com','owais.azad@annaafi.org', 'haider.ghaznavi@gmail.com','shabanas786@gmail.com','hamidashraf87@gmail.com']
+            # if user.email not in emails:
+            try:
                 user.save(force_update=True, force_insert=False)
+            except:
+                print(user.email)
 
     def post(self, request):
         data = request.data
