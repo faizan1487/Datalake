@@ -116,6 +116,32 @@ class PSWFormRecords(models.Model):
         return f"{self.email}"
     
 
+class Marketing_PKR_Form(models.Model):
+    full_name = models.CharField(max_length=100, blank=True, null=True)
+    gender = models.CharField(max_length=100, blank=True, null=True)
+    email = models.CharField(max_length=100, blank=True, null=True)
+    phone = models.CharField(max_length=100, blank=True, null=True)
+    study_field = models.CharField(max_length=255,blank=True, null=True)
+    level_of_education = models.CharField(max_length=100, blank=True, null=True)
+    university_name = models.CharField(max_length=255,blank=True, null=True)
+    # university_name_othe = models.CharField(max_length=255,blank=True, null=True)
+    title_of_degree = models.CharField(max_length=100, blank=True, null=True)
+    move_another_country = models.CharField(max_length=100, blank=True, null=True)
+    skillset = models.CharField(max_length=255,blank=True, null=True)
+    skillset_budget = models.CharField(max_length=255,blank=True, null=True)
+    language = models.CharField(max_length=255,blank=True, null=True)
+    financial_sponsorship = models.BooleanField(default=False)
+    resume = models.FileField(upload_to="media/marketing_pkr/resumes", blank=True, null=True)
+    communication = models.CharField(max_length=255,blank=True, null=True)
+    know_about_alnafi = models.CharField(max_length=100,default='No')
+    hear_about_us = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.email}"
+    
+
 
 
 #  Custom User Manager

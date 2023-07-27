@@ -21,7 +21,7 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta, date
 
-from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords
+from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords, Marketing_PKR_Form
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
@@ -95,6 +95,60 @@ class PSWFormRecord(APIView):
                 return Response({"message":"Something went wrong"})
         except Exception as e:
             return Response({"message":"Something went wrong"})
+        
+class Marketing_Pkr_Form(APIView):
+    def post(self,request):
+        print(request.data)
+        gender = request.data['gender']
+        full_name = request.data['full_name']
+        email_address = request.data['email_address']
+        contact_number = request.data['contact_number']
+        field_of_study = request.data['what_is_your_field_of_study']
+        level_of_education = request.data['your_level_of_education']
+        university_name = request.data['university_name']
+        university_name_other = request.data['university_name_other']
+        title_of_degree = request.data['title_of_the_degree']
+        move_another_country = request.data['in_which_country_would_you_like_to_work']
+        skillset = request.data['in_which_domain_would_you_like_to_develop_your_skillset']
+        skillset_budget = request.data['how']
+        language = request.data['what_languages_can_you_speak']
+        financial_sponsorship = request.data['do_you_require_financial_sponsorship']
+        resume = request.data['submit_your_resume_word__pdf_only']
+        communication = request.data['preferred_medium_of_communication']
+        know_about_alnafi = request.data['do_you_know_about_al_nafi']
+        hear_about_us = request.data['how_did_you_hear_about_us']
+
+
+        
+
+        form = Marketing_PKR_Form.objects.create(
+            gender=gender,
+            full_name=full_name,
+            email=email_address,
+            phone = contact_number,
+            study_field = field_of_study,
+            level_of_education = level_of_education,
+            university_name = university_name,
+            # university_name_othe = 
+            title_of_degree = title_of_degree,
+            move_another_country = move_another_country,
+            skillset = skillset,
+            skillset_budget = skillset_budget,
+            language = language,
+            financial_sponsorship = financial_sponsorship,
+            resume = resume,
+            communication = communication,
+            know_about_alnafi = know_about_alnafi,
+            hear_about_us = hear_about_us
+        )
+        try:
+            if form:
+                form.save()
+                return Response({"message":"Form Submitted Successfully"})
+            else:
+                return Response({"message":"Something went wrong"})
+        except Exception as e:
+            return Response({"message":"Something went wrong"})
 
 class MainUserAPIView(APIView):
     def post(self, request):
@@ -123,11 +177,11 @@ class UsersDelete(APIView):
 
 #Signal for mainsite user
 class AlnafiUser(APIView):
-    def get(self, request):
-        Thread(target=self.get_thread, args=(request,)).start()
-        return HttpResponse("working")
+    # def get(self, request):
+    #     Thread(target=self.get_thread, args=(request,)).start()
+    #     return HttpResponse("working")
      
-    def get_thread(self, request):
+    def get(self, request):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
             emails = email_string.split(',')
@@ -136,14 +190,17 @@ class AlnafiUser(APIView):
             users = AlNafi_User.objects.all()
 
         for user in users:
-            # print(user.email)
+            print("user.email")
             # user.save()
             # emails = ['suhaibt021@gmail.com','mirza_rehan@hotmail.com','owais.azad@annaafi.org', 'haider.ghaznavi@gmail.com','shabanas786@gmail.com','hamidashraf87@gmail.com']
             # if user.email not in emails:
-            try:
-                user.save(force_update=True, force_insert=False)
-            except:
-                print(user.email)
+            # try:
+            user.save(force_update=True, force_insert=False)
+            # except Exception as e:
+                # print(e)
+        
+        return Response("Working")
+            
 
     def post(self, request):
         data = request.data

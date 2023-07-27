@@ -29,14 +29,15 @@ class MyPagination(PageNumberPagination):
 
 
 
+
 class TrainersData(APIView):
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
         active = self.request.GET.get('active', None) or None
-        start_date = self.request.GET.get('start_date', None) or None
-        end_date = self.request.GET.get('end_date', None) or None
+        req_start_date = self.request.GET.get('start_date', None) or None
+        req_end_date = self.request.GET.get('end_date', None) or None
         url = request.build_absolute_uri()  
         
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
@@ -59,10 +60,8 @@ class TrainersData(APIView):
             # trainers = trainers.filter(query)
         
         trainers_data = []
-        # print(trainers)
         current_datetime = datetime.now()
         for trainer in trainers:
-            # print(trainer)
             trainer_data = {
                 'trainer_name': trainer.trainer_name,
                 'trainer_data': []
@@ -73,14 +72,37 @@ class TrainersData(APIView):
             else:
                 products = trainer.products.all()
 
-            # print("proiducts", products)    
+            all_dates = []
             for product in products:
                 # print(product)
                 #Replace userid and productid with user email and product name
                 product_payments = product.product_payments.all()
+                # print(product_payments)
                 dates = product_payments.values('order_datetime')
-                product_payments = product.product_payments.filter(order_datetime__range=(start_date, end_date))
+                # all_dates.append(dates)
 
+                result = dates.aggregate(greatest_order_datetime=Max('order_datetime'), lowest_order_datetime=Min('order_datetime'))
+                greatest_order_datetime = result['greatest_order_datetime']
+                lowest_order_datetime = result['lowest_order_datetime']
+
+                if not req_start_date:
+                    start_date=lowest_order_datetime
+                else:
+                    start_date = req_start_date
+                if not req_end_date:
+                    end_date=greatest_order_datetime
+                else:
+                    end_date = req_end_date
+
+                # all_dates.append(greatest_order_datetime)
+                # all_dates.append(lowest_order_datetime)
+                # print(dates)
+
+                # print(product_payments)
+                # print(start_date)
+                # print(end_date)
+                product_payments = product_payments.filter(order_datetime__range=(start_date, end_date))
+                # print(product_payments)
                 users = list(product_payments.values('user__email','user__phone'))
                 products = list(product_payments.values('product__product_name'))
                 payment_list = list(product_payments.values())
@@ -118,9 +140,14 @@ class TrainersData(APIView):
                 
 
 
-
+            
                 # payments = MainPaymentSerializer(payments_list, many=True)
                 trainer_data['trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
+                if not req_start_date:
+                    start_date = None
+                if not req_end_date:
+                    end_date = None
+            # print(all_dates)
             trainers_data.append(trainer_data)
         # print(trainer_data)
         return Response(trainers_data)

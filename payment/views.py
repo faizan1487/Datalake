@@ -48,7 +48,7 @@ class AlnafiPayment(APIView):
         ids = self.request.GET.get('id', None) or None
         if ids:
             id = ids.split(',')
-            payment = AlNafi_Payment.objects.filter(id__in=id)
+            payments = AlNafi_Payment.objects.filter(id__in=id)
         else:
             payments = AlNafi_Payment.objects.all()
 
@@ -78,10 +78,21 @@ class AlnafiPayment(APIView):
 
 
 class UBLManualPayment(APIView):
-    def get(self,request):
-        alnafi_payment = UBL_Manual_Payment.objects.all()
-        serializer = UBL_Manual_PaymentSerializer(alnafi_payment, many=True)
-        return Response(serializer.data)
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+
+    def get_thread(self,request):
+        ids = self.request.GET.get('id', None) or None
+        if ids:
+            id = ids.split(',')
+            payments = UBL_Manual_Payment.objects.filter(transaction_id__in=id)
+        else:
+            payments = UBL_Manual_Payment.objects.all()
+
+        for payment in payments:
+            print(payment)
+            payment.save()
     
     def post(self, request):
         data = request.data
@@ -98,6 +109,83 @@ class UBLManualPayment(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+#Creating API For ubl_ipg Payments:
+class GetUBLIPGPayments(APIView):
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+
+    def get_thread(self,request):
+        ids = self.request.GET.get('id', None) or None
+        if ids:
+            id = ids.split(',')
+            payments = UBL_IPG_Payment.objects.filter(transaction_id__in=id)
+        else:
+            payments = UBL_IPG_Payment.objects.all()
+
+        for payment in payments:
+            print(payment)
+            payment.save()
+    
+    def post(self, request):
+        data = request.data
+        serializer = Ubl_Ipg_PaymentsSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+#Creating API For Easypaisa Payments
+class GetEasypaisaPayments(APIView):
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+
+    def get_thread(self,request):
+        ids = self.request.GET.get('id', None) or None
+        if ids:
+            id = ids.split(',')
+            payments = Easypaisa_Payment.objects.filter(transaction_id__in=id)
+        else:
+            payments = Easypaisa_Payment.objects.all()
+
+        for payment in payments:
+            print(payment)
+            payment.save()
+    
+    def post(self, request):
+        data = request.data
+        serializer = Easypaisa_PaymentsSerializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+class GetStripePayments(APIView):
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+
+    def get_thread(self,request):
+        ids = self.request.GET.get('id', None) or None
+        if ids:
+            id = ids.split(',')
+            payments = Stripe_Payment.objects.filter(payment_id__in=id)
+        else:
+            payments = Stripe_Payment.objects.all()
+
+        for payment in payments:
+            print(payment)
+            payment.save()
 
 
 class MainPaymentAPIView(APIView):
@@ -629,51 +717,3 @@ class RenewalNoOfPayments(APIView):
         
         
             
-
-
-#Creating API For ubl_ipg Payments:
-class GetUBLPayments(APIView):
-    def get(self,request):
-        ubl_pay = UBL_IPG_Payment.objects.all()
-        serializer = Ubl_Ipg_PaymentsSerializer(ubl_pay, many=True)
-        return Response(serializer.data)
-    
-    def post(self, request):
-        data = request.data
-        serializer = Ubl_Ipg_PaymentsSerializer(data=data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-#Creating API For Easypaisa Payments
-class GetEasypaisaPayments(APIView):
-    def get(self,request):
-        obj = Easypaisa_Payment.objects.all()
-        serializer = Easypaisa_PaymentsSerializer(obj, many=True)
-        return Response(serializer.data)
-    
-    def post(self, request):
-        data = request.data
-        serializer = Easypaisa_PaymentsSerializer(data=data)
-        
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-#main site payment data required                
-
-        
-       
-        
-#Creating API For Stripe Payments: 
-# class GetAlnafiPayments(APIView):
-#     def get(self,request):
-#         alnafi_payment = AlNafi_Payment.objects.all()
-#         serializer = AlNafiPaymentSerializer(alnafi_payment,many=True)
-#         return Response(serializer.data)

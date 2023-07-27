@@ -56,17 +56,18 @@ CORS_ALLOWED_ORIGINS = [
     'https://al-baseer.alnafi.com',
     'https://api-al-baseer.alnafi.com',
     'http://ec2-52-6-12-123.compute-1.amazonaws.com',
-    'https://255a-124-29-228-160.ngrok-free.app',
-    'http://255a-124-29-228-160.ngrok-free.app',
-    'https://f882-124-29-228-160.ngrok-free.app',
-    'http://f882-124-29-228-160.ngrok-free.app',
-    'https://ff29-124-29-228-160.ngrok-free.app',
-    'http://ff29-124-29-228-160.ngrok-free.app'
+    'https://51ab-124-29-228-160.ngrok-free.app',
+    'http://51ab-124-29-228-160.ngrok-free.app'
 ]
 
-CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com','https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io','http://ec2-3-233-91-36.compute-1.amazonaws.com',
-    'https://al-baseer.alnafi.com','https://api-al-baseer.alnafi.com','http://ec2-52-6-12-123.compute-1.amazonaws.com','https://255a-124-29-228-160.ngrok-free.app','http://255a-124-29-228-160.ngrok-free.app',
-    'https://f882-124-29-228-160.ngrok-free.app','http://f882-124-29-228-160.ngrok-free.app','https://ff29-124-29-228-160.ngrok-free.app','http://ff29-124-29-228-160.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
+                        'https://7943-2407-aa80-14-8f15-3ec1-e258-e992-b24a.ngrok.io',
+                        'http://ec2-3-233-91-36.compute-1.amazonaws.com',
+                        'https://al-baseer.alnafi.com',
+                        'https://api-al-baseer.alnafi.com',
+                        'http://ec2-52-6-12-123.compute-1.amazonaws.com',
+                        'https://51ab-124-29-228-160.ngrok-free.app',
+                        'http://51ab-124-29-228-160.ngrok-free.app']
 
 
 CORS_ALLOW_METHODS = [

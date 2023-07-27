@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import AlNafi_User
 from .models import Main_User
-from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords
+from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin
 
@@ -16,6 +16,12 @@ class PSWFormRecordsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 admin.site.register(PSWFormRecords, PSWFormRecordsAdmin)
 
+class Marketing_PKR_Admin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('id', 'full_name', 'email')
+    search_fields = ('id', 'full_name', 'email')
+    list_filter = ('id', 'full_name', 'email')
+
+admin.site.register(Marketing_PKR_Form, Marketing_PKR_Admin)
 
 
 # For MainSite Users:
