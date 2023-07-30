@@ -10,15 +10,15 @@ from products.models import Alnafi_Product, Main_Product
 from trainers.models import Trainer
 from user.models import AlNafi_User, Main_User
 from user.serializers import MainUserSerializer
-from django.db.models import Count, OuterRef, Subquery
 from collections import defaultdict
 import json
-from django.db.models import F, Max, Q
+from django.db.models import F, Max, Q, Prefetch, Max, Min, Count, OuterRef, Subquery
+from django.conf import settings
 from datetime import date, datetime, time, timedelta
-from django.db.models import Prefetch
 from user.serializers import MainUserSerializer
-from django.db.models import Max, Min
-
+from user.services import upload_csv_to_s3
+import pandas as pd
+import os
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -117,6 +117,7 @@ class TrainersData(APIView):
                 if active == 'true':
                     payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime]
                 elif active == 'false':
+                    print("active false")
                     payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime]
 
                 # print("active payments",len(payment_list))
@@ -150,7 +151,18 @@ class TrainersData(APIView):
             # print(all_dates)
             trainers_data.append(trainer_data)
         # print(trainer_data)
-        return Response(trainers_data)
+
+        if export=='true':
+            df = pd.DataFrame(trainer_data)
+            # Merge dataframes
+            file_name = f"Trainers_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            df = df.to_csv(index=False)
+            s3 = upload_csv_to_s3(df,file_name)
+            data = {'file_link': file_path,'export':'true'}
+            return Response(data)
+        else:
+            return Response(trainers_data)
 
 
 class AnalyticsTrainers(APIView):
