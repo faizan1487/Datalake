@@ -99,27 +99,31 @@ class PSWFormRecord(APIView):
 class Marketing_Pkr_Form(APIView):
     def post(self,request):
         print(request.data)
-        gender = request.data['gender']
-        full_name = request.data['full_name']
-        email_address = request.data['email_address']
-        contact_number = request.data['contact_number']
-        field_of_study = request.data['what_is_your_field_of_study']
-        level_of_education = request.data['your_level_of_education']
-        university_name = request.data['university_name']
-        university_name_other = request.data['university_name_other']
-        title_of_degree = request.data['title_of_the_degree']
-        move_another_country = request.data['in_which_country_would_you_like_to_work']
-        skillset = request.data['in_which_domain_would_you_like_to_develop_your_skillset']
-        skillset_budget = request.data['how']
-        language = request.data['what_languages_can_you_speak']
-        financial_sponsorship = request.data['do_you_require_financial_sponsorship']
-        resume = request.data['submit_your_resume_word__pdf_only']
-        communication = request.data['preferred_medium_of_communication']
-        know_about_alnafi = request.data['do_you_know_about_al_nafi']
-        hear_about_us = request.data['how_did_you_hear_about_us']
+        inner_dict = request.data.get('{"gender": "Male", "full_name": "test leads 3", "email_address": "test3@gmail.com", "contact_number": "7539485739", "what_is_your_field_of_study": "Business and Management", "your_level_of_education": "FSc / Intermediate", "university_name": "Capital University of Science \': [\'\'], \' Technology", "university_name_other": "", "title_of_the_degree": "BSCS", "in_which_country_would_you_like_to_work": "United Arab Emirates", "n_which_domain_would_you_like_to_develop_your_skillset": "Offensive Security", "how": "18,500 PKR - 28,000 PKR", "what_languages_can_you_speak": "English", "do_you_require_financial_sponsorship": "No", "submit_your_resume_word__pdf_only": "/private/files/sample.pdf", "preferred_medium_of_communication": "Email", "do_you_know_about_al_nafi": "Yes", "how_did_you_hear_about_us": "Facebook"}', {})
+        gender = request.data.get('')
+        # gender = inner_dict.get('gender')
+        full_name = inner_dict.get('full_name')
+        email_address = inner_dict.get('email_address')
+        contact_number = inner_dict.get('contact_number')
+        field_of_study = inner_dict.get('what_is_your_field_of_study')
+        level_of_education = inner_dict.get('your_level_of_education')
+        university_name = inner_dict.get('university_name')
+        university_name_other = inner_dict.get('university_name_other')
+        title_of_degree = inner_dict.get('title_of_the_degree')
+        move_another_country = inner_dict.get('in_which_country_would_you_like_to_work')
+        skillset = inner_dict.get('in_which_domain_would_you_like_to_develop_your_skillset')
+        skillset_budget = inner_dict.get('how')
+        language = inner_dict.get('what_languages_can_you_speak')
+        financial_sponsorship = inner_dict.get('do_you_require_financial_sponsorship')
+        resume = inner_dict.get('submit_your_resume_word__pdf_only')
+        communication = inner_dict.get('preferred_medium_of_communication')
+        know_about_alnafi = inner_dict.get('do_you_know_about_al_nafi')
+        hear_about_us = inner_dict.get('how_did_you_hear_about_us')
 
-
-        
+        print("gender", gender)
+        # print(inner_dict)
+        # print(financial_sponsorship)
+        # print(know_about_alnafi)
 
         form = Marketing_PKR_Form.objects.create(
             gender=gender,
