@@ -4,7 +4,8 @@ from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_P
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
-from .services import (json_to_csv, renewal_no_of_payments,search_payment,main_no_of_payments,no_of_payments,get_USD_rate)
+from .services import (json_to_csv, renewal_no_of_payments,search_payment,
+                       main_no_of_payments,no_of_payments,get_USD_rate)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -30,6 +31,7 @@ from django.db.models.functions import Upper
 from django.core.exceptions import ObjectDoesNotExist
 from django.dispatch import Signal
 from threading import Thread
+from collections import defaultdict
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -53,7 +55,7 @@ class AlnafiPayment(APIView):
             payments = AlNafi_Payment.objects.all()
 
         for payment in payments:
-            print(payment)
+            # print(payment)
             payment.save()
     
     def post(self, request):
@@ -453,19 +455,52 @@ class SearchPayments(APIView):
                         return obj.isoformat()  # Convert datetime to ISO 8601 format
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
+
             users = list(payments['payments'].values('user__email'))
             products = list(payments['payments'].values('product__product_name'))
             payment_list = list(payments["payments"].values())
-
+            
+            # count the product with most payments
+            product_counts = defaultdict(int)
+            product_payment_totals = defaultdict(float)
+            usd_rate = get_USD_rate()
             for i in range(len(payments['payments'])):
                 try:
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
+                    payment_amount = payment_list[i]['amount']
+                    product_name = products[i]['product__product_name']
+                    if product_name and payment_amount:
+                        product_counts[product_name] += 1
+                        if payment_list[i]['currency'].lower() == 'pkr':
+                            product_payment_totals[product_name] += float(payment_amount)
+                        elif payment_list[i]['currency'].lower() == 'usd':
+                            product_payment_totals[product_name] += int(float(payment_amount)) * usd_rate['PKR']
                 except Exception as e:
                     pass  
 
+            product_with_max_revenue = max(product_payment_totals, key=product_payment_totals.get)
+            max_revenue = product_payment_totals[product_with_max_revenue]
+            product_with_min_revenue = min(product_payment_totals, key=product_payment_totals.get)
+            min_revenue = product_payment_totals[product_with_min_revenue]
+            
+            # Find the product with the most payments
+            if product_counts:
+                most_payments_product = max(product_counts, key=product_counts.get)
+                most_payments_count = product_counts[most_payments_product]
+            else:
+                most_payments_product = None
+                most_payments_count = 0
 
-            # print("exporting")
+            # Find the product with the least payments
+            if product_counts:
+                least_payments_product = min(product_counts, key=product_counts.get)
+                least_payments_count = product_counts[least_payments_product]
+            else:
+                least_payments_product = None
+                least_payments_count = 0
+
+           
             if export=='true':
                 df = pd.DataFrame(payment_list)
                 # Merge dataframes
@@ -479,26 +514,27 @@ class SearchPayments(APIView):
                 payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
                 payment_objects = json.loads(payment_json)
                 
-                # print(payment_objects)
                 total_payments_in_pkr = 0
                 total_payments_in_usd = 0
-                usd_rate = get_USD_rate()
                 for i in payment_objects:
-                    # print(i['source'].lower())
                     sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                     if i['source'].lower() in sources:
                         total_payments_in_pkr += int(float(i['amount']))
                         # total_payments_in_usd += int(float(i['amount'])) // usd_rate['PKR']
 
                     else:
-                        # print("in elif")
                         # total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
                         total_payments_in_usd += int(float(i['amount']))
                 
 
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-                payments = {'total_payments_pkr': total_payments_in_pkr, 'total_payments_usd': total_payments_in_usd, 'payments': paginated_queryset}
+                payments = {'product_with_max_revenue':product_with_max_revenue, 
+                            'max_revenue':max_revenue, 'product_with_min_revenue':product_with_min_revenue, 
+                            'min_revenue': min_revenue, 'most_payments_product':most_payments_product, 
+                            'most_payments_count':most_payments_count, 'least_payments_product':least_payments_product, 
+                            'least_payments_count':least_payments_count,'total_payments_pkr': total_payments_in_pkr, 'total_payments_usd': total_payments_in_usd, 
+                            'payments': paginated_queryset}
                 # return paginator.get_paginated_response(paginated_queryset)
                 return paginator.get_paginated_response(payments)
 
