@@ -40,11 +40,8 @@ def paying_users_details(query_time, is_converted):
     converted_users = []
     converted = []
     all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
-    # print(all_paid_users_products)
     all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
-    # return Response("vdfidfjk")
     all_paid_users = query_time.filter(id__in=all_paid_users_ids).values("id","username","email", "first_name", "last_name","source","phone","address","country","created_at")    
-    # return Response("vdfidfjk")
     
     all_unpaid_users = query_time.exclude(id__in=all_paid_users_ids)
     if is_converted =='true':
@@ -68,29 +65,24 @@ def paying_users_details(query_time, is_converted):
     response = {"converted_users":converted_users, "converted": converted, "products":all_paid_users_products}
     return response
 
-
 def search_users(q, start_date, end_date, is_converted,source):
-    # users = Main_User.objects.all().values()
     users = Main_User.objects.values(
         "id", "email", "username", "first_name", "last_name", "source", "internal_source",
         "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
         "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer",
         "role", "erp_lead_id"
     )
-    # print(users)
     if source:
         users = users.filter(source=source)
     
     if not start_date:
         first_user = users.exclude(created_at=None).last()
-        # date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = new_date_obj
 
     if not end_date:
         last_user = users.exclude(created_at=None).first()
-        # date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f%z")
         date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
@@ -99,11 +91,9 @@ def search_users(q, start_date, end_date, is_converted,source):
     if q:
         users = users.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
-    # print(users)
+    
     users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
-    # print("after date ffilter",users)
     users = paying_users_details(users, is_converted)
-    # print("after paying ffilter",users['converted_users'])
     return users 
 
 
