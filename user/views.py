@@ -252,13 +252,13 @@ class GetUsers(APIView):
         q = self.request.GET.get('q', None) or None
         is_converted = self.request.GET.get('is_converted', None) or None
         start_date = self.request.GET.get('start_date', None) or None
-        end_date = self.request.GET.get('end_date', None) or None
+        req_end_date = self.request.GET.get('end_date', None) or None
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
         product = self.request.GET.get('product', None) or None
         url = request.build_absolute_uri()
            
-        users = search_users(q,start_date,end_date,is_converted,source)
+        users = search_users(q,start_date,req_end_date,is_converted,source)
         # print(users)
         if export =='true':
             for i in range(len(users['converted_users'])):

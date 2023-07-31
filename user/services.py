@@ -65,7 +65,7 @@ def paying_users_details(query_time, is_converted):
     response = {"converted_users":converted_users, "converted": converted, "products":all_paid_users_products}
     return response
 
-def search_users(q, start_date, end_date, is_converted,source):
+def search_users(q, start_date, req_end_date, is_converted,source):
     users = Main_User.objects.values(
         "id", "email", "username", "first_name", "last_name", "source", "internal_source",
         "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
@@ -81,13 +81,15 @@ def search_users(q, start_date, end_date, is_converted,source):
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
         start_date = new_date_obj
 
-    if not end_date:
+    if not req_end_date:
         last_user = users.exclude(created_at=None).first()
         date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
         end_date = new_date_obj
-        
 
+    if req_end_date:
+        end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
+        end_date = end_date + timedelta(days=1)
     if q:
         users = users.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
