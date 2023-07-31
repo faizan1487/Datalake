@@ -88,7 +88,7 @@ def no_of_payments(source):
     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual','UBL_DD','ubl_dd'])
 
     if source:
-        if source == 'ubl_dd':
+        if source.lower() == 'ubl_dd':
             payments = payments.exclude(status=0).filter(source=source)
         else:
             payments = payments.filter(source=source)
