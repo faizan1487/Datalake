@@ -94,13 +94,6 @@ class TrainersData(APIView):
                 else:
                     end_date = req_end_date
 
-                # all_dates.append(greatest_order_datetime)
-                # all_dates.append(lowest_order_datetime)
-                # print(dates)
-
-                # print(product_payments)
-                # print(start_date)
-                # print(end_date)
                 product_payments = product_payments.filter(order_datetime__range=(start_date, end_date))
                 # print(product_payments)
                 users = list(product_payments.values('user__email','user__phone'))
@@ -117,11 +110,7 @@ class TrainersData(APIView):
                 if active == 'true':
                     payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime]
                 elif active == 'false':
-                    print("active false")
                     payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime]
-
-                # print("active payments",len(payment_list))
-                
                 
                 #count users in a product
                 # user_count = len(set(payment.user_id for payment in product.product_payments.all()))
@@ -140,8 +129,6 @@ class TrainersData(APIView):
                         payments_list.append(payment)
                 
 
-
-            
                 # payments = MainPaymentSerializer(payments_list, many=True)
                 trainer_data['trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
                 if not req_start_date:
@@ -150,10 +137,10 @@ class TrainersData(APIView):
                     end_date = None
             # print(all_dates)
             trainers_data.append(trainer_data)
-        # print(trainer_data)
 
+        # print(trainer_data['trainer_data'])
         if export=='true':
-            df = pd.DataFrame(trainer_data)
+            df = pd.DataFrame(trainer_data['trainer_data'])
             # Merge dataframes
             file_name = f"Trainers_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)

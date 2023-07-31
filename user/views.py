@@ -283,11 +283,14 @@ class GetUsers(APIView):
             except Exception as e:
                 return Response(e)
         else:
+            #assign is paying customer attribute to each user
             for i in range(len(users['converted_users'])):
                 users['converted_users'][i]['is_paying_customer'] = users['converted'][i]
             
             # print(users['products'])
             # print(users['converted_users'])
+
+
             email_product_map = {}
             for info in users['products']:
                 email = info.get('user__email')
@@ -295,20 +298,21 @@ class GetUsers(APIView):
                 email_product_map[email] = product_name
 
             # Assign the product to each converted user
-            # for user_dict in users['converted_users']:
-            #     email = user_dict.get('email')
-            #     product_name = email_product_map.get(email)
-            #     user_dict['product'] = product_name
+            for user_dict in users['converted_users']:
+                email = user_dict.get('email')
+                product_name = email_product_map.get(email)
+                user_dict['product'] = product_name
 
-            # for info in users['products']:
-            #     email = info.get('user__email')
-            #     product_name = info.get('product__product_name')
+            for info in users['products']:
+                email = info.get('user__email')
+                product_name = info.get('product__product_name')
 
-            #     for user_dict in users['converted_users']:
-            #         if user_dict.get('email') == email:
-            #             user_dict['product'] = product_name
+                for user_dict in users['converted_users']:
+                    if user_dict.get('email') == email:
+                        user_dict['product'] = product_name
 
             paginator = MyPagination()
+            # paginated_queryset = paginator.paginate_queryset(users, request)
             paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
             return paginator.get_paginated_response(paginated_queryset)
 

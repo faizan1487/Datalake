@@ -39,9 +39,7 @@ def upload_csv_to_s3(df,file_name):
 def paying_users_details(query_time, is_converted):
     converted_users = []
     converted = []
-    # return Response("vdfidfjk")
     all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
-    # return Response("vdfidfjk")
     # print(all_paid_users_products)
     all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
     # return Response("vdfidfjk")
@@ -66,6 +64,7 @@ def paying_users_details(query_time, is_converted):
             converted_users.append(user)
             converted.append(False) 
        
+    # response = {"converted_users":converted_users, "converted": converted}
     response = {"converted_users":converted_users, "converted": converted, "products":all_paid_users_products}
     return response
 
@@ -101,7 +100,7 @@ def search_users(q, start_date, end_date, is_converted,source):
         users = users.filter(
             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
     # print(users)
-    users = users.filter(Q(created_at__date__lte = end_date) & Q(created_at__date__gte = start_date))
+    users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
     # print("after date ffilter",users)
     users = paying_users_details(users, is_converted)
     # print("after paying ffilter",users['converted_users'])

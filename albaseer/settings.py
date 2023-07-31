@@ -293,7 +293,6 @@ STATIC_ROOT = os.path.join(BASE_DIR, "static/")
 if DEBUG:
     STATIC_URL = '/static/'
     MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-    
 else:
     STATICFILES_STORAGE = 'storages.backends.s3boto3.S3StaticStorage'
     AWS_SECRET_ACCESS_KEY = env("AWS_SECRET_ACCESS_KEY")
