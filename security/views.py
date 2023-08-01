@@ -21,11 +21,17 @@ import environ
 import pandas as pd
 from datetime import datetime, timedelta, date
 import os
+from rest_framework.pagination import PageNumberPagination
 
 env = environ.Env()
 env.read_env()
 
 # Create your views here.
+class MyPagination(PageNumberPagination):
+    page_size = 10
+    page_query_param = 'page'
+    page_size_query_param = 'page_size'
+    max_page_size = 100           
 
 class CreateScan(APIView):
     def get(self, request):
@@ -85,7 +91,10 @@ class CreateScan(APIView):
             # scan_data.append(scan_dict)
 
         # result = {"scans": scan_data}
-        return Response(scans)
+        paginator = MyPagination()
+        paginated_queryset = paginator.paginate_queryset(scans, request)        
+        return paginator.get_paginated_response(paginated_queryset)
+        # return Response(scans)
 
     
     def post(self, request):
