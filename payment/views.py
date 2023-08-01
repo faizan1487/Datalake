@@ -470,35 +470,35 @@ class SearchPayments(APIView):
                     payment_list[i]['product_id'] = products[i]['product__product_name']
                     payment_amount = payment_list[i]['amount']
                     product_name = products[i]['product__product_name']
-                    if product_name and payment_amount:
-                        product_counts[product_name] += 1
-                        if payment_list[i]['currency'].lower() == 'pkr':
-                            product_payment_totals[product_name] += float(payment_amount)
-                        elif payment_list[i]['currency'].lower() == 'usd':
-                            product_payment_totals[product_name] += int(float(payment_amount)) * usd_rate['PKR']
+                    # if product_name and payment_amount:
+                    #     product_counts[product_name] += 1
+                    #     if payment_list[i]['currency'].lower() == 'pkr':
+                    #         product_payment_totals[product_name] += float(payment_amount)
+                    #     elif payment_list[i]['currency'].lower() == 'usd':
+                    #         product_payment_totals[product_name] += int(float(payment_amount)) * usd_rate['PKR']
                 except Exception as e:
                     pass  
 
-            product_with_max_revenue = max(product_payment_totals, key=product_payment_totals.get)
-            max_revenue = product_payment_totals[product_with_max_revenue]
-            product_with_min_revenue = min(product_payment_totals, key=product_payment_totals.get)
-            min_revenue = product_payment_totals[product_with_min_revenue]
+            # product_with_max_revenue = max(product_payment_totals, key=product_payment_totals.get)
+            # max_revenue = product_payment_totals[product_with_max_revenue]
+            # product_with_min_revenue = min(product_payment_totals, key=product_payment_totals.get)
+            # min_revenue = product_payment_totals[product_with_min_revenue]
             
             # Find the product with the most payments
-            if product_counts:
-                most_payments_product = max(product_counts, key=product_counts.get)
-                most_payments_count = product_counts[most_payments_product]
-            else:
-                most_payments_product = None
-                most_payments_count = 0
+            # if product_counts:
+            #     most_payments_product = max(product_counts, key=product_counts.get)
+            #     most_payments_count = product_counts[most_payments_product]
+            # else:
+            #     most_payments_product = None
+            #     most_payments_count = 0
 
             # Find the product with the least payments
-            if product_counts:
-                least_payments_product = min(product_counts, key=product_counts.get)
-                least_payments_count = product_counts[least_payments_product]
-            else:
-                least_payments_product = None
-                least_payments_count = 0
+            # if product_counts:
+            #     least_payments_product = min(product_counts, key=product_counts.get)
+            #     least_payments_count = product_counts[least_payments_product]
+            # else:
+            #     least_payments_product = None
+            #     least_payments_count = 0
 
            
             if export=='true':
@@ -529,12 +529,16 @@ class SearchPayments(APIView):
 
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-                payments = {'product_with_max_revenue':product_with_max_revenue, 
-                            'max_revenue':max_revenue, 'product_with_min_revenue':product_with_min_revenue, 
-                            'min_revenue': min_revenue, 'most_payments_product':most_payments_product, 
-                            'most_payments_count':most_payments_count, 'least_payments_product':least_payments_product, 
-                            'least_payments_count':least_payments_count,'total_payments_pkr': total_payments_in_pkr, 'total_payments_usd': total_payments_in_usd, 
+                # payments = {'product_with_max_revenue':product_with_max_revenue, 
+                #             'max_revenue':max_revenue, 'product_with_min_revenue':product_with_min_revenue, 
+                #             'min_revenue': min_revenue, 'most_payments_product':most_payments_product, 
+                #             'most_payments_count':most_payments_count, 'least_payments_product':least_payments_product, 
+                #             'least_payments_count':least_payments_count,'total_payments_pkr': total_payments_in_pkr, 'total_payments_usd': total_payments_in_usd, 
+                #             'payments': paginated_queryset}
+                payments = { 'total_payments_pkr': total_payments_in_pkr, 
+                            'total_payments_usd': total_payments_in_usd, 
                             'payments': paginated_queryset}
+                
                 # return paginator.get_paginated_response(paginated_queryset)
                 return paginator.get_paginated_response(payments)
 
