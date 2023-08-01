@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, Serializer, SerializerMethodField
-from .models  import AffiliateUser, AffiliateUniqueClick, AffiliateLead
+from .models  import AffiliateUser, AffiliateUniqueClick, AffiliateLead, Commission
 
 
 
@@ -39,33 +39,36 @@ class AffiliateLeadSerializer(ModelSerializer):
 
         instance.save()
         return instance
-    
+
+class CommissionSerializer(ModelSerializer):
+    class Meta:
+        model = Commission
+        fields = '__all__'
+
+    def update(self, instance, validated_data):
+        instance.affiliate = validated_data.get('affiliate', instance.affiliate)
+        instance.product = validated_data.get('product', instance.product)
+        instance.amount_pkr = validated_data.get('amount_pkr', instance.amount_pkr)
+        instance.amount_usd = validated_data.get('amount_usd', instance.amount_usd)
+        instance.commission_usd = validated_data.get('commission_usd', instance.commission_usd)
+        instance.commission_pkr = validated_data.get('commission_pkr', instance.commission_pkr)
+        instance.student_email = validated_data.get('student_email', instance.student_email)
+        instance.date = validated_data.get('date', instance.date)
+        instance.is_paid = validated_data.get('is_paid', instance.is_paid)
+        instance.save()
+        return instance
 
 
 class AffiliateClickSerializer(ModelSerializer):
     class Meta:
         model = AffiliateUniqueClick
         fields = '__all__'
-        
-    def create(self, validated_data):
-        # Get the ID of the object to update, if it exists
-        affiliate_id = validated_data.get('affiliate_id')
-        
-        # If an ID was provided, try to get the existing object
-        if affiliate_id:
-            try:
-                obj = AffiliateUniqueClick.objects.get(affiliate_id=affiliate_id)
-            except AffiliateUniqueClick.DoesNotExist:
-                obj = None
-        else:
-            obj = None
-        
-        # If the object exists, update its fields with the validated data
-        if obj:
-            for key, value in validated_data.items():
-                setattr(obj, key, value)
-            obj.save()
-        else:
-            obj = AffiliateUniqueClick.objects.create(**validated_data)
-        
-        return obj
+
+    def update(self, instance, validated_data):
+        instance.page_url = validated_data.get('page_url', instance.page_url)
+        instance.affiliate = validated_data.get('affiliate', instance.affiliate)
+        instance.pkr_price = validated_data.get('pkr_price', instance.pkr_price)
+        instance.usd_price = validated_data.get('usd_price', instance.usd_price)
+
+        instance.save()
+        return instance

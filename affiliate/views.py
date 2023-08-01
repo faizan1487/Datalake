@@ -3,10 +3,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 # Create your views here.
-from .models import AffiliateUser, AffiliateUniqueClick, AffiliateLead
+from .models import AffiliateUser, AffiliateUniqueClick, AffiliateLead, Commission
 from django.db.models import Q
 from django.db.models import Count
-from .serializers import AffiliateSerializer, AffiliateClickSerializer, AffiliateLeadSerializer
+from .serializers import (AffiliateSerializer, AffiliateClickSerializer, AffiliateLeadSerializer,
+                          CommissionSerializer)
 from rest_framework import status
 from django.http import HttpResponse
 from threading import Thread
@@ -48,7 +49,6 @@ class AffiliateUsers(APIView):
         return paginator.get_paginated_response(paginated_queryset)
     
 
-
 class CreateAffiliateUser(APIView):
     def post(self, request):
         data = request.data
@@ -84,12 +84,19 @@ class CreateAffiliateLead(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class CreateAffiliateClick(APIView):
     def post(self, request):
-        data = request.data
-        serializer = AffiliateClickSerializer(data=data)
+        data = request.data.copy()
+        user  = AffiliateUser.objects.get(email=data['affiliate'])
+        data['affiliate'] = user.id
+        ip = data.get("ip")
         
+        try:
+            instance = AffiliateUniqueClick.objects.get(ip=ip)
+            serializer = AffiliateClickSerializer(instance, data=data)
+        except:
+            serializer = AffiliateClickSerializer(data=data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -97,7 +104,25 @@ class CreateAffiliateClick(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+class CreateCommission(APIView):
+    def post(self, request):
+        data = request.data.copy()
+        user  = AffiliateUser.objects.get(email=data['affiliate'])
+        data['affiliate'] = user.id
+        order_id = data.get("order_id")
 
+        try:
+            instance = Commission.objects.get(order_id=order_id)
+            serializer = CommissionSerializer(instance, data=data)
+        except:
+            serializer = CommissionSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
 class UserDelete(APIView):
     def get(self, request):

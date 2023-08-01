@@ -1,10 +1,6 @@
 from django.db import models
-
+from datetime import datetime
 # Create your models here.
-
-
-
-
 class AffiliateUser(models.Model):
     email = models.EmailField(unique=True)
     source_id = models.CharField(max_length=100 , null=True , blank=True)
@@ -43,13 +39,15 @@ class AffiliateLead(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.email}"
+
 
 class AffiliateUniqueClick(models.Model):
-    source_id = models.CharField(max_length=100 , null=True , blank=True)
-    ip = models.CharField(max_length=100 , null=True , blank=True)
+    ip = models.CharField(max_length=100, unique=True)
     page_url = models.CharField(max_length=100 , null=True , blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    affiliate_id = models.ForeignKey(AffiliateUser, on_delete=models.SET_NULL, null=True, related_name="user_clicks")
+    affiliate = models.ForeignKey(AffiliateUser, on_delete=models.SET_NULL, null=True, related_name="user_clicks")
     pkr_price = models.IntegerField(default=0)
     usd_price = models.IntegerField(default=0)
     
@@ -58,3 +56,21 @@ class AffiliateUniqueClick(models.Model):
     
     class Meta:
         verbose_name_plural = "AffiliateUniqueClicks"
+
+
+class Commission(models.Model):
+    order_id = models.CharField(max_length=100, unique=True)
+    affiliate = models.ForeignKey(AffiliateUser, on_delete=models.SET_NULL, null=True, related_name="affiliate_user")
+    product = models.CharField(max_length=200,null=True,blank=True)
+    source = models.CharField(max_length=200,null=True,blank=True)
+    amount_pkr = models.IntegerField(default=0)
+    amount_usd = models.IntegerField(default=0)
+    commission_usd = models.CharField(max_length=30, default=0)
+    commission_pkr = models.CharField(max_length=30, default=0)
+    student_email = models.CharField(max_length=150)
+    date = models.DateTimeField(default=datetime.now)
+    is_paid = models.BooleanField(default=False)
+    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.product}"
