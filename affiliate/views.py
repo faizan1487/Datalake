@@ -17,12 +17,9 @@ class MyPagination(PageNumberPagination):
     page_query_param = 'page'
     page_size_query_param = 'page_size'
     max_page_size = 100  
+  
 
-
-class AffiliateUsers(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+class CreateAffiliateUser(APIView):
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -32,7 +29,7 @@ class AffiliateUsers(APIView):
         # payments = cache.get(url+'payments')
         # if payments is None:
         users = AffiliateUser.objects.annotate(user_clicks_count=Count('user_clicks')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count')
-        
+        # users = users.annotate(affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','affiliate_leads')
         if q:
             users = users.filter(email__icontains=q)
 
@@ -45,11 +42,9 @@ class AffiliateUsers(APIView):
             end_date = last_user['created_at'].date() if last_user else None
         
         paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(users, request)
+        paginated_queryset = paginator.paginate_queryset(users, request) 
         return paginator.get_paginated_response(paginated_queryset)
     
-
-class CreateAffiliateUser(APIView):
     def post(self, request):
         data = request.data
         email = data.get("email")

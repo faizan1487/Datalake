@@ -52,54 +52,54 @@ class CreateScan(APIView):
         #         comment_mapping[comment.scan_id] = []
         #     comment_mapping[comment.scan_id].append(comment)
 
-        # scan_data = []
-        # for scan in scans:
-        #     scan_id = scan['id']
+        scan_data = []
+        for scan in scans:
+            scan_id = scan['id']
 
-        #     if not scan['file_upload']:
-        #         file_upload_link = ""
-        #     else:
-        #         file_upload_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['file_upload']
+            if not scan['file_upload']:
+                file_upload_link = ""
+            else:
+                file_upload_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['file_upload']
             
-        #     if not scan['poc']:
-        #         poc_link = ""
-        #     else:
-        #         poc_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['poc']
+            if not scan['poc']:
+                poc_link = ""
+            else:
+                poc_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['poc']
 
-        #     scan_dict = {
-        #         'id': scan_id,
-        #         'scan_type': scan['scan_type'],
-        #         'scan_date': scan['scan_date'],
-        #         'severity': scan['severity'],
-        #         'remediation': scan['remediation'],
-        #         'assigned_to__name': scan['assigned_to__name'],
-        #         'scan_progress': scan['scan_progress'],
-        #         'testing_method': scan['testing_method'],
-        #         'target': scan['target'],
-        #         'target_value': scan['target_value'],
-        #         'application_type': scan['application_type'],
-        #         'file_upload': file_upload_link,
-        #         'poc': poc_link,
-        #         'no_of_comments': 0,
-        #         'comments': [],
-        #     }
+            scan_dict = {
+                'id': scan_id,
+                'scan_type': scan['scan_type'],
+                'scan_date': scan['scan_date'],
+                'severity': scan['severity'],
+                'remediation': scan['remediation'],
+                'assigned_to__name': scan['assigned_to__name'],
+                'scan_progress': scan['scan_progress'],
+                'testing_method': scan['testing_method'],
+                'target': scan['target'],
+                'target_value': scan['target_value'],
+                'application_type': scan['application_type'],
+                'file_upload': file_upload_link,
+                'poc': poc_link,
+                # 'no_of_comments': 0,
+                # 'comments': [],
+            }
 
             # if scan_id in comment_mapping:
             #     scan_dict['no_of_comments'] = len(comment_mapping[scan_id])
             #     scan_dict['comments'] = get_comments_data(comment_mapping[scan_id])
 
-            # scan_data.append(scan_dict)
+            scan_data.append(scan_dict)
 
         # result = {"scans": scan_data}
         paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(scans, request)        
+        paginated_queryset = paginator.paginate_queryset(scan_data, request)        
         return paginator.get_paginated_response(paginated_queryset)
         # return Response(scans)
 
     
     def post(self, request):
         data = request.data.copy()
-        print("data",data)
+        # print("data",data)
         assigned_to_email = data.get('assigned_to')
         # print(assigned_to_email)
         # print(data)
