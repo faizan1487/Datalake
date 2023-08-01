@@ -3,8 +3,7 @@ from .models import ChatwoorUser
 from import_export.admin import ImportExportModelAdmin
 
 class ChatwootUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['id', 'email', 'first_name']
+    list_display = ['id', 'email', 'first_name','created_at']
     search_fields = ('id', 'email', 'first_name')
-
 
 admin.site.register(ChatwoorUser, ChatwootUserAdmin)
