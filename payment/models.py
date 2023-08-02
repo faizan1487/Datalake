@@ -7,7 +7,7 @@ from products.models import Main_Product
 
 #For MainSite(Al-Nafi) Payments:
 class AlNafi_Payment(models.Model):
-    payment_id = models.IntegerField(null=True, blank=False)
+    payment_id = models.IntegerField(null=True, blank=False, unique=True)
     customer_email = models.CharField(max_length=300, null=True, blank=False)
     product_name = models.CharField(max_length=330, null=True, blank=False)
     amount_pkr = models.IntegerField(default=0)
@@ -31,7 +31,7 @@ class AlNafi_Payment(models.Model):
 
     def __str__(self):
         return f"{self.customer_email}"
-    
+
     class Meta:
         managed = True
         verbose_name = "Al-Nafi Payment"
@@ -55,13 +55,13 @@ class UBL_Manual_Payment(models.Model):
 
     def __str__(self):
         return f"{self.customer_email}"
-    
+
     class Meta:
         managed = True
         verbose_name = "UBL-Manual Payment"
         ordering = ["-deposit_date"]
 
-#For UBL_IPG_Payment:     
+#For UBL_IPG_Payment:
 class UBL_IPG_Payment(models.Model):
     # id = models.AutoField(primary_key=True)
     transaction_id = models.CharField(max_length=50, null=False,blank=False)
@@ -77,10 +77,10 @@ class UBL_IPG_Payment(models.Model):
     approval_code = models.CharField(max_length=50, null=True,blank=True)
     source = models.CharField(max_length=50, null=True,blank=True)
     status = models.CharField(max_length=50, null=True,blank=True)
-        
+
     def __str__(self):
         return f"{self.customer_email}"
-    
+
     class Meta:
         managed = True
         verbose_name = "UBL IPG Payment"
@@ -105,10 +105,10 @@ class Easypaisa_Payment(models.Model):
     fed_pkr = models.CharField(max_length=50, null=True,blank=True)
     error_reason = models.CharField(max_length=200, null=True,blank=True)
     token_paid_datetime = models.DateTimeField(default=None, null=False , blank=False)
-            
+
     def __str__(self):
         return f"{self.customer_email}"
-    
+
     class Meta:
         managed = True
         verbose_name = 'Easypaisa Payment'
@@ -130,15 +130,15 @@ class Stripe_Payment(models.Model):
     source = models.CharField(max_length=50, null=True , blank=True)
     description = models.CharField(max_length=100, null=True , blank=True)
     address = models.CharField(max_length=300, null=True , blank=True)
-    
+
     def __str__(self):
         return f"{self.customer_email}"
-    
+
     class Meta:
         managed = True
         verbose_name = 'Stripe Payment'
         ordering = ["-order_datetime"]
-       
+
 
 
 #FOR MURGED ALL PAYMENT IN ONE TABLE MAIN_PAYMENT:
@@ -190,7 +190,7 @@ class Main_Payment(models.Model):
 
     def __str__(self):
         return f"ID: {self.id}"
-    
+
 
 class NavbarLink(models.Model):
     name = models.CharField(max_length=100,null=True, blank=True)

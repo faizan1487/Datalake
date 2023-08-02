@@ -95,7 +95,7 @@ class PSWFormRecord(APIView):
                 return Response({"message":"Something went wrong"})
         except Exception as e:
             return Response({"message":"Something went wrong"})
-        
+
 class Marketing_Pkr_Form(APIView):
     def post(self,request):
         print(request.data)
@@ -133,7 +133,7 @@ class Marketing_Pkr_Form(APIView):
             study_field = field_of_study,
             level_of_education = level_of_education,
             university_name = university_name,
-            # university_name_othe = 
+            # university_name_othe =
             title_of_degree = title_of_degree,
             move_another_country = move_another_country,
             skillset = skillset,
@@ -159,13 +159,13 @@ class MainUserAPIView(APIView):
         file = request.FILES['file']
         df = pd.read_csv(file)
         # print(int(df.to_dict('records')[0]['product']))
-        
+
         # Replace non-finite values with NaN
         # df['product'] = pd.to_numeric(df['product'], errors='coerce')
-        
+
         # Convert NaN values to None (null) instead of a default value
         # df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
-        
+
         serializer = MainUserCreateSerializer(data=df.to_dict('records'), many=True)
         if serializer.is_valid():
             serializer.save()
@@ -184,7 +184,7 @@ class AlnafiUser(APIView):
     # def get(self, request):
     #     Thread(target=self.get_thread, args=(request,)).start()
     #     return HttpResponse("working")
-     
+
     def get(self, request):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
@@ -202,9 +202,9 @@ class AlnafiUser(APIView):
             user.save(force_update=True, force_insert=False)
             # except Exception as e:
                 # print(e)
-        
+
         return Response("Working")
-            
+
 
     def post(self, request):
         data = request.data
@@ -230,7 +230,7 @@ class IslamicUser(APIView):
     def get(self, request):
         Thread(target=self.get_thread, args=(request,)).start()
         return HttpResponse("working")
-     
+
     def get_thread(self, request):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
@@ -257,13 +257,13 @@ class GetUsers(APIView):
         export = self.request.GET.get('export', None) or None
         product = self.request.GET.get('product', None) or None
         url = request.build_absolute_uri()
-           
+
         users = search_users(q,start_date,req_end_date,is_converted,source)
         # print(users)
         if export =='true':
             for i in range(len(users['converted_users'])):
                 users['converted_users'][i]['Converted'] = users['converted'][i]
-            
+
             for info in users['products']:
                 email = info.get('user__email')
                 product_name = info.get('product__product_name')
@@ -271,7 +271,7 @@ class GetUsers(APIView):
                 for user_dict in users['converted_users']:
                     if user_dict.get('email') == email:
                         user_dict['product'] = product_name
-            try:    
+            try:
                 file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 # Build the full path to the media directory
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -313,7 +313,7 @@ class GetUser(APIView):
         # export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
         # user = cache.get(url)
-        
+
         # if user is None:
         user = Main_User.objects.filter(id=user_id)
             # cache.set(url, user)
@@ -322,10 +322,10 @@ class GetUser(APIView):
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
             latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
             user = dict(user.values()[0])
-        
+
             # if latest_payment.date() > date.today():
             user['is_paying_customer'] = True
-            
+
             def json_serializable(obj):
                 if isinstance(obj, datetime):
                     return obj.isoformat()  # Convert datetime to ISO 8601 format
@@ -339,26 +339,26 @@ class GetUser(APIView):
                     payment_list[i]['product_id'] = products[i]['product__product_name']
                 except Exception as e:
                     print(e)
-            
+
             payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
-            payment_objects = json.loads(payment_json)           
-            
+            payment_objects = json.loads(payment_json)
+
             response_data = {"user": user, "user payments": payment_objects,"no_of_payments": payments.count(),"Message":"Success"}
             return Response(response_data)
         except Exception as e:
             user = dict(user.values()[0])
             response_data = {"user": user, "user payments": None, "no_of_payments": 0, "Message":"No payments data found"}
             return Response(response_data)
-                    
-             
-#unoptimized                
-# 
+
+
+#unoptimized
+#
 class GetNoOfUsersMonth(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
     # required_groups = ['Support', 'Admin']
     def get(self, request):
-        source = self.request.GET.get('source', None) or None 
+        source = self.request.GET.get('source', None) or None
         url = request.build_absolute_uri()
         if source == 'alnafi':
             # alnafi_no_of_users = cache.get(url)
@@ -381,18 +381,18 @@ class GetNoOfUsersMonth(APIView):
             total_users = alnafi_no_of_users[0]['total_users'] + islamic_no_of_users[0]['total_users']
             total_converted_users = alnafi_no_of_users[1]['converted_users'] + islamic_no_of_users[1]['converted_users']
             total_unconverted_users = alnafi_no_of_users[2]['unconverted_users'] + islamic_no_of_users[2]['unconverted_users']
-                # cache.set(url+'alnafi', alnafi_no_of_users) 
-                    
+                # cache.set(url+'alnafi', alnafi_no_of_users)
+
             response_data = {"total_users": total_users,
                             "total_converted_users": total_converted_users,
                             "total_unconverted_users": total_unconverted_users,
                             "alnafi_no_of_users": alnafi_no_of_users,
                             'islamic_no_of_users':islamic_no_of_users}
-            
+
         return Response(response_data)
 
 
-            
+
 class UserRegistrationView(APIView):
     renderer_classes = [UserRenderer]
     def post(self, request, format=None):
@@ -410,7 +410,7 @@ class UserRegistrationView(APIView):
         response = loginUser(request, response, user, sameDomain)
         response.data["sameDomain"] = sameDomain
         response.data["user"] = serializer.data
-        return response    
+        return response
 
 class UserLoginView(APIView):
     renderer_classes = [UserRenderer]
@@ -436,7 +436,7 @@ class UserLoginView(APIView):
             # return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_401_UNAUTHORIZED)
             return Response({'error': 'Email or Password is not Valid'}, status=status.HTTP_401_UNAUTHORIZED)
 
-        
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def User_logout(request):
@@ -458,7 +458,7 @@ class UserProfileView(APIView):
         return response
         # return Response(serializer.data, status=status.HTTP_200_OK)
 
- 
+
 def processAccessToken(response: Response, refresh_token, sameDomain):
     try:
         cookie = jwt.decode(
@@ -485,7 +485,7 @@ def processAccessToken(response: Response, refresh_token, sameDomain):
         return response
     except ExpiredSignatureError:
         return Response({"message": "Token has been expired"}, status=403)
- 
+
 
 class TokenRefreshView(APIView):
     def post(self, request: Request):
@@ -493,7 +493,7 @@ class TokenRefreshView(APIView):
         response = Response()
         response.data = {}
         response.data["sameDomain"] = sameDomain
-    
+
         if sameDomain:
             if(settings.SIMPLE_JWT['REFRESH_COOKIE'] in request.COOKIES):
                 refresh_token = request.COOKIES[settings.SIMPLE_JWT['REFRESH_COOKIE']]
@@ -511,8 +511,8 @@ class TokenRefreshView(APIView):
                 response = Response(
                     {"message": "User is not logged in different domain"}, status=403)
         return response
- 
-   
+
+
 class UserChangePasswordView(APIView):
     renderer_classes = [UserRenderer]
     permission_classes = [IsAuthenticated]
@@ -536,8 +536,8 @@ class UserPasswordResetView(APIView):
         serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})
         serializer.is_valid(raise_exception=True)
         return Response({'msg':'Password Reset Successfully'}, status=status.HTTP_200_OK)
-    
-    
+
+
 class Navbar(APIView):
     def get(self,request):
         user = request.user
@@ -545,9 +545,9 @@ class Navbar(APIView):
         tabs = NavbarLink.objects.filter(group__in=groups).distinct()
         serializer = NavbarSerializer(tabs, many=True)
         return Response(serializer.data)
-    
-        
-        
+
+
+
 
 class AllEmployees(APIView):
     # permission_classes = [IsAuthenticated]
@@ -556,20 +556,20 @@ class AllEmployees(APIView):
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         url = request.build_absolute_uri()
-        
-        
+
+
         employees = cache.get(url)
         if employees is None:
             employees = search_employees(q)
-            cache.set(url, employees) 
-            
+            cache.set(url, employees)
+
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(employees, request)
         return paginator.get_paginated_response(paginated_queryset)
 
 
 
-  
+
 # env = environ.Env()
 # env.read_env()
 # DEBUG = env('DEBUG',cast=bool)
@@ -582,13 +582,13 @@ class AllEmployees(APIView):
 #         source = env('GUACAMOLE_DATA_SOURCE')
 #         username = env('GUACAMOLE_USERNAME')
 #         password = env('GUACAMOLE_PASSWORD')
-    
 
 
-#         session = guacamole.session("https://lab.alnafi.com/","postgresql","nafisuperadminlabsalnafi", "IO*91^%82**/>,.;'=_-|||")    
+
+#         session = guacamole.session("https://lab.alnafi.com/","postgresql","nafisuperadminlabsalnafi", "IO*91^%82**/>,.;'=_-|||")
 #         print(session.get_user("appinventorpak1@gmail.com"))
 #         return Response("vbdisvu")
-   
+
 # class UserLogoutView(APIView):
 #     authentication_classes = [JWTAuthentication]
 
@@ -612,11 +612,11 @@ class AllEmployees(APIView):
 #     # required_groups = ['Support', 'Admin']
 #     def get(self, request):
 #         start_date = self.request.GET.get('start_date', None) or None
-#         end_date = self.request.GET.get('end_date', None) or None   
-#         source = self.request.GET.get('source', None) or None 
+#         end_date = self.request.GET.get('end_date', None) or None
+#         source = self.request.GET.get('source', None) or None
 #         url = request.build_absolute_uri()
-        
-        
+
+
 #         # users = no_of_users(start_date,end_date,source)
 #         # response_data = {"no_of_users": users}
 #         # return Response(response_data)
@@ -630,21 +630,21 @@ class AllEmployees(APIView):
 #             academy_no_of_users = cache.get(url)
 #             if academy_no_of_users is None:
 #                 academy_no_of_users = islamic_no_users(start_date,end_date)
-#                 cache.set(url, academy_no_of_users)   
+#                 cache.set(url, academy_no_of_users)
 #             response_data = {"academy_no_of_users": academy_no_of_users,}
 #         else:
 #             alnafi_no_of_users = cache.get(url+'alnafi')
 #             if alnafi_no_of_users is None:
 #                 alnafi_no_of_users = alnafi_no_users(start_date, end_date)
-#                 cache.set(url+'alnafi', alnafi_no_of_users) 
-                    
+#                 cache.set(url+'alnafi', alnafi_no_of_users)
+
 #             academy_no_of_users = cache.get(url+'academy')
 #             if academy_no_of_users is None:
 #                 academy_no_of_users = islamic_no_users(start_date,end_date)
-#                 cache.set(url+'academy', academy_no_of_users) 
-            
+#                 cache.set(url+'academy', academy_no_of_users)
+
 #             response_data = {"alnafi_no_of_users": alnafi_no_of_users,
 #                             "academy_no_of_users": academy_no_of_users}
-            
+
 #         return Response(response_data)
 
