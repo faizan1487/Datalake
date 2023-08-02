@@ -16,7 +16,7 @@ admin.site.register(AffiliateUser, AffiliateUserAdmin)
 class AffiliateLeadAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('affiliate','email','first_name','last_name', 'contact','country', 'created_at')
     list_filter = (('created_at',DateTimeRangeFilter),)
-    search_fields = ('first_name', 'phone', 'email')
+    search_fields = ('first_name', 'contact', 'email')
     list_per_page = 500
 
 admin.site.register(AffiliateLead, AffiliateLeadAdmin)
@@ -25,7 +25,7 @@ admin.site.register(AffiliateLead, AffiliateLeadAdmin)
 class AffiliateUniqueClickAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('ip','page_url', 'affiliate', 'pkr_price','usd_price','created_at')
     list_filter = (('created_at',DateTimeRangeFilter),)
-    search_fields = ('ip','page_url', 'affiliate', 'pkr_price','usd_price')
+    search_fields = ('ip','page_url','pkr_price','usd_price')
     list_per_page = 500
 
 admin.site.register(AffiliateUniqueClick, AffiliateUniqueClickAdmin)
@@ -34,7 +34,7 @@ class CommissionAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('order_id','affiliate', 'product', 'source', 'created_at',
                     'amount_pkr','amount_usd','created_at','commission_usd','commission_pkr')
     list_filter = (('created_at',DateTimeRangeFilter),)
-    search_fields = ('order_id','product', 'affiliate')
+    search_fields = ('order_id','product')
     list_per_page = 500
 
 admin.site.register(Commission, CommissionAdmin)

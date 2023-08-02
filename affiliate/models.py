@@ -71,6 +71,6 @@ class Commission(models.Model):
     date = models.DateTimeField(default=datetime.now)
     is_paid = models.BooleanField(default=False)
     created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
+    
     def __str__(self):
         return f"{self.product}"

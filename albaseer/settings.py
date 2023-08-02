@@ -273,13 +273,14 @@ REST_FRAMEWORK = {
 }
 
 REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'] = [
-        # 'rest_framework.renderers.JSONRenderer',
-        'rest_framework.renderers.BrowsableAPIRenderer',
+        'rest_framework.renderers.JSONRenderer',
+        # 'rest_framework.renderers.BrowsableAPIRenderer',
 ]
 if DEBUG:
     REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append(
         'rest_framework.renderers.BrowsableAPIRenderer',
     )
+    
     
 CSRF_COOKIE_NAME="csrftoken"
 CSRF_HEADER_NAME="csrftoken"

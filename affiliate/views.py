@@ -28,8 +28,8 @@ class CreateAffiliateUser(APIView):
         url = request.build_absolute_uri()
         # payments = cache.get(url+'payments')
         # if payments is None:
-        users = AffiliateUser.objects.annotate(user_clicks_count=Count('user_clicks')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count')
-        # users = users.annotate(affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','affiliate_leads')
+        # users = AffiliateUser.objects.annotate(user_clicks_count=Count('user_clicks'),affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count','affiliate_leads_count')
+        users = AffiliateUser.objects.a(user_clicks_count=Count('user_clicks'),affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count','affiliate_leads_count')
         if q:
             users = users.filter(email__icontains=q)
 
