@@ -16,6 +16,7 @@ class AffiliateSerializer(ModelSerializer):
         instance.phone = validated_data.get('phone', instance.phone)
         instance.address = validated_data.get('address', instance.address)
         instance.country = validated_data.get('country', instance.country)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
         # instance.language = validated_data.get('language', instance.language)
         # instance.referral_code = validated_data.get('referral_code', instance.referral_code)
         # instance.category_code = validated_data.get('category_code', instance.category_code)
@@ -36,7 +37,7 @@ class AffiliateLeadSerializer(ModelSerializer):
         instance.contact = validated_data.get('contact', instance.contact)
         instance.address = validated_data.get('address', instance.address)
         instance.country = validated_data.get('country', instance.country)
-
+        instance.created_at = validated_data.get('created_at', instance.created_at)
         instance.save()
         return instance
 
@@ -55,6 +56,7 @@ class CommissionSerializer(ModelSerializer):
         instance.student_email = validated_data.get('student_email', instance.student_email)
         instance.date = validated_data.get('date', instance.date)
         instance.is_paid = validated_data.get('is_paid', instance.is_paid)
+        
         instance.save()
         return instance
 

@@ -11,6 +11,7 @@ from .serializers import (AffiliateSerializer, AffiliateClickSerializer, Affilia
 from rest_framework import status
 from django.http import HttpResponse
 from threading import Thread
+from datetime import date, datetime, timedelta
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -24,26 +25,52 @@ class CreateAffiliateUser(APIView):
         q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
+        email = self.request.GET.get('email', None) or None
         export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
         # payments = cache.get(url+'payments')
         # if payments is None:
-        # users = AffiliateUser.objects.annotate(user_clicks_count=Count('user_clicks'),affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count','affiliate_leads_count')
-        users = AffiliateUser.objects.a(user_clicks_count=Count('user_clicks'),affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count','affiliate_leads_count')
-        if q:
-            users = users.filter(email__icontains=q)
+        # users = AffiliateUser.objects.annotate(user_clicks_count=Count('affiliate_clicks'),affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count','affiliate_leads_count')
+        
+        if email:
+            affiliateusers = AffiliateUser.objects.filter(email=email)
+        else:
+            affiliateusers = AffiliateUser.objects.filter(email="test@gmail.com")
+        
+        for user in affiliateusers:
+            leads = user.affiliate_leads.all().values("first_name","last_name","email",
+                                                      "contact","address","country","created_at")
+            clicks = user.affiliate_clicks.all().values("pkr_price","usd_price")
+            commissions = user.affiliate_commission.all().values("order_id","product","source",
+                                                                 "amount_pkr","amount_usd",
+                                                                 "commission_usd","commission_pkr","is_paid")
 
         if not start_date:
-            first_user = users.exclude(created_at=None).last()
+            first_user = leads.exclude(created_at=None).first()
             start_date = first_user['created_at'].date() if first_user else None
 
         if not end_date:
-            last_user = users.exclude(created_at=None).first()
+            last_user = leads.exclude(created_at=None).last()
             end_date = last_user['created_at'].date() if last_user else None
+            end_date += timedelta(days=1)
         
-        paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(users, request) 
-        return paginator.get_paginated_response(paginated_queryset)
+
+        leads = leads.filter(created_at__range=(start_date, end_date))
+        clicks = clicks.filter(created_at__range=(start_date, end_date))
+        commissions = commissions.filter(date__range=(start_date, end_date))
+        
+        agent_data = {
+            'agent_name': user.first_name,
+            'agent_leads': leads,
+            'agent_clicks': clicks,
+            'affiliate_commissions': commissions
+            # 'trainer_data': []
+        }
+
+        # paginator = MyPagination()
+        # paginated_queryset = paginator.paginate_queryset(agent_data, request) 
+        # return paginator.get_paginated_response(paginated_queryset)
+        return Response(agent_data)
     
     def post(self, request):
         data = request.data

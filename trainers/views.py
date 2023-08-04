@@ -41,6 +41,7 @@ class TrainersData(APIView):
         url = request.build_absolute_uri()  
         
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
+        
 
         if q:
             trainers = trainers.filter(trainer_name__icontains=q)

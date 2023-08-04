@@ -13,13 +13,12 @@ class AffiliateUser(models.Model):
     is_superuser = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(auto_now_add=True,null=True , blank=True)
     language = models.CharField(max_length=100 , null=True , blank=True)
     referral_code = models.CharField(max_length=100 , null=True , blank=True)
     category_id = models.BigIntegerField(null=True,blank=True)
     accept_aggrement = models.BooleanField(default=False)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True, null=True , blank=True)
+    created_at = models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return f"{self.email}"
@@ -36,7 +35,7 @@ class AffiliateLead(models.Model):
     contact = models.CharField(max_length=255, null=True, blank=True)
     address = models.CharField(max_length=500, null=True, blank=True)
     country = models.CharField(max_length=100 , null=True , blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(null=True , blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):
@@ -45,9 +44,9 @@ class AffiliateLead(models.Model):
 
 class AffiliateUniqueClick(models.Model):
     ip = models.CharField(max_length=100, unique=True)
-    page_url = models.CharField(max_length=100 , null=True , blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    affiliate = models.ForeignKey(AffiliateUser, on_delete=models.SET_NULL, null=True, related_name="user_clicks")
+    page_url = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(null=True, blank=True)
+    affiliate = models.ForeignKey(AffiliateUser, on_delete=models.SET_NULL, null=True, related_name="affiliate_clicks")
     pkr_price = models.IntegerField(default=0)
     usd_price = models.IntegerField(default=0)
     
@@ -60,7 +59,7 @@ class AffiliateUniqueClick(models.Model):
 
 class Commission(models.Model):
     order_id = models.CharField(max_length=100, unique=True)
-    affiliate = models.ForeignKey(AffiliateUser, on_delete=models.SET_NULL, null=True, related_name="affiliate_user")
+    affiliate = models.ForeignKey(AffiliateUser, on_delete=models.SET_NULL, null=True, related_name="affiliate_commission")
     product = models.CharField(max_length=200,null=True,blank=True)
     source = models.CharField(max_length=200,null=True,blank=True)
     amount_pkr = models.IntegerField(default=0)

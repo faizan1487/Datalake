@@ -7,7 +7,7 @@ import json
 from rest_framework.renderers import JSONRenderer
 from rest_framework.decorators import api_view
 from rest_framework.decorators import renderer_classes
-from .models import ChatwoorUser
+from .models import Contacts
 import csv
 
 
@@ -76,9 +76,9 @@ def user_created_webhook(request):
         }
 
     try:
-        user = ChatwoorUser.objects.get(email=payload_data['email'])
+        user = Contacts.objects.get(email=payload_data['email'])
         serializer = ChatwootUserSerializer(instance=user, data=payload_data)
-    except ChatwoorUser.DoesNotExist:
+    except Contacts.DoesNotExist:
         serializer = ChatwootUserSerializer(data=payload_data)
     
     if serializer.is_valid():

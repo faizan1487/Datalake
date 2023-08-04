@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import ChatwoorUser
+from .models import Contacts
 from rest_framework.serializers import ModelSerializer
 
 class ChatwootUserSerializer(ModelSerializer):
     class Meta:
-        model = ChatwoorUser
+        model = Contacts
         fields = '__all__'
 
 
