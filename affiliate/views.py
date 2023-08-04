@@ -39,25 +39,44 @@ class CreateAffiliateUser(APIView):
         
         for user in affiliateusers:
             leads = user.affiliate_leads.all().values("first_name","last_name","email",
-                                                      "contact","address","country","created_at")
-            clicks = user.affiliate_clicks.all().values("pkr_price","usd_price")
+                                                    "contact","address","country","created_at")
+            clicks = user.affiliate_clicks.all().values("pkr_price","usd_price","created_at")
             commissions = user.affiliate_commission.all().values("order_id","product","source",
-                                                                 "amount_pkr","amount_usd",
-                                                                 "commission_usd","commission_pkr","is_paid")
-
+                                                                "amount_pkr","amount_usd",
+                                                                "commission_usd","commission_pkr","is_paid","created_at")
+            print(commissions)
         if not start_date:
-            first_user = leads.exclude(created_at=None).first()
-            start_date = first_user['created_at'].date() if first_user else None
+            first_lead = leads.exclude(created_at=None).first()
+            start_date_lead = first_lead['created_at'].date() if first_lead else None
+            first_click = clicks.exclude(created_at=None).first()
+            start_date_click = first_click['created_at'].date() if first_click else None
+            first_commission = commissions.exclude(created_at=None).first()
+            print("fursi commission", first_commission)
+            start_date_commission = first_commission['created_at'].date() if first_commission else None
+            
+
 
         if not end_date:
-            last_user = leads.exclude(created_at=None).last()
-            end_date = last_user['created_at'].date() if last_user else None
-            end_date += timedelta(days=1)
+            last_lead = leads.exclude(created_at=None).last()
+            end_date_lead = last_lead['created_at'].date() if last_lead else None
+            end_date_lead += timedelta(days=1)
+            last_click = clicks.exclude(created_at=None).last()
+            end_date_click = last_click['created_at'].date() if last_click else None
+            end_date_click += timedelta(days=1)
+            last_commission = commissions.exclude(created_at=None).last()
+            print("last", last_commission)
+            end_date_commission = last_commission['created_at'].date() if last_commission else None
+            end_date_commission += timedelta(days=1)
+        
+        if end_date:
+            end_date_lead = end_date
+            end_date_click = end_date
+            end_date_commission = end_date
         
 
-        leads = leads.filter(created_at__range=(start_date, end_date))
-        clicks = clicks.filter(created_at__range=(start_date, end_date))
-        commissions = commissions.filter(date__range=(start_date, end_date))
+        leads = leads.filter(created_at__range=(start_date_lead, end_date_lead))
+        clicks = clicks.filter(created_at__range=(start_date_click, end_date_click))
+        commissions = commissions.filter(date__range=(start_date_commission, end_date_commission))
         
         agent_data = {
             'agent_name': user.first_name,
