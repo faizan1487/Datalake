@@ -51,7 +51,7 @@ class CreateAffiliateUser(APIView):
             first_click = clicks.exclude(created_at=None).first()
             start_date_click = first_click['created_at'].date() if first_click else None
             first_commission = commissions.exclude(created_at=None).first()
-            print("fursi commission", first_commission)
+            # print("fursi commission", first_commission)
             start_date_commission = first_commission['created_at'].date() if first_commission else None
             
         if start_date:
@@ -76,18 +76,18 @@ class CreateAffiliateUser(APIView):
             end_date_click = end_date
             end_date_commission = end_date
         
-        print(start_date_commission)
-        print(end_date_commission)
+        # print(commissions)
+        # print(start_date_commission)
+        # print(end_date_commission)
         leads = leads.filter(created_at__range=(start_date_lead, end_date_lead))
         clicks = clicks.filter(created_at__range=(start_date_click, end_date_click))
+        # commissions = commissions.filter(Q(date__date__lte=end_date_commission) & Q(date__date__gte=start_date_commission))
         commissions = commissions.filter(date__range=(start_date_commission, end_date_commission))
-        print(commissions)
         agent_data = {
             'agent_name': user.first_name,
             'agent_leads': leads,
             'agent_clicks': clicks,
             'affiliate_commissions': commissions
-            # 'trainer_data': []
         }
 
         # paginator = MyPagination()
@@ -190,5 +190,5 @@ class UpdateAffiliateUser(APIView):
             users = AffiliateUser.objects.all()
 
         for user in users:
-            print(user)
+            # print(user)
             user.save()

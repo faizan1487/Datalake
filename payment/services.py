@@ -157,7 +157,7 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
         end_date = last_payment.order_datetime.date() if last_payment else None
 
 
-    payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))    
+    payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
     
     if q:
         # payments = payments.filter(
