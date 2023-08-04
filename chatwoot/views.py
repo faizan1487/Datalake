@@ -104,14 +104,17 @@ class ConversationsReport(APIView):
         time_difference = datetime2 - datetime1
         # Get the number of days from the time difference
         days_between = time_difference.days
-
+        # print("days_between", days_between)
         #start date end date ka difference agar week se kam he to sirf days ki analytics(convos par  day)
         #start date end date ka difference agar week se zada he aur month se kam he to sirf weeks ki analytics(convos per week)
 
         if days_between < 7:
             conversations = Conversation.objects.filter(created_at__range=(start_date, end_date))
-        
-        print("conversations.count",conversations.count())
+        else:
+            conversations = Conversation.objects.filter(created_at__range=(start_date, end_date))
+
+
+        print("conversations.count",conversations)
 
         params['since'] = since
         params['until'] = until
