@@ -46,7 +46,10 @@ class TrainersData(APIView):
         
 
         if q:
-            trainers = trainers.filter(trainer_name__icontains=q)
+            if request.user.is_admin:
+                trainers = trainers.filter(trainer_name__icontains=q)
+            else:
+                trainers = trainers.filter(email__iexact=request.user.email)
         else:
             if request.user.is_admin:
                 trainers = trainers.filter(trainer_name__icontains='Farhan Khan')   
