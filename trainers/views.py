@@ -32,8 +32,6 @@ class MyPagination(PageNumberPagination):
 
 class TrainersData(APIView):
     def get(self, request):
-        print(request.user.is_admin)
-        print(request.user.email)
         q = self.request.GET.get('q', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
@@ -195,7 +193,14 @@ class AnalyticsTrainers(APIView):
 
 
 
+class TrainersName(APIView):    
+    def get(self,request):
+        # queryset = Trainer.objects.values_list('trainer_name','email')
+        queryset = Trainer.objects.values('trainer_name', 'email')
+        trainer_list = [{"trainer_name": item['trainer_name'], "email": item['email']} for item in queryset]
 
+        
+        return Response(trainer_list)
 
 
 

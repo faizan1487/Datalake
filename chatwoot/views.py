@@ -10,7 +10,7 @@ import requests
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 import math
-
+from django.db.models import Q
 
 class ChatwootContacts(APIView):
     # def get(self, request):
@@ -100,23 +100,25 @@ class ConversationsReport(APIView):
         print(until)
 
         # Convert the timestamps to datetime objects
-        datetime1 = datetime.fromtimestamp(since)
-        datetime2 = datetime.fromtimestamp(until)
+        start_date = datetime.fromtimestamp(since)
+        end_date = datetime.fromtimestamp(until)
+
+       
         # Calculate the time difference
-        time_difference = datetime2 - datetime1
+        time_difference = end_date - start_date
         # Get the number of days from the time difference
         days_between = time_difference.days
         #start date end date ka difference agar week se kam he to sirf days ki analytics(convos par  day)
         #start date end date ka difference agar week se zada he aur month se kam he to sirf weeks ki analytics(convos per week)
-
         if days_between < 7:
-            conversations = Conversation.objects.filter(created_at__range=(datetime1, datetime2))
-            payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
+            # conversations = Conversation.objects.filter(created_at__range=(datetime1, datetime2))
+            conversations = Conversation.objects.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
+            # payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
         else:
-            conversations = Conversation.objects.filter(created_at__range=(datetime1, datetime2))
+            # conversations = Conversation.objects.filter(created_at__range=(start_date, end_date))
+            conversations = Conversation.objects.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
 
-
-        # print("conversations.count",conversations.count())
+        print("conversations.count",conversations.count())
 
         params['since'] = since
         params['until'] = until

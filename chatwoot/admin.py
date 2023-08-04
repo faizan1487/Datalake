@@ -1,10 +1,11 @@
 from django.contrib import admin
 from .models import Contacts, Inbox, Agent, Conversation
 from import_export.admin import ImportExportModelAdmin
-
+from rangefilter.filters import DateTimeRangeFilter
 
 class ConversationsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['contact', 'channel','agent','id','inbox','created_at']
+    list_filter = (('created_at',DateTimeRangeFilter),)
     search_fields = ('contact', 'channel','agent','id','inbox','created_at')
 
 
