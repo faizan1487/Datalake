@@ -5,8 +5,8 @@ from import_export.admin import ImportExportModelAdmin
 
 
 class TrainerAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ("id", "trainer_name")
-    list_filter = ("trainer_name",)
+    list_display = ("id", "trainer_name","email")
+    list_filter = ("trainer_name","email")
 
 
 admin.site.register(Trainer, TrainerAdmin)

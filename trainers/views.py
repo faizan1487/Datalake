@@ -32,6 +32,8 @@ class MyPagination(PageNumberPagination):
 
 class TrainersData(APIView):
     def get(self, request):
+        print(request.user.is_admin)
+        print(request.user.email)
         q = self.request.GET.get('q', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
@@ -46,7 +48,10 @@ class TrainersData(APIView):
         if q:
             trainers = trainers.filter(trainer_name__icontains=q)
         else:
-            trainers = trainers.filter(trainer_name__icontains='Farhan Khan')            
+            if request.user.is_admin:
+                trainers = trainers.filter(trainer_name__icontains='Farhan Khan')   
+            else:
+                trainers = trainers.filter(trainer_email__iexact=request.user.email)
 
         if product_name:
             # print(product)

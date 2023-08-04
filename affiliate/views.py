@@ -22,12 +22,12 @@ class MyPagination(PageNumberPagination):
 
 class CreateAffiliateUser(APIView):
     def get(self, request):
-        q = self.request.GET.get('q', None) or None
+        # q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         email = self.request.GET.get('email', None) or None
-        export = self.request.GET.get('export', None) or None
-        url = request.build_absolute_uri()
+        # export = self.request.GET.get('export', None) or None
+        # url = request.build_absolute_uri()
         # payments = cache.get(url+'payments')
         # if payments is None:
         # users = AffiliateUser.objects.annotate(user_clicks_count=Count('affiliate_clicks'),affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count','affiliate_leads_count')
