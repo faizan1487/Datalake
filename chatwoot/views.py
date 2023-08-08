@@ -199,26 +199,6 @@ class ConversationsReport(APIView):
                 conversation_count=Count('id')
             )
 
-            # Create a list of all dates between start_date and end_date
-            # date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
-
-            # Create a dictionary to store conversation counts for each date
-            # conversation_counts = {date: 0 for date in date_range}
-
-            # Update conversation counts with data from conversations_per_date
-            # for item in conversations_per_date:
-            #     conversation_date = item['conversation_date']
-            #     conversation_count = item['conversation_count']
-            #     conversation_counts[conversation_date] = conversation_count
-
-
-            # Create a list of dictionaries containing date and conversation count
-            # result_list = [{'conversation_date': date.strftime('%Y-%m-%d'), 'conversation_count': conversation_counts[date]} for date in date_range]
-
-            # Add the result_list to the response_dict
-            # response_dict["conversations_per_date"] = result_list
-            # print(result_list)
-
             response_dict["conversations_per_date"] = list(conversations_per_date)
 
             # Calculate the number of weeks in the data
@@ -240,9 +220,8 @@ class ConversationsReport(APIView):
                     week_end_date = conversations_per_date[end_idx]['conversation_date']
                 else:
                     week_end_date = "" 
-                # grouped_conversations.append{"conversation_date",conversations_per_date[start_idx]['conversation_date']} + {week_end_date}, "conversation_count": total_count})
                 grouped_conversations.append({
-                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} + {week_end_date}",
+                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} {week_end_date}",
                     "conversation_count": total_count
                 })
 
@@ -266,10 +245,9 @@ class ConversationsReport(APIView):
                 else:
                     month_end_date = "" 
                 grouped_conversations.append({
-                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} + {month_end_date}",
+                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} {month_end_date}",
                     "conversation_count": total_count
                 })
-                # grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
 
             response_dict["conversations_per_month"] = grouped_conversations
             # print(grouped_conversations)
@@ -305,12 +283,10 @@ class ConversationsReport(APIView):
                     week_end_date = conversations_per_date[end_idx]['conversation_date']
                 else:
                     week_end_date = "" 
-                # grouped_conversations.append{"conversation_date",conversations_per_date[start_idx]['conversation_date']} + {week_end_date}, "conversation_count": total_count})
                 grouped_conversations.append({
-                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} + {week_end_date}",
+                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} {week_end_date}",
                     "conversation_count": total_count
                 })
-                # grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
 
             response_dict["conversations_per_week"] = grouped_conversations
             # print(grouped_conversations)
