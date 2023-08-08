@@ -21,13 +21,22 @@ from django.shortcuts import get_object_or_404
 
 class ChatwootContacts(APIView):
     def save_instance(self, i):
-        if i.get("contact_inboxes") and len(i["contact_inboxes"]) > 0:
-            # If the list is not empty, get the 'inbox_id'
+        # if i.get("contact_inboxes") and len(i["contact_inboxes"]) > 0:
+        #     # If the list is not empty, get the 'inbox_id'
+        #     inbox_id = i["contact_inboxes"][0]["inbox"]["id"]
+        #     inbox_instance = get_object_or_404(Inbox, id=inbox_id)
+        # else:
+        #     # If 'contact_inboxes' list is empty or does not exist, set 'inbox_instance' to None
+        #     inbox_instance = None
+
+        try:
             inbox_id = i["contact_inboxes"][0]["inbox"]["id"]
+            # print(f"Fetching Inbox with ID: {inbox_id}")
             inbox_instance = get_object_or_404(Inbox, id=inbox_id)
-        else:
-            # If 'contact_inboxes' list is empty or does not exist, set 'inbox_instance' to None
+        except Exception as e:
+            # print(f"Error fetching Inbox with ID {inbox_id}: {e}")
             inbox_instance = None
+        
 
         my_model_instance = Contacts(
             id=i['id'],

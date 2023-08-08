@@ -150,7 +150,7 @@ class TrainersData(APIView):
                     end_date = None
             # print(all_dates)
             trainers_data.append(trainer_data)
-
+        
         if export=='true':
             for i in trainer_data['trainer_data']:
                 i['trainer_name'] = trainer_data['trainer_name']
