@@ -35,14 +35,12 @@ class TrainersData(APIView):
         q = self.request.GET.get('q', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
-        active = self.request.GET.get('active', None) or None
+        active = self.request.GET.get('akkkkkkkkctive', None) or None
         req_start_date = self.request.GET.get('start_date', None) or None
         req_end_date = self.request.GET.get('end_date', None) or None
         url = request.build_absolute_uri()  
         
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
-        
-
         if q:
             if request.user.is_admin:
                 trainers = trainers.filter(email__iexact=q)
@@ -83,7 +81,11 @@ class TrainersData(APIView):
             for product in products:
                 # print(product)
                 #Replace userid and productid with user email and product name
-                product_payments = product.product_payments.all()
+                # product_payments = product.product_payments.all()
+                product_payments = product.product_payments.values('alnafi_payment_id','user_id',
+                                                                   'product_id','amount','currency',
+                                                                   'order_datetime','source',
+                                                                   'expiration_datetime','created_datetime')
                 # print(product_payments)
                 dates = product_payments.values('order_datetime')
                 # all_dates.append(dates)
@@ -105,7 +107,11 @@ class TrainersData(APIView):
                 # print(product_payments)
                 users = list(product_payments.values('user__email','user__phone'))
                 products = list(product_payments.values('product__product_name'))
-                payment_list = list(product_payments.values())
+                # payment_list = list(product_payments.values())
+                payment_list = list(product_payments.values('alnafi_payment_id','user_id','source',
+                                                                   'product_id','amount','currency',
+                                                                   'order_datetime',
+                                                                   'expiration_datetime','created_datetime'))
                 for i in range(len(payment_list)):
                     try:
                         payment_list[i]['user_id'] = users[i]['user__email']
@@ -145,8 +151,11 @@ class TrainersData(APIView):
             # print(all_dates)
             trainers_data.append(trainer_data)
 
-        # print(trainer_data['trainer_data'])
         if export=='true':
+            for i in trainer_data['trainer_data']:
+                i['trainer_name'] = trainer_data['trainer_name']
+            # print(trainer_data['trainer_data'])
+            # return
             df = pd.DataFrame(trainer_data['trainer_data'])
             # Merge dataframes
             file_name = f"Trainers_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"

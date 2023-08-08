@@ -7,10 +7,13 @@ from threading import Thread
 from rest_framework.response import Response
 # Create your views here.
 import requests
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.shortcuts import get_object_or_404
 import math
-from django.db.models import Q
+from django.db.models import DateField, Count, F, Q
+from django.db.models.functions import TruncDate
+from django.utils.timezone import make_aware, get_current_timezone
+import datetime
 
 class ChatwootContacts(APIView):
     # def get(self, request):
@@ -77,49 +80,167 @@ class ConversationsReport(APIView):
         data = request.data.copy()
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
+        days = self.request.GET.get('days', None) or None
+
+
+        if days is not None and int(days) == 7:
+            # Get the current date
+            end_date = datetime.date.today()
+
+            # Subtract 7 days from the current date
+            start_date = end_date - datetime.timedelta(days=7)
+
         # Implement weekly monthly 3 months 6 months yearly filter 
         params = {
             'type': 'account',
         }
 
         if start_date:
-            start_date_obj = datetime.strptime(start_date, "%Y-%m-%d")
-            since = start_date_obj.timestamp()
+            if isinstance(start_date, str):
+                start_date = datetime.datetime.strptime(start_date, "%Y-%m-%d")
+            since = make_aware(datetime.datetime.combine(start_date, datetime.datetime.min.time()), get_current_timezone())
         else:
-            since=1577963949
-            #Thu Jan 02 2020 
-        
+            since = make_aware(datetime.datetime(2020, 1, 2), get_current_timezone())
+
         if end_date:
-            end_date_obj = datetime.strptime(end_date, "%Y-%m-%d")
-            until = end_date_obj.timestamp()
+            if isinstance(end_date, str):
+                end_date = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+            until = make_aware(datetime.datetime.combine(end_date, datetime.datetime.max.time()), get_current_timezone())
         else:
-            until=1693653549
-            #Sat Sep 02 2023
+            until = make_aware(datetime.datetime(2023, 9, 2), get_current_timezone())
 
-        print(since)
-        print(until)
-
-        # Convert the timestamps to datetime objects
-        start_date = datetime.fromtimestamp(since)
-        end_date = datetime.fromtimestamp(until)
-
-       
+        # print("since", since)
+        # print("until", until)
+        
         # Calculate the time difference
-        time_difference = end_date - start_date
+        time_difference = until - since
         # Get the number of days from the time difference
-        days_between = time_difference.days
-        #start date end date ka difference agar week se kam he to sirf days ki analytics(convos par  day)
-        #start date end date ka difference agar week se zada he aur month se kam he to sirf weeks ki analytics(convos per week)
-        if days_between < 7:
-            # conversations = Conversation.objects.filter(created_at__range=(datetime1, datetime2))
-            conversations = Conversation.objects.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
-            # payments = payments.filter(Q(order_datetime__date__lte=end_date) & Q(order_datetime__date__gte=start_date))
+        days_difference = time_difference.days
+       
+        conversations = Conversation.objects.all().values()
+        response_dict = {}
+
+        start_date = since.replace(tzinfo=None)
+        end_date = until.replace(tzinfo=None)
+        # end_date = end_date + timedelta(days=1, microseconds=-1)
+        if days_difference >= 30:
+            # Get conversations per date
+            conversations_per_date = conversations.filter(
+                created_at__date__range=[start_date, end_date]
+            ).annotate(
+                conversation_date=TruncDate('created_at'),
+            ).values(
+                'conversation_date',
+            ).annotate(
+                conversation_count=Count('id')
+            )
+
+            # Create a list of all dates between start_date and end_date
+            date_range = [start_date + timedelta(days=i) for i in range((end_date - start_date).days + 1)]
+
+            # Create a dictionary to store conversation counts for each date
+            conversation_counts = {date: 0 for date in date_range}
+
+            # Update conversation counts with data from conversations_per_date
+            for item in conversations_per_date:
+                conversation_date = item['conversation_date']
+                conversation_count = item['conversation_count']
+                conversation_counts[conversation_date] = conversation_count
+
+
+            # Create a list of dictionaries containing date and conversation count
+            result_list = [{'conversation_date': date.strftime('%Y-%m-%d'), 'conversation_count': conversation_counts[date]} for date in date_range]
+
+            # Add the result_list to the response_dict
+            response_dict["conversations_per_date"] = result_list
+            # print(result_list)
+
+            # response_dict["conversations_per_date"] = list(conversations_per_date)
+
+            # Calculate the number of weeks in the data
+            # print(len(conversations_per_date))
+            weeks = len(conversations_per_date) // 7
+            # print(weeks)
+            if len(conversations_per_date) % 7 > 0:
+                weeks += 1
+            # Initialize an empty list to store the grouped conversations
+            grouped_conversations = []
+            # Loop through the data and create groups for each week
+            for i in range(weeks):
+                start_idx = i * 7
+                end_idx = start_idx + 7
+                week_conversations = conversations_per_date[start_idx:end_idx]
+                # print(week_conversations)
+                total_count = sum(conv['conversation_count'] for conv in week_conversations)
+                grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
+
+            response_dict["conversations_per_week"] = grouped_conversations
+
+            # Calculate the number of weeks in the data
+            months = len(conversations_per_date) // 30
+            if len(conversations_per_date) % 30 > 0:
+                months += 1
+
+            # Initialize an empty list to store the grouped conversations
+            grouped_conversations = []
+            # Loop through the data and create groups for each week
+            for i in range(months):
+                start_idx = i * 30
+                end_idx = start_idx + 30
+                month_conversations = conversations_per_date[start_idx:end_idx]
+                total_count = sum(conv['conversation_count'] for conv in month_conversations)
+                grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
+
+            response_dict["conversations_per_month"] = grouped_conversations
+            # print(grouped_conversations)
+        
+        elif days_difference >=7:
+            # Get conversations per date
+            conversations_per_date = conversations.filter(
+                created_at__date__range=[start_date, end_date]
+            ).annotate(
+                conversation_date=TruncDate('created_at'),
+            ).values(
+                'conversation_date',
+            ).annotate(
+                conversation_count=Count('id')
+            )
+
+            response_dict["conversations_per_date"] = list(conversations_per_date)
+
+            # Calculate the number of weeks in the data
+            weeks = len(conversations_per_date) // 7
+            if len(conversations_per_date) % 7 > 0:
+                weeks += 1
+
+            # Initialize an empty list to store the grouped conversations
+            grouped_conversations = []
+            # Loop through the data and create groups for each week
+            for i in range(weeks):
+                start_idx = i * 7
+                end_idx = start_idx + 7
+                week_conversations = conversations_per_date[start_idx:end_idx]
+                total_count = sum(conv['conversation_count'] for conv in week_conversations)
+                grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
+
+            response_dict["conversations_per_week"] = grouped_conversations
+            # print(grouped_conversations)
         else:
-            # conversations = Conversation.objects.filter(created_at__range=(start_date, end_date))
-            conversations = Conversation.objects.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
+            # Get conversations per date
+            conversations_per_date = conversations.filter(
+                created_at__date__range=[start_date, end_date]
+            ).annotate(
+                conversation_date=TruncDate('created_at'),
+            ).values(
+                'conversation_date',
+            ).annotate(
+                conversation_count=Count('id')
+            )
 
-        print("conversations.count",conversations.count())
+            response_dict["conversations_per_date"] = list(conversations_per_date)
 
+        since = since.timestamp()
+        until = until.timestamp()
         params['since'] = since
         params['until'] = until
 
@@ -154,7 +275,9 @@ class ConversationsReport(APIView):
         else:
             data['avg_resolution_time'] = f"{str(hours)} Hr {str(minutes)} min"
 
-        return Response(data)
+        response_dict["data"] = data
+        # response_dict.append({"data":data})
+        return Response(response_dict)
     
 
 class ConversationsList(APIView):
@@ -211,7 +334,6 @@ class ConversationsList(APIView):
                 dt_object = datetime.fromtimestamp(created_at)
                 # Format the datetime object as a string in the "YYYY-MM-DD" format
                 formatted_date = dt_object.strftime('%Y-%m-%d')
-
                 try:
                     # print("saving")
                     my_model_instance = Conversation(

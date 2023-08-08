@@ -31,7 +31,8 @@ from django.db.models.functions import Upper
 from django.core.exceptions import ObjectDoesNotExist
 from django.dispatch import Signal
 from threading import Thread
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
+
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -547,6 +548,155 @@ class SearchPayments(APIView):
             response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
             return Response(response_data)
                 
+
+class ProductAnalytics(APIView):
+    # permission_classes = [IsAuthenticated]
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin','Support','MOC']
+    def get(self, request):
+        query = self.request.GET.get('q', None) or None
+        source = self.request.GET.get('source', None) or None
+        origin = self.request.GET.get('origin', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
+        export = self.request.GET.get('export', None) or None
+        plan = self.request.GET.get('plan', None) or None   
+        product = self.request.GET.get('product', None) or None  
+        status = self.request.GET.get('status', None) or None
+        url = request.build_absolute_uri()
+        sort_by_str = request.GET.get('sort_by', '[]')
+        sort_by = json.loads(sort_by_str)
+        order = self.request.GET.get('order')
+        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)        
+        if payments['success'] == 'true':
+            def json_serializable(obj):
+                    if isinstance(obj, datetime):
+                        return obj.isoformat()  # Convert datetime to ISO 8601 format
+                    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+
+            users = list(payments['payments'].values('user__email'))
+            products = list(payments['payments'].values('product__product_name'))
+            payment_list = list(payments["payments"].values())
+            
+            # count the product with most payments
+            product_info = defaultdict(lambda: {'count': 0, 'payment_total': 0.0})
+
+            usd_rate = get_USD_rate()
+            for i in range(len(payments['payments'])):
+                try:
+                    payment_list[i]['user_id'] = users[i]['user__email']
+                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                    payment_amount = payment_list[i]['amount']
+                    product_name = products[i]['product__product_name']
+
+                    if product_name and payment_amount:
+                        product_info[product_name]['count'] += 1
+                        sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
+                        if payment_list[i]['source'].lower() in sources:
+                            product_info[product_name]['payment_total'] += float(payment_amount)
+                        else:
+                            product_info[product_name]['payment_total']  += int(float(payment_amount)) * usd_rate['PKR']
+                except Exception as e:
+                    pass  
+            
+            
+                
+            # Generate dynamic sorting key based on criteria
+            def dynamic_sort(data, criteria, order):
+                # Generate dynamic sorting key based on criteria
+                def string_to_bool(s):
+                    if s is not None:
+                        return s.lower() == 'true'
+                    else:
+                        return True
+                    
+                def key_func(product):
+                    if not criteria:
+                        return data[product]['payment_total']
+                    return tuple(data[product][key] for key in criteria)
+
+                sorted_products = sorted(data.keys(), key=key_func, reverse=string_to_bool(order))
+                
+                return OrderedDict((product, data[product]) for product in sorted_products)
+            
+            # Example usage
+            sorted_by_count_and_payment = dynamic_sort(product_info, sort_by, order)
+            # print(sorted_by_count_and_payment)
+            
+            sorted_by_payment_only = dynamic_sort(product_info, ['payment_total'], order)
+
+
+            # sorted_products_by_payment = sorted(product_info.keys(), key=lambda k: product_info[k]['payment_total'], reverse=string_to_bool(order))
+            sorted_products = sorted(product_info.keys(), key=lambda k: (product_info[k]['count'], product_info[k]['payment_total']), reverse=True)
+            # sorted_dict_by_payments = OrderedDict((product, product_info[product]) for product in sorted_products_by_payment)
+            sorted_dict = OrderedDict((product, product_info[product]) for product in sorted_products)
+           
+            product_with_max_revenue = max(product_info, key=lambda k: product_info[k]['payment_total'])
+            max_revenue = product_info[product_with_max_revenue]['payment_total']
+            product_with_min_revenue = min(product_info, key=lambda k: product_info[k]['payment_total'])
+            min_revenue = product_info[product_with_min_revenue]['payment_total']
+
+
+            # print(product_info) 
+            # Find the product with the most payments
+            max_product = max(product_info, key=lambda k: product_info[k]['count'])
+            max_product_details = product_info[max_product]
+            # print(max_product)
+            product_most_payments = max_product
+            max_payments_count = max_product_details['count']
+
+            # # Find the product with the least payments
+            min_product = min(product_info, key=lambda k: product_info[k]['count'])
+            min_product_details = product_info[min_product]
+            product_least_payments = min_product
+            min_payments_count = min_product_details['count']
+           
+
+           
+            if export=='true':
+                df = pd.DataFrame(payment_list)
+                # Merge dataframes
+                file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                df = df.to_csv(index=False)
+                s3 = upload_csv_to_s3(df,file_name)
+                data = {'file_link': file_path,'export':'true'}
+                return Response(data)
+            else:            
+                payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+                payment_objects = json.loads(payment_json)
+                
+                total_payments_in_pkr = 0
+                total_payments_in_usd = 0
+                for i in payment_objects:
+                    sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
+                    if i['source'].lower() in sources:
+                        total_payments_in_pkr += int(float(i['amount']))
+                        # total_payments_in_usd += int(float(i['amount'])) // usd_rate['PKR']
+
+                    else:
+                        # total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
+                        total_payments_in_usd += int(float(i['amount']))
+                
+
+                paginator = MyPagination()
+                # paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+                payments = {'product_with_max_revenue':product_with_max_revenue, 
+                            'max_revenue':max_revenue, 'product_with_min_revenue':product_with_min_revenue, 
+                            'min_revenue': min_revenue, 'most_payments_product':product_most_payments, 
+                            'most_payments_count':max_payments_count, 'least_payments_product':product_least_payments, 
+                            'least_payments_count':min_payments_count,'total_payments_pkr': total_payments_in_pkr, 
+                            'total_payments_usd': total_payments_in_usd,'product_info':sorted_by_count_and_payment}
+                
+                # return paginator.get_paginated_response(paginated_queryset)
+                return Response(payments)
+        else:
+            response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
+            return Response(response_data)
+
+
+
 #optimized
 class PaymentValidation(APIView):
     # permission_classes = [IsAuthenticated]
