@@ -6,7 +6,7 @@ from rangefilter.filters import DateTimeRangeFilter
 class ConversationsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ['contact', 'channel','agent','id','inbox','created_at']
     list_filter = (('created_at',DateTimeRangeFilter),)
-    search_fields = ('contact', 'channel','agent','id','inbox','created_at')
+    search_fields = ('channel','id','created_at')
 
 
 
