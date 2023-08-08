@@ -133,7 +133,6 @@ class ConversationsReport(APIView):
         end_date = self.request.GET.get('end_date', None) or None
         days = self.request.GET.get('days', None) or None
 
-
         if days is not None and int(days) == 7:
             # Get the current date
             end_date = datetime.date.today()
@@ -237,7 +236,15 @@ class ConversationsReport(APIView):
                 week_conversations = conversations_per_date[start_idx:end_idx]
                 # print(week_conversations)
                 total_count = sum(conv['conversation_count'] for conv in week_conversations)
-                grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
+                if end_idx < len(conversations_per_date):
+                    week_end_date = conversations_per_date[end_idx]['conversation_date']
+                else:
+                    week_end_date = "" 
+                # grouped_conversations.append{"conversation_date",conversations_per_date[start_idx]['conversation_date']} + {week_end_date}, "conversation_count": total_count})
+                grouped_conversations.append({
+                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} + {week_end_date}",
+                    "conversation_count": total_count
+                })
 
             response_dict["conversations_per_week"] = grouped_conversations
 
@@ -254,7 +261,15 @@ class ConversationsReport(APIView):
                 end_idx = start_idx + 30
                 month_conversations = conversations_per_date[start_idx:end_idx]
                 total_count = sum(conv['conversation_count'] for conv in month_conversations)
-                grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
+                if end_idx < len(conversations_per_date):
+                    month_end_date = conversations_per_date[end_idx]['conversation_date']
+                else:
+                    month_end_date = "" 
+                grouped_conversations.append({
+                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} + {month_end_date}",
+                    "conversation_count": total_count
+                })
+                # grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
 
             response_dict["conversations_per_month"] = grouped_conversations
             # print(grouped_conversations)
@@ -286,7 +301,16 @@ class ConversationsReport(APIView):
                 end_idx = start_idx + 7
                 week_conversations = conversations_per_date[start_idx:end_idx]
                 total_count = sum(conv['conversation_count'] for conv in week_conversations)
-                grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
+                if end_idx < len(conversations_per_date):
+                    week_end_date = conversations_per_date[end_idx]['conversation_date']
+                else:
+                    week_end_date = "" 
+                # grouped_conversations.append{"conversation_date",conversations_per_date[start_idx]['conversation_date']} + {week_end_date}, "conversation_count": total_count})
+                grouped_conversations.append({
+                    "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} + {week_end_date}",
+                    "conversation_count": total_count
+                })
+                # grouped_conversations.append({f"{conversations_per_date[start_idx]['conversation_date']}": total_count})
 
             response_dict["conversations_per_week"] = grouped_conversations
             # print(grouped_conversations)
