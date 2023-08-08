@@ -7,7 +7,7 @@ from products.models import Main_Product
 
 #For MainSite(Al-Nafi) Payments:
 class AlNafi_Payment(models.Model):
-    payment_id = models.IntegerField(null=True, blank=False, unique=True)
+    payment_id = models.IntegerField(null=True, blank=False)
     customer_email = models.CharField(max_length=300, null=True, blank=False)
     product_name = models.CharField(max_length=330, null=True, blank=False)
     amount_pkr = models.IntegerField(default=0)
