@@ -33,6 +33,7 @@ class MyPagination(PageNumberPagination):
 permission_classes = [IsAuthenticated]
 class TrainersData(APIView):
     def get(self, request):
+        print(request.user.email)
         q = self.request.GET.get('q', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
@@ -49,7 +50,7 @@ class TrainersData(APIView):
                 trainers = trainers.filter(email__iexact=request.user.email)
         else:
             if request.user.is_admin:
-                trainers = trainers.filter(trainer_name__icontains='Farhan Khan')
+                trainers = trainers.filter(email__iexact='kazim@gmail.com')
             else:
                 trainers = trainers.filter(email__iexact=request.user.email)
 
@@ -151,11 +152,10 @@ class TrainersData(APIView):
                     end_date = None
             # print(all_dates)
             trainers_data.append(trainer_data)
-
+        print(trainers_data)
         if export=='true':
-            for i in trainer_data['trainer_data']:
+            for i in trainers_data:
                 i['trainer_name'] = trainer_data['trainer_name']
-
             #For CSV WORKING:
             Header = []
             for i in trainer_data['trainer_data']:
