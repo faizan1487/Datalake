@@ -140,8 +140,22 @@ class ConversationsReport(APIView):
 
             # Subtract 7 days from the current date
             start_date = end_date - datetime.timedelta(days=7)
+        elif days is not None and int(days) == 30:
+            end_date = datetime.date.today()
+            start_date = end_date - datetime.timedelta(days=30)
+        elif days is not None and int(days) == 90:
+            end_date = datetime.date.today()
+            start_date = end_date - datetime.timedelta(days=90)
+        elif days is not None and int(days) == 180:
+            end_date = datetime.date.today()
+            start_date = end_date - datetime.timedelta(days=180)
+        elif days is not None and int(days) == 365:
+            end_date = datetime.date.today()
+            start_date = end_date - datetime.timedelta(days=365)
+            
 
-        # Implement weekly monthly 3 months 6 months yearly filter 
+
+        # Implement weekly, monthly, 3 months ,6 months, yearly filter 
         params = {
             'type': 'account',
         }
@@ -405,80 +419,6 @@ class ConversationsList(APIView):
                 thread.join()
 
         return Response(data)
-
-
-
-# class ConversationsList(APIView):
-#     def get(self, request):
-#         count= 4145
-#         # count = 100
-#         items_per_page = 25
-#         pages = math.ceil(count / items_per_page)
-
-#         for page_number in range(1, pages + 1):
-#             # print(page_number)
-#             api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
-#             headers = {
-#             'api_access_token': api_access_token,
-#             "Content-Type": "application/json",
-#             "Accept": "application/json",
-#             }
-#             params = {
-#                 'page': page_number
-#             }
-#             url = 'https://chat.alnafi.com/api/v1/accounts/3/conversations'
-#             response = requests.get(url, headers=headers, params=params)
-#             data = response.json()
-#             # print(len(data['data']['payload']))
-#             for i in data['data']['payload']:
-#                 # print(i["inbox_id"])
-#                 try:
-#                     # If the list is not empty, get the 'inbox_id'
-#                     inbox_id = i["inbox_id"]
-#                     # print(inbox_id)
-#                     inbox_instance = get_object_or_404(Inbox, id=inbox_id)
-#                 except:
-#                     inbox_instance = None
-
-#                 # print(inbox_instance)
-#                 # print(i["meta"]["sender"]["id"])
-#                 try:
-#                     # If the list is not empty, get the 'inbox_id'
-#                     contact_id = i["meta"]["sender"]["id"]
-#                     contact_instance = get_object_or_404(Contacts, id=contact_id)
-#                 except:    
-#                     contact_instance = None
-#                 # print(contact_instance)
-
-#                 try:
-#                     # If the list is not empty, get the 'inbox_id'
-#                     agent_id = i["meta"]["assignee"]["id"]
-#                     agent_instance = get_object_or_404(Agent, id=agent_id)
-#                 except:
-#                     # If 'contact_inboxes' list is empty or does not exist, set 'inbox_instance' to None
-#                     agent_instance = None
-#                 # print(agent_instance)
-#                 created_at = float(i['created_at'])
-#                 dt_object = datetime.fromtimestamp(created_at)
-#                 # Format the datetime object as a string in the "YYYY-MM-DD" format
-#                 formatted_date = dt_object.strftime('%Y-%m-%d')
-#                 try:
-#                     # print("saving")
-#                     my_model_instance = Conversation(
-#                         contact=contact_instance,
-#                         channel=i["meta"]['channel'],
-#                         agent=agent_instance,
-#                         id = i['id'],
-#                         inbox = inbox_instance,
-#                         created_at= formatted_date
-#                     )
-#                     my_model_instance.save()
-#                 except Exception as e:
-#                     print(e)
-#         return Response(data)
-
-
-
 
 
 
