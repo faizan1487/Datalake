@@ -16,7 +16,7 @@ from .models import Scan, Comment, Department
 from user.models import User
 from user.services import upload_csv_to_s3
 import boto3
-
+from rest_framework.permissions import IsAuthenticated
 import environ
 import pandas as pd
 from datetime import datetime, timedelta, date

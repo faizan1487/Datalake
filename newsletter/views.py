@@ -9,7 +9,8 @@ from .serializers import NewsletterSerializer
 from rest_framework import status
 from django.http import HttpResponse
 from threading import Thread
-
+from rest_framework.permissions import IsAuthenticated
+from user.services import GroupPermission
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
@@ -19,9 +20,9 @@ class MyPagination(PageNumberPagination):
 
 
 class Subscribers(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None

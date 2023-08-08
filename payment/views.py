@@ -219,9 +219,9 @@ class MainPaymentAPIView(APIView):
 #optimized 
 
 class RenewalPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin','Support']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin','Support']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -327,9 +327,9 @@ class RenewalPayments(APIView):
 
 
 class ActivePayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin','Support']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin','Support']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         export = self.request.GET.get('export', None) or None
@@ -430,9 +430,9 @@ class ActivePayments(APIView):
 
 #optimized       
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin','Support','MOC']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin','Support','MOC']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -550,9 +550,9 @@ class SearchPayments(APIView):
                 
 
 class ProductAnalytics(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin','Support','MOC']
+    required_groups = ['Sales', 'Admin','Support','MOC']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -621,17 +621,10 @@ class ProductAnalytics(APIView):
                 return OrderedDict((product, data[product]) for product in sorted_products)
             
             # Example usage
-            sorted_by_count_and_payment = dynamic_sort(product_info, sort_by, order)
-            # print(sorted_by_count_and_payment)
+            sorted_by_count_and_payment = dynamic_sort(product_info, sort_by, order)            
+            # sorted_products = sorted(product_info.keys(), key=lambda k: (product_info[k]['count'], product_info[k]['payment_total']), reverse=True)
+            # sorted_dict = OrderedDict((product, product_info[product]) for product in sorted_products)
             
-            sorted_by_payment_only = dynamic_sort(product_info, ['payment_total'], order)
-
-
-            # sorted_products_by_payment = sorted(product_info.keys(), key=lambda k: product_info[k]['payment_total'], reverse=string_to_bool(order))
-            sorted_products = sorted(product_info.keys(), key=lambda k: (product_info[k]['count'], product_info[k]['payment_total']), reverse=True)
-            # sorted_dict_by_payments = OrderedDict((product, product_info[product]) for product in sorted_products_by_payment)
-            sorted_dict = OrderedDict((product, product_info[product]) for product in sorted_products)
-           
             product_with_max_revenue = max(product_info, key=lambda k: product_info[k]['payment_total'])
             max_revenue = product_info[product_with_max_revenue]['payment_total']
             product_with_min_revenue = min(product_info, key=lambda k: product_info[k]['payment_total'])
@@ -642,7 +635,7 @@ class ProductAnalytics(APIView):
             # Find the product with the most payments
             max_product = max(product_info, key=lambda k: product_info[k]['count'])
             max_product_details = product_info[max_product]
-            # print(max_product)
+            # print(max_product)/
             product_most_payments = max_product
             max_payments_count = max_product_details['count']
 
@@ -679,6 +672,10 @@ class ProductAnalytics(APIView):
                         # total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
                         total_payments_in_usd += int(float(i['amount']))
                 
+                list_of_products = [{"product_name": key, "details": value} for key, value in sorted_by_count_and_payment.items()]
+
+                
+
 
                 paginator = MyPagination()
                 # paginated_queryset = paginator.paginate_queryset(payment_objects, request)
@@ -687,7 +684,7 @@ class ProductAnalytics(APIView):
                             'min_revenue': min_revenue, 'most_payments_product':product_most_payments, 
                             'most_payments_count':max_payments_count, 'least_payments_product':product_least_payments, 
                             'least_payments_count':min_payments_count,'total_payments_pkr': total_payments_in_pkr, 
-                            'total_payments_usd': total_payments_in_usd,'product_info':sorted_by_count_and_payment}
+                            'total_payments_usd': total_payments_in_usd,'product_info':list_of_products}
                 
                 # return paginator.get_paginated_response(paginated_queryset)
                 return Response(payments)
@@ -699,9 +696,9 @@ class ProductAnalytics(APIView):
 
 #optimized
 class PaymentValidation(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -871,9 +868,9 @@ class PaymentValidation(APIView):
 #Optimized
 #shows no of payments on each date
 class NoOfPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -896,9 +893,9 @@ class TotalNoOfPayments(APIView):
 #Optimized  
 #shows alnafi/mainsite no of payments on each date
 class RenewalNoOfPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
+    permission_classes = [IsAuthenticated]
+    permission_classes = [GroupPermission]
+    required_groups = ['Sales', 'Admin']
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
