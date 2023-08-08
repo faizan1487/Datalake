@@ -5,6 +5,8 @@ from rest_framework.pagination import PageNumberPagination
 
 from .models import Thinkific_Users_Enrollments, Thinkific_User
 from .serializers import ThinkificUserSerializer,ThinkificUserEnrollmentSerializer
+from rest_framework.permissions import IsAuthenticated
+
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -13,13 +15,14 @@ class MyPagination(PageNumberPagination):
     max_page_size = 100  
 
 
+permission_classes = [IsAuthenticated]
 class DeleteEnroll(APIView):
     def get(self, request):
         objs = Thinkific_Users_Enrollments.objects.all()
         objs.delete()
         return Response("data deleted")   
     
-    
+permission_classes = [IsAuthenticated]
 class GetThinkificUsers(APIView):
     def get(self, request):
         queryset = Thinkific_User.objects.all()
@@ -28,7 +31,8 @@ class GetThinkificUsers(APIView):
         thinkific_user_serializer = ThinkificUserSerializer(paginated_queryset, many=True)
         return paginator.get_paginated_response(thinkific_user_serializer.data)
         
-        
+
+permission_classes = [IsAuthenticated]      
 class GetUserEnrollments(APIView):
     def get(self, request):
         query = self.request.GET.get('q', None) or None

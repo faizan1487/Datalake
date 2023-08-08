@@ -22,6 +22,7 @@ import pandas as pd
 from datetime import datetime, timedelta, date
 import os
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 
 env = environ.Env()
 env.read_env()
@@ -33,6 +34,7 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
+permission_classes = [IsAuthenticated]
 class CreateScan(APIView):
     def get(self, request):
         scans = Scan.objects.values(
@@ -146,7 +148,8 @@ class CreateScan(APIView):
         # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
     
-    
+
+permission_classes = [IsAuthenticated]  
 class ScanRetrieveUpdateDeleteAPIView(APIView):
     def get(self, request, pk):
         export = self.request.GET.get('export', None) or None
@@ -210,12 +213,14 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
         return HttpResponse("Scan Deleted!")
         return Response({"message":"Scan Deleted!"},status=status.HTTP_204_NO_CONTENT)
 
+permission_classes = [IsAuthenticated]
 class GetDepartment(APIView):
     def get(self, request):
         departments = Department.objects.values('name')
         # print(departments)
         return Response(departments)
 
+permission_classes = [IsAuthenticated]
 class CommentDelete(APIView):
     def get(self, request):
         objs = Scan.objects.all()

@@ -5,6 +5,10 @@ from .serializers import AlNafiMainSiteProductSerializer
 from rest_framework import status
 from rest_framework.response import Response
 # Create your views here.
+from rest_framework.permissions import IsAuthenticated
+
+
+permission_classes = [IsAuthenticated]
 class AlnafiProduct(APIView):
     def post(self, request):
         data = request.data

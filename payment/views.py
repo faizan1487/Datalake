@@ -220,8 +220,8 @@ class MainPaymentAPIView(APIView):
 
 class RenewalPayments(APIView):
     permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin','Support']
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin','Support']
     def get(self, request):
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
@@ -325,11 +325,10 @@ class RenewalPayments(APIView):
             return paginator.get_paginated_response(paginated_queryset)     
 
 
-
 class ActivePayments(APIView):
     permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin','Support']
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin','Support']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         export = self.request.GET.get('export', None) or None
@@ -431,8 +430,8 @@ class ActivePayments(APIView):
 #optimized       
 class SearchPayments(APIView):
     permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin','Support','MOC']
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin','Support','MOC']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -552,7 +551,7 @@ class SearchPayments(APIView):
 class ProductAnalytics(APIView):
     permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin','Support','MOC']
+    # required_groups = ['Sales', 'Admin','Support','MOC']
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -704,8 +703,8 @@ class ProductAnalytics(APIView):
 #optimized
 class PaymentValidation(APIView):
     permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -876,8 +875,8 @@ class PaymentValidation(APIView):
 #shows no of payments on each date
 class NoOfPayments(APIView):
     permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -901,8 +900,8 @@ class TotalNoOfPayments(APIView):
 #shows alnafi/mainsite no of payments on each date
 class RenewalNoOfPayments(APIView):
     permission_classes = [IsAuthenticated]
-    permission_classes = [GroupPermission]
-    required_groups = ['Sales', 'Admin']
+    # permission_classes = [GroupPermission]
+    # required_groups = ['Sales', 'Admin']
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None

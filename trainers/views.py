@@ -19,6 +19,7 @@ from user.serializers import MainUserSerializer
 from user.services import upload_csv_to_s3
 import pandas as pd
 import os
+from rest_framework.permissions import IsAuthenticated
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -29,7 +30,7 @@ class MyPagination(PageNumberPagination):
 
 
 
-
+permission_classes = [IsAuthenticated]
 class TrainersData(APIView):
     def get(self, request):
         q = self.request.GET.get('q', None) or None
@@ -179,7 +180,8 @@ class TrainersData(APIView):
                         data_dict["trainer_name"] = trainer_name
                         data_dict["product_name"] = product_name
                         df = df.append(data_dict, ignore_index=True)
-
+            # print(df)
+            # return Response("sjbnjv")
             file_name = f"Trainers_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
             df = df.to_csv(index=False)
@@ -190,6 +192,7 @@ class TrainersData(APIView):
             return Response(trainers_data)
 
 
+permission_classes = [IsAuthenticated]
 class AnalyticsTrainers(APIView):
     def get(self, request):
         q = self.request.GET.get('q', None) or None
@@ -223,7 +226,7 @@ class AnalyticsTrainers(APIView):
         return Response(trainers_data)
 
 
-
+permission_classes = [IsAuthenticated]
 class TrainersName(APIView):
     def get(self,request):
         # queryset = Trainer.objects.values_list('trainer_name','email')

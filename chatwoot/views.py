@@ -16,7 +16,7 @@ from django.utils.timezone import make_aware, get_current_timezone
 import datetime
 import math
 from django.shortcuts import get_object_or_404
-
+from rest_framework.permissions import IsAuthenticated
 
 
 class ChatwootContacts(APIView):
@@ -125,7 +125,7 @@ class ChatwootContacts(APIView):
 
 
 
-
+permission_classes = [IsAuthenticated]
 class ConversationsReport(APIView):
     def get(self, request):
         data = request.data.copy()
@@ -347,7 +347,7 @@ class ConversationsReport(APIView):
 
 
 
-
+# permission_classes = [IsAuthenticated]
 class ConversationsList(APIView):
 
     def save_instance(self, i):

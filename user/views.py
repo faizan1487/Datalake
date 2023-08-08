@@ -174,6 +174,7 @@ class MainUserAPIView(APIView):
 
 
 class UsersDelete(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         objs = AlNafi_User.objects.all()
         objs.delete()
@@ -184,7 +185,7 @@ class AlnafiUser(APIView):
     # def get(self, request):
     #     Thread(target=self.get_thread, args=(request,)).start()
     #     return HttpResponse("working")
-
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
@@ -205,7 +206,7 @@ class AlnafiUser(APIView):
 
         return Response("Working")
 
-
+    
     def post(self, request):
         data = request.data
         email = data.get("email")
@@ -245,7 +246,7 @@ class IslamicUser(APIView):
 
 #Optimized
 class GetUsers(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
     # required_groups = ['Support', 'Admin','MOC']
     def get(self, request):
@@ -304,7 +305,7 @@ class GetUsers(APIView):
             return paginator.get_paginated_response(paginated_queryset)
 
 class GetUser(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
     # required_groups = ['Support', 'Admin', 'MOC']
     def get(self, request, id):
@@ -354,7 +355,7 @@ class GetUser(APIView):
 #unoptimized
 #
 class GetNoOfUsersMonth(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
     # required_groups = ['Support', 'Admin']
     def get(self, request):

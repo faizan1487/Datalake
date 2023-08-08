@@ -12,6 +12,7 @@ from rest_framework import status
 from django.http import HttpResponse
 from threading import Thread
 from datetime import date, datetime, timedelta
+from rest_framework.permissions import IsAuthenticated
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -19,7 +20,7 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100  
   
-
+permission_classes = [IsAuthenticated]
 class CreateAffiliateUser(APIView):
     def get(self, request):
         # q = self.request.GET.get('q', None) or None
@@ -108,7 +109,8 @@ class CreateAffiliateUser(APIView):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-    
+
+ 
 class CreateAffiliateLead(APIView):
     def post(self, request):
         data = request.data.copy()
