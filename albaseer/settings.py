@@ -104,7 +104,7 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'import_export',
     'rangefilter',
-     
+
     'payment.apps.PaymentConfig',
     'security.apps.SecurityConfig',
     'chatwoot.apps.ChatwootConfig',
@@ -126,7 +126,7 @@ MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware', 
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
@@ -185,8 +185,8 @@ else:
             #     'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
             # }
         }
-    } 
-            
+    }
+
 
 if DEBUG:
     # CACHES = {
@@ -204,7 +204,7 @@ if DEBUG:
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             }
         }
-    } 
+    }
 else:
     CACHES = {
         'default': {
@@ -215,8 +215,8 @@ else:
                 'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             }
         }
-    } 
-# print(DATABASES)  
+    }
+# print(DATABASES)
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
@@ -280,8 +280,8 @@ if DEBUG:
     REST_FRAMEWORK['DEFAULT_RENDERER_CLASSES'].append(
         'rest_framework.renderers.BrowsableAPIRenderer',
     )
-    
-    
+
+
 CSRF_COOKIE_NAME="csrftoken"
 CSRF_HEADER_NAME="csrftoken"
 CSRF_COOKIE_SECURE = True
@@ -325,8 +325,8 @@ if not DEBUG:
 )
 
 PASSWORD_RESET_TIMEOUT=900
- 
-AUTH_USER_MODEL = 'user.User'   
+
+AUTH_USER_MODEL = 'user.User'
 
 # Email Configuration
 EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"

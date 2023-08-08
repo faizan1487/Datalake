@@ -24,7 +24,7 @@ class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
     page_size_query_param = 'page_size'
-    max_page_size = 100     
+    max_page_size = 100
 
 
 
@@ -38,8 +38,8 @@ class TrainersData(APIView):
         active = self.request.GET.get('akkkkkkkkctive', None) or None
         req_start_date = self.request.GET.get('start_date', None) or None
         req_end_date = self.request.GET.get('end_date', None) or None
-        url = request.build_absolute_uri()  
-        
+        url = request.build_absolute_uri()
+
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
         if q:
             if request.user.is_admin:
@@ -48,7 +48,7 @@ class TrainersData(APIView):
                 trainers = trainers.filter(email__iexact=request.user.email)
         else:
             if request.user.is_admin:
-                trainers = trainers.filter(trainer_name__icontains='Farhan Khan')   
+                trainers = trainers.filter(trainer_name__icontains='Farhan Khan')
             else:
                 trainers = trainers.filter(email__iexact=request.user.email)
 
@@ -63,7 +63,7 @@ class TrainersData(APIView):
 
             # print("query",query)
             # trainers = trainers.filter(query)
-        
+
         trainers_data = []
         current_datetime = datetime.now()
         for trainer in trainers:
@@ -71,7 +71,7 @@ class TrainersData(APIView):
                 'trainer_name': trainer.trainer_name,
                 'trainer_data': []
             }
-            
+
             if product_name:
                 products = trainer.products.filter(product_name=product_name)
             else:
@@ -118,13 +118,13 @@ class TrainersData(APIView):
                         payment_list[i]['product_id'] = products[i]['product__product_name']
                     except Exception as e:
                         pass
-                
+
                 # print(len(payment_list))
                 if active == 'true':
                     payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime]
                 elif active == 'false':
                     payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime]
-                
+
                 #count users in a product
                 # user_count = len(set(payment.user_id for payment in product.product_payments.all()))
                 user_count = len(set(payment['user_id'] for payment in payment_list))
@@ -140,7 +140,7 @@ class TrainersData(APIView):
                             break
                     if is_unique:
                         payments_list.append(payment)
-                
+
 
                 # payments = MainPaymentSerializer(payments_list, many=True)
                 trainer_data['trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
@@ -150,14 +150,36 @@ class TrainersData(APIView):
                     end_date = None
             # print(all_dates)
             trainers_data.append(trainer_data)
-        
+
         if export=='true':
             for i in trainer_data['trainer_data']:
                 i['trainer_name'] = trainer_data['trainer_name']
-            # print(trainer_data['trainer_data'])
-            # return
-            df = pd.DataFrame(trainer_data['trainer_data'])
-            # Merge dataframes
+
+            #For CSV WORKING:
+            Header = []
+            for i in trainer_data['trainer_data']:
+                for data_dict in i["users"]:
+                    if data_dict:
+                        Header.extend(['trainer_name', 'product_name'])
+                        Header.extend(data_dict.keys())
+                        break
+            if Header:
+                pass
+            else:
+                Header = ['trainer_name','product_name', 'alnafi_payment_id','user_id','source','product_id','amount','currency','order_datetime','expiration_datetime']
+
+            # Create an empty DataFrame with the specified columns
+            df = pd.DataFrame(columns=Header)
+            #Getting Row from data[]:
+            for i in trainer_data['trainer_data']:
+                trainer_name = i['trainer_name']
+                product_name = i['product_name']
+                for data_dict in i["users"]:
+                    if data_dict:
+                        data_dict["trainer_name"] = trainer_name
+                        data_dict["product_name"] = product_name
+                        df = df.append(data_dict, ignore_index=True)
+
             file_name = f"Trainers_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
             df = df.to_csv(index=False)
@@ -195,20 +217,20 @@ class AnalyticsTrainers(APIView):
                     'user_count': user_count
                 })
             trainers_data.append(trainer_data)
-        
+
 
         # print(trainers_data)
         return Response(trainers_data)
 
 
 
-class TrainersName(APIView):    
+class TrainersName(APIView):
     def get(self,request):
         # queryset = Trainer.objects.values_list('trainer_name','email')
         queryset = Trainer.objects.values('trainer_name', 'email')
         trainer_list = [{"trainer_name": item['trainer_name'], "email": item['email']} for item in queryset]
 
-        
+
         return Response(trainer_list)
 
 
@@ -226,9 +248,9 @@ class TrainersName(APIView):
 #         product = self.request.GET.get('product', None)
 #         export = self.request.GET.get('export', None) or None
 #         # create a datetime object for 24 hours ago
-#         url = request.build_absolute_uri()  
-        
-      
+#         url = request.build_absolute_uri()
+
+
 #         # payments = Main_Payment.objects.filter(product__product_name__icontains='Python Automation - Tools and handson')
 #         # print(payments)
 #         # payments = payments.exclude(amount__in=[0,0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
@@ -275,7 +297,7 @@ class TrainersName(APIView):
 #         # payments = payments.filter(user__id__in=Subquery(distinct_users)).values('product__id', 'product__product_name').annotate(total_payments=Count('id'))
 #         paginator = MyPagination()
 #         paginated_queryset = paginator.paginate_queryset(result, request)
-#         return paginator.get_paginated_response(paginated_queryset)    
+#         return paginator.get_paginated_response(paginated_queryset)
 
 
 
@@ -284,8 +306,8 @@ class TrainersName(APIView):
 #         q = self.request.GET.get('q', None) or None
 #         product = self.request.GET.get('product', None)
 #         export = self.request.GET.get('export', None) or None
-#         url = request.build_absolute_uri()  
-        
+#         url = request.build_absolute_uri()
+
 #         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
 #         if q:
 #             trainers = trainers.filter(trainer_name__icontains=q)
@@ -318,29 +340,29 @@ class TrainersName(APIView):
 
 
 # payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe'])
-    
+
 #     if source:
 #         payments = payments.filter(source=source)
-        
+
 #     if not start_date:
 #         if payments:
 #             first_payment = payments.exclude(order_datetime=None).last()
 #             date_time_obj = first_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#             new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")                                                                                    
-#             start_date = new_date_obj + timedelta(days=20)       
+#             new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+#             start_date = new_date_obj + timedelta(days=20)
 #     if not end_date:
 #         if payments:
 #             last_payment = payments.exclude(order_datetime=None).first()
 #             date_time_obj = last_payment.order_datetime.strftime("%Y-%m-%d %H:%M:%S.%f%z")
 #             new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
 #             end_date = new_date_obj - timedelta(days=20)
-               
+
 #     delta = end_date - start_date
 #     dates = []
 #     for i in range(delta.days + 1):
 #         date = start_date + timedelta(days=i)
 #         dates.append(date)
-        
+
 #     payments = payments.filter(order_datetime__date__in=dates)
 #     payment_dict = {}
 #     for payment in payments:
@@ -361,6 +383,6 @@ class TrainersName(APIView):
 #             'date': date.date(),
 #             'payments': len(serialized_payments)
 #         })
-    
+
 #     print(payments.count())
 #     return response_data
