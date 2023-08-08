@@ -564,8 +564,15 @@ class ProductAnalytics(APIView):
         product = self.request.GET.get('product', None) or None  
         status = self.request.GET.get('status', None) or None
         url = request.build_absolute_uri()
-        sort_by_str = request.GET.get('sort_by', '[]')
-        sort_by = json.loads(sort_by_str)
+        sort_by_str = request.GET.get('sort_by')
+
+        if sort_by_str is not None:
+            sort_by = sort_by_str.split(',')
+        else:
+            # Handle the case when 'sort_by' is not provided in the query
+            sort_by = ['payment_total']  # You can set your default value here
+
+
         order = self.request.GET.get('order')
         payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)        
         if payments['success'] == 'true':
