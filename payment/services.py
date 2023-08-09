@@ -20,6 +20,8 @@ from django.db.models.functions import TruncDate
 from django.core.cache import cache
 import requests
 import json
+from collections import defaultdict
+
 
 def json_to_csv(serialized_data,name):
     file_name = f"{name}_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -84,16 +86,48 @@ def main_no_of_payments(start_date,end_date,source):
 
     return response_data
 
-def no_of_payments(source):
-    payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual','UBL_DD','ubl_dd'])
+# def no_of_payments(source):
+#     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual','UBL_DD','ubl_dd'])
 
-    if source:
-        if source.lower() == 'ubl_dd':
-            payments = payments.exclude(status=0).filter(source=source)
-        else:
-            payments = payments.filter(source=source)
-        
-    return payments.count()
+#     if source:
+#         if source.lower() == 'ubl_dd':
+#             payments = payments.exclude(status=0).filter(source=source)
+#         else:
+#             payments = payments.filter(source=source)
+    
+#     return payments.count()
+
+def no_of_payments(source):
+    filtered_payments = Main_Payment.objects.exclude(product__product_name="test") \
+    .exclude(amount=1) \
+    .filter(source__in=['Easypaisa', 'UBL_IPG', 'Stripe', 'UBL_Manual', 'UBL_DD', 'ubl_dd'])
+
+    # Initialize a defaultdict to store payments by source
+    payments_by_source = defaultdict(list)
+
+    # Organize payments into lists based on source
+    for payment in filtered_payments:
+        payments_by_source[payment.source].append({
+            "id": payment.id,
+            "amount": payment.amount,
+            "status": payment.status,
+            # Include other payment attributes you want in the response
+        })
+
+    # Exclude payments with status 0 for the 'ubl_dd' source
+    ubl_dd_payments = payments_by_source["ubl_dd"]
+    ubl_dd_payments = [payment for payment in ubl_dd_payments if payment["status"] != 0]
+    payments_by_source["ubl_dd"] = ubl_dd_payments
+
+    # Create a dictionary with count of payments for each source
+    payments_count_by_source = {}
+    for source, payments in payments_by_source.items():
+        payments_count_by_source[source] = len(payments)
+
+    # Print or return the dictionary with count of payments for each source
+    # print(payments_count_by_source)
+    return payments_count_by_source
+
 
 
 def renewal_no_of_payments(payments):

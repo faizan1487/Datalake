@@ -886,12 +886,13 @@ class NoOfPayments(APIView):
     
 
 class TotalNoOfPayments(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         source = self.request.GET.get('source', None) or None
         
         payments = no_of_payments(source)
-        response_data = {"payments": payments}
-        return Response(response_data)
+        # response_data = {"payments": payments}
+        return Response(payments)
 
         
 #Optimized  
