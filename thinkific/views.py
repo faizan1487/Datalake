@@ -6,7 +6,8 @@ from rest_framework.pagination import PageNumberPagination
 from .models import Thinkific_Users_Enrollments, Thinkific_User
 from .serializers import ThinkificUserSerializer,ThinkificUserEnrollmentSerializer
 from rest_framework.permissions import IsAuthenticated
-
+import requests
+import json
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -32,7 +33,7 @@ class GetThinkificUsers(APIView):
         return paginator.get_paginated_response(thinkific_user_serializer.data)
         
 
-permission_classes = [IsAuthenticated]      
+permission_classes = [IsAuthenticated]
 class GetUserEnrollments(APIView):
     def get(self, request):
         query = self.request.GET.get('q', None) or None
@@ -42,3 +43,28 @@ class GetUserEnrollments(APIView):
         paginated_queryset = paginator.paginate_queryset(queryset, request)
         user_enrollemnt_serializer = ThinkificUserEnrollmentSerializer(paginated_queryset, many=True)
         return paginator.get_paginated_response(user_enrollemnt_serializer.data)    
+    
+permission_classes = [IsAuthenticated]
+class ThinkificUsers(APIView):
+    def get(self, request):
+        print("sdfdsfj")
+        # url = "https://api.thinkific.com/api/public/v1/users?page=1&limit=25"
+        # headers={
+        #     "X-Auth-API-Key": '0af37f50be358db530e91f3033ca7b1d',
+        #     "X-Auth-Subdomain": "alnafi",
+        #     "Content-Type": "application/json"
+        #     }
+        
+        response = requests.get(
+                    f"https://api.thinkific.com/api/public/v1/users?page=&limit=1000",
+                    headers={
+                        "X-Auth-API-Key": '0af37f50be358db530e91f3033ca7b1d',
+                        "X-Auth-Subdomain": "alnafi",
+                        "Content-Type": "application/json"
+                    })
+        # response = requests.get(url, headers=headers)
+        # print(response.status_code)
+        json_data = json.loads(response.text)
+        # print(len(json_data['items']))
+        # limit=1000
+        return Response(json_data)

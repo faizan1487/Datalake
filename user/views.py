@@ -98,7 +98,7 @@ class PSWFormRecord(APIView):
 
 class Marketing_Pkr_Form(APIView):
     def post(self,request):
-        print(request.data)
+        # print(request.data)
         inner_dict = request.data.get('{"gender": "Male", "full_name": "test leads 3", "email_address": "test3@gmail.com", "contact_number": "7539485739", "what_is_your_field_of_study": "Business and Management", "your_level_of_education": "FSc / Intermediate", "university_name": "Capital University of Science \': [\'\'], \' Technology", "university_name_other": "", "title_of_the_degree": "BSCS", "in_which_country_would_you_like_to_work": "United Arab Emirates", "n_which_domain_would_you_like_to_develop_your_skillset": "Offensive Security", "how": "18,500 PKR - 28,000 PKR", "what_languages_can_you_speak": "English", "do_you_require_financial_sponsorship": "No", "submit_your_resume_word__pdf_only": "/private/files/sample.pdf", "preferred_medium_of_communication": "Email", "do_you_know_about_al_nafi": "Yes", "how_did_you_hear_about_us": "Facebook"}', {})
         gender = request.data.get('')
         # gender = inner_dict.get('gender')
@@ -120,7 +120,6 @@ class Marketing_Pkr_Form(APIView):
         know_about_alnafi = inner_dict.get('do_you_know_about_al_nafi')
         hear_about_us = inner_dict.get('how_did_you_hear_about_us')
 
-        print("gender", gender)
         # print(inner_dict)
         # print(financial_sponsorship)
         # print(know_about_alnafi)
@@ -195,7 +194,7 @@ class AlnafiUser(APIView):
             users = AlNafi_User.objects.all()
 
         for user in users:
-            print("user.email")
+            # print("user.email")
             # user.save()
             # emails = ['suhaibt021@gmail.com','mirza_rehan@hotmail.com','owais.azad@annaafi.org', 'haider.ghaznavi@gmail.com','shabanas786@gmail.com','hamidashraf87@gmail.com']
             # if user.email not in emails:
@@ -241,7 +240,7 @@ class IslamicUser(APIView):
             users = IslamicAcademy_User.objects.all()
 
         for user in users:
-            print(user)
+            # print(user)
             user.save()
 
 #Optimized

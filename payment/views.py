@@ -94,7 +94,7 @@ class UBLManualPayment(APIView):
             payments = UBL_Manual_Payment.objects.all()
 
         for payment in payments:
-            print(payment)
+            # print(payment)
             payment.save()
     
     def post(self, request):
@@ -129,7 +129,7 @@ class GetUBLIPGPayments(APIView):
             payments = UBL_IPG_Payment.objects.all()
 
         for payment in payments:
-            print(payment)
+            # print(payment)
             payment.save()
     
     def post(self, request):
@@ -158,7 +158,7 @@ class GetEasypaisaPayments(APIView):
             payments = Easypaisa_Payment.objects.all()
 
         for payment in payments:
-            print(payment)
+            # print(payment)
             payment.save()
     
     def post(self, request):
@@ -187,7 +187,7 @@ class GetStripePayments(APIView):
             payments = Stripe_Payment.objects.all()
 
         for payment in payments:
-            print(payment)
+            # print(payment)
             payment.save()
 
 
@@ -339,9 +339,7 @@ class ActivePayments(APIView):
 
         payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
         payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
-        payments = payments.filter(expiration_datetime__date__gt=date.today())        
-
-        # print(payments)
+        payments = payments.filter(expiration_datetime__date__gt=date.today())  
 
         if not start_date:
             first_payment = min(payments, key=lambda obj: obj['expiration_datetime'])
@@ -357,7 +355,7 @@ class ActivePayments(APIView):
         # print(end_date)
 
         payments = payments.filter(Q(expiration_datetime__date__gte=start_date) & Q(expiration_datetime__date__lte=end_date))
-
+        # print(payments.count())
         if q:
             payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
             
@@ -386,6 +384,8 @@ class ActivePayments(APIView):
                 )
         else:
             payments = payments.filter(product__product_plan__isnull=False)
+
+        # print("after plan filter", payments.count())
 
         for i, data in enumerate(payments):
             # date_string = data['expiration_datetime']

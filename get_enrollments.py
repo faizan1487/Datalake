@@ -39,7 +39,7 @@ def get_courses_data(id):
                         "Content-Type": "application/json"
                     })
         json_data = json.loads(response_temp.text)
-        print(json_data)
+        # print(json_data)
         return json_data
     except Exception as e:
         print("id not found", id)

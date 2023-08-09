@@ -94,7 +94,7 @@ def usersignal(instance,source,sender):
         url = 'https://crm.alnafi.com/api/resource/Lead'
 
         response = requests.post(url, headers=headers, json=data)
-        print("response.status_code",response.text)
+        # print("response.status_code",response.text)
         response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:

@@ -52,7 +52,7 @@ class ChatwootContacts(APIView):
         items_per_page = 15
         pages = math.ceil(count / items_per_page)
         for page_number in range(1, pages + 1):
-            print(page_number)
+            # print(page_number)
             api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
             headers = {
                 'api_access_token': '7M41q5QiNfYDeHue6KzjWdzV',
@@ -205,7 +205,7 @@ class ConversationsReport(APIView):
                 ).annotate(
                     timestamp=TruncDate('created_at'),
                 ).values(
-                    'conversation_date',
+                    'timestamp',
                 ).annotate(
                     value=Count('id')
                 )
@@ -226,14 +226,14 @@ class ConversationsReport(APIView):
                     end_idx = start_idx + 7
                     week_conversations = conversations_per_date[start_idx:end_idx]
                     # print(week_conversations)
-                    total_count = sum(conv['conversation_count'] for conv in week_conversations)
+                    total_count = sum(conv['value'] for conv in week_conversations)
                     if end_idx < len(conversations_per_date):
-                        week_end_date = conversations_per_date[end_idx]['conversation_date']
+                        week_end_date = conversations_per_date[end_idx]['timestamp']
                     else:
                         week_end_date = "" 
                     grouped_conversations.append({
-                        "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} {week_end_date}",
-                        "conversation_count": total_count
+                        "timestamp": f"{conversations_per_date[start_idx]['timestamp']} {week_end_date}",
+                        "value": total_count
                     })
 
                 response_dict["conversations_per_week"] = grouped_conversations
@@ -250,14 +250,14 @@ class ConversationsReport(APIView):
                     start_idx = i * 30
                     end_idx = start_idx + 30
                     month_conversations = conversations_per_date[start_idx:end_idx]
-                    total_count = sum(conv['conversation_count'] for conv in month_conversations)
+                    total_count = sum(conv['value'] for conv in month_conversations)
                     if end_idx < len(conversations_per_date):
-                        month_end_date = conversations_per_date[end_idx]['conversation_date']
+                        month_end_date = conversations_per_date[end_idx]['timestamp']
                     else:
                         month_end_date = "" 
                     grouped_conversations.append({
-                        "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} {month_end_date}",
-                        "conversation_count": total_count
+                        "timestamp": f"{conversations_per_date[start_idx]['timestamp']} {month_end_date}",
+                        "value": total_count
                     })
 
                 response_dict["conversations_per_month"] = grouped_conversations
@@ -328,31 +328,30 @@ class ConversationsReport(APIView):
                 
                 response_dict["incoming_messages_per_date"] = list(data)
 
-            #     # Calculate the number of weeks in the data
-            #     # print(len(conversations_per_date))
-            #     weeks = len(conversations_per_date) // 7
-            #     # print(weeks)
-            #     if len(conversations_per_date) % 7 > 0:
-            #         weeks += 1
-            #     # Initialize an empty list to store the grouped conversations
-            #     grouped_conversations = []
-            #     # Loop through the data and create groups for each week
-            #     for i in range(weeks):
-            #         start_idx = i * 7
-            #         end_idx = start_idx + 7
-            #         week_conversations = conversations_per_date[start_idx:end_idx]
-            #         # print(week_conversations)
-            #         total_count = sum(conv['conversation_count'] for conv in week_conversations)
-            #         if end_idx < len(conversations_per_date):
-            #             week_end_date = conversations_per_date[end_idx]['conversation_date']
-            #         else:
-            #             week_end_date = "" 
-            #         grouped_conversations.append({
-            #             "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} {week_end_date}",
-            #             "conversation_count": total_count
-            #         })
+                # Calculate the number of weeks in the data
+                weeks = len(list(data)) // 7
+                # print(weeks)
+                if len(list(data)) % 7 > 0:
+                    weeks += 1
+                # Initialize an empty list to store the grouped conversations
+                grouped_conversations = []
+                # Loop through the data and create groups for each week
+                for i in range(weeks):
+                    start_idx = i * 7
+                    end_idx = start_idx + 7
+                    week_conversations = conversations_per_date[start_idx:end_idx]
+                    # print(week_conversations)
+                    total_count = sum(conv['conversation_count'] for conv in week_conversations)
+                    if end_idx < len(conversations_per_date):
+                        week_end_date = conversations_per_date[end_idx]['conversation_date']
+                    else:
+                        week_end_date = "" 
+                    grouped_conversations.append({
+                        "conversation_date": f"{conversations_per_date[start_idx]['conversation_date']} {week_end_date}",
+                        "conversation_count": total_count
+                    })
 
-            #     response_dict["conversations_per_week"] = grouped_conversations
+                response_dict["conversations_per_week"] = grouped_conversations
 
             #     # Calculate the number of weeks in the data
             #     months = len(conversations_per_date) // 30

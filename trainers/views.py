@@ -33,7 +33,7 @@ class MyPagination(PageNumberPagination):
 permission_classes = [IsAuthenticated]
 class TrainersData(APIView):
     def get(self, request):
-        print(request.user.email)
+        # print(request.user.email)
         q = self.request.GET.get('q', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
@@ -41,7 +41,7 @@ class TrainersData(APIView):
         req_start_date = self.request.GET.get('start_date', None) or None
         req_end_date = self.request.GET.get('end_date', None) or None
         url = request.build_absolute_uri()
-
+        
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
         if q:
             if request.user.is_admin:
@@ -152,7 +152,7 @@ class TrainersData(APIView):
                     end_date = None
             # print(all_dates)
             trainers_data.append(trainer_data)
-        print(trainers_data)
+        # print(trainers_data)
         if export=='true':
             for i in trainers_data:
                 i['trainer_name'] = trainer_data['trainer_name']
