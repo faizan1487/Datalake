@@ -361,9 +361,7 @@ class ActivePayments(APIView):
             
         if product:
             payments = payments.filter(product__product_name__icontains=product)
-
-        
-        
+  
         plan_mapping = {
             'yearly': 'Yearly',
             'halfyearly': 'Half Yearly',
@@ -455,8 +453,7 @@ class SearchPayments(APIView):
                         return obj.isoformat()  # Convert datetime to ISO 8601 format
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-
-            users = list(payments['payments'].values('user__email'))
+            users = list(payments['payments'].values('user__email','user__phone'))
             products = list(payments['payments'].values('product__product_name'))
             payment_list = list(payments["payments"].values())
             
@@ -467,6 +464,7 @@ class SearchPayments(APIView):
             for i in range(len(payments['payments'])):
                 try:
                     payment_list[i]['user_id'] = users[i]['user__email']
+                    payment_list[i]['phone'] = users[i]['user__phone']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
                     payment_amount = payment_list[i]['amount']
                     product_name = products[i]['product__product_name']
