@@ -100,7 +100,7 @@ def main_no_of_payments(start_date,end_date,source):
 def no_of_payments(source):
     filtered_payments = Main_Payment.objects.exclude(product__product_name="test") \
     .exclude(amount=1) \
-    .filter(source__in=['Easypaisa', 'UBL_IPG', 'Stripe', 'UBL_Manual', 'UBL_DD', 'ubl_dd'])
+    .filter(source__in=['Easypaisa', 'UBL_IPG', 'Stripe', 'UBL_Manual', 'UBL_DD'])
 
     # Initialize a defaultdict to store payments by source
     payments_by_source = defaultdict(list)
@@ -115,9 +115,9 @@ def no_of_payments(source):
         })
 
     # Exclude payments with status 0 for the 'ubl_dd' source
-    ubl_dd_payments = payments_by_source["ubl_dd"]
+    ubl_dd_payments = payments_by_source["UBL_DD"]
     ubl_dd_payments = [payment for payment in ubl_dd_payments if payment["status"] != 0]
-    payments_by_source["ubl_dd"] = ubl_dd_payments
+    payments_by_source["UBL_DD"] = ubl_dd_payments
 
     # Create a dictionary with count of payments for each source
     payments_count_by_source = {}
