@@ -4,6 +4,11 @@ db.sqlite3
 .env_faizan
 __pycache__
 
+
+
+Project.csv
+Updated_Project.csv
+
 # Editors/ IDEs Folders
 .vscode
 .idea
