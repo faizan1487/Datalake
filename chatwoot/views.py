@@ -125,6 +125,136 @@ class ChatwootContacts(APIView):
 
 
 
+def week_month_convos(url,headers,params):
+    # response_dict = {}
+    response_dict = week_chatwoot_data(url,headers,params)
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
+
+    # Calculate the number of weeks in the data
+    months = len(data) // 30
+    if len(data) % 30 > 0:
+        months += 1
+
+    # Initialize an empty list to store the grouped conversations
+    grouped_conversations = []
+    # Loop through the data and create groups for each week
+    for i in range(months):
+        start_idx = i * 30
+        end_idx = start_idx + 30
+        month_conversations = data[start_idx:end_idx]
+        total_count = sum(conv['value'] for conv in month_conversations)
+        if end_idx < len(data):
+            month_end_date = data[end_idx]['timestamp']
+        else:
+            month_end_date = "" 
+        grouped_conversations.append({
+            "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
+            "value": total_count
+        })
+
+    response_dict["data_per_month"] = grouped_conversations
+    return response_dict
+    # print(grouped_conversations)
+
+
+def week_chatwoot_data(url,headers,params):
+    # Get conversations per date
+    response_dict = {}
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
+
+    if params['metric'] == 'avg_first_response_time':
+        for i in  data:
+            date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+            avg_resolution_time_seconds = float(i['value'])
+            days = int(avg_resolution_time_seconds // 86400)
+            hours = int((avg_resolution_time_seconds % 86400) // 3600)
+            minutes = int((avg_resolution_time_seconds % 3600) // 60)
+
+            if days > 0:
+                i['value'] = f"{str(days)} days {str(hours)} Hr {str(minutes)} min"
+            else:
+                i['value'] = f"{str(hours)} Hr {str(minutes)} min"
+
+            formatted_date = date_obj.strftime('%Y-%m-%d')
+            i['timestamp'] = formatted_date
+    else:
+        for i in  data:
+            date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+            formatted_date = date_obj.strftime('%Y-%m-%d')
+            i['timestamp'] = formatted_date
+
+    # data_per_date
+    data = list(data) 
+    response_dict["data_per_date"] = data
+
+    # Calculate the number of weeks in the data
+    weeks = len(data) // 7
+    if len(data) % 7 > 0:
+        weeks += 1
+
+    # Initialize an empty list to store the grouped conversations
+    grouped_conversations = []
+    # Loop through the data and create groups for each week
+    if params['metric'] == 'avg_first_response_time':
+        pass
+    else:
+        for i in range(weeks):
+            start_idx = i * 7
+            end_idx = start_idx + 7
+            week_conversations = data[start_idx:end_idx]
+            total_count = sum(conv['value'] for conv in week_conversations)
+            if end_idx < len(data):
+                week_end_date = data[end_idx]['timestamp']
+            else:
+                week_end_date = "" 
+            grouped_conversations.append({
+                "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
+                "value": total_count
+            })
+
+
+
+    response_dict["data_per_week"] = grouped_conversations
+    return response_dict
+
+
+def all_chatwoot_data(url,headers,params):
+    print(params)
+     # Get conversations per date
+    response_dict = {}
+    response = requests.get(url, headers=headers, params=params)
+    data = response.json()
+
+    if params['metric'] == 'avg_first_response_time':
+        for i in  data:
+            date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+            avg_resolution_time_seconds = float(i['value'])
+            days = int(avg_resolution_time_seconds // 86400)
+            hours = int((avg_resolution_time_seconds % 86400) // 3600)
+            minutes = int((avg_resolution_time_seconds % 3600) // 60)
+
+            if days > 0:
+                i['value'] = f"{str(days)} days {str(hours)} Hr {str(minutes)} min"
+            else:
+                i['value'] = f"{str(hours)} Hr {str(minutes)} min"
+
+            formatted_date = date_obj.strftime('%Y-%m-%d')
+            i['timestamp'] = formatted_date
+    else:
+        for i in  data:
+            date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+            formatted_date = date_obj.strftime('%Y-%m-%d')
+            i['timestamp'] = formatted_date
+    # data_per_date
+    data = list(data) 
+    response_dict["data_per_date"] = data
+    return response_dict
+
+
+
+
 permission_classes = [IsAuthenticated]
 class ConversationsReport(APIView):
     def get(self, request):
@@ -152,14 +282,7 @@ class ConversationsReport(APIView):
         elif days is not None and int(days) == 365:
             end_date = datetime.date.today()
             start_date = end_date - datetime.timedelta(days=365)
-        else:
-            end_date = datetime.date.today()
-            # Subtract 7 days from the current date
-            start_date = end_date - datetime.timedelta(days=365)
-
-            
-        # print(start_date)
-        # print(end_date)
+    
 
         # Implement weekly, monthly, 3 months ,6 months, yearly filter 
         params = {
@@ -185,6 +308,7 @@ class ConversationsReport(APIView):
         time_difference = until - since
         # Get the number of days from the time difference
         days_difference = time_difference.days
+        # print("days difference",days_difference)
         conversations = Conversation.objects.all().values()
         start_date = since.replace(tzinfo=None)
         end_date = until.replace(tzinfo=None)
@@ -205,721 +329,49 @@ class ConversationsReport(APIView):
         # print(days_difference)
         if metric == "conversations_count":
             if days_difference == 365:
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data) 
-                response_dict["data_per_date"] = data
-                # response_dict["data_per_date"] = list(data_per_date)
-
-                # Calculate the number of weeks in the data
-                # print(len(data_per_date))
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_conversations = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_conversations)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_conversations
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_conversations = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_conversations)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_conversations
-                # print(grouped_conversations)
-
+                response_dict = week_month_convos(url,headers, params)
             elif days_difference == 30:
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data) 
-                response_dict["data_per_date"] = data
-                # response_dict["data_per_date"] = list(data_per_date)
-
-                # Calculate the number of weeks in the data
-                # print(len(data_per_date))
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_conversations = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_conversations)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_conversations
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_conversations = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_conversations)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_conversations
-                # print(grouped_conversations)
-
-
+                response_dict = week_month_convos(url,headers, params)
             elif days_difference == 180:
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data) 
-                response_dict["data_per_date"] = data
-                # response_dict["data_per_date"] = list(data_per_date)
-
-                # Calculate the number of weeks in the data
-                # print(len(data_per_date))
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_conversations = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_conversations)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_conversations
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_conversations = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_conversations)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_conversations
-                # print(grouped_conversations)
-
+                response_dict = week_month_convos(url,headers, params)
             elif days_difference == 90:
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data) 
-                response_dict["data_per_date"] = data
-                # response_dict["data_per_date"] = list(data_per_date)
-
-                # Calculate the number of weeks in the data
-                # print(len(data_per_date))
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_conversations = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_conversations)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_conversations
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_conversations = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_conversations)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_conversations
-                # print(grouped_conversations)
-            
+                response_dict = week_month_convos(url,headers, params)      
             elif days_difference == 7:
                 # Get conversations per date
-
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data) 
-                response_dict["data_per_date"] = data
-
-                # Calculate the number of weeks in the data
-                weeks = len(data) // 7
-                if len(data) % 7 > 0:
-                    weeks += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_conversations = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_conversations = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in week_conversations)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_conversations.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_conversations
-                # print(grouped_conversations)
+                response_dict = week_chatwoot_data(url,headers, params)
             else:
                 # Get conversations per date
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data) 
-                response_dict["data_per_date"] = data
+                response_dict = all_chatwoot_data(url,headers, params)
+            
         elif metric == "incoming_messages_count":
             if days_difference == 365:
-                # Get conversations per date
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data)
-                response_dict["data_per_date"] = data
-
-                # Calculate the number of weeks in the data
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_messages = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_messages
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_messages = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_messages)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_messages
-
+                response_dict = week_month_convos(url,headers, params)
+            elif days_difference == 180:
+                response_dict = week_month_convos(url,headers, params)
+            elif days_difference == 90:
+                response_dict = week_month_convos(url,headers, params)
             elif days_difference == 30:
-                # Get conversations per date
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data)
-                response_dict["data_per_date"] = data
-
-                # Calculate the number of weeks in the data
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_messages = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_messages
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_messages = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_messages)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_messages
-            
+                response_dict = week_month_convos(url,headers, params)
             elif days_difference == 7:
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data)
-                response_dict["data_per_date"] = data
-
-                # Calculate the number of weeks in the data
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_messages = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_messages
-            
+                response_dict = week_chatwoot_data(url,headers, params)            
             else:
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data) 
-                response_dict["data_per_date"] = data            
+                response_dict = all_chatwoot_data(url,headers, params)        
         elif metric == "outgoing_messages_count":
-            
             if days_difference == 365:
-                # Get conversations per date
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data)
-                response_dict["data_per_date"] = data
-
-                # Calculate the number of weeks in the data
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_messages = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_messages
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_messages = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_messages)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_messages
-                # Get conversations per date
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-                    # print(week_conversations)
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data)
-                response_dict["data_per_date"] = data
-
-                # Calculate the number of weeks in the data
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_messages = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_messages
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_messages = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_messages)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_messages
-
+                response_dict = week_month_convos(url,headers, params)
+            elif days_difference == 180:
+                response_dict = week_month_convos(url,headers, params)
+            elif days_difference == 90:
+                response_dict = week_month_convos(url,headers, params)
             elif days_difference == 30:
-                # Get conversations per date
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-                    # print(week_conversations)
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data)
-                response_dict["data_per_date"] = data
-
-                # Calculate the number of weeks in the data
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_messages = data[start_idx:end_idx]
-                    # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_week"] = grouped_messages
-
-                # Calculate the number of weeks in the data
-                months = len(data) // 30
-                if len(data) % 30 > 0:
-                    months += 1
-
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(months):
-                    start_idx = i * 30
-                    end_idx = start_idx + 30
-                    month_messages = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_messages)
-                    if end_idx < len(data):
-                        month_end_date = data[end_idx]['timestamp']
-                    else:
-                        month_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
-                        "value": total_count
-                    })
-
-                response_dict["data_per_month"] = grouped_messages
-
+                response_dict = week_month_convos(url,headers, params)
             elif days_difference == 7:
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
-
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data)
-                response_dict["data_per_date"] = data
-
-                # Calculate the number of weeks in the data
-                weeks = len(data) // 7
-                # print(weeks)
-                if len(data) % 7 > 0:
-                    weeks += 1
-                # Initialize an empty list to store the grouped conversations
-                grouped_messages = []
-                # Loop through the data and create groups for each week
-                for i in range(weeks):
-                    start_idx = i * 7
-                    end_idx = start_idx + 7
-                    week_messages = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in week_messages)
-                    if end_idx < len(data):
-                        week_end_date = data[end_idx]['timestamp']
-                    else:
-                        week_end_date = "" 
-                    grouped_messages.append({
-                        "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
-                    })
-                
-                response_dict["data_per_week"] = grouped_messages
-            
+                response_dict = week_chatwoot_data(url,headers, params)
             else:
-                print("outgoing messsages else")
-                response = requests.get(url, headers=headers, params=params)
-                data = response.json()
+                response_dict = all_chatwoot_data(url,headers, params)        
 
-                for i in  data:
-                    date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
-                    formatted_date = date_obj.strftime('%Y-%m-%d')
-                    i['timestamp'] = formatted_date
-                # data_per_date
-                data = list(data) 
-                response_dict["data_per_date"] = data            
+
+
         elif metric == "avg_first_response_time":
             if days_difference == 365:
                 # Get conversations per date
@@ -928,6 +380,16 @@ class ConversationsReport(APIView):
 
                 for i in  data:
                     date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+                    avg_resolution_time_seconds = float(i['value'])
+                    days = int(avg_resolution_time_seconds // 86400)
+                    hours = int((avg_resolution_time_seconds % 86400) // 3600)
+                    minutes = int((avg_resolution_time_seconds % 3600) // 60)
+
+                    if days > 0:
+                        i['value'] = f"{str(days)} days {str(hours)} Hr {str(minutes)} min"
+                    else:
+                        i['value'] = f"{str(hours)} Hr {str(minutes)} min"
+
                     formatted_date = date_obj.strftime('%Y-%m-%d')
                     i['timestamp'] = formatted_date
                 # data_per_date
@@ -947,14 +409,15 @@ class ConversationsReport(APIView):
                     end_idx = start_idx + 7
                     week_messages = data[start_idx:end_idx]
                     # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
+                    total_count = sum(conv['count'] for conv in week_messages)
                     if end_idx < len(data):
                         week_end_date = data[end_idx]['timestamp']
                     else:
                         week_end_date = "" 
                     grouped_messages.append({
                         "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
-                        "value": total_count
+                        "value": value,
+                        "count": total_count
                     })
 
                 response_dict["data_per_week"] = grouped_messages
@@ -971,7 +434,7 @@ class ConversationsReport(APIView):
                     start_idx = i * 30
                     end_idx = start_idx + 30
                     month_messages = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_messages)
+                    total_count = sum(conv['count'] for conv in month_messages)
                     if end_idx < len(data):
                         month_end_date = data[end_idx]['timestamp']
                     else:
@@ -983,7 +446,6 @@ class ConversationsReport(APIView):
 
                 response_dict["data_per_month"] = grouped_messages
 
-
             if days_difference == 30:
                 # Get conversations per date
                 response = requests.get(url, headers=headers, params=params)
@@ -991,6 +453,17 @@ class ConversationsReport(APIView):
 
                 for i in  data:
                     date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+
+                    avg_resolution_time_seconds = float(i['value'])
+                    days = int(avg_resolution_time_seconds // 86400)
+                    hours = int((avg_resolution_time_seconds % 86400) // 3600)
+                    minutes = int((avg_resolution_time_seconds % 3600) // 60)
+
+                    if days > 0:
+                        i['value'] = f"{str(days)} days {str(hours)} Hr {str(minutes)} min"
+                    else:
+                        i['value'] = f"{str(hours)} Hr {str(minutes)} min"
+
                     formatted_date = date_obj.strftime('%Y-%m-%d')
                     i['timestamp'] = formatted_date
                 # data_per_date
@@ -1010,7 +483,7 @@ class ConversationsReport(APIView):
                     end_idx = start_idx + 7
                     week_messages = data[start_idx:end_idx]
                     # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
+                    total_count = sum(conv['count'] for conv in week_messages)
                     if end_idx < len(data):
                         week_end_date = data[end_idx]['timestamp']
                     else:
@@ -1021,7 +494,7 @@ class ConversationsReport(APIView):
                     })
 
                 response_dict["data_per_week"] = grouped_messages
-
+                
                 # Calculate the number of weeks in the data
                 months = len(data) // 30
                 if len(data) % 30 > 0:
@@ -1034,7 +507,7 @@ class ConversationsReport(APIView):
                     start_idx = i * 30
                     end_idx = start_idx + 30
                     month_messages = data[start_idx:end_idx]
-                    total_count = sum(conv['value'] for conv in month_messages)
+                    total_count = sum(conv['count'] for conv in month_messages)
                     if end_idx < len(data):
                         month_end_date = data[end_idx]['timestamp']
                     else:
@@ -1052,6 +525,17 @@ class ConversationsReport(APIView):
 
                 for i in  data:
                     date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+
+                    avg_resolution_time_seconds = float(i['value'])
+                    days = int(avg_resolution_time_seconds // 86400)
+                    hours = int((avg_resolution_time_seconds % 86400) // 3600)
+                    minutes = int((avg_resolution_time_seconds % 3600) // 60)
+
+                    if days > 0:
+                        i['value'] = f"{str(days)} days {str(hours)} Hr {str(minutes)} min"
+                    else:
+                        i['value'] = f"{str(hours)} Hr {str(minutes)} min"
+
                     formatted_date = date_obj.strftime('%Y-%m-%d')
                     i['timestamp'] = formatted_date
                 # data_per_date
@@ -1071,7 +555,7 @@ class ConversationsReport(APIView):
                     end_idx = start_idx + 7
                     week_messages = data[start_idx:end_idx]
                     # print(week_conversations)
-                    total_count = sum(conv['value'] for conv in week_messages)
+                    total_count = sum(conv['count'] for conv in week_messages)
                     if end_idx < len(data):
                         week_end_date = data[end_idx]['timestamp']
                     else:
@@ -1083,18 +567,29 @@ class ConversationsReport(APIView):
     
                 response_dict["data_per_week"] = grouped_messages
             else:
+                params['since'] = 1660521600.0
+                params['until'] = 1692143999.999999
                 response = requests.get(url, headers=headers, params=params)
                 data = response.json()
-
                 for i in  data:
                     date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+
+                    avg_resolution_time_seconds = float(i['value'])
+                    days = int(avg_resolution_time_seconds // 86400)
+                    hours = int((avg_resolution_time_seconds % 86400) // 3600)
+                    minutes = int((avg_resolution_time_seconds % 3600) // 60)
+
+                    if days > 0:
+                        i['value'] = f"{str(days)} days {str(hours)} Hr {str(minutes)} min"
+                    else:
+                        i['value'] = f"{str(hours)} Hr {str(minutes)} min"
+
                     formatted_date = date_obj.strftime('%Y-%m-%d')
                     i['timestamp'] = formatted_date
+
                 # data_per_date
                 data = list(data) 
                 response_dict["data_per_date"] = data
-
-
         elif metric == "avg_resolution_time":
             
             if days_difference == 30:
@@ -1376,12 +871,6 @@ class ConversationsReport(APIView):
                 response_dict["data_per_week"] = grouped_messages
         
 
-        # api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
-        # headers = {
-        # 'api_access_token': api_access_token,
-        # "Content-Type": "application/json",
-        # "Accept": "application/json",
-        # }
         url = 'https://chat.alnafi.com/api/v2/accounts/3/reports/summary'
         response = requests.get(url, headers=headers, params=params)
         data = response.json()
@@ -3442,17 +2931,19 @@ class InboxesList(APIView):
         url = 'https://chat.alnafi.com/api/v1/accounts/3/inboxes'
         response = requests.get(url, headers=headers)
         data = response.json()
-        
-        
+        response_list = []
 
         for i in data['payload']:
-            my_model_instance = Inbox(
-                id=i['id'],
-                name=i['name'],
-                channel_type=i['channel_type']
-            )
-            my_model_instance.save()
-        return Response(data)
+            response_list.append({'id': i['id'], 'name': i['name']})  
+           
+        # for i in data['payload']:
+        #     my_model_instance = Inbox(
+        #         id=i['id'],
+        #         name=i['name'],
+        #         channel_type=i['channel_type']
+        #     )
+        #     my_model_instance.save()
+        return Response(response_list)
 
 
 class AgentsList(APIView):

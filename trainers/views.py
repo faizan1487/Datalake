@@ -20,6 +20,8 @@ from user.services import upload_csv_to_s3
 import pandas as pd
 import os
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from .models import Trainer
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -55,16 +57,7 @@ class TrainersData(APIView):
                 trainers = trainers.filter(email__iexact=request.user.email)
 
         if product_name:
-            # print(product)
-            # keywords = product.split()
-            # query = Q()
-            # for keyword in keywords:
-            #     query &= Q(products__product_name__icontains=keyword)
-
             trainers = trainers.filter(products__product_name__exact=product_name)
-
-            # print("query",query)
-            # trainers = trainers.filter(query)
 
         trainers_data = []
         current_datetime = datetime.now()
@@ -190,6 +183,19 @@ class TrainersData(APIView):
             return Response(data)
         else:
             return Response(trainers_data)
+
+
+
+permission_classes = [IsAuthenticated]
+class TrainerProducts(APIView):
+    def get(self,request):
+        trainer_email = request.GET.get('q').strip()
+        trainer = get_object_or_404(Trainer, email__iexact=trainer_email)
+        products = trainer.products.all().values("product_name")
+        print(products)
+        return Response(products)
+
+
 
 
 permission_classes = [IsAuthenticated]
