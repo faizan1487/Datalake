@@ -13,6 +13,7 @@ from rest_framework.schemas import get_schema_view
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("security/",include('security.urls')),
+    path("feedback/",include('feedback.urls')),
     path("chatwoot/",include('chatwoot.urls')),
     path("payments/",include('payment.urls')),
     path("user/",include('user.urls')),

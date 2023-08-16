@@ -1,8 +1,6 @@
 from django.contrib import admin
 from rest_framework.serializers import ModelSerializer
-from .models import Alnafi_Product
-from .models import IslamicAcademy_Product
-from .models import Main_Product
+from .models import Alnafi_Product,IslamicAcademy_Product, Main_Product, Course, Track
 from import_export.admin import ImportExportModelAdmin, ExportActionMixin
 
 # Register your models here.
@@ -42,3 +40,18 @@ class MainProductAdmin(ImportExportModelAdmin, ExportActionMixin, admin.ModelAdm
 
 
 admin.site.register(Main_Product, MainProductAdmin)
+
+
+
+# Register your models here.
+class TrackAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ('name',)
+admin.site.register(Track, TrackAdmin)
+
+class CourseAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ['name']
+    search_fields = ('name',)
+
+
+admin.site.register(Course, CourseAdmin)

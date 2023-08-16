@@ -119,3 +119,151 @@ class Main_Product(models.Model):
     class Meta:
         managed = True
         verbose_name = "Main Product"
+
+
+
+class Course(models.Model):
+    image = models.ImageField(blank=True, null=True, upload_to='media/courses')
+    name = models.CharField(max_length=100)
+    slug = models.SlugField(max_length=100, unique=True)
+    punchline = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    duration = models.CharField(max_length=100, blank=True, null=True)
+    popular = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    hidden = models.BooleanField(default=False)
+    availableForPakistan = models.BooleanField(default=True)
+    availableForOverseas = models.BooleanField(default=True)
+    languages = models.TextField(blank=True, null=True, default="Urdu")
+
+    category_choices = (("academy", "Academy"), ("course",
+                        "Course"), ("asad-zaman", "Asad Zaman"),)
+    category = models.CharField(
+        max_length=100, choices=category_choices, default="course")
+    demo_id = models.IntegerField(blank=True, null=True)
+    english_demo_id = models.IntegerField(blank=True, null=True)
+    urdu_demo_link = models.CharField(max_length=100, blank=True, null=True)
+    english_demo_link = models.CharField(max_length=100, blank=True, null=True)
+    demo_duration = models.IntegerField(default=7)
+    number_of_demo_users = models.IntegerField(default=0)
+    free_course = models.BooleanField(default=False)
+    key_features = models.JSONField(blank=True, null=True)
+
+    mata_title = models.CharField(max_length=50, blank=True, null=True)
+    meta_description = models.TextField(blank=True, null=True)
+    meta_keywords = models.TextField(blank=True, null=True)
+
+    search_tags = models.TextField(blank=True, null=True)
+    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    video = models.URLField(blank=True,null=True)
+
+    level_choices = (("basic", 'Basic'), ('intermediate', 'Intermediate'),
+                     ('advance', "Advance"), ('master', 'Master'))
+    course_level = models.CharField(
+        max_length=100, choices=level_choices, blank=True, null=True, default="intermediate")
+    course_priority = models.IntegerField(default=0,null=True,blank=True)
+    track_priority = models.CharField(max_length=10,blank=True,null=True)
+    # amount_pkr = models.IntegerField(null=True,blank=True)
+    rating = models.FloatField(default=4.5)
+    reviews = models.IntegerField(default=200)
+    number_of_students = models.IntegerField(default=200)
+
+    def __str__(self):
+        return self.name
+
+    def amount_pkr(self):
+        if self.product:
+            return self.product.amount_pkr
+        else:
+            return 0
+    # class Meta:
+    #     verbose_name_plural = "List"
+
+
+
+
+class Track(models.Model):
+    includedCourses = models.ManyToManyField(Course)
+    image = models.ImageField(blank=True, null=True, upload_to='media/tracks')
+    name = models.CharField(max_length=100)
+    productSlug = models.CharField(
+        max_length=50, blank=True, null=True)
+    slug = models.SlugField(max_length=100, unique=True)
+    punchline = models.TextField(max_length=600, blank=True, null=True)
+    duration = models.CharField(max_length=250, blank=True, null=True)
+    languages = models.TextField(blank=True, null=True, default="Urdu")
+    thumbnail = models.ImageField(
+        blank=True, null=True, upload_to='media/tracks/thubnails')
+    promoVideo = models.FileField(
+        blank=True, null=True, upload_to='media/tracks/promoVideos')
+    overviewVideoEmbed = models.URLField(blank=True, null=True)
+    infographicsImage = models.ImageField(blank=True, null=True)
+    multipleInfographic = models.JSONField(blank=True, null=True)
+    multipleInfographicAvailable = models.BooleanField(default=False)
+    prerequisite = models.TextField(blank=True, null=True)
+    note = models.TextField(blank=True, null=True)
+    about = models.TextField(blank=True, null=True)
+    what_you_will_learn = models.TextField(blank=True, null=True)
+    Career_Opportunities = models.JSONField(blank=True, null=True)
+    what_will_you_learn = models.JSONField(blank=True, null=True)
+    whyStudy = models.TextField(blank=True, null=True)
+    why_study = models.JSONField(blank=True, null=True)
+    whyStudyImage = models.ImageField(
+        blank=True, null=True, upload_to='media/tracks')
+    track_banner = models.ImageField(
+        blank=True, null=True, upload_to='media/tracks/banners')
+    hasGhanimah = models.BooleanField(default=True)
+    hasQarz = models.BooleanField(default=False)
+
+    skills = models.JSONField(blank=True, null=True)
+    coggles = models.TextField(blank=True, null=True)
+
+    extraCallToActions = models.TextField(blank=True, null=True)
+    demo_id = models.IntegerField(blank=True, null=True)
+    english_demo_id = models.IntegerField(blank=True, null=True)
+    urdu_demo_link = models.CharField(max_length=100, blank=True, null=True)
+    english_demo_link = models.CharField(max_length=100, blank=True, null=True)
+    demo_duration = models.IntegerField(default=7)
+    number_of_demo_users = models.IntegerField(default=0)
+
+    popular = models.BooleanField(default=False)
+    active = models.BooleanField(default=True)
+    availableForPakistan = models.BooleanField(default=True)
+    availableForOverseas = models.BooleanField(default=True)
+
+    plansInfo = models.JSONField(blank=True, null=True)
+    mata_title = models.CharField(max_length=50, blank=True, null=True)
+    meta_description = models.TextField(blank=True, null=True)
+    meta_keywords = models.TextField(blank=True, null=True)
+    what_you_will_learn = models.TextField(blank=True, null=True)
+    Career_Opportunities = models.JSONField(blank=True, null=True)
+    mindly_data = models.JSONField(blank=True, null=True)
+    hands_on_learning = models.TextField(blank=True, null=True)
+    build_expertise = models.TextField(blank=True, null=True)
+    scalability_for_larger_teams  = models.TextField(blank=True, null=True)
+    dedicated_bussiness_support  = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    mindly_image = models.ImageField(
+        blank=True, null=True, upload_to='media/tracks/mindly_images')
+    track_priority = models.IntegerField(default=0)
+    combo_track = models.BooleanField(default=False)
+    has_discount = models.BooleanField(default=True)
+    has_legacy_version = models.BooleanField(default=False)
+    only_renewals_allowed = models.BooleanField(default=False)
+    upgraded_product_slug = models.CharField(
+        max_length=100, blank=True, null=True)
+    legacy_product_slug = models.CharField(
+        max_length=100, blank=True, null=True)
+    has_certification = models.BooleanField(
+        default=False, blank=True, null=True)
+    number_of_students = models.IntegerField(default=100)
+
+
+    # def certificate_price(self):
+    #     if not self.has_certification:
+    #         return None
+    #     return Certificate.objects.get(track=self).certification_product.amount_gbp
+
+
+    def __str__(self):
+        return self.name
