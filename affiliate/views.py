@@ -111,6 +111,17 @@ class CreateAffiliateUser(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
  
+class GetAffiliateUser(APIView):
+    def get(self, request):
+        # q = self.request.GET.get('q', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
+        email = self.request.GET.get('email', None) or None
+
+        affiliate = AffiliateUser.objects.all().values("email","username","first_name")
+
+        return Response(affiliate)
+
 class CreateAffiliateLead(APIView):
     def post(self, request):
         data = request.data.copy()

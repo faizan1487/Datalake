@@ -1,6 +1,6 @@
 from django.urls import path
 from .views import (CreateAffiliateUser, CreateAffiliateClick, UserDelete, 
-                    UpdateAffiliateUser, CreateAffiliateLead, CreateCommission)
+                    UpdateAffiliateUser, CreateAffiliateLead, CreateCommission,GetAffiliateUser)
 
 urlpatterns = [
     path("create/", CreateAffiliateUser.as_view(), name='create-affiliate-user'),
@@ -10,4 +10,5 @@ urlpatterns = [
     path("deleteuniqueclick/", UserDelete.as_view(), name='user-dalete'),
 
     path("affiliateuser/", UpdateAffiliateUser.as_view(), name='affiliate-user'),
+    path("getaffiliateusers/", GetAffiliateUser.as_view(), name='get-affiliate-users'),
 ]

@@ -106,6 +106,7 @@ INSTALLED_APPS = [
     'rangefilter',
 
     'payment.apps.PaymentConfig',
+    'feedback.apps.FeedbackConfig',
     'security.apps.SecurityConfig',
     'chatwoot.apps.ChatwootConfig',
     'user.apps.UserConfig',
@@ -172,7 +173,7 @@ if DEBUG:
     }
 else:
     print("RDS CONNECTED")
-    # env("DATABASE_ENGINE")
+    # env("DATABASE_ENGINE")c
     DATABASES = {
         'default': {
             'ENGINE': env('DATABASE_ENGINE'),
