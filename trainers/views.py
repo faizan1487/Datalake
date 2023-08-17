@@ -71,6 +71,7 @@ class TrainersData(APIView):
         
             trainer_data = {
                 'trainer_name': trainer.trainer_name,
+                'trainer_email': trainer.email,
                 'users': []
             }
 

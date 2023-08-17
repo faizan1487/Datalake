@@ -23,6 +23,9 @@ from datetime import datetime, timedelta, date
 import os
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
+from django.db.models import Q
+
+
 
 env = environ.Env()
 env.read_env()
@@ -34,9 +37,11 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
-permission_classes = [IsAuthenticated]
 class CreateScan(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
+        upcoming_scans = self.request.GET.get('upcoming_scans', None) or None
+
         scans = Scan.objects.values(
             'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__name',
             'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
@@ -53,6 +58,9 @@ class CreateScan(APIView):
         #     if comment.scan_id not in comment_mapping:
         #         comment_mapping[comment.scan_id] = []
         #     comment_mapping[comment.scan_id].append(comment)
+        if upcoming_scans == 'true':
+            scans = scans.filter(scan_date__gt=date.today())
+
 
         scan_data = []
         for scan in scans:
@@ -98,7 +106,7 @@ class CreateScan(APIView):
         return paginator.get_paginated_response(paginated_queryset)
         # return Response(scans)
 
-    
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         data = request.data.copy()
         # print("data",data)
@@ -149,8 +157,8 @@ class CreateScan(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
     
 
-permission_classes = [IsAuthenticated]  
 class ScanRetrieveUpdateDeleteAPIView(APIView):
+    permission_classes = [IsAuthenticated]  
     def get(self, request, pk):
         export = self.request.GET.get('export', None) or None
         try:
@@ -213,15 +221,15 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
         return HttpResponse("Scan Deleted!")
         return Response({"message":"Scan Deleted!"},status=status.HTTP_204_NO_CONTENT)
 
-permission_classes = [IsAuthenticated]
 class GetDepartment(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         departments = Department.objects.values('name')
         # print(departments)
         return Response(departments)
 
-permission_classes = [IsAuthenticated]
 class CommentDelete(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         objs = Scan.objects.all()
         objs.delete()
