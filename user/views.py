@@ -21,7 +21,7 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta, date
 
-from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords, Marketing_PKR_Form
+from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads
 from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
@@ -29,7 +29,6 @@ from .services import (set_auth_token, checkSameDomain, GroupPermission,
 loginUser,get_tokens_for_user,aware_utcnow,no_users_month,upload_csv_to_s3,search_users,search_employees)
 from .renderers import UserRenderer
 from itertools import chain
-from django.core.cache import cache
 from functools import reduce
 import numpy as np
 import json
@@ -37,6 +36,9 @@ import environ
 from django.http import HttpResponse
 from user.constants import COUNTRY_CODES
 import requests
+import csv
+from rest_framework.parsers import MultiPartParser, FormParser
+
 
 # Create your views here.
 class MyPagination(PageNumberPagination):
@@ -97,6 +99,7 @@ class PSWFormRecord(APIView):
             return Response({"message":"Something went wrong"})
 
 class Marketing_Pkr_Form(APIView):
+    # permission_classes = [IsAuthenticated]
     def post(self,request):
         # print(request.data)
         inner_dict = request.data.get('{"gender": "Male", "full_name": "test leads 3", "email_address": "test3@gmail.com", "contact_number": "7539485739", "what_is_your_field_of_study": "Business and Management", "your_level_of_education": "FSc / Intermediate", "university_name": "Capital University of Science \': [\'\'], \' Technology", "university_name_other": "", "title_of_the_degree": "BSCS", "in_which_country_would_you_like_to_work": "United Arab Emirates", "n_which_domain_would_you_like_to_develop_your_skillset": "Offensive Security", "how": "18,500 PKR - 28,000 PKR", "what_languages_can_you_speak": "English", "do_you_require_financial_sponsorship": "No", "submit_your_resume_word__pdf_only": "/private/files/sample.pdf", "preferred_medium_of_communication": "Email", "do_you_know_about_al_nafi": "Yes", "how_did_you_hear_about_us": "Facebook"}', {})
@@ -154,6 +157,7 @@ class Marketing_Pkr_Form(APIView):
             return Response({"message":"Something went wrong"})
 
 class MainUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         file = request.FILES['file']
         df = pd.read_csv(file)
@@ -184,7 +188,7 @@ class AlnafiUser(APIView):
     # def get(self, request):
     #     Thread(target=self.get_thread, args=(request,)).start()
     #     return HttpResponse("working")
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
@@ -227,6 +231,7 @@ class AlnafiUser(APIView):
 
 
 class IslamicUser(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         Thread(target=self.get_thread, args=(request,)).start()
         return HttpResponse("working")
@@ -390,6 +395,39 @@ class GetNoOfUsersMonth(APIView):
                             'islamic_no_of_users':islamic_no_of_users}
 
         return Response(response_data)
+
+
+class Moc_leads_upload(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        csv_file = request.FILES['file']
+        decoded_file = csv_file.read().decode('utf-8')
+        csv_data = csv.reader(decoded_file.splitlines(), delimiter=',')
+
+        for row in csv_data:
+            _, created = Moc_Leads.objects.update_or_create(
+                email=row[3],
+                defaults={
+                    "username": row[0],
+                    "first_name": row[1],
+                    "last_name": row[2],
+                    "phone": row[4],
+                    "address": row[5],
+                    "country": row[6],
+                    "language": row[7],
+                    "verification_code": row[8],
+                    "isAffiliate": row[9].lower() == 'true',
+                    "how_did_you_hear_about_us": row[10],
+                    "affiliate_code": row[11],
+                    "isMentor": row[12].lower() == 'true',
+                    "login_source": row[14],
+                    "erp_lead_id": row[15],
+                }
+            )
+
+        response_dict = {'status': status.HTTP_201_CREATED, 'message': 'leads created'}
+        return Response(response_dict)
 
 
 

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import AlNafi_User
 from .models import Main_User
-from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form
+from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form, Moc_Leads
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin
 
@@ -31,6 +31,14 @@ class AlnafiUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_filter = ('created_at', 'isAffiliate', 'isMentor', 'language', 'country')
 
 admin.site.register(AlNafi_User, AlnafiUserAdmin)
+
+
+class MocLeadsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'phone', 'created_at', 'address', 'country', 'language', 'verification_code', 'isAffiliate', 'how_did_you_hear_about_us', 'affiliate_code', 'isMentor')
+    search_fields = ('id', 'username', 'email', 'phone')
+    list_filter = ('created_at', 'isAffiliate', 'isMentor', 'language', 'country')
+
+admin.site.register(Moc_Leads, MocLeadsAdmin)
 
 
 # For Islamic Academy Users:

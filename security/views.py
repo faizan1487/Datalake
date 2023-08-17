@@ -42,11 +42,46 @@ class CreateScan(APIView):
     def get(self, request):
         upcoming_scans = self.request.GET.get('upcoming_scans', None) or None
 
-        scans = Scan.objects.values(
-            'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__name',
-            'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
-            'file_upload', 'poc'
-        )
+        # scans = Scan.objects.all().values(
+        #     'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to',
+        #     'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
+        #     'file_upload', 'poc'
+        # )
+        scans = Scan.objects.all().prefetch_related(Prefetch('assigned_to', queryset=Department.objects.all()))
+
+        if upcoming_scans == 'true':
+            scans = scans.filter(scan_date__gt=date.today())
+
+        scan_data = []
+        for scan in scans:
+            if scan.file_upload:
+                file_upload_link = scan.file_upload.url
+            else:
+                file_upload_link = ""
+                
+            if not scan.poc:
+                poc_link = ""
+            else:
+                poc_link = scan.poc.url
+
+            scan_dict = {
+                'id': scan.id,
+                'scan_type': scan.scan_type,
+                'scan_date': scan.scan_date,
+                'severity': scan.severity,
+                'remediation': scan.remediation,
+                'assigned_to': [department.name for department in scan.assigned_to.all()],
+                'scan_progress': scan.scan_progress,
+                'testing_method': scan.testing_method,
+                'target': scan.target,
+                'target_value': scan.target_value,
+                'application_type': scan.application_type,
+                'file_upload': file_upload_link,
+                'poc': poc_link,
+            }
+            scan_data.append(scan_dict)
+
+        # print(scan_data)
         # scan_ids = [scan['id'] for scan in scans]
 
         # Prefetch comments and related data
@@ -58,47 +93,45 @@ class CreateScan(APIView):
         #     if comment.scan_id not in comment_mapping:
         #         comment_mapping[comment.scan_id] = []
         #     comment_mapping[comment.scan_id].append(comment)
-        if upcoming_scans == 'true':
-            scans = scans.filter(scan_date__gt=date.today())
 
+        # scan_data = []
+        # for scan in scans:
+        #     print(scan)
+        #     scan_id = scan['id']
 
-        scan_data = []
-        for scan in scans:
-            scan_id = scan['id']
-
-            if not scan['file_upload']:
-                file_upload_link = ""
-            else:
-                file_upload_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['file_upload']
+        #     if not scan['file_upload']:
+        #         file_upload_link = ""
+        #     else:
+        #         file_upload_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['file_upload']
             
-            if not scan['poc']:
-                poc_link = ""
-            else:
-                poc_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['poc']
+        #     if not scan['poc']:
+        #         poc_link = ""
+        #     else:
+        #         poc_link = 'https://al-baseer.s3.us-east-2.amazonaws.com/' + scan['poc']
 
-            scan_dict = {
-                'id': scan_id,
-                'scan_type': scan['scan_type'],
-                'scan_date': scan['scan_date'],
-                'severity': scan['severity'],
-                'remediation': scan['remediation'],
-                'assigned_to__name': scan['assigned_to__name'],
-                'scan_progress': scan['scan_progress'],
-                'testing_method': scan['testing_method'],
-                'target': scan['target'],
-                'target_value': scan['target_value'],
-                'application_type': scan['application_type'],
-                'file_upload': file_upload_link,
-                'poc': poc_link,
+            # scan_dict = {
+            #     'id': scan_id,
+            #     'scan_type': scan['scan_type'],
+            #     'scan_date': scan['scan_date'],
+            #     'severity': scan['severity'],
+            #     'remediation': scan['remediation'],
+            #     'assigned_to__name': scan['assigned_to__name'],
+            #     'scan_progress': scan['scan_progress'],
+            #     'testing_method': scan['testing_method'],
+            #     'target': scan['target'],
+            #     'target_value': scan['target_value'],
+            #     'application_type': scan['application_type'],
+            #     'file_upload': file_upload_link,
+            #     'poc': poc_link,
                 # 'no_of_comments': 0,
                 # 'comments': [],
-            }
+            # }
 
             # if scan_id in comment_mapping:
             #     scan_dict['no_of_comments'] = len(comment_mapping[scan_id])
             #     scan_dict['comments'] = get_comments_data(comment_mapping[scan_id])
 
-            scan_data.append(scan_dict)
+            # scan_data.append(scan_dict)
 
         # result = {"scans": scan_data}
         paginator = MyPagination()
@@ -109,21 +142,39 @@ class CreateScan(APIView):
     permission_classes = [IsAuthenticated]
     def post(self, request):
         data = request.data.copy()
-        # print("data",data)
-        assigned_to_email = data.get('assigned_to')
-        # print(assigned_to_email)
-        # print(data)
-        # print(data.get('file_upload'))
+        assigned_to_names_str = data.get('assigned_to')
+        # assigned_to_names_str = self.request.GET.get('assigned_to[]')
+
+        if assigned_to_names_str is not None:
+            assigned_to_names = assigned_to_names_str.split(',')
+        
         scan_id = data.get('id')
 
-        if assigned_to_email:
+        if assigned_to_names_str is not None:
             try:
-                department = Department.objects.get(name=data['assigned_to'])
-                data['assigned_to'] = department.id
+                departments = Department.objects.filter(name__in=assigned_to_names)
+                department_ids = [department.id for department in departments]
+                # data['assigned_to'] = []
+                # for department in departments:
+                #     data['assigned_to'].append(department.id)
             except Department.DoesNotExist:
                 data['assigned_to'] = None
         else:
             data['assigned_to'] = None
+        # print(data)
+        data = {
+            'scan_type': data['scan_type'],
+            'scan_date': data['scan_date'],
+            'severity': data['severity'],
+            'assigned_to': department_ids,
+            'remediation': data['remediation'],
+            'scan_progress': data['scan_progress'],
+            'testing_method': data['testing_method'],
+            'target': data['target'],
+            'target_value': data['target_value'],
+            'file_upload': data['file_upload'] if 'file_upload' in data else None,
+            'poc': data['poc'] if 'poc' in data else None
+            }
         
         try:
             instance = Scan.objects.get(id=scan_id)
@@ -134,10 +185,9 @@ class CreateScan(APIView):
         
 
         if serializer.is_valid():
-            # print(serializer.validated_data)
             serializer.save()
-            if assigned_to_email:
-                subject = 'Scan assigned to your department'
+            if assigned_to_names:
+                subject = 'Vulnerability found.'
                 params = {'subject': subject, 'scan_type': serializer.data['scan_type'], 'scan_date': serializer.data['scan_date'],
                         'severity': serializer.data['severity'], 'remediation': serializer.data['remediation'], 
                         'scan_progress': serializer.data['scan_progress'],'testing_method': serializer.data['testing_method'],
@@ -145,15 +195,14 @@ class CreateScan(APIView):
                 html_content = render_to_string('emailtemplate.html', params)
                 text_content = strip_tags(html_content)
                 email_from = "secops@alnafi.edu.pk"
-                recipient_list = department.email
+                recipient_list = []
+                for department in departments:
+                    recipient_list.append(department.email)
 
-                msg = EmailMultiAlternatives(subject, text_content, email_from, [
-                                            recipient_list])
+                msg = EmailMultiAlternatives(subject, text_content, email_from, recipient_list)
                 msg.attach_alternative(html_content, "text/html")
                 msg.send()
-            # send_mail(subject, emailfrom, recipient_list)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
     
 

@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,
                     TokenRefreshView,UsersDelete,Navbar,AlnafiUser,AllEmployees,GetUser,
-                    GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form)
+                    GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload)
 from django.http import HttpResponse
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     # path("guacamoli/",Guacamoli.as_view(), name='guacamoli'),
     path('formrecord/', PSWFormRecord.as_view(), name='pswfform-record'),
     path('marketing_pkr_form/', Marketing_Pkr_Form.as_view(), name='marketing_pkr_form'),
+    path('moc_leads_upload/', Moc_leads_upload.as_view(), name='moc-leads-upload'),
 
     path('users/', GetUsers.as_view(), name='user-list'),
     path('userdetails/<int:id>/', GetUser.as_view(), name='user-details'),
