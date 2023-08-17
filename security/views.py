@@ -163,7 +163,7 @@ class CreateScan(APIView):
             'scan_type': data['scan_type'] if 'scan_type' in data else None,
             'scan_date': data['scan_date'] if 'scan_date' in data else None,
             'severity': data['severity'] if 'severity' in data else None,
-            'assigned_to': department_ids if department_ids else None,
+            'assigned_to': department_ids,
             'remediation': data['remediation'] if 'remediation' in data else None,
             'scan_progress': data['scan_progress'] if 'scan_progress' in data else None,
             'testing_method': data['testing_method'] if 'testing_method' in data else None,
