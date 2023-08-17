@@ -154,6 +154,7 @@ class CreateScan(APIView):
             try:
                 departments = Department.objects.filter(name__in=assigned_to_names)
                 department_ids = [department.id for department in departments]
+                data['assigned_to'] = department_ids
             except Department.DoesNotExist:
                 data['assigned_to'] = None
         else:
@@ -163,44 +164,84 @@ class CreateScan(APIView):
             'scan_type': data['scan_type'] if 'scan_type' in data else None,
             'scan_date': data['scan_date'] if 'scan_date' in data else None,
             'severity': data['severity'] if 'severity' in data else None,
-            'assigned_to': department_ids,
+            'assigned_to': data['assigned_to'],
             'remediation': data['remediation'] if 'remediation' in data else None,
             'scan_progress': data['scan_progress'] if 'scan_progress' in data else None,
             'testing_method': data['testing_method'] if 'testing_method' in data else None,
             'target': data['target'] if 'target' in data else None,
             'target_value': data['target_value'] if 'target_value' in data else None,
             'file_upload': data['file_upload'] if 'file_upload' in data else None,
-            'poc': data['poc'] if 'poc' in data else None
+            'poc': data['poc'] if 'poc' in data else None,
+            'application_type': data['application_type'] if 'application_type' in data else None
             }
         
-        try:
-            instance = Scan.objects.get(id=scan_id)
-            serializer = ScanSerializer(instance, data=data)
-        except:
-            serializer = ScanSerializer(data=data)
-
+        # try:
+        #     instance = Scan.objects.get(id=scan_id)
+        #     instance.scan_type=data['scan_type'] if 'scan_type' in data else None,
+        #     instance.scan_date=data['scan_date'] if 'scan_date' in data else None,
+        #     instance.severity=data['severity'] if 'severity' in data else None,
+        #     instance.assigned_to= data['assigned_to'],
+        #     instance.remediation= data['remediation'] if 'remediation' in data else None,
+        #     instance.scan_progress= data['scan_progress'] if 'scan_progress' in data else None,
+        #     instance.testing_method= data['testing_method'] if 'testing_method' in data else None,
+        #     instance.target= data['target'] if 'target' in data else None,
+        #     instance.target_value= data['target_value'] if 'target_value' in data else None,
+        #     instance.file_upload= data['file_upload'] if 'file_upload' in data else None,
+        #     instance.poc= data['poc'] if 'poc' in data else None
+            
+        #     serializer = ScanSerializer(instance, data=data)
+        # except:
+        new_scan = Scan.objects.create(
+            scan_type=data['scan_type'] if 'scan_type' in data else None,
+            scan_date=data['scan_date'] if 'scan_date' in data else None,
+            severity=data['severity'] if 'severity' in data else None,
+            remediation= data['remediation'] if 'remediation' in data else None,
+            scan_progress= data['scan_progress'] if 'scan_progress' in data else None,
+            testing_method= data['testing_method'] if 'testing_method' in data else None,
+            target= data['target'] if 'target' in data else None,
+            target_value= data['target_value'] if 'target_value' in data else None,
+            file_upload= data['file_upload'] if 'file_upload' in data else None,
+            poc= data['poc'] if 'poc' in data else None
+            )
         
+        if data.get('assigned_to'):
+            new_scan.assigned_to.set(data['assigned_to'])  
 
-        if serializer.is_valid():
-            serializer.save()
-            if assigned_to_names:
-                subject = 'Vulnerability found.'
-                params = {'subject': subject, 'scan_type': serializer.data['scan_type'], 'scan_date': serializer.data['scan_date'],
-                        'severity': serializer.data['severity'], 'remediation': serializer.data['remediation'], 
-                        'scan_progress': serializer.data['scan_progress'],'testing_method': serializer.data['testing_method'],
-                        'target': serializer.data['target'], 'sub_target': serializer.data['target_value'], 'application_type': serializer.data['application_type']}
-                html_content = render_to_string('emailtemplate.html', params)
-                text_content = strip_tags(html_content)
-                email_from = "secops@alnafi.edu.pk"
-                recipient_list = []
-                for department in departments:
-                    recipient_list.append(department.email)
+        scan_data = {
+            'id': new_scan.id,
+            'scan_type': new_scan.scan_type,
+            'scan_date': new_scan.scan_date,
+            'severity': new_scan.severity, 
+            'remediation': new_scan.remediation, 
+            'scan_progress': new_scan.scan_progress,
+            'testing_method': new_scan.testing_method,
+            'target': new_scan.target, 
+            'sub_target': new_scan.target_value, 
+            'application_type': new_scan.application_type,
+            'file_upload': new_scan.file_upload,
+            'poc': new_scan.poc
+            # ... (other fields you want to include)
+        }
 
-                msg = EmailMultiAlternatives(subject, text_content, email_from, recipient_list)
-                msg.attach_alternative(html_content, "text/html")
-                msg.send()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
+        if data.get('assigned_to'):
+            subject = 'Vulnerability found.'
+            params = {'subject': subject, 'scan_type': data['scan_type'], 'scan_date': data['scan_date'],
+                    'severity': data['severity'], 'remediation': data['remediation'], 
+                    'scan_progress': data['scan_progress'],'testing_method': data['testing_method'],
+                    'target': data['target'], 'sub_target': data['target_value'], 'application_type': data['application_type']}
+            html_content = render_to_string('emailtemplate.html', params)
+            text_content = strip_tags(html_content)
+            email_from = "secops@alnafi.edu.pk"
+            recipient_list = []
+            for department in departments:
+                recipient_list.append(department.email)
+
+            msg = EmailMultiAlternatives(subject, text_content, email_from, recipient_list)
+            msg.attach_alternative(html_content, "text/html")
+            msg.send()
+            
+        return Response({"message":"scan created"},status=status.HTTP_201_CREATED)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
     
 
 class ScanRetrieveUpdateDeleteAPIView(APIView):
