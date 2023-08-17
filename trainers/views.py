@@ -65,8 +65,8 @@ class TrainersData(APIView):
         for trainer in trainers:
             
             export_data = {
-                'trainer_name': trainer.trainer_name,
-                'trainer_data': []
+                'export_trainer_name': trainer.trainer_name,
+                'export_trainer_data': []
             }
         
             trainer_data = {
@@ -133,18 +133,7 @@ class TrainersData(APIView):
 
                 # Removing duplicates payments of a single user
                 payments_list = []
-                # for payment in product.product_payments.all():
 
-                # if product_name:
-                #     for payment in payment_list:
-                #         is_unique = True
-                #         for pay in payments_list:
-                #             if payment['user_id'] == pay['user_id']:
-                #                 is_unique = False
-                #                 break
-                #         if is_unique:
-                #             payments_list.append(payment)
-                # else:
                 for payment in payment_list:
                     is_unique = True
                     for pay in payments_list:
@@ -157,7 +146,7 @@ class TrainersData(APIView):
 
 
                 
-                export_data['trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
+                export_data['export_trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
                 if not req_start_date:
                     start_date = None
                 if not req_end_date:
@@ -165,13 +154,15 @@ class TrainersData(APIView):
             # print(all_dates)
             trainers_data.append(trainer_data)
             exports_data.append(export_data)
-        # print(trainers_data)
         if export=='true':
-            for i in exports_data:
-                i['trainer_name'] = export_data['trainer_name']
+            for i in export_data['export_trainer_data']:
+                # print(i)
+                # for i in exports_dataexport_data['trainer_data']
+                i['trainer_name'] = export_data['export_trainer_name']
+            # print(export_data)
             #For CSV WORKING:
             Header = []
-            for i in export_data['trainer_data']:
+            for i in export_data['export_trainer_data']:
                 for data_dict in i["users"]:
                     if data_dict:
                         Header.extend(['trainer_name', 'product_name'])
@@ -183,17 +174,26 @@ class TrainersData(APIView):
                 Header = ['trainer_name','product_name', 'alnafi_payment_id','user_id','source','product_id','amount','currency','order_datetime','expiration_datetime']
 
             # Create an empty DataFrame with the specified columns
-            df = pd.DataFrame(columns=Header)
-            #Getting Row from data[]:
-            for i in export_data['trainer_data']:
+            # df = pd.DataFrame(columns=Header)
+            
+            # Create a list to hold the DataFrames
+            dfs = []
+
+            for i in export_data['export_trainer_data']:
+                # print(i)
                 trainer_name = i['trainer_name']
                 product_name = i['product_name']
                 for data_dict in i["users"]:
                     if data_dict:
                         data_dict["trainer_name"] = trainer_name
                         data_dict["product_name"] = product_name
-                        df = df.append(data_dict, ignore_index=True)
-            # print(df)
+                        dfs.append(pd.DataFrame([data_dict]))
+                        # df = pd.concat([df, pd.DataFrame([data_dict])], ignore_index=True)
+                        # df = df.append(data_dict, ignore_index=True)
+            
+            # Concatenate all DataFrames in the list
+            df = pd.concat(dfs, ignore_index=True)
+            
             file_name = f"Trainers_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
             df = df.to_csv(index=False)
