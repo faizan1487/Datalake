@@ -58,7 +58,7 @@ class CreateScan(APIView):
                 file_upload_link = scan.file_upload.url
             else:
                 file_upload_link = ""
-                
+
             if not scan.poc:
                 poc_link = ""
             else:
@@ -154,24 +154,21 @@ class CreateScan(APIView):
             try:
                 departments = Department.objects.filter(name__in=assigned_to_names)
                 department_ids = [department.id for department in departments]
-                # data['assigned_to'] = []
-                # for department in departments:
-                #     data['assigned_to'].append(department.id)
             except Department.DoesNotExist:
                 data['assigned_to'] = None
         else:
             data['assigned_to'] = None
         # print(data)
         data = {
-            'scan_type': data['scan_type'],
-            'scan_date': data['scan_date'],
-            'severity': data['severity'],
-            'assigned_to': department_ids,
-            'remediation': data['remediation'],
-            'scan_progress': data['scan_progress'],
-            'testing_method': data['testing_method'],
-            'target': data['target'],
-            'target_value': data['target_value'],
+            'scan_type': data['scan_type'] if 'scan_type' in data else None,
+            'scan_date': data['scan_date'] if 'scan_date' in data else None,
+            'severity': data['severity'] if 'severity' in data else None,
+            'assigned_to': department_ids if department_ids else None,
+            'remediation': data['remediation'] if 'remediation' in data else None,
+            'scan_progress': data['scan_progress'] if 'scan_progress' in data else None,
+            'testing_method': data['testing_method'] if 'testing_method' in data else None,
+            'target': data['target'] if 'target' in data else None,
+            'target_value': data['target_value'] if 'target_value' in data else None,
             'file_upload': data['file_upload'] if 'file_upload' in data else None,
             'poc': data['poc'] if 'poc' in data else None
             }
