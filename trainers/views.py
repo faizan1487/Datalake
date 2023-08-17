@@ -32,8 +32,8 @@ class MyPagination(PageNumberPagination):
 
 
 
-permission_classes = [IsAuthenticated]
 class TrainersData(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # print(request.user.email)
         q = self.request.GET.get('q', None) or None
@@ -205,8 +205,9 @@ class TrainersData(APIView):
 
 
 
-permission_classes = [IsAuthenticated]
+
 class TrainerProducts(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self,request):
         trainer_email = request.GET.get('q').strip()
         trainer = get_object_or_404(Trainer, email__iexact=trainer_email)
@@ -217,8 +218,8 @@ class TrainerProducts(APIView):
 
 
 
-permission_classes = [IsAuthenticated]
 class AnalyticsTrainers(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         trainers = Trainer.objects.all()
@@ -251,8 +252,8 @@ class AnalyticsTrainers(APIView):
         return Response(trainers_data)
 
 
-permission_classes = [IsAuthenticated]
 class TrainersName(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self,request):
         # queryset = Trainer.objects.values_list('trainer_name','email')
         queryset = Trainer.objects.values('trainer_name', 'email')
