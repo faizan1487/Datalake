@@ -33,128 +33,133 @@ class MyPagination(PageNumberPagination):
 
 
 class TrainersData(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
-        # print(request.user.email)
         q = self.request.GET.get('q', None) or None
+        active = self.request.GET.get('active', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
-        active = self.request.GET.get('active', None) or None
         req_start_date = self.request.GET.get('start_date', None) or None
         req_end_date = self.request.GET.get('end_date', None) or None
-        url = request.build_absolute_uri()
-        
+        # url = request.build_absolute_uri()
+    
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
         if q:
             if request.user.is_admin:
-                trainers = trainers.filter(email__iexact=q)
+                trainer = trainers.get(email__iexact=q)
             else:
-                trainers = trainers.filter(email__iexact=request.user.email)
+                # print("in else")
+                trainers = trainers.get(email__iexact=request.user.email)
         else:
+            # print("in else")
             if request.user.is_admin:
-                trainers = trainers.filter(email__iexact='sana@gmail.com')
+                trainer = trainers.get(email__iexact='sana@gmail.com')
             else:
-                trainers = trainers.filter(email__iexact=request.user.email)
-
-        if product_name:
-            trainers = trainers.filter(products__product_name__exact=product_name)
-
+                trainer = trainers.get(email__iexact=request.user.email)
+        # if product_name:
+        #     trainers = trainers.filter(products__product_name__exact=product_name)
+        # print(trainer)
         trainers_data = []
         exports_data = []
         current_datetime = datetime.now()
-        for trainer in trainers:
+        # for trainer in trainers:
+        export_data = {
+            'export_trainer_name': trainer.trainer_name,
+            'export_trainer_data': []
+        }
+    
+        trainer_data = {
+            'trainer_name': trainer.trainer_name,
+            'trainer_email': trainer.email,
+            'users': []
+        }
+
+        if product_name:
+            products = trainer.products.filter(product_name=product_name)
+        else:
+            products = trainer.products.all()
+
+        # all_dates = []
+        for product in products:
+            # print(product)
+            #Replace userid and productid with user email and product name
+            # product_payments = product.product_payments.all()
+            product_payments = product.product_payments.values('alnafi_payment_id','user_id',
+                                                                'product_id','amount','currency',
+                                                                'order_datetime','source',
+                                                                'expiration_datetime','created_datetime')
             
-            export_data = {
-                'export_trainer_name': trainer.trainer_name,
-                'export_trainer_data': []
-            }
-        
-            trainer_data = {
-                'trainer_name': trainer.trainer_name,
-                'trainer_email': trainer.email,
-                'users': []
-            }
+            dates = product_payments.values('order_datetime')
+            # all_dates.append(dates)
 
-            if product_name:
-                products = trainer.products.filter(product_name=product_name)
+            result = dates.aggregate(greatest_order_datetime=Max('order_datetime'), lowest_order_datetime=Min('order_datetime'))
+            greatest_order_datetime = result['greatest_order_datetime']
+            lowest_order_datetime = result['lowest_order_datetime']
+
+            if not req_start_date:
+                start_date=lowest_order_datetime
             else:
-                products = trainer.products.all()
+                start_date = req_start_date
+            if not req_end_date:
+                end_date=greatest_order_datetime
+            else:
+                end_date = req_end_date
 
-            all_dates = []
-            for product in products:
-                # print(product)
-                #Replace userid and productid with user email and product name
-                # product_payments = product.product_payments.all()
-                product_payments = product.product_payments.values('alnafi_payment_id','user_id',
-                                                                   'product_id','amount','currency',
-                                                                   'order_datetime','source',
-                                                                   'expiration_datetime','created_datetime')
-                # print(product_payments)
-                dates = product_payments.values('order_datetime')
-                # all_dates.append(dates)
+            product_payments = product_payments.filter(order_datetime__range=(start_date, end_date))
+            
+            users = list(product_payments.values('user__email','user__phone'))
+            products = list(product_payments.values('product__product_name'))
+            # payment_list = list(product_payments.values())
+            payment_list = list(product_payments.values('alnafi_payment_id','user_id','source',
+                                                                'product_id','amount','currency',
+                                                                'order_datetime',
+                                                                'expiration_datetime','created_datetime'))
+            for i in range(len(payment_list)):
+                try:
+                    payment_list[i]['user_id'] = users[i]['user__email']
+                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                except Exception as e:
+                    pass
 
-                result = dates.aggregate(greatest_order_datetime=Max('order_datetime'), lowest_order_datetime=Min('order_datetime'))
-                greatest_order_datetime = result['greatest_order_datetime']
-                lowest_order_datetime = result['lowest_order_datetime']
-
-                if not req_start_date:
-                    start_date=lowest_order_datetime
-                else:
-                    start_date = req_start_date
-                if not req_end_date:
-                    end_date=greatest_order_datetime
-                else:
-                    end_date = req_end_date
-
-                product_payments = product_payments.filter(order_datetime__range=(start_date, end_date))
-                # print(product_payments)
-                users = list(product_payments.values('user__email','user__phone'))
-                products = list(product_payments.values('product__product_name'))
-                # payment_list = list(product_payments.values())
-                payment_list = list(product_payments.values('alnafi_payment_id','user_id','source',
-                                                                   'product_id','amount','currency',
-                                                                   'order_datetime',
-                                                                   'expiration_datetime','created_datetime'))
-                for i in range(len(payment_list)):
-                    try:
-                        payment_list[i]['user_id'] = users[i]['user__email']
-                        payment_list[i]['product_id'] = products[i]['product__product_name']
-                    except Exception as e:
-                        pass
-
-                # print(len(payment_list))
+            if payment_list:
                 if active == 'true':
-                    payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime]
+                    payment_list = [
+                        {**payment, 'active': "true"}
+                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
+                    ]
+                    # payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
                 elif active == 'false':
-                    payment_list = [payment for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime]
+                    payment_list = [
+                        {**payment, 'active': "false"}
+                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime
+                    ]
+            
+            user_count = len(set(payment['user_id'] for payment in payment_list))
+            
+            # Removing duplicates payments of a single user
+            payments_list = []
 
-                #count users in a product
-                # user_count = len(set(payment.user_id for payment in product.product_payments.all()))
-                user_count = len(set(payment['user_id'] for payment in payment_list))
-
-                # Removing duplicates payments of a single user
-                payments_list = []
-
-                for payment in payment_list:
-                    is_unique = True
-                    for pay in payments_list:
-                        if payment['user_id'] == pay['user_id']:
-                            is_unique = False
-                            break
-                    if is_unique:
-                        trainer_data['users'].append(payment)
-                        payments_list.append(payment)
+            for payment in payment_list:
+                is_unique = True
+                for pay in payments_list:
+                    if payment['user_id'] == pay['user_id']:
+                        is_unique = False
+                        break
+                if is_unique:
+                    trainer_data['users'].append(payment)
+                    payments_list.append(payment)
 
 
-                
-                export_data['export_trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
-                if not req_start_date:
-                    start_date = None
-                if not req_end_date:
-                    end_date = None
-            # print(all_dates)
-            trainers_data.append(trainer_data)
-            exports_data.append(export_data)
+            
+            export_data['export_trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
+            if not req_start_date:
+                start_date = None
+            if not req_end_date:
+                end_date = None
+        # print(all_dates)
+        trainers_data.append(trainer_data)
+        exports_data.append(export_data)
+
         if export=='true':
             for i in export_data['export_trainer_data']:
                 # print(i)
