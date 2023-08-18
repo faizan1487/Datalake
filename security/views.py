@@ -24,6 +24,7 @@ import os
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from django.db.models import Q
+import json
 
 
 
@@ -41,12 +42,6 @@ class CreateScan(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         upcoming_scans = self.request.GET.get('upcoming_scans', None) or None
-
-        # scans = Scan.objects.all().values(
-        #     'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to',
-        #     'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
-        #     'file_upload', 'poc'
-        # )
         scans = Scan.objects.all().prefetch_related(Prefetch('assigned_to', queryset=Department.objects.all()))
 
         if upcoming_scans == 'true':
@@ -159,7 +154,8 @@ class CreateScan(APIView):
                 data['assigned_to'] = None
         else:
             data['assigned_to'] = None
-        # print(data)
+
+        
         data = {
             'scan_type': data['scan_type'] if 'scan_type' in data else None,
             'scan_date': data['scan_date'] if 'scan_date' in data else None,
@@ -175,22 +171,6 @@ class CreateScan(APIView):
             'application_type': data['application_type'] if 'application_type' in data else None
             }
         
-        # try:
-        #     instance = Scan.objects.get(id=scan_id)
-        #     instance.scan_type=data['scan_type'] if 'scan_type' in data else None,
-        #     instance.scan_date=data['scan_date'] if 'scan_date' in data else None,
-        #     instance.severity=data['severity'] if 'severity' in data else None,
-        #     instance.assigned_to= data['assigned_to'],
-        #     instance.remediation= data['remediation'] if 'remediation' in data else None,
-        #     instance.scan_progress= data['scan_progress'] if 'scan_progress' in data else None,
-        #     instance.testing_method= data['testing_method'] if 'testing_method' in data else None,
-        #     instance.target= data['target'] if 'target' in data else None,
-        #     instance.target_value= data['target_value'] if 'target_value' in data else None,
-        #     instance.file_upload= data['file_upload'] if 'file_upload' in data else None,
-        #     instance.poc= data['poc'] if 'poc' in data else None
-            
-        #     serializer = ScanSerializer(instance, data=data)
-        # except:
         new_scan = Scan.objects.create(
             scan_type=data['scan_type'] if 'scan_type' in data else None,
             scan_date=data['scan_date'] if 'scan_date' in data else None,
@@ -207,8 +187,11 @@ class CreateScan(APIView):
         if data.get('assigned_to'):
             new_scan.assigned_to.set(data['assigned_to'])  
 
+        assigned_to = [assign.name for assign in new_scan.assigned_to.all()]
+
         scan_data = {
             'id': new_scan.id,
+            'assigned_to': assigned_to,
             'scan_type': new_scan.scan_type,
             'scan_date': new_scan.scan_date,
             'severity': new_scan.severity, 
@@ -218,9 +201,8 @@ class CreateScan(APIView):
             'target': new_scan.target, 
             'sub_target': new_scan.target_value, 
             'application_type': new_scan.application_type,
-            'file_upload': new_scan.file_upload,
-            'poc': new_scan.poc
-            # ... (other fields you want to include)
+            'file_upload': new_scan.file_upload.url if new_scan.file_upload and hasattr(new_scan.file_upload, 'url') else None,
+            'poc':  new_scan.poc.url if new_scan.poc and hasattr(new_scan.poc, 'url') else None
         }
 
         if data.get('assigned_to'):
@@ -239,9 +221,8 @@ class CreateScan(APIView):
             msg = EmailMultiAlternatives(subject, text_content, email_from, recipient_list)
             msg.attach_alternative(html_content, "text/html")
             msg.send()
-            
-        return Response({"message":"scan created"},status=status.HTTP_201_CREATED)
-        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)\
+
+        return Response(scan_data, status=status.HTTP_201_CREATED)
     
 
 class ScanRetrieveUpdateDeleteAPIView(APIView):
@@ -249,12 +230,34 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
     def get(self, request, pk):
         export = self.request.GET.get('export', None) or None
         try:
-            # scan = Scan.objects.filter(id=pk).values()
-            scan = Scan.objects.filter(id=pk).values(
-            'id', 'scan_type', 'scan_date', 'severity', 'remediation', 'assigned_to__name',
-            'scan_progress', 'testing_method', 'target', 'target_value', 'application_type',
-            'file_upload', 'poc'
-            )
+            scan = Scan.objects.filter(id=pk).prefetch_related(Prefetch('assigned_to', queryset=Department.objects.all()))
+            if scan[0].file_upload:
+                file_upload_link = scan[0].file_upload.url
+            else:
+                file_upload_link = ""
+
+            if not scan[0].poc:
+                poc_link = ""
+            else:
+                poc_link = scan[0].poc.url
+
+            scan_dict = {
+                'id': scan[0].id,
+                'scan_type': scan[0].scan_type,
+                'scan_date': scan[0].scan_date,
+                'severity': scan[0].severity,
+                'remediation': scan[0].remediation,
+                'assigned_to': [department.name for department in scan[0].assigned_to.all()],
+                'scan_progress': scan[0].scan_progress,
+                'testing_method': scan[0].testing_method,
+                'target': scan[0].target,
+                'target_value': scan[0].target_value,
+                'application_type': scan[0].application_type,
+                'file_upload': file_upload_link,
+                'poc': poc_link,
+            }
+
+
             if export=='true':
                 df = pd.DataFrame(scan)
                 # Merge dataframes
@@ -265,40 +268,72 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
                 data = {'file_link': file_path,'export':'true'}
                 return Response(data)
             else:
-                return Response(scan)
+                return Response(scan_dict)
         except Scan.DoesNotExist:
             raise Http404
 
 
 
-    # @permission_classes([IsAuthenticated])
+    permission_classes=[IsAuthenticated]
     def put(self, request, pk):
-        # data = request.data
-        mutable_data = request.data.copy()
-        assigned_to_email = mutable_data.get('assigned_to')
+        data = request.data.copy()
+        assigned_to_names_str = data.get('assigned_to')
+        if assigned_to_names_str is not None:
+            assigned_to_names = assigned_to_names_str.split(',')
 
-        if assigned_to_email:
+        if assigned_to_names_str is not None:
             try:
-                department = Department.objects.get(name=mutable_data['assigned_to'])
-                mutable_data['assigned_to'] = department.id
-            except User.DoesNotExist:
-                mutable_data['assigned_to'] = None
-
+                departments = Department.objects.filter(name__in=assigned_to_names)
+                department_ids = [department.id for department in departments]
+                data['assigned_to'] = department_ids
+            except Department.DoesNotExist:
+                data['assigned_to'] = None
+        else:
+            data['assigned_to'] = None
 
         try:
             scan = Scan.objects.get(id=pk)
+            attributes_to_update = [
+                'scan_type', 'scan_date','remediation', 'scan_progress', 'testing_method', 'target', 'target_value', 'application_type'
+            ]
+
+            for attribute in attributes_to_update:
+                if attribute in data:
+                    setattr(scan, attribute, data[attribute])
+
+            if 'file_upload' in data:
+                scan.file_upload = data.get('file_upload', [None])
+
+            if 'poc' in data:
+                scan.poc = data.get('poc', [None])
+            
+            if data.get('assigned_to'):
+                scan.assigned_to.set(data['assigned_to'])
+            scan.save()
+
+            assigned_to = [assign.name for assign in scan.assigned_to.all()]
+            scan_data = {
+                'id': scan.id,
+                'assigned_to': assigned_to,
+                'scan_type': scan.scan_type if scan.scan_type else None,
+                'scan_date': scan.scan_date if scan.scan_date else None,
+                'severity': scan.severity if scan.severity else None, 
+                'remediation': scan.remediation if scan.remediation else None, 
+                'scan_progress': scan.scan_progress if scan.scan_progress else None,
+                'testing_method': scan.testing_method if scan.testing_method else None,
+                'target': scan.target if scan.target else None, 
+                'sub_target': scan.target_value if scan.target_value else None, 
+                'application_type': scan.application_type if scan.application_type else None,
+                'file_upload': scan.file_upload.url if scan.file_upload and hasattr(scan.file_upload, 'url') else None,
+                'poc':  scan.poc.url if scan.poc and hasattr(scan.poc, 'url') else None
+            }
+
+            return Response(scan_data, status=status.HTTP_200_OK)
         except Scan.DoesNotExist:
             return Response("Scan not found", status=status.HTTP_404_NOT_FOUND)
 
-        serializer = ScanSerializer(scan, data=mutable_data)
 
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # @permission_classes([IsAuthenticated])
+    permission_classes = [IsAuthenticated]
     def delete(self, request, pk):
         # scan = self.get_object(pk)
         scan = Scan.objects.get(id=pk)
