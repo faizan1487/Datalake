@@ -216,8 +216,8 @@ class MainPaymentAPIView(APIView):
 #         objs.delete()
 #         return Response('deleted')
 
-#optimized 
 
+#class SearchAlnafiPayment
 class RenewalPayments(APIView):
     permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
@@ -446,7 +446,6 @@ class SearchPayments(APIView):
         payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)
             # cache.set(url+'payments', payments)   
         
-        
         if payments['success'] == 'true':
             def json_serializable(obj):
                     if isinstance(obj, datetime):
@@ -542,8 +541,8 @@ class SearchPayments(APIView):
                 return paginator.get_paginated_response(payments)
 
         else:
-            response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
-            return Response(response_data)
+            # response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
+            return Response(payments)
                 
 
 class ProductAnalytics(APIView):

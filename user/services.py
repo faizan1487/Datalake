@@ -75,28 +75,29 @@ def search_users(q, start_date, req_end_date, is_converted,source):
     if source:
         users = users.filter(source=source)
     
-    # print(users)
-    if not start_date:
-        first_user = users.exclude(created_at=None).last()
-        date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-        start_date = new_date_obj
 
-    if not req_end_date:
-        last_user = users.exclude(created_at=None).first()
-        date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-        end_date = new_date_obj
+    if users:
+        if not start_date:
+            first_user = users.exclude(created_at=None).last()
+            date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
+            new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+            start_date = new_date_obj
 
-    if req_end_date:
-        end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
-        end_date = end_date + timedelta(days=1)
-    if q:
-        users = users.filter(
-            Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
-    
-    users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
-    users = paying_users_details(users, is_converted)
+        if not req_end_date:
+            last_user = users.exclude(created_at=None).first()
+            date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
+            new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
+            end_date = new_date_obj
+
+        if req_end_date:
+            end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+        if q:
+            users = users.filter(
+                Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
+        
+        users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
+        users = paying_users_details(users, is_converted)
     return users 
 
 
@@ -157,12 +158,7 @@ def no_users_month(users):
     return response_data
 
 
-
-
-
-
     
-
 def loginUser(request, response, user, sameDomain):
     if not response.data:
         response.data = {}

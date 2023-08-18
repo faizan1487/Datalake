@@ -34,9 +34,9 @@ admin.site.register(AlNafi_User, AlnafiUserAdmin)
 
 
 class MocLeadsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'phone', 'created_at', 'address', 'country', 'language', 'verification_code', 'isAffiliate', 'how_did_you_hear_about_us', 'affiliate_code', 'isMentor')
-    search_fields = ('id', 'username', 'email', 'phone')
-    list_filter = ('created_at', 'isAffiliate', 'isMentor', 'language', 'country')
+    list_display = ('id', 'full_name', 'email', 'phone', 'created_at',)
+    search_fields = ('id', 'full_name', 'email', 'phone')
+    list_filter = ('created_at',)
 
 admin.site.register(Moc_Leads, MocLeadsAdmin)
 

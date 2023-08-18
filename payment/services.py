@@ -233,8 +233,10 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
             output_field=CharField()
         )
     )
-    response_data = {"payments": payments, "success":"true"}
-
+    if not payments:  # Check if payments queryset is empty
+        response_data = {"payments": payments, "success": "false"}
+    else:
+        response_data = {"payments": payments, "success": "true"}
     return response_data
 
 

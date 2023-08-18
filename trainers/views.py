@@ -39,7 +39,7 @@ class TrainersData(APIView):
         q = self.request.GET.get('q', None) or None
         product_name = self.request.GET.get('product', None)
         export = self.request.GET.get('export', None) or None
-        active = self.request.GET.get('akkkkkkkkctive', None) or None
+        active = self.request.GET.get('active', None) or None
         req_start_date = self.request.GET.get('start_date', None) or None
         req_end_date = self.request.GET.get('end_date', None) or None
         url = request.build_absolute_uri()
