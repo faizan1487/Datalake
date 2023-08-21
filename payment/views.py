@@ -533,8 +533,7 @@ class ProductAnalytics(APIView):
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 
-            users = list(payments['payments'].values('user__email','product__product_name','payment_cycle','source'))
-            # products = list(payments['payments'].values('product__product_name'))
+            users = list(payments['payments'].values('user__email','product__product_name','payment_cycle','source','order_datetime'))
             payment_list = list(payments["payments"].values())
             # count the product with most payments
             product_info = defaultdict(lambda: {'count': 0, 'payment_total': 0.0, 'plan': '','source':''})
@@ -550,6 +549,7 @@ class ProductAnalytics(APIView):
                         product_info[product_name]['count'] += 1
                         product_info[product_name]['plan'] = users[i]['payment_cycle']
                         product_info[product_name]['source'] = users[i]['source']
+                        product_info[product_name]['order_datetime'] = users[i]['order_datetime']
                         sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                         if payment_list[i]['source'].lower() in sources:
                             product_info[product_name]['payment_total'] += float(payment_amount)
