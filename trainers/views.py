@@ -45,10 +45,10 @@ class TrainersData(APIView):
     
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
         if q:
-            # if request.user.is_admin:
-            trainer = trainers.get(email__iexact=q)
-            # else:
-            #     trainers = trainers.get(email__iexact=request.user.email)
+            if request.user.is_admin:
+                trainer = trainers.get(email__iexact=q)
+            else:
+                trainers = trainers.get(email__iexact=request.user.email)
         else:
             if request.user.is_admin:
                 trainer = trainers.get(email__iexact='sana@gmail.com')
@@ -73,6 +73,7 @@ class TrainersData(APIView):
         else:
             products = trainer.products.all()
 
+        
         #total 14 queries in one loop
         for product in products:
             #1 query from here

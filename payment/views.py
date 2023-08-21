@@ -456,48 +456,16 @@ class SearchPayments(APIView):
             products = list(payments['payments'].values('product__product_name'))
             payment_list = list(payments["payments"].values())
             
-            # count the product with most payments
-            product_counts = defaultdict(int)
-            product_payment_totals = defaultdict(float)
-            usd_rate = get_USD_rate()
+           
+            
             for i in range(len(payments['payments'])):
                 try:
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['phone'] = users[i]['user__phone']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
-                    payment_amount = payment_list[i]['amount']
-                    product_name = products[i]['product__product_name']
-                    if product_name and payment_amount:
-                        product_counts[product_name] += 1
-                        sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
-                        if payment_list[i]['source'].lower() in sources:
-                            product_payment_totals[product_name] += float(payment_amount)
-                        else:
-                            product_payment_totals[product_name] += int(float(payment_amount)) * usd_rate['PKR']
                 except Exception as e:
                     pass  
             
-            product_with_max_revenue = max(product_payment_totals, key=product_payment_totals.get)
-            max_revenue = product_payment_totals[product_with_max_revenue]
-            product_with_min_revenue = min(product_payment_totals, key=product_payment_totals.get)
-            min_revenue = product_payment_totals[product_with_min_revenue]
-            
-            # Find the product with the most payments
-            if product_counts:
-                most_payments_product = max(product_counts, key=product_counts.get)
-                most_payments_count = product_counts[most_payments_product]
-            else:
-                most_payments_product = None
-                most_payments_count = 0
-
-            # Find the product with the least payments
-            if product_counts:
-                least_payments_product = min(product_counts, key=product_counts.get)
-                least_payments_count = product_counts[least_payments_product]
-            else:
-                least_payments_product = None
-                least_payments_count = 0
-
            
             if export=='true':
                 df = pd.DataFrame(payment_list)
@@ -511,35 +479,22 @@ class SearchPayments(APIView):
             else:            
                 payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
                 payment_objects = json.loads(payment_json)
-                
                 total_payments_in_pkr = 0
                 total_payments_in_usd = 0
                 for i in payment_objects:
                     sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                     if i['source'].lower() in sources:
                         total_payments_in_pkr += int(float(i['amount']))
-                        # total_payments_in_usd += int(float(i['amount'])) // usd_rate['PKR']
-
                     else:
-                        # total_payments_in_pkr += int(float(i['amount'])) * usd_rate['PKR']
                         total_payments_in_usd += int(float(i['amount']))
                 
-
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-                payments = {'product_with_max_revenue':product_with_max_revenue, 
-                            'max_revenue':max_revenue, 'product_with_min_revenue':product_with_min_revenue, 
-                            'min_revenue': min_revenue, 'most_payments_product':most_payments_product, 
-                            'most_payments_count':most_payments_count, 'least_payments_product':least_payments_product, 
-                            'least_payments_count':least_payments_count,'total_payments_pkr': total_payments_in_pkr, 'total_payments_usd': total_payments_in_usd, 
+                payments = { 'total_payments_pkr': total_payments_in_pkr, 
+                            'total_payments_usd': total_payments_in_usd, 
                             'payments': paginated_queryset}
-                # payments = { 'total_payments_pkr': total_payments_in_pkr, 
-                #             'total_payments_usd': total_payments_in_usd, 
-                #             'payments': paginated_queryset}
                 
-                # return paginator.get_paginated_response(paginated_queryset)
                 return paginator.get_paginated_response(payments)
-
         else:
             # response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
             return Response(payments)
@@ -578,33 +533,31 @@ class ProductAnalytics(APIView):
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
 
-            users = list(payments['payments'].values('user__email'))
-            products = list(payments['payments'].values('product__product_name'))
+            users = list(payments['payments'].values('user__email','product__product_name','payment_cycle'))
+            # products = list(payments['payments'].values('product__product_name'))
             payment_list = list(payments["payments"].values())
             
             # count the product with most payments
-            product_info = defaultdict(lambda: {'count': 0, 'payment_total': 0.0})
-
+            product_info = defaultdict(lambda: {'count': 0, 'payment_total': 0.0, 'plan': ''})
             usd_rate = get_USD_rate()
             for i in range(len(payments['payments'])):
                 try:
+                    # print(i['payment_cycle'])
                     payment_list[i]['user_id'] = users[i]['user__email']
-                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                    payment_list[i]['product_id'] = users[i]['product__product_name']
                     payment_amount = payment_list[i]['amount']
-                    product_name = products[i]['product__product_name']
-
+                    product_name = users[i]['product__product_name']
                     if product_name and payment_amount:
                         product_info[product_name]['count'] += 1
+                        product_info[product_name]['plan'] = users[i]['payment_cycle']
                         sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                         if payment_list[i]['source'].lower() in sources:
                             product_info[product_name]['payment_total'] += float(payment_amount)
                         else:
                             product_info[product_name]['payment_total']  += int(float(payment_amount)) * usd_rate['PKR']
                 except Exception as e:
-                    pass  
-            
-            
-                
+                    print(e)
+                                    
             # Generate dynamic sorting key based on criteria
             def dynamic_sort(data, criteria, order):
                 # Generate dynamic sorting key based on criteria
