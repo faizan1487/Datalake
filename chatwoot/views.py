@@ -47,6 +47,7 @@ class ChatwootContacts(APIView):
         )
         my_model_instance.save()
 
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         count = 2741
         items_per_page = 15
@@ -80,52 +81,8 @@ class ChatwootContacts(APIView):
         return Response(data)
 
 
-
-    # def get(self, request):
-    #     count= 2741
-    #     # count= 30
-    #     items_per_page = 15
-    #     pages = math.ceil(count / items_per_page)
-    #     for page_number in range(1, pages + 1):
-    #         api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
-    #         headers = {
-    #         'api_access_token': api_access_token,
-    #         "Content-Type": "application/json",
-    #         "Accept": "application/json",
-    #         }
-
-    #         params = {
-    #             'page': page_number
-    #         }
-
-    #         url = 'https://chat.alnafi.com/api/v1/accounts/3/contacts'
-    #         response = requests.get(url, headers=headers, params=params)
-    #         data = response.json()
-    #         # print(data)
-    #         for i in data['payload']:
-    #             if i.get("contact_inboxes") and len(i["contact_inboxes"]) > 0:
-    #                 # If the list is not empty, get the 'inbox_id'
-    #                 inbox_id = i["contact_inboxes"][0]["inbox"]["id"]
-    #                 inbox_instance = get_object_or_404(Inbox, id=inbox_id)
-    #             else:
-    #                 # If 'contact_inboxes' list is empty or does not exist, set 'inbox_instance' to None
-    #                 inbox_instance = None
-    #             # print(inbox_instance)
-    #             my_model_instance = Contacts(
-    #                 id=i['id'],
-    #                 first_name=i['name'],
-    #                 phone=i['phone_number'],
-    #                 email=i['email'],
-    #                 # city = i['city'],
-    #                 # country = i['country'],
-    #                 inbox = inbox_instance
-    #             )
-    #             my_model_instance.save()
-    #     return Response(data)
-
-
-permission_classes = [IsAuthenticated]
 class ConversationsReport(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         data = request.data.copy()
         start_date = self.request.GET.get('start_date', None) or None
@@ -316,8 +273,8 @@ class ConversationsReport(APIView):
         return Response(response_dict)
     
 
-permission_classes = [IsAuthenticated]
 class AgentsReport(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         data = request.data.copy()
         start_date = self.request.GET.get('start_date', None) or None
@@ -500,6 +457,7 @@ class AgentsReport(APIView):
 
 
 class InboxesReport(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         data = request.data.copy()
         start_date = self.request.GET.get('start_date', None) or None
@@ -678,9 +636,9 @@ class InboxesReport(APIView):
         return Response(response_dict)
 
 
-permission_classes = [IsAuthenticated]
-class ConversationsList(APIView):
 
+class ConversationsList(APIView):
+    permission_classes = [IsAuthenticated]
     def save_instance(self, i):
         try:
             inbox_id = i["inbox_id"]
@@ -717,6 +675,7 @@ class ConversationsList(APIView):
         except Exception as e:
             print(e)
 
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         count = 4145
         items_per_page = 25
@@ -752,8 +711,9 @@ class ConversationsList(APIView):
         return Response(data)
 
 
-permission_classes = [IsAuthenticated]
+
 class InboxesList(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
         headers = {
@@ -780,6 +740,7 @@ class InboxesList(APIView):
 
 
 class AgentsList(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
         headers = {
