@@ -4,25 +4,30 @@ import math
 
 
 def week_month_convos(url,headers,params):
-    # response_dict = {}
+    # Call a function to fetch week-wise chatwoot data
     response_dict = week_chatwoot_data(url,headers,params)
+    # Make a GET request to the provided URL with headers and parameters
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
 
-    # Calculate the number of weeks in the data
+    # Calculate the number of months in the data
     months = len(data) // 30
     if len(data) % 30 > 0:
         months += 1
 
     # Initialize an empty list to store the grouped conversations
     grouped_conversations = []
+    # Define metrics that require special processing
     metrics = ['avg_resolution_time','avg_first_response_time']
+    # Check if the selected metric requires special processing
     if params['metric'] in metrics:
         for i in range(months):
             start_idx = i * 30
             end_idx = start_idx + 30
             month_messages = data[start_idx:end_idx]
             total_count = sum(conv['count'] for conv in month_messages)
+
+            # Determine the month end date
             if end_idx < len(data):
                 month_end_date = data[end_idx]['timestamp']
             else:
@@ -37,33 +42,42 @@ def week_month_convos(url,headers,params):
                 "count": total_count
             })
     else:
-        # Loop through the data and create groups for each week
+        # Loop through the data and create groups for each month
         for i in range(months):
             start_idx = i * 30
             end_idx = start_idx + 30
             month_conversations = data[start_idx:end_idx]
             total_count = sum(conv['value'] for conv in month_conversations)
+
+            # Determine the month end date
             if end_idx < len(data):
                 month_end_date = data[end_idx]['timestamp']
             else:
                 month_end_date = "" 
+            
             grouped_conversations.append({
                 "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
                 "value": total_count
             })
 
+    # Determine the month end date
     response_dict["data_per_month"] = grouped_conversations
+
+    # Return the updated response dictionary
     return response_dict
-    # print(grouped_conversations)
 
 
 def week_chatwoot_data(url,headers,params):
-    # Get conversations per date
+    # Initialize an empty dictionary to store the response data
     response_dict = {}
+
+    # Make a GET request to the provided URL with headers and parameters
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
+     # Check if the selected metric requires special formatting
     metrics = ['avg_resolution_time','avg_first_response_time']
     if params['metric'] in metrics:
+        # Format the data for metrics that need time-based representation
         for i in  data:
             date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
             avg_resolution_time_seconds = float(i['value'])
@@ -79,12 +93,13 @@ def week_chatwoot_data(url,headers,params):
             formatted_date = date_obj.strftime('%Y-%m-%d')
             i['timestamp'] = formatted_date
     else:
+        # Format the timestamps for other metrics
         for i in  data:
             date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
             formatted_date = date_obj.strftime('%Y-%m-%d')
             i['timestamp'] = formatted_date
 
-    # data_per_date
+    # Add the formatted data to the response dictionary
     data = list(data) 
     response_dict["data_per_date"] = data
 
@@ -133,38 +148,47 @@ def week_chatwoot_data(url,headers,params):
             })
 
 
-
+    # Add the grouped conversations to the response dictionary
     response_dict["data_per_week"] = grouped_conversations
     return response_dict
 
 
 def all_chatwoot_data(url,headers,params):
-     # Get conversations per date
+    # Initialize an empty dictionary to store the response data
     response_dict = {}
+    # Make a GET request to the provided URL with headers and parameters
     response = requests.get(url, headers=headers, params=params)
     data = response.json()
+    # Check if the selected metric requires special formatting
     metrics = ['avg_resolution_time','avg_first_response_time']
     if params['metric'] in metrics:
+        # Format the data for metrics that need time-based representation
         for i in  data:
+              # Convert timestamp to a datetime object
             date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
             avg_resolution_time_seconds = float(i['value'])
+            # Convert average resolution time from seconds to days, hours, and minutes
             days = int(avg_resolution_time_seconds // 86400)
             hours = int((avg_resolution_time_seconds % 86400) // 3600)
             minutes = int((avg_resolution_time_seconds % 3600) // 60)
 
+            # Format the value based on days and hours
             if days > 0:
                 i['value'] = f"{str(days)} days {str(hours)} Hr {str(minutes)} min"
             else:
                 i['value'] = f"{str(hours)} Hr {str(minutes)} min"
 
+             # Format the timestamp to '%Y-%m-%d' format
             formatted_date = date_obj.strftime('%Y-%m-%d')
             i['timestamp'] = formatted_date
     else:
+        # Format the timestamps for other metrics
         for i in  data:
             date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
             formatted_date = date_obj.strftime('%Y-%m-%d')
             i['timestamp'] = formatted_date
-    # data_per_date
+
+     # Add the formatted data to the response dictionary
     data = list(data) 
     response_dict["data_per_date"] = data
     return response_dict

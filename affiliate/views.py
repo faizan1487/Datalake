@@ -20,8 +20,8 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100  
   
-permission_classes = [IsAuthenticated]
 class CreateAffiliateUser(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # Get query parameters from the request
         start_date = self.request.GET.get('start_date', None) or None
@@ -117,6 +117,7 @@ class CreateAffiliateUser(APIView):
 
  
 class GetAffiliateUser(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # Get query parameters from the request
         start_date = self.request.GET.get('start_date', None) or None
@@ -164,20 +165,28 @@ class CreateAffiliateClick(APIView):
     def post(self, request):
         # Copy the incoming data to avoid modifying the original request data
         data = request.data.copy()
+        # Retrieve the AffiliateUser instance using the provided email
         user  = AffiliateUser.objects.get(email=data['affiliate'])
+        # Replace the email in the data with the corresponding AffiliateUser's ID
         data['affiliate'] = user.id
+        # Get the IP address from the data
         ip = data.get("ip")
         
         try:
+            # Try to retrieve an existing AffiliateUniqueClick instance based on the IP address
             instance = AffiliateUniqueClick.objects.get(ip=ip)
+            # Initialize the serializer with the retrieved instance and updated data
             serializer = AffiliateClickSerializer(instance, data=data)
         except:
+            # If no existing instance is found, create a new instance and initialize the serializer with data
             serializer = AffiliateClickSerializer(data=data)
 
         if serializer.is_valid():
+            # If the serializer's data is valid, save the instance and return a success response
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-
+        
+        # If the serializer's data is invalid, return an error response with the validation errors
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
@@ -202,6 +211,7 @@ class CreateCommission(APIView):
     
 
 class UserDelete(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         objs = AffiliateUniqueClick.objects.all()
         objs.delete()

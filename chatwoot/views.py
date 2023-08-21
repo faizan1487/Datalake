@@ -84,30 +84,20 @@ class ChatwootContacts(APIView):
 class ConversationsReport(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
+        # Copy the incoming data to avoid modifying the original request data
         data = request.data.copy()
+        # Get the query parameters from the request
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         days = self.request.GET.get('days', None) or None
         metric = self.request.GET.get('metric', None) or None
 
-        if days is not None and int(days) == 7:
-            # Get the current date
-            end_date = datetime.date.today()
 
-            # Subtract 7 days from the current date
-            start_date = end_date - datetime.timedelta(days=7)
-        elif days is not None and int(days) == 30:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=30)
-        elif days is not None and int(days) == 90:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=90)
-        elif days is not None and int(days) == 180:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=180)
-        elif days is not None and int(days) == 365:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=365)
+        # Calculate start_date and end_date based on selected days value
+        if days is not None and int(days) in [7, 30, 90, 180, 365]:
+            today = datetime.date.today()
+            end_date = today
+            start_date = end_date - datetime.timedelta(days=int(days))
     
 
         # Implement weekly, monthly, 3 months ,6 months, yearly filter 
@@ -452,7 +442,6 @@ class AgentsReport(APIView):
         response_dict["data"] = data
         # response_dict.append({"data":data})
         return Response(response_dict)
-
 
 
 

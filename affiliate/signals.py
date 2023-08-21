@@ -11,18 +11,19 @@ def send_lead_post_request(sender, instance, created, **kwargs):
     affiliate_user = usersignal(instance,source)
 
 def usersignal(instance,source):
-    # post_save.disconnect(send_alnafi_lead_post_request, sender=sender)
+    # Disconnect the post_save signal temporarily to avoid recursive calls
     post_save.disconnect(send_lead_post_request, sender=AffiliateUser)
-    # if instance.is_processing:
-    #     return
+
+    # Set API key and secret for authentication
     api_key = '2b4b9755ecc2dc7'
     api_secret = '8d71fb9b172e2aa'
+    # Prepare headers for the API request
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",
         "Accept": "application/json",
     }    
-
+     # Get country details from the instance
     country_code = getattr(instance, 'country', "Unknown")
     country_name = None
 
@@ -32,6 +33,7 @@ def usersignal(instance,source):
                 country_name = name
                 break
 
+    # Prepare data for sending to the API
     data = {
             "first_name": instance.first_name or None,
             "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
@@ -42,7 +44,9 @@ def usersignal(instance,source):
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     
+    # Prepare the URL for querying existing leads by email
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    # Query the CRM API to check if the lead already exists
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     # print(lead_data['data'])
@@ -50,12 +54,14 @@ def usersignal(instance,source):
     already_existed = len(lead_data["data"]) > 0
     # print(already_existed)
     if already_existed:
+        # If the lead exists, update it with new data
         response = requests.put(url, headers=headers, json=data)
         instance.erp_lead_id = lead_data['data'][0]['name']
-        print("lead updated")
+        # print("lead updated")
         instance.save(update_fields=['erp_lead_id'])
     else:
-        print("in else")
+        # If the lead doesn't exist, create a new one
+        # print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
         response.raise_for_status()
@@ -64,9 +70,10 @@ def usersignal(instance,source):
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']
             if erp_lead_id:
-                print("lead id exists")
+                # print("lead id exists")
                 instance.erp_lead_id = erp_lead_id
                 instance.save(update_fields=['erp_lead_id'])
-                print("Lead created successfully!")
-                
+                # print("Lead created successfully!")
+    
+    # Reconnect the post_save signal after processing
     post_save.connect(send_lead_post_request, sender=AffiliateUser)
