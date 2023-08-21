@@ -129,30 +129,34 @@ class ConversationsReport(APIView):
         start_date = since.replace(tzinfo=None)
         end_date = until.replace(tzinfo=None)
         # end_date = end_date + timedelta(days=1, microseconds=-1)
+
+        # Initialize an empty dictionary to store the response data
         response_dict = {}
+
+        # Set the API access token and headers
         api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
         headers = {
         'api_access_token': api_access_token,
         "Content-Type": "application/json",
         "Accept": "application/json",
         }
+
+        # Define the base URL for chatwoot reports
         url = 'https://chat.alnafi.com/api/v2/accounts/3/reports/'
+
+         # Convert start_date and end_date to timestamps
         since = since.timestamp()
         until = until.timestamp()
+
+        # Set parameters for the API request
         params['since'] = since
         params['until'] = until
         params['metric'] = metric
         # print(days_difference)
         if metric == "conversations_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)      
-            elif days_difference == 7:
+            # if days_difference in [30, 90, 180, 365]:
+            #     response_dict = week_month_convos(url,headers, params)
+            if days_difference == 7:
                 # Get conversations per date
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
@@ -160,29 +164,13 @@ class ConversationsReport(APIView):
                 response_dict = week_month_convos(url,headers, params)
             
         elif metric == "incoming_messages_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)            
             else:
                 response_dict = week_month_convos(url,headers, params)
 
         elif metric == "outgoing_messages_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
                 response_dict = week_month_convos(url,headers, params)        
@@ -234,10 +222,13 @@ class ConversationsReport(APIView):
             else:
                 response_dict = week_month_convos(url,headers, params)
 
+         
+        # Make a summary API request to get overall data
         url = 'https://chat.alnafi.com/api/v2/accounts/3/reports/summary'
         response = requests.get(url, headers=headers, params=params)
         data = response.json()
 
+        # Format average response time and resolution time
         avg_response_time_seconds = float(data['avg_first_response_time'])
         days = int(avg_response_time_seconds // 86400)
         hours = int((avg_response_time_seconds % 86400) // 3600)
