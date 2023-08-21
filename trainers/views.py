@@ -45,24 +45,18 @@ class TrainersData(APIView):
     
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
         if q:
-            if request.user.is_admin:
-                trainer = trainers.get(email__iexact=q)
-            else:
-                # print("in else")
-                trainers = trainers.get(email__iexact=request.user.email)
+            # if request.user.is_admin:
+            trainer = trainers.get(email__iexact=q)
+            # else:
+            #     trainers = trainers.get(email__iexact=request.user.email)
         else:
-            # print("in else")
             if request.user.is_admin:
                 trainer = trainers.get(email__iexact='sana@gmail.com')
             else:
                 trainer = trainers.get(email__iexact=request.user.email)
-        # if product_name:
-        #     trainers = trainers.filter(products__product_name__exact=product_name)
-        # print(trainer)
         trainers_data = []
         exports_data = []
         current_datetime = datetime.now()
-        # for trainer in trainers:
         export_data = {
             'export_trainer_name': trainer.trainer_name,
             'export_trainer_data': []
@@ -79,23 +73,23 @@ class TrainersData(APIView):
         else:
             products = trainer.products.all()
 
-        # all_dates = []
+        #total 14 queries in one loop
         for product in products:
-            # print(product)
+            #1 query from here
             #Replace userid and productid with user email and product name
-            # product_payments = product.product_payments.all()
             product_payments = product.product_payments.values('alnafi_payment_id','user_id',
                                                                 'product_id','amount','currency',
                                                                 'order_datetime','source',
                                                                 'expiration_datetime','created_datetime')
-            
-            dates = product_payments.values('order_datetime')
-            # all_dates.append(dates)
 
+            #1 queries from here
+            dates = product_payments.values('order_datetime')
+            #1 queries from here
             result = dates.aggregate(greatest_order_datetime=Max('order_datetime'), lowest_order_datetime=Min('order_datetime'))
             greatest_order_datetime = result['greatest_order_datetime']
             lowest_order_datetime = result['lowest_order_datetime']
-
+            
+            
             if not req_start_date:
                 start_date=lowest_order_datetime
             else:
@@ -105,38 +99,53 @@ class TrainersData(APIView):
             else:
                 end_date = req_end_date
 
+            # #no effect on query
             product_payments = product_payments.filter(order_datetime__range=(start_date, end_date))
             
-            users = list(product_payments.values('user__email','user__phone'))
-            products = list(product_payments.values('product__product_name'))
-            # payment_list = list(product_payments.values())
+            #2 queries from here
+            users = list(product_payments.values('user__email','user__phone','product__product_name'))
+            # products = list(product_payments.values('product__product_name'))
             payment_list = list(product_payments.values('alnafi_payment_id','user_id','source',
                                                                 'product_id','amount','currency',
                                                                 'order_datetime',
                                                                 'expiration_datetime','created_datetime'))
+            #no effect on query
             for i in range(len(payment_list)):
                 try:
                     payment_list[i]['user_id'] = users[i]['user__email']
-                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                    # payment_list[i]['product_id'] = products[i]['product__product_name']
+                    payment_list[i]['product_id'] = users[i]['product__product_name']
                 except Exception as e:
                     pass
-
+            
+            #no effect on query
             if payment_list:
                 if active == 'true':
                     payment_list = [
                         {**payment, 'active': "true"}
                         for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
                     ]
-                    # payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
                 elif active == 'false':
                     payment_list = [
                         {**payment, 'active': "false"}
                         for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime
                     ]
-            
+                else:
+                    active_payments = [
+                        {**payment, 'active': "true"}
+                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
+                    ]
+                    inactive_payments = [
+                        {**payment, 'active': "false"}
+                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime
+                    ]
+                    payment_list = active_payments + inactive_payments
+
+            #no effect on query
             user_count = len(set(payment['user_id'] for payment in payment_list))
             
             # Removing duplicates payments of a single user
+            #no effect on query
             payments_list = []
 
             for payment in payment_list:
@@ -147,16 +156,14 @@ class TrainersData(APIView):
                         break
                 if is_unique:
                     trainer_data['users'].append(payment)
-                    payments_list.append(payment)
-
-
-            
+                    payments_list.append(payment)     
             export_data['export_trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
+            
             if not req_start_date:
                 start_date = None
             if not req_end_date:
                 end_date = None
-        # print(all_dates)
+    
         trainers_data.append(trainer_data)
         exports_data.append(export_data)
 

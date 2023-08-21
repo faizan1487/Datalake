@@ -42,10 +42,14 @@ class CreateScan(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         upcoming_scans = self.request.GET.get('upcoming_scans', None) or None
+        status = self.request.GET.get('status', None) or None
         scans = Scan.objects.all().prefetch_related(Prefetch('assigned_to', queryset=Department.objects.all()))
 
         if upcoming_scans == 'true':
             scans = scans.filter(scan_date__gt=date.today())
+
+        if status:
+            scans = scans.filter(scan_progress=status)
 
         scan_data = []
         for scan in scans:
