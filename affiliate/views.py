@@ -34,13 +34,18 @@ class CreateAffiliateUser(APIView):
         # users = AffiliateUser.objects.annotate(user_clicks_count=Count('affiliate_clicks'),affiliate_leads_count=Count('affiliate_leads')).values('first_name','last_name','email','phone','address','country','created_at','user_clicks_count','affiliate_leads_count')
         
         # Fetch AffiliateUser(s) based on the provided email or a default email if not provided
-        if email:
-            affiliateuser = AffiliateUser.objects.get(email=email)
-        else:
-            affiliateuser = AffiliateUser.objects.get(email="shawanakiyani10@gmail.com")
+        try:
+            if email:
+                affiliateuser = AffiliateUser.objects.get(email=email)
+            else:
+                affiliateuser = AffiliateUser.objects.get(email="shawanakiyani10@gmail.com")
+        except AffiliateUser.DoesNotExist:
+            return Response("No matching record found for the provided email.")
+            
 
         # Iterate through each AffiliateUser and retrieve associated leads, clicks, and commissions
         # for user in affiliateusers:
+
         leads = affiliateuser.affiliate_leads.all().values("first_name","last_name","email",
                                                 "contact","address","country","created_at")
         clicks = affiliateuser.affiliate_clicks.all().values("pkr_price","usd_price","created_at")
