@@ -138,7 +138,7 @@ class GetAffiliateUser(APIView):
         email = self.request.GET.get('email', None) or None
 
         # Fetch all AffiliateUser instances and retrieve specific fields ("email", "username", "first_name")
-        affiliate = AffiliateUser.objects.all().values("email","username","first_name")
+        affiliate = AffiliateUser.objects.all().values("email")
 
         # Return the retrieved data as a response
         return Response(affiliate)
