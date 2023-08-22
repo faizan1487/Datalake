@@ -18,6 +18,12 @@ import math
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from .services import week_chatwoot_data, week_month_convos, all_chatwoot_data
+import environ
+
+env = environ.Env()
+env.read_env()
+api_access_token = env("API_ACCESS_TOKEN")
+
 
 class ChatwootContacts(APIView):
     def save_instance(self, i):
@@ -54,9 +60,9 @@ class ChatwootContacts(APIView):
         pages = math.ceil(count / items_per_page)
         for page_number in range(1, pages + 1):
             # print(page_number)
-            api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
+            # api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
             headers = {
-                'api_access_token': '7M41q5QiNfYDeHue6KzjWdzV',
+                'api_access_token': api_access_token,
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             }
@@ -125,7 +131,7 @@ class ConversationsReport(APIView):
         # Get the number of days from the time difference
         days_difference = time_difference.days
         # print("days difference",days_difference)
-        conversations = Conversation.objects.all().values()
+        # conversations = Conversation.objects.all().values()
         start_date = since.replace(tzinfo=None)
         end_date = until.replace(tzinfo=None)
         # end_date = end_date + timedelta(days=1, microseconds=-1)
@@ -134,7 +140,6 @@ class ConversationsReport(APIView):
         response_dict = {}
 
         # Set the API access token and headers
-        api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
         headers = {
         'api_access_token': api_access_token,
         "Content-Type": "application/json",
@@ -208,16 +213,9 @@ class ConversationsReport(APIView):
                 params['since'] = 1660521600.0
                 params['until'] = 1692143999.999999
                 response_dict = week_month_convos(url,headers, params)
+        
         elif metric == "resolutions_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
                 response_dict = week_month_convos(url,headers, params)
@@ -264,36 +262,15 @@ class AgentsReport(APIView):
         id = self.request.GET.get('id', None) or None
         metric = self.request.GET.get('metric', None) or None
 
-        
-        if days is not None and int(days) == 7:
-            # Get the current date
-            end_date = datetime.date.today()
-        
-            # Subtract 7 days from the current date
-            start_date = end_date - datetime.timedelta(days=7)
-        elif days is not None and int(days) == 30:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=30)
-        elif days is not None and int(days) == 90:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=90)
-        elif days is not None and int(days) == 180:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=180)
-        elif days is not None and int(days) == 365:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=365)
-
-        # print(start_date)
-        # print(end_date)            
-       
-
-        # Implement weekly, monthly, 3 months ,6 months, yearly filter 
+        if days is not None and int(days) in [7, 30, 90, 180, 365]:
+            today = datetime.date.today()
+            end_date = today
+            start_date = end_date - datetime.timedelta(days=int(days))       
+    
         params = {
             'type': 'agent',
             'id': id,
         }
-
         
         if start_date:
             if isinstance(start_date, str):
@@ -314,12 +291,11 @@ class AgentsReport(APIView):
         time_difference = until - since
         # Get the number of days from the time difference
         days_difference = time_difference.days
-        conversations = Conversation.objects.all().values()
+        # conversations = Conversation.objects.all().values()
         start_date = since.replace(tzinfo=None)
         end_date = until.replace(tzinfo=None)
         # end_date = end_date + timedelta(days=1, microseconds=-1)
         response_dict = {}
-        api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
         headers = {
         'api_access_token': api_access_token,
         "Content-Type": "application/json",
@@ -331,36 +307,17 @@ class AgentsReport(APIView):
         params['since'] = since
         params['until'] = until
         params['metric'] = metric
-        # print(days_difference)
-        # print(start_date)
-        # print(end_date)
         if metric == "conversations_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
                 response_dict = week_month_convos(url,headers, params)
                     
         elif metric == "outgoing_messages_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
-                response_dict = week_month_convos(url,headers, params)           
+                response_dict = week_month_convos(url,headers, params)         
         elif metric == "avg_first_response_time":
             if days_difference == 365:
                 response_dict = week_month_convos(url,headers, params)
@@ -393,15 +350,7 @@ class AgentsReport(APIView):
                 response_dict = week_month_convos(url,headers, params)
 
         elif metric == "resolutions_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            if days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            if days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
                 response_dict = week_month_convos(url,headers, params)
@@ -431,7 +380,6 @@ class AgentsReport(APIView):
             data['avg_resolution_time'] = f"{str(hours)} Hr {str(minutes)} min"
 
         response_dict["data"] = data
-        # response_dict.append({"data":data})
         return Response(response_dict)
 
 
@@ -446,29 +394,10 @@ class InboxesReport(APIView):
         id = self.request.GET.get('id', None) or None
         metric = self.request.GET.get('metric', None) or None
 
-        
-        if days is not None and int(days) == 7:
-            # Get the current date
-            end_date = datetime.date.today()
-        
-            # Subtract 7 days from the current date
-            start_date = end_date - datetime.timedelta(days=7)
-        elif days is not None and int(days) == 30:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=30)
-        elif days is not None and int(days) == 90:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=90)
-        elif days is not None and int(days) == 180:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=180)
-        elif days is not None and int(days) == 365:
-            end_date = datetime.date.today()
-            start_date = end_date - datetime.timedelta(days=365)
-
-        # print(start_date)
-        # print(end_date)            
-       
+        if days is not None and int(days) in [7, 30, 90, 180, 365]:
+            today = datetime.date.today()
+            end_date = today
+            start_date = end_date - datetime.timedelta(days=int(days))   
 
         # Implement weekly, monthly, 3 months ,6 months, yearly filter 
         params = {
@@ -496,12 +425,11 @@ class InboxesReport(APIView):
         time_difference = until - since
         # Get the number of days from the time difference
         days_difference = time_difference.days
-        conversations = Conversation.objects.all().values()
+        # conversations = Conversation.objects.all().values()
         start_date = since.replace(tzinfo=None)
         end_date = until.replace(tzinfo=None)
         # end_date = end_date + timedelta(days=1, microseconds=-1)
         response_dict = {}
-        api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
         headers = {
         'api_access_token': api_access_token,
         "Content-Type": "application/json",
@@ -513,33 +441,15 @@ class InboxesReport(APIView):
         params['since'] = since
         params['until'] = until
         params['metric'] = metric
-        # print(days_difference)
-        # print(start_date)
-        # print(end_date)
+     
         if metric == "conversations_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
                 response_dict = week_month_convos(url,headers, params)
                     
         elif metric == "outgoing_messages_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
                 response_dict = week_month_convos(url,headers, params)           
@@ -575,15 +485,7 @@ class InboxesReport(APIView):
                 response_dict = week_month_convos(url,headers, params)
 
         elif metric == "resolutions_count":
-            if days_difference == 365:
-                response_dict = week_month_convos(url,headers, params)
-            if days_difference == 180:
-                response_dict = week_month_convos(url,headers, params)
-            if days_difference == 90:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 30:
-                response_dict = week_month_convos(url,headers, params)
-            elif days_difference == 7:
+            if days_difference == 7:
                 response_dict = week_chatwoot_data(url,headers, params)
             else:
                 response_dict = week_month_convos(url,headers, params)
@@ -612,7 +514,6 @@ class InboxesReport(APIView):
             data['avg_resolution_time'] = f"{str(hours)} Hr {str(minutes)} min"
 
         response_dict["data"] = data
-        # response_dict.append({"data":data})
         return Response(response_dict)
 
 
@@ -662,10 +563,8 @@ class ConversationsList(APIView):
         pages = math.ceil(count / items_per_page)
 
         for page_number in range(1, pages + 1):
-            print(page_number)
-            api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
             headers = {
-                'api_access_token': '7M41q5QiNfYDeHue6KzjWdzV',
+                'api_access_token': api_access_token,
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             }
@@ -695,7 +594,6 @@ class ConversationsList(APIView):
 class InboxesList(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
         headers = {
         'api_access_token': api_access_token,
         "Content-Type": "application/json",
@@ -709,20 +607,13 @@ class InboxesList(APIView):
         for i in data['payload']:
             response_list.append({'id': i['id'], 'name': i['name']})  
            
-        # for i in data['payload']:
-        #     my_model_instance = Inbox(
-        #         id=i['id'],
-        #         name=i['name'],
-        #         channel_type=i['channel_type']
-        #     )
-        #     my_model_instance.save()
+        
         return Response(response_list)
 
 
 class AgentsList(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        api_access_token = '7M41q5QiNfYDeHue6KzjWdzV'
         headers = {
         'api_access_token': api_access_token,
         "Content-Type": "application/json",

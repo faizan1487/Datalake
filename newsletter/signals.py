@@ -49,7 +49,7 @@ def usersignal(instance,source):
     # print(lead_data['data'])
     
     already_existed = len(lead_data["data"]) > 0
-    print(already_existed)
+    # print(already_existed)
     if already_existed:
         response = requests.put(url, headers=headers, json=data)
         instance.erp_lead_id = lead_data['data'][0]['name']

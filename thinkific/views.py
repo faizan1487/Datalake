@@ -8,6 +8,7 @@ from .serializers import ThinkificUserSerializer,ThinkificUserEnrollmentSerializ
 from rest_framework.permissions import IsAuthenticated
 import requests
 import json
+
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -16,15 +17,15 @@ class MyPagination(PageNumberPagination):
     max_page_size = 100  
 
 
-permission_classes = [IsAuthenticated]
 class DeleteEnroll(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         objs = Thinkific_Users_Enrollments.objects.all()
         objs.delete()
         return Response("data deleted")   
     
-permission_classes = [IsAuthenticated]
 class GetThinkificUsers(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         queryset = Thinkific_User.objects.all()
         paginator = MyPagination()
@@ -33,8 +34,8 @@ class GetThinkificUsers(APIView):
         return paginator.get_paginated_response(thinkific_user_serializer.data)
         
 
-permission_classes = [IsAuthenticated]
 class GetUserEnrollments(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         # queryset = Thinkific_Users_Enrollments.objects.filter(email__iexact=query)
@@ -44,10 +45,9 @@ class GetUserEnrollments(APIView):
         user_enrollemnt_serializer = ThinkificUserEnrollmentSerializer(paginated_queryset, many=True)
         return paginator.get_paginated_response(user_enrollemnt_serializer.data)    
     
-permission_classes = [IsAuthenticated]
 class ThinkificUsers(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        print("sdfdsfj")
         # url = "https://api.thinkific.com/api/public/v1/users?page=1&limit=25"
         # headers={
         #     "X-Auth-API-Key": '0af37f50be358db530e91f3033ca7b1d',

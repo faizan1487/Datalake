@@ -431,6 +431,7 @@ class SearchPayments(APIView):
     # permission_classes = [GroupPermission]
     # required_groups = ['Sales', 'Admin','Support','MOC']
     def get(self, request):
+        # Retrieve query parameters
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
         origin = self.request.GET.get('origin', None) or None
@@ -443,26 +444,25 @@ class SearchPayments(APIView):
         url = request.build_absolute_uri()
         # payments = cache.get(url+'payments')
         # if payments is None:
+        # Search payments using utility function
         payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)
             # cache.set(url+'payments', payments)   
         
         if payments['success'] == 'true':
+            # Serialize datetime objects to ISO 8601 format
             def json_serializable(obj):
                     if isinstance(obj, datetime):
                         return obj.isoformat()  # Convert datetime to ISO 8601 format
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-            users = list(payments['payments'].values('user__email','user__phone'))
-            products = list(payments['payments'].values('product__product_name'))
+            users = list(payments['payments'].values('user__email','user__phone','product__product_name'))
             payment_list = list(payments["payments"].values())
-            
-           
             
             for i in range(len(payments['payments'])):
                 try:
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['phone'] = users[i]['user__phone']
-                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                    payment_list[i]['product_id'] = users[i]['product__product_name']
                 except Exception as e:
                     pass  
             
@@ -481,8 +481,8 @@ class SearchPayments(APIView):
                 payment_objects = json.loads(payment_json)
                 total_payments_in_pkr = 0
                 total_payments_in_usd = 0
+                sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                 for i in payment_objects:
-                    sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                     if i['source'].lower() in sources:
                         total_payments_in_pkr += int(float(i['amount']))
                     else:
@@ -496,7 +496,6 @@ class SearchPayments(APIView):
                 
                 return paginator.get_paginated_response(payments)
         else:
-            # response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
             return Response(payments)
                 
 

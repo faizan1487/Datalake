@@ -11,6 +11,7 @@ from django.http import HttpResponse
 from threading import Thread
 from rest_framework.permissions import IsAuthenticated
 from user.services import GroupPermission
+
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'

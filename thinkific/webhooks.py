@@ -7,8 +7,6 @@ import json
 from rest_framework.renderers import JSONRenderer
 from rest_framework.decorators import api_view
 from rest_framework.decorators import renderer_classes
-from .models import Thinkific_User, Thinkific_Users_Enrollments
-import csv
 from user.models import AlNafi_User
 
 @csrf_exempt
@@ -31,7 +29,7 @@ def user_created_webhook(request):
         # print(user.phone)
         json_data['payload']['phone'] = user[0]['phone']
 
-    print(json_data)
+    # print(json_data)
     serializer = ThinkificUserSerializer(data=json_data['payload'])
     
     if serializer.is_valid():
@@ -118,5 +116,4 @@ def enrollment_created_webhook(request):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
     except Exception as e:
         print(e)
-    print(serializer.errors)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

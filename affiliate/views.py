@@ -37,7 +37,7 @@ class CreateAffiliateUser(APIView):
         if email:
             affiliateusers = AffiliateUser.objects.filter(email=email)
         else:
-            affiliateusers = AffiliateUser.objects.filter(email="testuser@gmail.com")
+            affiliateusers = AffiliateUser.objects.filter(email="shawanakiyani10@gmail.com")
 
         # Iterate through each AffiliateUser and retrieve associated leads, clicks, and commissions
         for user in affiliateusers:
