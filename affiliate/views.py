@@ -132,11 +132,6 @@ class CreateAffiliateUser(APIView):
 class GetAffiliateUser(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        # Get query parameters from the request
-        start_date = self.request.GET.get('start_date', None) or None
-        end_date = self.request.GET.get('end_date', None) or None
-        email = self.request.GET.get('email', None) or None
-
         # Fetch all AffiliateUser instances and retrieve specific fields ("email", "username", "first_name")
         affiliate = AffiliateUser.objects.all().values("email")
 
