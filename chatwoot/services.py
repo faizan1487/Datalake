@@ -27,6 +27,7 @@ def week_month_convos(url,headers,params):
     # Check if the selected metric requires special processing
     if params['metric'] in metrics:
         for i in  data:
+            # print(i)
             date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
             avg_resolution_time_seconds = float(i['value'])
             days = int(avg_resolution_time_seconds // 86400)
@@ -38,23 +39,40 @@ def week_month_convos(url,headers,params):
             else:
                 i['value'] = f"{str(hours)} Hr {str(minutes)} min"
 
+            # print(i['value'])
             formatted_date = date_obj.strftime('%Y-%m-%d')
             i['timestamp'] = formatted_date
-
+        
         for i in range(months):
             start_idx = i * 30
             end_idx = start_idx + 30
             month_messages = data[start_idx:end_idx]
             total_count = sum(conv['count'] for conv in month_messages)
-
+            # print(start_idx)
+            # print(end_idx)
+            # print(month_messages)
             # Determine the month end date
             if end_idx < len(data):
                 month_end_date = data[end_idx]['timestamp']
             else:
                 month_end_date = "" 
 
-            if i < len(month_messages):
-                value = month_messages[i]['value']
+            # Define a function to convert 'value' strings into minutes
+            def value_to_minutes(value_str):
+                if 'days' in value_str:
+                    days, rest = value_str.split(' days ')
+                    hours, minutes = rest.split(' Hr ')
+                    return int(days) * 24 * 60 + int(hours) * 60 + int(minutes[:-4])
+                elif 'Hr' in value_str:
+                    hours, minutes = value_str.split(' Hr ')
+                    return int(hours) * 60 + int(minutes[:-4])
+                elif 'min' in value_str:
+                    return int(value_str[:-7])
+                else:
+                    return 0
+                
+            max_value_dict = max(month_messages, key=lambda item: value_to_minutes(item['value']))
+            value = max_value_dict['value']
             
             grouped_conversations.append({
                 "timestamp": f"{data[start_idx]['timestamp']} {month_end_date}",
@@ -67,7 +85,7 @@ def week_month_convos(url,headers,params):
             date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
             formatted_date = date_obj.strftime('%Y-%m-%d')
             i['timestamp'] = formatted_date
-            
+
         # Loop through the data and create groups for each month
         for i in range(months):
             start_idx = i * 30
@@ -143,6 +161,9 @@ def week_chatwoot_data(url,headers,params):
             start_idx = i * 7
             end_idx = start_idx + 7
             week_messages = data[start_idx:end_idx]
+            # print(start_idx)
+            # print(end_idx)
+            # print(week_messages)
             # print(week_conversations)
             total_count = sum(conv['count'] for conv in week_messages)
             if end_idx < len(data):
@@ -150,8 +171,22 @@ def week_chatwoot_data(url,headers,params):
             else:
                 week_end_date = ""
 
-            if i < len(week_messages):
-                value = week_messages[i]['value']
+            # Define a function to convert 'value' strings into minutes
+            def value_to_minutes(value_str):
+                if 'days' in value_str:
+                    days, rest = value_str.split(' days ')
+                    hours, minutes = rest.split(' Hr ')
+                    return int(days) * 24 * 60 + int(hours) * 60 + int(minutes[:-4])
+                elif 'Hr' in value_str:
+                    hours, minutes = value_str.split(' Hr ')
+                    return int(hours) * 60 + int(minutes[:-4])
+                elif 'min' in value_str:
+                    return int(value_str[:-7])
+                else:
+                    return 0
+                
+            max_value_dict = max(week_messages, key=lambda item: value_to_minutes(item['value']))
+            value = max_value_dict['value']
             
             grouped_conversations.append({
                 "timestamp": f"{data[start_idx]['timestamp']} {week_end_date}",
