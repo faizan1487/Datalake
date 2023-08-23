@@ -12,6 +12,7 @@ from threading import Thread
 from datetime import date, datetime, timedelta
 from rest_framework.permissions import IsAuthenticated
 from .models import FeedbackQuestion
+from collections import defaultdict
 
 # Create your views here.
 class GetFeedbacks(APIView):
@@ -62,6 +63,15 @@ class GetCoursesNames(APIView):
 class GetCoursesChapters(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
-        queryset = FeedbackQuestion.objects.values('course_name','')
+        queryset = FeedbackQuestion.objects.values('course_name','chapter_name')
+        print(queryset)
+
+        for i in queryset:
+            pass
         course_list = [item['course_name'] for item in queryset]
         return Response(course_list)
+    
+        # Create a defaultdict to group chapter names by course names
+        grouped_data = defaultdict(list)
+
+

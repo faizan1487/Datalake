@@ -26,6 +26,21 @@ def week_month_convos(url,headers,params):
     metrics = ['avg_resolution_time','avg_first_response_time']
     # Check if the selected metric requires special processing
     if params['metric'] in metrics:
+        for i in  data:
+            date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+            avg_resolution_time_seconds = float(i['value'])
+            days = int(avg_resolution_time_seconds // 86400)
+            hours = int((avg_resolution_time_seconds % 86400) // 3600)
+            minutes = int((avg_resolution_time_seconds % 3600) // 60)
+
+            if days > 0:
+                i['value'] = f"{str(days)} days {str(hours)} Hr {str(minutes)} min"
+            else:
+                i['value'] = f"{str(hours)} Hr {str(minutes)} min"
+
+            formatted_date = date_obj.strftime('%Y-%m-%d')
+            i['timestamp'] = formatted_date
+
         for i in range(months):
             start_idx = i * 30
             end_idx = start_idx + 30
@@ -47,6 +62,12 @@ def week_month_convos(url,headers,params):
                 "count": total_count
             })
     else:
+        # Format the timestamps for other metrics
+        for i in  data:
+            date_obj = datetime.datetime.fromtimestamp(i['timestamp'])
+            formatted_date = date_obj.strftime('%Y-%m-%d')
+            i['timestamp'] = formatted_date
+            
         # Loop through the data and create groups for each month
         for i in range(months):
             start_idx = i * 30
