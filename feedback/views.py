@@ -25,7 +25,18 @@ class GetFeedbacks(APIView):
         feedbacks = Feedback.objects.all().values("user__email","rating","review","course__name","track__name","created_at")
         if email:
             feedbacks = feedbacks.filter(user__email=email)
-        
+
+
+        # Extract the 'created_at' values
+        created_at_values = [item['created_at'] for item in feedbacks]
+
+        # Find the minimum and maximum 'created_at' values
+        min_created_at = min(created_at_values)
+        max_created_at = max(created_at_values)
+
+        print(min_created_at)
+        print(max_created_at)
+            
         if track:
             feedbacks = feedbacks.filter(track__name=track)
 
@@ -63,15 +74,20 @@ class GetCoursesNames(APIView):
 class GetCoursesChapters(APIView):
     permission_classes = [IsAuthenticated]
     def get(self,request):
+        course = self.request.GET.get('course', None) or None
         queryset = FeedbackQuestion.objects.values('course_name','chapter_name')
-        print(queryset)
 
-        for i in queryset:
-            pass
-        course_list = [item['course_name'] for item in queryset]
-        return Response(course_list)
+        if course:
+            queryset = queryset.filter(course_name=course)
     
         # Create a defaultdict to group chapter names by course names
         grouped_data = defaultdict(list)
 
+        # Group the chapter names under respective course names
+        for item in queryset:
+            course_name = item['course_name']
+            chapter_name = item['chapter_name']
+            grouped_data[course_name].append(chapter_name)
+
+        return Response(grouped_data)
 
