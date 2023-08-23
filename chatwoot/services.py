@@ -1,7 +1,12 @@
 import requests
 import datetime
 import math
+import environ
+from rest_framework.response import Response
 
+env = environ.Env()
+env.read_env()
+api_access_token = env("API_ACCESS_TOKEN")
 
 def week_month_convos(url,headers,params):
     # Call a function to fetch week-wise chatwoot data
@@ -192,3 +197,25 @@ def all_chatwoot_data(url,headers,params):
     data = list(data) 
     response_dict["data_per_date"] = data
     return response_dict
+
+
+
+def get_agents():
+    headers = {
+    'api_access_token': api_access_token,
+    "Content-Type": "application/json",
+    "Accept": "application/json",
+    }
+    url = 'https://chat.alnafi.com/api/v1/accounts/3/agents'
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    
+    # for i in data:
+    #     my_model_instance = Agent(
+    #         email=i['email'],
+    #         name=i['name'],
+    #         available_name=i['available_name'],
+    #         role=i['role']
+    #     )
+    #     my_model_instance.save()
+    return data

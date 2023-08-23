@@ -17,7 +17,7 @@ import datetime
 import math
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
-from .services import week_chatwoot_data, week_month_convos, all_chatwoot_data
+from .services import week_chatwoot_data, week_month_convos, all_chatwoot_data, get_agents
 import environ
 
 env = environ.Env()
@@ -379,10 +379,17 @@ class AgentsReport(APIView):
         else:
             data['avg_resolution_time'] = f"{str(hours)} Hr {str(minutes)} min"
 
+        agents = get_agents()
+        filtered_data = [item for item in agents if item['id'] == int(id)]
         response_dict["data"] = data
+        response_dict["data"]["agent_name"] = filtered_data[0]['available_name']
         return Response(response_dict)
 
-
+class AgentsList(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        data = get_agents()
+        return Response(data)
 
 class InboxesReport(APIView):
     permission_classes = [IsAuthenticated]
@@ -611,24 +618,3 @@ class InboxesList(APIView):
         return Response(response_list)
 
 
-class AgentsList(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        headers = {
-        'api_access_token': api_access_token,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        }
-        url = 'https://chat.alnafi.com/api/v1/accounts/3/agents'
-        response = requests.get(url, headers=headers)
-        data = response.json()
-        
-        # for i in data:
-        #     my_model_instance = Agent(
-        #         email=i['email'],
-        #         name=i['name'],
-        #         available_name=i['available_name'],
-        #         role=i['role']
-        #     )
-        #     my_model_instance.save()
-        return Response(data)

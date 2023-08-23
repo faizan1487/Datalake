@@ -42,13 +42,14 @@ class TrainersData(APIView):
         req_start_date = self.request.GET.get('start_date', None) or None
         req_end_date = self.request.GET.get('end_date', None) or None
         # url = request.build_absolute_uri()
-    
+
+        #8 queries outside loop
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
         if q:
-            if request.user.is_admin:
-                trainer = trainers.get(email__iexact=q)
-            else:
-                trainers = trainers.get(email__iexact=request.user.email)
+            # if request.user.is_admin:
+            trainer = trainers.get(email__iexact=q)
+            # else:
+            #     trainers = trainers.get(email__iexact=request.user.email)
         else:
             if request.user.is_admin:
                 trainer = trainers.get(email__iexact='sana@gmail.com')
@@ -72,9 +73,8 @@ class TrainersData(APIView):
             products = trainer.products.filter(product_name=product_name)
         else:
             products = trainer.products.all()
-
         
-        #total 14 queries in one loop
+        #total 5 queries in one loop
         for product in products:
             #1 query from here
             #Replace userid and productid with user email and product name
@@ -226,7 +226,7 @@ class TrainerProducts(APIView):
         trainer_email = request.GET.get('q').strip()
         trainer = get_object_or_404(Trainer, email__iexact=trainer_email)
         products = trainer.products.all().values("product_name")
-        print(products)
+        # print(products)
         return Response(products)
 
 
