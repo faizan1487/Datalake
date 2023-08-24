@@ -8,23 +8,26 @@ import environ
 
 env = environ.Env()
 env.read_env()
+api_key = env("FRAPPE_API_KEY")
+api_secret = env("FRAPPE_API_SECRET")
 DEBUG = env('DEBUG',cast=bool)
 
-# @receiver(post_save, sender=AlNafi_User)
+@receiver(post_save, sender=AlNafi_User)
 def send_alnafi_lead_post_request(sender, instance, **kwargs):
-    print("signal running")
+    # print("signal running")
     source='Alnafi'
     alnafi_user = usersignal(instance,source,sender)    
 
-# @receiver(post_save, sender=IslamicAcademy_User)
+@receiver(post_save, sender=IslamicAcademy_User)
 def send_islamic_lead_post_request(sender, instance, **kwargs):
-    # print("islamic user signal")
-    source='Islamic Academy'
+    print("islamic user signal")
+    source='IslamicAcademy'
     islamic_user = usersignal(instance,source,sender)
 
 
-# @receiver(post_save, sender=PSWFormRecords)
+@receiver(post_save, sender=PSWFormRecords)
 def send_psw_lead_post_request(sender, instance, **kwargs):
+    print("psw user signal")
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
 
@@ -41,10 +44,9 @@ def usersignal(instance,source,sender):
         #     api_secret = '21754cee8dc0f42'
         #     url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
         # else:
-    api_key = '351b6479c5a4a16'
-    api_secret = 'c65569db1deec88'
-    # url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
-    url = f'http://18.190.1.109/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+
+    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    # url = f'http://18.190.1.109/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
@@ -71,11 +73,12 @@ def usersignal(instance,source,sender):
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     
+    
 
     
     response = requests.get(url, headers=headers)
     lead_data = response.json()
-    print(lead_data)
+    # print(lead_data)
     already_existed = len(lead_data["data"]) > 0
 
     if already_existed:
@@ -83,9 +86,9 @@ def usersignal(instance,source,sender):
         # if DEBUG:
         #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
         # else:
-        # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
-        url = f'http://18.190.1.109/api/api/resource/Lead/{lead_id}'
-
+        url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+        # url = f'http://18.190.1.109/api/api/resource/Lead/{lead_id}'
+        # print(data)
         response = requests.put(url, headers=headers, json=data)
         instance.erp_lead_id = lead_data['data'][0]['name']
         # print("lead updated")
@@ -94,18 +97,18 @@ def usersignal(instance,source,sender):
             # if DEBUG:
             #     url = 'http://3.142.247.16/api/resource/Lead'
             # else:
-            # url = 'https://crm.alnafi.com/api/resource/Lead'
-            url = 'http://18.190.1.109/api/resource/Lead'
-            print(headers)
+            url = 'https://crm.alnafi.com/api/resource/Lead'
+            # url = 'http://18.190.1.109/api/resource/Lead'
+            # print(headers)
             lead_data = response.json()
-            print(lead_data)
+            # print(lead_data)
             response = requests.post(url, headers=headers, json=data)
-            print("response.status_code",response.text)
+            # print("response.status_code",response.text)
             response.raise_for_status()
             # print("response.status_code",response.status_code)
             if response.status_code == 200:
                 lead_data = response.json()
-                print(lead_data)
+                # print(lead_data)
                 erp_lead_id = lead_data['data']['name']
                 if erp_lead_id:
                     # print("lead id exists")

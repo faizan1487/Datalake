@@ -27,6 +27,7 @@ class CreateAffiliateUser(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         email = self.request.GET.get('email', None) or None
+        product = self.request.GET.get('product', None) or None
         # export = self.request.GET.get('export', None) or None
         # url = request.build_absolute_uri()
         # payments = cache.get(url+'payments')
@@ -36,87 +37,91 @@ class CreateAffiliateUser(APIView):
         # Fetch AffiliateUser(s) based on the provided email or a default email if not provided
         try:
             if email:
-                affiliateuser = AffiliateUser.objects.get(email=email)
+                affiliateuser = AffiliateUser.objects.filter(email=email)
+                # affiliateuser = AffiliateUser.objects.get(email=email)
             else:
-                affiliateuser = AffiliateUser.objects.get(email="shawanakiyani10@gmail.com")
+                affiliateuser = AffiliateUser.objects.all()
+                # affiliateuser = AffiliateUser.objects.get(email="shawanakiyani10@gmail.com")
         except AffiliateUser.DoesNotExist:
             return Response("No matching record found for the provided email.")
-            
 
+
+        agents_list = []
         # Iterate through each AffiliateUser and retrieve associated leads, clicks, and commissions
-        # for user in affiliateusers:
+        for user in affiliateuser:
+            leads = user.affiliate_leads.all().values("first_name","last_name","email",
+                                                    "contact","address","country","created_at")
+            clicks = user.affiliate_clicks.all().values("pkr_price","usd_price","created_at")
+            commissions = user.affiliate_commission.all().values("order_id","product","source",
+                                                                "amount_pkr","amount_usd",
+                                                                "commission_usd","commission_pkr","is_paid","created_at")
+            # print(commissions)
+            if product:
+                commissions = commissions.filter(product=product)
+            # If start_date is not provided, set it to the earliest date among leads, clicks, and commissions
+            if leads:
+                if not start_date:
+                    first_lead = leads.exclude(created_at=None).first()
+                    start_date_lead = first_lead['created_at'].date() if first_lead else None
+            if clicks:
+                if not start_date:
+                    first_click = clicks.exclude(created_at=None).first()
+                    start_date_click = first_click['created_at'].date() if first_click else None
+            if commissions:
+                if not start_date:
+                    first_commission = commissions.exclude(created_at=None).first()
+                    start_date_commission = first_commission['created_at'].date() if first_commission else None
 
-        leads = affiliateuser.affiliate_leads.all().values("first_name","last_name","email",
-                                                "contact","address","country","created_at")
-        clicks = affiliateuser.affiliate_clicks.all().values("pkr_price","usd_price","created_at")
-        commissions = affiliateuser.affiliate_commission.all().values("order_id","product","source",
-                                                            "amount_pkr","amount_usd",
-                                                            "commission_usd","commission_pkr","is_paid","created_at")
-        # print(commissions)
+            # If start_date is provided, use it for all start_date values
+            if start_date:
+                start_date_lead = start_date
+                start_date_click = start_date
+                start_date_commission = start_date
 
-        # If start_date is not provided, set it to the earliest date among leads, clicks, and commissions
-        if leads:
-            if not start_date:
-                first_lead = leads.exclude(created_at=None).first()
-                start_date_lead = first_lead['created_at'].date() if first_lead else None
-        if clicks:
-            if not start_date:
-                first_click = clicks.exclude(created_at=None).first()
-                start_date_click = first_click['created_at'].date() if first_click else None
-        if commissions:
-            if not start_date:
-                first_commission = commissions.exclude(created_at=None).first()
-                start_date_commission = first_commission['created_at'].date() if first_commission else None
+            # If end_date is not provided, set it to the day after the latest date among leads, clicks, and commissions
+            if leads:
+                if not end_date:
+                    last_lead = leads.exclude(created_at=None).last()
+                    end_date_lead = last_lead['created_at'].date() if last_lead else None
+                    end_date_lead += timedelta(days=1)
+            if clicks:
+                if not end_date:
+                    last_click = clicks.exclude(created_at=None).last()
+                    end_date_click = last_click['created_at'].date() if last_click else None
+                    end_date_click += timedelta(days=1)
+            if commissions:
+                if not end_date:
+                    last_commission = commissions.exclude(created_at=None).last()
+                    end_date_commission = last_commission['created_at'].date() if last_commission else None
+                    end_date_commission += timedelta(days=1)
 
-        # If start_date is provided, use it for all start_date values
-        if start_date:
-            start_date_lead = start_date
-            start_date_click = start_date
-            start_date_commission = start_date
-
-        # If end_date is not provided, set it to the day after the latest date among leads, clicks, and commissions
-        if leads:
-            if not end_date:
-                last_lead = leads.exclude(created_at=None).last()
-                end_date_lead = last_lead['created_at'].date() if last_lead else None
-                end_date_lead += timedelta(days=1)
-        if clicks:
-            if not end_date:
-                last_click = clicks.exclude(created_at=None).last()
-                end_date_click = last_click['created_at'].date() if last_click else None
-                end_date_click += timedelta(days=1)
-        if commissions:
-            if not end_date:
-                last_commission = commissions.exclude(created_at=None).last()
-                end_date_commission = last_commission['created_at'].date() if last_commission else None
-                end_date_commission += timedelta(days=1)
-
-        # If end_date is provided, use it for all end_date values
-        if end_date:
-            end_date_lead = end_date
-            end_date_click = end_date
-            end_date_commission = end_date
+            # If end_date is provided, use it for all end_date values
+            if end_date:
+                end_date_lead = end_date
+                end_date_click = end_date
+                end_date_commission = end_date
+            
         
-     
 
-        # Filter leads, clicks, and commissions based on the date ranges
-        if leads:
-            leads = leads.filter(created_at__range=(start_date_lead, end_date_lead))
-        if clicks:
-            clicks = clicks.filter(created_at__range=(start_date_click, end_date_click))
-        if commissions:
-            commissions = commissions.filter(date__range=(start_date_commission, end_date_commission))
-    
-        # Create a dictionary containing agent data
-        agent_data = {
-            'agent_name': affiliateuser.first_name,
-            'agent_leads': leads,
-            'agent_clicks': clicks,
-            'affiliate_commissions': commissions
-        }
+            # Filter leads, clicks, and commissions based on the date ranges
+            if leads:
+                leads = leads.filter(created_at__range=(start_date_lead, end_date_lead))
+            if clicks:
+                clicks = clicks.filter(created_at__range=(start_date_click, end_date_click))
+            if commissions:
+                commissions = commissions.filter(date__range=(start_date_commission, end_date_commission))
+        
+            # Create a dictionary containing agent data
+            agent_data = {
+                'agent_name': user.first_name,
+                'agent_leads': leads,
+                'agent_clicks': clicks,
+                'affiliate_commissions': commissions
+            }
+            agents_list.append(agent_data)
 
         # Return the agent_data dictionary as a response
-        return Response(agent_data)
+        return Response(agents_list)
     
     def post(self, request):
         data = request.data
@@ -131,8 +136,6 @@ class CreateAffiliateUser(APIView):
         if serializer.is_valid():  # Check if the serializer data is valid
             serializer.save()  # Save the serializer data to the database
             return Response(serializer.data, status=status.HTTP_201_CREATED)  # Return the serialized data with a successful response status
-
-
  
 class GetAffiliateUser(APIView):
     permission_classes = [IsAuthenticated]

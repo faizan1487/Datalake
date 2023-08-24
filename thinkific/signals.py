@@ -8,10 +8,14 @@ import environ
 
 env = environ.Env()
 env.read_env()
+api_key = env("FRAPPE_API_KEY")
+api_secret = env("FRAPPE_API_SECRET")
+
 DEBUG = env('DEBUG',cast=bool)
 
-# @receiver(post_save, sender=Thinkific_Users_Enrollments)
+@receiver(post_save, sender=Thinkific_Users_Enrollments)
 def send_lead_post_request(sender, instance, **kwargs):
+    print("signal running")
     source='Thinkific'
     thinkific_user = usersignal(instance,source)
         
@@ -29,7 +33,7 @@ def usersignal(instance,source):
 
             products = ""
             for enrollment in user_enrollments:
-                print(enrollment.course_name)
+                # print(enrollment.course_name)
                 if enrollment.course_name.lower().startswith("demo"):
                     products += enrollment.course_name + ", "
 
@@ -37,14 +41,13 @@ def usersignal(instance,source):
             products = products.rstrip(", ")
 
 
-            if DEBUG:
-                api_key = '2768f34bb4bb7f7'
-                api_secret = '21754cee8dc0f42'
-                url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{user.email}"]]'
-            else:
-                api_key = '2b4b9755ecc2dc7'
-                api_secret = '8d71fb9b172e2aa'
-                url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{user.email}"]]'
+            # if DEBUG:
+            #     api_key = '2768f34bb4bb7f7'
+            #     api_secret = '21754cee8dc0f42'
+            #     url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{user.email}"]]'
+            # else:
+            
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{user.email}"]]'
             
             headers = {
                 'Authorization': f'token {api_key}:{api_secret}',
@@ -62,28 +65,28 @@ def usersignal(instance,source):
                         country_name = name
                         break
             
-            if DEBUG:
-                data = {
-                        "first_name": user.first_name or None,
-                        "last_name": user.last_name if hasattr(user, 'last_name') else None,
-                        "email_id": user.email or None,
-                        "mobile_no": user.phone if hasattr(user, 'phone') else None,
-                        "country": country_name,
-                        "source": source,
-                        "product": products if hasattr(instance, 'course_name') else None,
-                        # Add other fields from the Main_User model to the data dictionary as needed
-                    }
-            else:
-                data = {
-                    "first_name": user.first_name or None,
-                    "last_name": user.last_name if hasattr(user, 'last_name') else None,
-                    "email_id": user.email or None,
-                    "mobile_no": user.phone if hasattr(user, 'phone') else None,
-                    "country": country_name,
-                    "source": source,
-                    "product_name": products if hasattr(instance, 'course_name') else None,
-                    # Add other fields from the Main_User model to the data dictionary as needed
-                }
+            # if DEBUG:
+            #     data = {
+            #             "first_name": user.first_name or None,
+            #             "last_name": user.last_name if hasattr(user, 'last_name') else None,
+            #             "email_id": user.email or None,
+            #             "mobile_no": user.phone if hasattr(user, 'phone') else None,
+            #             "country": country_name,
+            #             "source": source,
+            #             "product": products if hasattr(instance, 'course_name') else None,
+            #             # Add other fields from the Main_User model to the data dictionary as needed
+            #         }
+            # else:
+            data = {
+                "first_name": user.first_name or None,
+                "last_name": user.last_name if hasattr(user, 'last_name') else None,
+                "email_id": user.email or None,
+                "mobile_no": user.phone if hasattr(user, 'phone') else None,
+                "country": country_name,
+                "source": source,
+                "product_name": products if hasattr(instance, 'course_name') else None,
+                # Add other fields from the Main_User model to the data dictionary as needed
+            }
             
             
             response = requests.get(url, headers=headers)
@@ -95,10 +98,10 @@ def usersignal(instance,source):
             if already_existed:
                 lead_id = lead_data['data'][0]['name']
 
-                if DEBUG:
-                    url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
-                else:
-                    url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+                # if DEBUG:
+                #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
+                # else:
+                url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
 
                 response = requests.put(url, headers=headers, json=data)
                 user.erp_lead_id = lead_data['data'][0]['name']
@@ -106,10 +109,10 @@ def usersignal(instance,source):
                 print("lead updadted")
             else:
 
-                if DEBUG:
-                    url = 'http://3.142.247.16/api/resource/Lead'
-                else:
-                    url = 'https://crm.alnafi.com/api/resource/Lead'
+                # if DEBUG:
+                #     url = 'http://3.142.247.16/api/resource/Lead'
+                # else:
+                url = 'https://crm.alnafi.com/api/resource/Lead'
 
                 response = requests.post(url, headers=headers, json=data)
                 response.raise_for_status()

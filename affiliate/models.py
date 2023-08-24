@@ -69,7 +69,7 @@ class Commission(models.Model):
     student_email = models.CharField(max_length=150)
     date = models.DateTimeField(default=datetime.now)
     is_paid = models.BooleanField(default=False)
-    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    created_at= models.DateTimeField(null=True, blank=True)
     
     def __str__(self):
         return f"{self.product}"

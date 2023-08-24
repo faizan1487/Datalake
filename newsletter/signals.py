@@ -4,8 +4,14 @@ import requests
 from .models import Newsletter
 from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
+import environ
 
-# @receiver(post_save, sender=Newsletter)
+env = environ.Env()
+env.read_env()
+api_key = env("FRAPPE_API_KEY")
+api_secret = env("FRAPPE_API_SECRET")
+
+@receiver(post_save, sender=Newsletter)
 def send_lead_post_request(sender, instance, created, **kwargs):
     source='Newsletter'
     newsletter = usersignal(instance,source)        
@@ -16,8 +22,6 @@ def usersignal(instance,source):
     post_save.disconnect(send_lead_post_request, sender=Newsletter)
     # if instance.is_processing:
     #     return
-    api_key = '2b4b9755ecc2dc7'
-    api_secret = '8d71fb9b172e2aa'
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",

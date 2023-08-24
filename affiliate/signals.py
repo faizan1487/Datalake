@@ -1,22 +1,26 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 import requests
-from .models import AffiliateUser
+from .models import AffiliateUser, AffiliateLead
 from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
+import environ
 
-# @receiver(post_save, sender=AffiliateUser)
+env = environ.Env()
+env.read_env()
+api_key = env("FRAPPE_API_KEY")
+api_secret = env("FRAPPE_API_SECRET")
+
+@receiver(post_save, sender=AffiliateLead)
 def send_lead_post_request(sender, instance, created, **kwargs):
     source='Affiliate'
     affiliate_user = usersignal(instance,source)
 
 def usersignal(instance,source):
     # Disconnect the post_save signal temporarily to avoid recursive calls
-    post_save.disconnect(send_lead_post_request, sender=AffiliateUser)
+    post_save.disconnect(send_lead_post_request, sender=AffiliateLead)
 
-    # Set API key and secret for authentication
-    api_key = '2b4b9755ecc2dc7'
-    api_secret = '8d71fb9b172e2aa'
+    
     # Prepare headers for the API request
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
@@ -38,7 +42,7 @@ def usersignal(instance,source):
             "first_name": instance.first_name or None,
             "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
             "email_id": instance.email or None,
-            "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
+            "mobile_no": instance.contact if hasattr(instance, 'phone') else None,
             "country": country_name,
             "source": source
             # Add other fields from the Main_User model to the data dictionary as needed
@@ -64,8 +68,9 @@ def usersignal(instance,source):
         # print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
+        print("response.text",response.text)
         response.raise_for_status()
-        # print("response.status_code",response.status_code)
+        print("response.status_code",response.status_code)
         if response.status_code == 200:
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']
@@ -76,4 +81,4 @@ def usersignal(instance,source):
                 # print("Lead created successfully!")
     
     # Reconnect the post_save signal after processing
-    post_save.connect(send_lead_post_request, sender=AffiliateUser)
+    post_save.connect(send_lead_post_request, sender=AffiliateLead)
