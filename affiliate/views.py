@@ -36,6 +36,7 @@ class CreateAffiliateUser(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
         email = self.request.GET.get('email', None) or None
+        product = self.request.GET.get('product', None) or None
         export = self.request.GET.get('export', None) or None
         
         # Fetch AffiliateUser(s) based on the provided email or a default email if not provided
@@ -56,6 +57,7 @@ class CreateAffiliateUser(APIView):
             end_date = last_user.created_at.date() if last_user else None
 
         affiliateuser = affiliateuser.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
+        
 
         # Fetch leads, clicks, and commissions related to the selected AffiliateUsers
         affiliateuser = affiliateuser.prefetch_related(
@@ -63,6 +65,10 @@ class CreateAffiliateUser(APIView):
             'affiliate_clicks',
             'affiliate_commission'
         )
+
+        if product:
+            # affiliateuser = affiliateuser.filter(product=product)
+            affiliateuser = affiliateuser.filter(affiliate_commission__product=product)
 
         agents_list = []
         total_amount_pkr = 0
