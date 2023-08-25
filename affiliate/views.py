@@ -433,46 +433,63 @@ class GetAffiliateUser(APIView):
             # print(product)
             commissions = commissions.filter(product=product)
 
-        # print(affiliateuser)
-        # If start_date is provided, use it for all date ranges
+    
+        
+        # end_date_lead = None
+        # end_date_click = None
+        # end_date_commission = None
+        # # If end_date is provided, use it for all date ranges
+        # if end_date:
+        #     end_date_lead = end_date_click = end_date_commission = end_date
+        # else:
+        #     # Calculate the latest date among leads, clicks, and commissions
+        #     if leads:
+        #         last_lead = affiliateuser.exclude(affiliate_leads__created_at=None).latest('affiliate_leads__created_at')
+        #         end_date_lead = last_lead.affiliate_leads.last().created_at.date() + timedelta(days=1) if last_lead else None
+        #     if clicks:
+        #         last_click = affiliateuser.exclude(affiliate_clicks__created_at=None).latest('affiliate_clicks__created_at')
+        #         end_date_click = last_click.affiliate_clicks.last().created_at.date() + timedelta(days=1) if last_click else None
+        #     if commissions:
+        #         last_commission = affiliateuser.exclude(affiliate_commission__created_at=None).latest('affiliate_commission__created_at')
+        #         end_date_commission = last_commission.affiliate_commission.last().created_at.date() + timedelta(days=1) if last_commission else None
+        
         start_date_lead = None
         start_date_click = None
         start_date_commission = None
         if start_date:
             start_date_lead = start_date_click = start_date_commission = start_date
         else:
-            if leads:
             # Calculate the earliest date among leads, clicks, and commissions
-                first_lead = affiliateuser.exclude(affiliate_leads__created_at=None).earliest('affiliate_leads__created_at')
-                start_date_lead = first_lead.affiliate_leads.first().created_at.date() if first_lead else None
+            if leads:
+                first_lead = leads.exclude(created_at=None).earliest('created_at')
+                start_date_lead = first_lead.created_at.date() if first_lead else None
             if clicks:
-                first_click = affiliateuser.exclude(affiliate_clicks__created_at=None).earliest('affiliate_clicks__created_at')
-                start_date_click = first_click.affiliate_clicks.first().created_at.date() if first_click else None
+                first_click = clicks.exclude(created_at=None).earliest('created_at')
+                start_date_click = first_click.created_at.date() if first_click else None
             if commissions:
-                first_commission = affiliateuser.exclude(affiliate_commission__created_at=None).earliest('affiliate_commission__created_at')
-                start_date_commission = first_commission.affiliate_commission.first().created_at.date() if first_commission else None
+                first_commission = commissions.exclude(created_at=None).earliest('created_at')
+                start_date_commission = first_commission.created_at.date() if first_commission else None
+
 
         
+        # If end_date is provided, use it for all date ranges
         end_date_lead = None
         end_date_click = None
         end_date_commission = None
-        # If end_date is provided, use it for all date ranges
         if end_date:
             end_date_lead = end_date_click = end_date_commission = end_date
         else:
             # Calculate the latest date among leads, clicks, and commissions
             if leads:
-                last_lead = affiliateuser.exclude(affiliate_leads__created_at=None).latest('affiliate_leads__created_at')
-                end_date_lead = last_lead.affiliate_leads.last().created_at.date() + timedelta(days=1) if last_lead else None
+                last_lead = leads.exclude(created_at=None).latest('created_at')
+                end_date_lead  = last_lead.created_at.date() + timedelta(days=1) if last_lead else None
             if clicks:
-                last_click = affiliateuser.exclude(affiliate_clicks__created_at=None).latest('affiliate_clicks__created_at')
-                end_date_click = last_click.affiliate_clicks.last().created_at.date() + timedelta(days=1) if last_click else None
+                last_click = clicks.exclude(created_at=None).latest('created_at')
+                end_date_click = last_click.created_at.date() + timedelta(days=1) if last_click else None
             if commissions:
-                last_commission = affiliateuser.exclude(affiliate_commission__created_at=None).latest('affiliate_commission__created_at')
-                end_date_commission = last_commission.affiliate_commission.last().created_at.date() + timedelta(days=1) if last_commission else None
-        
+                last_commission = commissions.exclude(created_at=None).latest('created_at')
+                end_date_commission = last_commission.created_at.date() + timedelta(days=1) if last_commission else None
 
-        # print(affiliateuser)
 
         agents_list = []
         usd_rate = get_USD_rate()
