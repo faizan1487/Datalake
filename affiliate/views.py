@@ -96,6 +96,9 @@ class CreateAffiliateUser(APIView):
                 total_commissions += float(commission_pkr) + converted_commission_pkr
                 agent_sales += amount_pkr + converted_amount_pkr
 
+                
+            total_clicks += len(list(user.affiliate_clicks.all()))
+            total_leads += len(list(user.affiliate_leads.all()))
 
             agent_data['agent_sales'] = agent_sales
           
@@ -156,7 +159,8 @@ class CreateAffiliateUser(APIView):
                     return obj.strftime('%Y-%m-%d %H:%M:%S')
                 return super().default(obj)
 
-        response_data = {"agents": agents_list,'total_sales': total_amount_pkr,'total_commissions': total_commissions}
+        response_data = {"agents": agents_list,'total_sales': total_amount_pkr,'total_commissions': total_commissions,
+                         'total_leads':total_leads,'total_clicks':total_clicks}
         # Return the agent_data dictionary as a response
         return JsonResponse(response_data, encoder=CustomJSONEncoder, safe=False)
     
