@@ -55,8 +55,6 @@ class CreateAffiliateUser(APIView):
             last_user = affiliateuser.exclude(created_at=None).last()
             end_date = last_user.created_at.date() if last_user else None
 
-        print(start_date)
-        print(end_date)
         affiliateuser = affiliateuser.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
 
 
@@ -76,9 +74,9 @@ class CreateAffiliateUser(APIView):
                 'agent_name': user.first_name,
                 'agent_id': user.id,
                 'agent_date': user.created_at,
-                'agent_leads': len(list(user.affiliate_leads.all().values())),
-                'agent_clicks': len(list(user.affiliate_clicks.all().values())),
-                'affiliate_commissions': len(list(user.affiliate_commission.all().values())),
+                'agent_leads': len(list(user.affiliate_leads.all())),
+                'agent_clicks': len(list(user.affiliate_clicks.all())),
+                'affiliate_commissions': len(list(user.affiliate_commission.all())),
                 'agent_sales': 0
             }
 
@@ -94,7 +92,7 @@ class CreateAffiliateUser(APIView):
             agent_data['agent_sales'] = agent_sales
           
                 
-            agents_list.append(agent_data)   
+            agents_list.append(agent_data)
         
         if export == 'true':
             #For CSV WORKING:
@@ -150,9 +148,9 @@ class CreateAffiliateUser(APIView):
                     return obj.strftime('%Y-%m-%d %H:%M:%S')
                 return super().default(obj)
 
-        agents_list.append({'total_sales': total_amount_pkr})
+        response_data = {"agents": agents_list,'total_sales': total_amount_pkr}
         # Return the agent_data dictionary as a response
-        return JsonResponse(agents_list, encoder=CustomJSONEncoder, safe=False)
+        return JsonResponse(response_data, encoder=CustomJSONEncoder, safe=False)
     
 
 
