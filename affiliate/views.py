@@ -48,7 +48,7 @@ class CreateAffiliateUser(APIView):
         except AffiliateUser.DoesNotExist:
             return Response("No matching record found for the provided email.")
         
-        print(affiliateuser)
+        # print(affiliateuser)
         # Fetch leads, clicks, and commissions related to the selected AffiliateUsers
         affiliateuser = affiliateuser.prefetch_related(
             'affiliate_leads',
@@ -64,33 +64,42 @@ class CreateAffiliateUser(APIView):
 
         # print(affiliateuser)
         # If start_date is provided, use it for all date ranges
+        start_date_lead = None
+        start_date_click = None
+        start_date_commission = None
         if start_date:
             start_date_lead = start_date_click = start_date_commission = start_date
         else:
-            if affiliateuser.affiliate_leads.exists():
+            if affiliateuser.first().affiliate_leads.exists():
             # Calculate the earliest date among leads, clicks, and commissions
                 first_lead = affiliateuser.exclude(affiliate_leads__created_at=None).earliest('affiliate_leads__created_at')
                 start_date_lead = first_lead.affiliate_leads.first().created_at.date() if first_lead else None
-            if affiliateuser.affiliate_clicks.exists():
+            if affiliateuser.first().affiliate_clicks.exists():
                 first_click = affiliateuser.exclude(affiliate_clicks__created_at=None).earliest('affiliate_clicks__created_at')
                 start_date_click = first_click.affiliate_clicks.first().created_at.date() if first_click else None
-            if affiliateuser.affiliate_commission.exists():
+            if affiliateuser.first().affiliate_commission.exists():
                 first_commission = affiliateuser.exclude(affiliate_commission__created_at=None).earliest('affiliate_commission__created_at')
                 start_date_commission = first_commission.affiliate_commission.first().created_at.date() if first_commission else None
 
         
+        end_date_lead = None
+        end_date_click = None
+        end_date_commission = None
         # If end_date is provided, use it for all date ranges
         if end_date:
             end_date_lead = end_date_click = end_date_commission = end_date
         else:
             # Calculate the latest date among leads, clicks, and commissions
-            last_lead = affiliateuser.exclude(affiliate_leads__created_at=None).latest('affiliate_leads__created_at')
-            last_click = affiliateuser.exclude(affiliate_clicks__created_at=None).latest('affiliate_clicks__created_at')
-            last_commission = affiliateuser.exclude(affiliate_commission__created_at=None).latest('affiliate_commission__created_at')
+            if affiliateuser.first().affiliate_leads.exists():
+                last_lead = affiliateuser.exclude(affiliate_leads__created_at=None).latest('affiliate_leads__created_at')
+                end_date_lead = last_lead.affiliate_leads.last().created_at.date() + timedelta(days=1) if last_lead else None
+            if affiliateuser.first().affiliate_clicks.exists():
+                last_click = affiliateuser.exclude(affiliate_clicks__created_at=None).latest('affiliate_clicks__created_at')
+                end_date_click = last_click.affiliate_clicks.last().created_at.date() + timedelta(days=1) if last_click else None
+            if affiliateuser.first().affiliate_commission.exists():
+                last_commission = affiliateuser.exclude(affiliate_commission__created_at=None).latest('affiliate_commission__created_at')
+                end_date_commission = last_commission.affiliate_commission.last().created_at.date() + timedelta(days=1) if last_commission else None
             
-            end_date_lead = last_lead.affiliate_leads.last().created_at.date() + timedelta(days=1) if last_lead else None
-            end_date_click = last_click.affiliate_clicks.last().created_at.date() + timedelta(days=1) if last_click else None
-            end_date_commission = last_commission.affiliate_commission.last().created_at.date() + timedelta(days=1) if last_commission else None
         
 
         agents_list = []
