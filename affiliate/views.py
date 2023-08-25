@@ -209,7 +209,90 @@ class CreateAffiliateUser(APIView):
         if serializer.is_valid():  # Check if the serializer data is valid
             serializer.save()  # Save the serializer data to the database
             return Response(serializer.data, status=status.HTTP_201_CREATED)  # Return the serialized data with a successful response status
- 
+
+
+class AffiliateAnalytics(APIView):
+    # permission_classes = [IsAuthenticated]
+    def get(self, request):
+        # Get query parameters from the request
+        
+        # Fetch AffiliateUser(s) based on the provided email or a default email if not provided
+      
+        affiliateuser = AffiliateUser.objects.all()
+        
+        # Fetch leads, clicks, and commissions related to the selected AffiliateUsers
+        affiliateuser = affiliateuser.prefetch_related(
+            'affiliate_leads',
+            'affiliate_clicks',
+            'affiliate_commission'
+        )
+
+
+        agents_list = []
+        total_amount_pkr = 0
+        usd_rate = get_USD_rate()
+        # Iterate through each AffiliateUser and construct agent data
+        for user in affiliateuser:
+            agent_data = {
+                'agent_name': user.first_name,
+                'agent_leads': list(user.affiliate_leads.all().values()),
+                'agent_clicks': list(user.affiliate_clicks.all().values()),
+                'affiliate_commissions': list(user.affiliate_commission.all().values()),
+                'agent_sales': 0
+            }
+
+            agent_sales = 0
+            for commission in user.affiliate_commission.all():
+                # print(commission)
+                amount_pkr = commission.amount_pkr
+                amount_usd = commission.amount_usd
+                converted_amount_pkr = amount_usd * usd_rate['PKR']
+                total_amount_pkr += amount_pkr + converted_amount_pkr
+                agent_sales += amount_pkr + converted_amount_pkr
+
+
+            agent_data['agent_sales'] = agent_sales
+          
+                
+            agents_list.append(agent_data)
+
+        # Sort agents_list based on total_amount_pkr in descending order
+        sorted_agents = sorted(agents_list, key=lambda x: x['agent_sales'], reverse=True)
+
+        # Get the top 10 agents
+        top_10_agents = sorted_agents[:10]
+        # print(top_10_agents)
+        top_agents = []
+        for agent in top_10_agents:
+            agent_name = agent['agent_name']
+            agent_sale = agent.get('agent_sales', 0) 
+
+            top_agents.append({'agent': agent_name,'agent_sales': agent_sale})
+
+        # print(top_agents)
+
+        # Convert datetime objects to strings using a custom JSON encoder
+        # class CustomJSONEncoder(DjangoJSONEncoder):
+        #     def default(self, obj):
+        #         if isinstance(obj, datetime.datetime):
+        #             return obj.strftime('%Y-%m-%d %H:%M:%S')
+        #         return super().default(obj)
+
+        # agents_list.append({'total_sales': total_amount_pkr})
+        # Return the agent_data dictionary as a response
+        # return JsonResponse(agents_list, encoder=CustomJSONEncoder, safe=False)
+        return Response(top_agents)
+
+
+
+
+
+
+
+
+
+
+
 class GetAffiliateUser(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
