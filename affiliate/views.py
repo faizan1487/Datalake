@@ -48,6 +48,7 @@ class CreateAffiliateUser(APIView):
         except AffiliateUser.DoesNotExist:
             return Response("No matching record found for the provided email.")
         
+        print(affiliateuser)
         # Fetch leads, clicks, and commissions related to the selected AffiliateUsers
         affiliateuser = affiliateuser.prefetch_related(
             'affiliate_leads',
@@ -66,14 +67,16 @@ class CreateAffiliateUser(APIView):
         if start_date:
             start_date_lead = start_date_click = start_date_commission = start_date
         else:
+            if affiliateuser.affiliate_leads.exists():
             # Calculate the earliest date among leads, clicks, and commissions
-            first_lead = affiliateuser.exclude(affiliate_leads__created_at=None).earliest('affiliate_leads__created_at')
-            first_click = affiliateuser.exclude(affiliate_clicks__created_at=None).earliest('affiliate_clicks__created_at')
-            first_commission = affiliateuser.exclude(affiliate_commission__created_at=None).earliest('affiliate_commission__created_at')
-            
-            start_date_lead = first_lead.affiliate_leads.first().created_at.date() if first_lead else None
-            start_date_click = first_click.affiliate_clicks.first().created_at.date() if first_click else None
-            start_date_commission = first_commission.affiliate_commission.first().created_at.date() if first_commission else None
+                first_lead = affiliateuser.exclude(affiliate_leads__created_at=None).earliest('affiliate_leads__created_at')
+                start_date_lead = first_lead.affiliate_leads.first().created_at.date() if first_lead else None
+            if affiliateuser.affiliate_clicks.exists():
+                first_click = affiliateuser.exclude(affiliate_clicks__created_at=None).earliest('affiliate_clicks__created_at')
+                start_date_click = first_click.affiliate_clicks.first().created_at.date() if first_click else None
+            if affiliateuser.affiliate_commission.exists():
+                first_commission = affiliateuser.exclude(affiliate_commission__created_at=None).earliest('affiliate_commission__created_at')
+                start_date_commission = first_commission.affiliate_commission.first().created_at.date() if first_commission else None
 
         
         # If end_date is provided, use it for all date ranges
