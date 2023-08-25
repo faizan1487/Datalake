@@ -48,15 +48,14 @@ class CreateAffiliateUser(APIView):
             return Response("No matching record found for the provided email.")
         
         if not start_date:
-            first_user = affiliateuser.exclude(created_at=None).first()
+            first_user = affiliateuser.exclude(created_at=None).order_by('created_at').first()
             start_date = first_user.created_at.date() if first_user else None
 
         if not end_date:
-            last_user = affiliateuser.exclude(created_at=None).last()
+            last_user = affiliateuser.exclude(created_at=None).order_by('-created_at').first()
             end_date = last_user.created_at.date() if last_user else None
 
         affiliateuser = affiliateuser.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
-
 
         # Fetch leads, clicks, and commissions related to the selected AffiliateUsers
         affiliateuser = affiliateuser.prefetch_related(
@@ -67,6 +66,9 @@ class CreateAffiliateUser(APIView):
 
         agents_list = []
         total_amount_pkr = 0
+        total_leads = 0
+        total_clicks = 0
+        total_commissions = 0
         usd_rate = get_USD_rate()
         # Iterate through each AffiliateUser and construct agent data
         for user in affiliateuser:
@@ -81,11 +83,17 @@ class CreateAffiliateUser(APIView):
             }
 
             agent_sales = 0
-            for commission in user.affiliate_commission.all():
+            commissions = user.affiliate_commission.all()
+            for commission in commissions:
                 amount_pkr = commission.amount_pkr
                 amount_usd = commission.amount_usd
                 converted_amount_pkr = amount_usd * usd_rate['PKR']
                 total_amount_pkr += amount_pkr + converted_amount_pkr
+
+                commission_pkr =  commission.commission_pkr
+                commission_usd = commission.commission_usd
+                converted_commission_pkr = float(commission_usd) * usd_rate['PKR']
+                total_commissions += float(commission_pkr) + converted_commission_pkr
                 agent_sales += amount_pkr + converted_amount_pkr
 
 
@@ -148,7 +156,7 @@ class CreateAffiliateUser(APIView):
                     return obj.strftime('%Y-%m-%d %H:%M:%S')
                 return super().default(obj)
 
-        response_data = {"agents": agents_list,'total_sales': total_amount_pkr}
+        response_data = {"agents": agents_list,'total_sales': total_amount_pkr,'total_commissions': total_commissions}
         # Return the agent_data dictionary as a response
         return JsonResponse(response_data, encoder=CustomJSONEncoder, safe=False)
     
