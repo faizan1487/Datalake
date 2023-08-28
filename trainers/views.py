@@ -38,6 +38,7 @@ class TrainersData(APIView):
         q = self.request.GET.get('q', None) or None
         active = self.request.GET.get('active', None) or None
         product_name = self.request.GET.get('product', None)
+        plan = self.request.GET.get('plan', None)
         export = self.request.GET.get('export', None) or None
         req_start_date = self.request.GET.get('start_date', None) or None
         req_end_date = self.request.GET.get('end_date', None) or None
@@ -69,11 +70,24 @@ class TrainersData(APIView):
             'users': []
         }
 
+        # if product_name:
+        #     products = trainer.products.filter(product_name=product_name)
+        # else:
+        #     products = trainer.products.all()
+
+
         if product_name:
-            products = trainer.products.filter(product_name=product_name)
+            keywords = product_name.split()
+            query = Q()
+            for keyword in keywords:
+                query &= Q(product_name__icontains=keyword)
+                products = trainer.products.filter(query)
         else:
             products = trainer.products.all()
-        
+
+        if plan:
+            products = [product for product in products if plan.lower() in product.product_name.lower()]
+
         #total 5 queries in one loop
         for product in products:
             #1 query from here
@@ -222,12 +236,37 @@ class TrainersData(APIView):
 
 class TrainerProducts(APIView):
     permission_classes = [IsAuthenticated]
+    # def get(self,request):
+    #     trainer_email = request.GET.get('q').strip()
+    #     trainer = get_object_or_404(Trainer, email__iexact=trainer_email)
+    #     products = trainer.products.all().values("product_name")
+    #     # print(products)
+    #     return Response(products)
+    
+
     def get(self,request):
+        # queryset = Alnafi_Product.objects.exclude(name__in=['test','test10']).values_list('name', flat=True)
         trainer_email = request.GET.get('q').strip()
         trainer = get_object_or_404(Trainer, email__iexact=trainer_email)
         products = trainer.products.all().values("product_name")
-        # print(products)
-        return Response(products)
+        words_to_remove = ['Wnglish','01_2_7','01_2_4','01_2_6','Brazil','(Italy)',' in english','Bengali','Mandarin',' in','yearly','Annual in english','Half Yearly in english','Quarterly in english','Quarterly','half','Half', 'Monthly', 'Yearly', 'HalfYearly','Annual',' halfyearly','QUARTERLY','annual','Quaterly','TEST','English','english','Urdu','Italian','French','Chinese','Spanish','Arabic','Malay','Indonesian','Hindi','Bangla','Portuguese','Swahili','Russian','Japanese','Persian','Filipino','Turkish','Marathi','Javanese','German','Vietnamese']
+        to_not_remove = ['Arabic for Urdu Speakers']
+        # return Response(queryset)
+    
+        query_objects_without_words = []
+        for product in products:
+            name = product["product_name"]
+            for word in words_to_remove:
+                if name not in to_not_remove:
+                    name = name.replace(word, '')  # Remove the word from the name
+            query_objects_without_words.append(name)
+
+        
+        names_list_without_spaces = [name.rstrip() for name in query_objects_without_words]
+        names_list_without_duplicates = list(set(names_list_without_spaces))
+        filtered_list = [item for item in names_list_without_duplicates if item != ""]
+        
+        return Response(filtered_list)
 
 
 
