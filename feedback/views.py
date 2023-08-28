@@ -165,7 +165,7 @@ class GetFeedbackProgress(APIView):
 
 
 
-            response_data = {'course_name': course_name,'yes': f'{yes_percent}%','no': f'{no_percent}%','answers':answers}
+            response_data = {'course_name': course_name,'yes': f'{yes_percent}%','no': f'{no_percent}%','questions':question_counts,'answers':answers}
             return Response(response_data)
         
         return Response(feedbacks)
