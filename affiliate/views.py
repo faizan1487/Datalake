@@ -78,13 +78,16 @@ class CreateAffiliateUser(APIView):
         usd_rate = get_USD_rate()
         # Iterate through each AffiliateUser and construct agent data
         for user in affiliateuser:
+            products = [commission.product for commission in user.affiliate_commission.all()]
             agent_data = {
                 'agent_name': user.first_name,
+                'agent_email': user.email,
                 'agent_id': user.id,
                 'agent_date': user.created_at,
                 'agent_leads': len(list(user.affiliate_leads.all())),
                 'agent_clicks': len(list(user.affiliate_clicks.all())),
                 'affiliate_commissions': len(list(user.affiliate_commission.all())),
+                'product': products,
                 'agent_sales': 0
             }
 
@@ -315,6 +318,7 @@ class GetAffiliateUser(APIView):
         # for user in affiliateuser:
         agent_data = {
             'agent_name': affiliateuser.first_name,
+            'agent_email': affiliateuser.email,
             'agent_leads': list(affiliateuser.affiliate_leads.filter(created_at__range=(start_date_lead, end_date_lead)).values()),
             'agent_clicks': list(affiliateuser.affiliate_clicks.filter(created_at__range=(start_date_click, end_date_click)).values()),
             'affiliate_commissions': list(affiliateuser.affiliate_commission.filter(created_at__range=(start_date_commission, end_date_commission)).values()),
@@ -509,3 +513,17 @@ class UpdateAffiliateUser(APIView):
         for user in users:
             # print(user)
             user.save()
+
+
+
+class AffiliateProducts(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        email = request.GET.get('email').strip()
+        # products = Commission.objects.filter(product=product).values('product')
+        products = Commission.objects.filter(affiliate__email=email).values('product')
+        products_list = []
+        for i in products:
+            products_list.append(i['product'])
+        return Response(products_list)
+

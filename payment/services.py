@@ -86,16 +86,6 @@ def main_no_of_payments(start_date,end_date,source):
 
     return response_data
 
-# def no_of_payments(source):
-#     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual','UBL_DD','ubl_dd'])
-
-#     if source:
-#         if source.lower() == 'ubl_dd':
-#             payments = payments.exclude(status=0).filter(source=source)
-#         else:
-#             payments = payments.filter(source=source)
-    
-#     return payments.count()
 
 def no_of_payments(source):
     filtered_payments = Main_Payment.objects.exclude(product__product_name="test") \
@@ -242,10 +232,6 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
 
 
 
-
-
-
-
 def get_USD_rate():
     # usd_details = cache.get("usd_details")
     # if usd_details:
@@ -262,6 +248,19 @@ def get_USD_rate():
     # print("usd_details",usd_details)
     return usd_details
 
+
+
+
+# def no_of_payments(source):
+#     payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_Manual','UBL_DD','ubl_dd'])
+
+#     if source:
+#         if source.lower() == 'ubl_dd':
+#             payments = payments.exclude(status=0).filter(source=source)
+#         else:
+#             payments = payments.filter(source=source)
+    
+#     return payments.count()
 
 
 
