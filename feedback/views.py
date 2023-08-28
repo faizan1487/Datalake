@@ -94,9 +94,12 @@ class GetFeedbackProgress(APIView):
             feedbacks = feedbacks.filter(user_email=email)        
         if course:
             feedbacks = feedbacks.filter(feedback_question_id__course_name=course)
+        else:
+            feedbacks = feedbacks.filter(feedback_question_id__course_name='Mathematics A Level 9709')
         if chapter:
             feedbacks = feedbacks.filter(feedback_question_id__chapter_name=chapter)
 
+        # print(feedbacks)
         if feedbacks:
             # Extract the 'created_at' values
             created_at_values = [item['created_at'] for item in feedbacks]
@@ -128,6 +131,40 @@ class GetFeedbackProgress(APIView):
 
             yes_percent = total_yes/40 * 100
             no_percent = total_no/40 * 100
+
+
+            # Define a dictionary to store the counts of 'Yes' and 'No' for each question
+            question_counts = {}
+
+            # Iterate over the queryset
+            for feedback in feedbacks:
+                # print(feedback)
+                question_answers = feedback['question_answer']
+                for answer_entry in question_answers:
+                    answer = answer_entry['answer']
+                    question = answer_entry['question']
+                    
+                    # Initialize counts for each question if not already done
+                    if question not in question_counts:
+                        question_counts[question] = {'Yes': 0, 'No': 0}
+                    
+                    # Increment the appropriate count
+                    if answer == 'Yes':
+                        question_counts[question]['Yes'] += 1
+                    elif answer == 'No':
+                        question_counts[question]['No'] += 1
+
+            # print(question_counts)
+            # Print the results
+            # for question, counts in question_counts.items():
+            #     print(f"Question: {question}")
+            #     print(f"Yes: {counts['Yes']}")
+            #     print(f"No: {counts['No']}")
+            #     print("-" * 30)
+
+
+
+
             response_data = {'course_name': course_name,'yes': f'{yes_percent}%','no': f'{no_percent}%','answers':answers}
             return Response(response_data)
         
