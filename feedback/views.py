@@ -118,7 +118,7 @@ class GetFeedbackProgress(APIView):
                 data = i['question_answer']
                 last_two_answers = data[-2:]
                 # print(i)
-                chapter_data = {i['feedback_question_id__chapter_name']: last_two_answers,'user':i['user_email'],'created_at':i['created_at']}
+                chapter_data = {'chapter_name': i['feedback_question_id__chapter_name'], 'answers': last_two_answers, 'user':i['user_email'],'created_at':i['created_at']}
                 answers.append(chapter_data)
                 for j in i['question_answer']:
                     if j['answer'].lower() == 'yes':
