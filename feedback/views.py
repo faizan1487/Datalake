@@ -16,6 +16,7 @@ from collections import defaultdict
 
 # Create your views here.
 class GetFeedbacks(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -30,20 +31,22 @@ class GetFeedbacks(APIView):
         # Extract the 'created_at' values
         created_at_values = [item['created_at'] for item in feedbacks]
 
-        # Find the minimum and maximum 'created_at' values
-        min_created_at = min(created_at_values)
-        max_created_at = max(created_at_values)
-
-        print(min_created_at)
-        print(max_created_at)
+        # Find the minimum and maximum 'created_at' valus    
+        if not start_date:
+            start_date = min(created_at_values)
+        if not end_date:
+            end_date = max(created_at_values)
             
         if track:
             feedbacks = feedbacks.filter(track__name=track)
+
+        feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
 
         return Response(feedbacks)
     
 
 class GetFeedbackAnswers(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -59,6 +62,18 @@ class GetFeedbackAnswers(APIView):
             feedbacks = feedbacks.filter(feedback_question_id__course_name=course)
         if chapter:
             feedbacks = feedbacks.filter(feedback_question_id__chapter_name=chapter)
+
+        # Extract the 'created_at' values
+        created_at_values = [item['created_at'] for item in feedbacks]
+
+        # Find the minimum and maximum 'created_at' valus    
+        if not start_date:
+            start_date = min(created_at_values)
+        if not end_date:
+            end_date = max(created_at_values)
+         
+
+        feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
 
         return Response(feedbacks)
 

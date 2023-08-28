@@ -30,7 +30,7 @@ class MyPagination(PageNumberPagination):
     max_page_size = 100  
   
 class CreateAffiliateUser(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # Get query parameters from the request
         start_date = self.request.GET.get('start_date', None) or None
@@ -188,7 +188,7 @@ class CreateAffiliateUser(APIView):
 
 
 class AffiliateAnalytics(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):        
         # Fetch AffiliateUser(s) based on the provided email or a default email if not provided
         affiliateuser = AffiliateUser.objects.all()
@@ -247,7 +247,7 @@ class AffiliateAnalytics(APIView):
 
 
 class GetAffiliateUser(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id):
         user_id = id
         # Get query parameters from the request
