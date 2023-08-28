@@ -55,7 +55,6 @@ class GetFeedbackAnswers(APIView):
         course = self.request.GET.get('course', None) or None
         chapter = self.request.GET.get('chapter', None) or None
         feedbacks = FeedbackAnswers.objects.all().values("user_email","feedback_question_id__course_name","feedback_question_id__chapter_name","question_answer","created_at")
-
         if email:
             feedbacks = feedbacks.filter(user_email=email)        
         if course:
@@ -63,17 +62,17 @@ class GetFeedbackAnswers(APIView):
         if chapter:
             feedbacks = feedbacks.filter(feedback_question_id__chapter_name=chapter)
 
-        # Extract the 'created_at' values
-        created_at_values = [item['created_at'] for item in feedbacks]
+        if feedbacks:
+            # Extract the 'created_at' values
+            created_at_values = [item['created_at'] for item in feedbacks]
 
-        # Find the minimum and maximum 'created_at' valus    
-        if not start_date:
-            start_date = min(created_at_values)
-        if not end_date:
-            end_date = max(created_at_values)
+            # Find the minimum and maximum 'created_at' valus    
+            if not start_date:
+                start_date = min(created_at_values)
+            if not end_date:
+                end_date = max(created_at_values)
          
-
-        feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
+            feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
 
         return Response(feedbacks)
 
@@ -105,16 +104,21 @@ class GetFeedbackProgress(APIView):
         if not end_date:
             end_date = max(created_at_values)
          
-
         feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
 
-        # print(feedbacks)
-        total_yes += 0
-        total_no += 0
+        total_yes = 0
+        total_no = 0
         for i in feedbacks:
-            print(i['question_answer'])
+            for j in i['question_answer']:
+                if j['answer'].lower() == 'yes':
+                    total_yes += 1
+                elif j['answer'].lower() == 'no':
+                    total_no += 1
 
-        return Response(feedbacks)
+        yes_percent = total_yes/40 * 100
+        no_percent = total_no/40 * 100
+        response_data = {'yes': yes_percent,'no': no_percent,'dara':feedbacks}
+        return Response(response_data)
 
 
 class GetCoursesNames(APIView):
