@@ -112,12 +112,14 @@ class GetFeedbackProgress(APIView):
             total_yes = 0
             total_no = 0
             answers = []
+            course_name = ''
             for i in feedbacks:
+                course_name = i['feedback_question_id__course_name']
                 data = i['question_answer']
                 last_two_answers = data[-2:]
-                # print(last_two_answers)
-                for k in last_two_answers:
-                    answers.append(k)
+                # print(i)
+                chapter_data = {i['feedback_question_id__chapter_name']: last_two_answers,'user':i['user_email'],'created_at':i['created_at']}
+                answers.append(chapter_data)
                 for j in i['question_answer']:
                     if j['answer'].lower() == 'yes':
                         total_yes += 1
@@ -126,8 +128,7 @@ class GetFeedbackProgress(APIView):
 
             yes_percent = total_yes/40 * 100
             no_percent = total_no/40 * 100
-            # print(feedbacks)
-            response_data = {'yes': f'{yes_percent}%','no': f'{no_percent}%','answers':answers,'email':email}
+            response_data = {'course_name': course_name,'yes': f'{yes_percent}%','no': f'{no_percent}%','answers':answers}
             return Response(response_data)
         
         return Response(feedbacks)
@@ -164,3 +165,21 @@ class GetCoursesChapters(APIView):
         # return Response(grouped_data)
         return Response(chapters)
 
+class GetCoursesUsers(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        course = self.request.GET.get('course', None) or None
+        chapter = self.request.GET.get('chapter', None) or None
+        queryset = FeedbackAnswers.objects.filter(feedback_question_id__course_name=course).values('user_email','feedback_question_id__chapter_name')
+       
+        if chapter:
+            queryset = queryset.filter(feedback_question_id__chapter_name=chapter)
+
+        emails = []
+        for item in queryset:
+            email = item['user_email']
+            # grouped_data[course_name].append(chapter_name)
+            emails.append(email)
+
+        # return Response(grouped_data)
+        return Response(emails)
