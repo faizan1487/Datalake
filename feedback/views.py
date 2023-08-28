@@ -91,7 +91,7 @@ class GetFeedbackProgress(APIView):
         feedbacks = FeedbackAnswers.objects.all().values("user_email","feedback_question_id__course_name","feedback_question_id__chapter_name","question_answer","created_at")
 
         if email:
-            feedbacks = feedbacks.get(user_email=email)        
+            feedbacks = feedbacks.filter(user_email=email)        
         if course:
             feedbacks = feedbacks.filter(feedback_question_id__course_name=course)
         if chapter:
@@ -126,7 +126,7 @@ class GetFeedbackProgress(APIView):
 
             yes_percent = total_yes/40 * 100
             no_percent = total_no/40 * 100
-            print(feedbacks)
+            # print(feedbacks)
             response_data = {'yes': f'{yes_percent}%','no': f'{no_percent}%','answers':answers,'email':email}
             return Response(response_data)
         
