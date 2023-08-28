@@ -24,23 +24,24 @@ class GetFeedbacks(APIView):
         email = self.request.GET.get('email', None) or None
         track = self.request.GET.get('track', None) or None
         feedbacks = Feedback.objects.all().values("user__email","rating","review","course__name","track__name","created_at")
+
         if email:
             feedbacks = feedbacks.filter(user__email=email)
 
+        if feedbacks:
+            # Extract the 'created_at' values
+            created_at_values = [item['created_at'] for item in feedbacks]
 
-        # Extract the 'created_at' values
-        created_at_values = [item['created_at'] for item in feedbacks]
+            # Find the minimum and maximum 'created_at' valus    
+            if not start_date:
+                start_date = min(created_at_values)
+            if not end_date:
+                end_date = max(created_at_values)
+                
+            if track:
+                feedbacks = feedbacks.filter(track__name=track)
 
-        # Find the minimum and maximum 'created_at' valus    
-        if not start_date:
-            start_date = min(created_at_values)
-        if not end_date:
-            end_date = max(created_at_values)
-            
-        if track:
-            feedbacks = feedbacks.filter(track__name=track)
-
-        feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
+            feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
 
         return Response(feedbacks)
     
@@ -55,6 +56,7 @@ class GetFeedbackAnswers(APIView):
         course = self.request.GET.get('course', None) or None
         chapter = self.request.GET.get('chapter', None) or None
         feedbacks = FeedbackAnswers.objects.all().values("user_email","feedback_question_id__course_name","feedback_question_id__chapter_name","question_answer","created_at")
+        
         if email:
             feedbacks = feedbacks.filter(user_email=email)        
         if course:
@@ -89,36 +91,47 @@ class GetFeedbackProgress(APIView):
         feedbacks = FeedbackAnswers.objects.all().values("user_email","feedback_question_id__course_name","feedback_question_id__chapter_name","question_answer","created_at")
 
         if email:
-            feedbacks = feedbacks.filter(user_email=email)        
+            feedbacks = feedbacks.get(user_email=email)        
         if course:
             feedbacks = feedbacks.filter(feedback_question_id__course_name=course)
         if chapter:
             feedbacks = feedbacks.filter(feedback_question_id__chapter_name=chapter)
 
-        # Extract the 'created_at' values
-        created_at_values = [item['created_at'] for item in feedbacks]
+        if feedbacks:
+            # Extract the 'created_at' values
+            created_at_values = [item['created_at'] for item in feedbacks]
 
-        # Find the minimum and maximum 'created_at' valus    
-        if not start_date:
-            start_date = min(created_at_values)
-        if not end_date:
-            end_date = max(created_at_values)
-         
-        feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
+            # Find the minimum and maximum 'created_at' valus    
+            if not start_date:
+                start_date = min(created_at_values)
+            if not end_date:
+                end_date = max(created_at_values)
+            
+            feedbacks = feedbacks.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
 
-        total_yes = 0
-        total_no = 0
-        for i in feedbacks:
-            for j in i['question_answer']:
-                if j['answer'].lower() == 'yes':
-                    total_yes += 1
-                elif j['answer'].lower() == 'no':
-                    total_no += 1
+            total_yes = 0
+            total_no = 0
+            answers = []
+            for i in feedbacks:
+                data = i['question_answer']
+                last_two_answers = data[-2:]
+                # print(last_two_answers)
+                for k in last_two_answers:
+                    answers.append(k)
+                for j in i['question_answer']:
+                    if j['answer'].lower() == 'yes':
+                        total_yes += 1
+                    elif j['answer'].lower() == 'no':
+                        total_no += 1
 
-        yes_percent = total_yes/40 * 100
-        no_percent = total_no/40 * 100
-        response_data = {'yes': yes_percent,'no': no_percent,'dara':feedbacks}
-        return Response(response_data)
+            yes_percent = total_yes/40 * 100
+            no_percent = total_no/40 * 100
+            print(feedbacks)
+            response_data = {'yes': f'{yes_percent}%','no': f'{no_percent}%','answers':answers,'email':email}
+            return Response(response_data)
+        
+        return Response(feedbacks)
+
 
 
 class GetCoursesNames(APIView):
