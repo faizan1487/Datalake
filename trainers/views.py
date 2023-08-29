@@ -96,8 +96,9 @@ class TrainersData(APIView):
                 product_name = product.product_name.lower()
                 matches = re.findall(pattern, product_name)
 
-                if lower_plan == matches[0]:
-                    products_list.append(product)
+                if matches:
+                    if lower_plan == matches[0]:
+                        products_list.append(product)
 
              
             products = products_list
