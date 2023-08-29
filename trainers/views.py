@@ -22,6 +22,8 @@ import os
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import Trainer
+import re
+
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -35,7 +37,7 @@ class MyPagination(PageNumberPagination):
 class TrainersData(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        q = self.request.GET.get('q', None) or None
+        q = self.request.GET.get('q', None).strip() or None
         active = self.request.GET.get('active', None) or None
         product_name = self.request.GET.get('product', None)
         plan = self.request.GET.get('plan', None)
@@ -86,29 +88,20 @@ class TrainersData(APIView):
             products = trainer.products.all()
 
         if plan:
-            # products = [product for product in products if plan.lower() in product.product_name.lower()]
             products_list = []
-            # print(plan.lower())
-            # print(products)
+            lower_plan = plan.lower()
+            pattern = r'\b(monthly|quarterly|half yearly|yearly)\b'
+
             for product in products:
-                # print(product)
-                if plan.lower() == 'half yearly':
-                    if plan.lower() in product.product_name.lower():
-                        products_list.append(product)
-                elif plan.lower() == 'yearly':
-                    if plan.lower() in product.product_name.lower():
-                        products_list.append(product)
-                elif plan.lower() == 'monthly':
-                    # print(plan)
-                    if plan.lower() in product.product_name.lower():
-                        products_list.append(product)
-                elif plan.lower() == 'quarterly':
-                    if plan.lower() in product.product_name.lower():
-                        products_list.append(product)
-            
+                product_name = product.product_name.lower()
+                matches = re.findall(pattern, product_name)
+
+                if lower_plan == matches[0]:
+                    products_list.append(product)
+
+             
             products = products_list
         
-        # print(products)
 
         #total 5 queries in one loop
         for product in products:
@@ -118,6 +111,9 @@ class TrainersData(APIView):
                                                                 'product_id','amount','currency',
                                                                 'order_datetime','source',
                                                                 'expiration_datetime','created_datetime')
+
+
+            #no effect on query  
 
             #1 queries from here
             dates = product_payments.values('order_datetime')
@@ -141,7 +137,6 @@ class TrainersData(APIView):
             
             #2 queries from here
             users = list(product_payments.values('user__email','user__phone','product__product_name'))
-            # products = list(product_payments.values('product__product_name'))
             payment_list = list(product_payments.values('alnafi_payment_id','user_id','source',
                                                                 'product_id','amount','currency',
                                                                 'order_datetime',
@@ -150,7 +145,6 @@ class TrainersData(APIView):
             for i in range(len(payment_list)):
                 try:
                     payment_list[i]['user_id'] = users[i]['user__email']
-                    # payment_list[i]['product_id'] = products[i]['product__product_name']
                     payment_list[i]['product_id'] = users[i]['product__product_name']
                 except Exception as e:
                     pass
@@ -184,14 +178,13 @@ class TrainersData(APIView):
             # Removing duplicates payments of a single user
             #no effect on query
             payments_list = []
-
             for payment in payment_list:
                 if 'Half Yearly' in payment['product_id']:
                     payment['plan'] = 'Half Yearly'
-                elif 'Quarterly' in payment['product_id']:
-                    payment['plan'] = 'Quarterly'
                 elif 'Yearly' in payment['product_id']:
                     payment['plan'] = 'Yearly'
+                elif 'Quarterly' in payment['product_id']:
+                    payment['plan'] = 'Quarterly'
                 elif 'Monthly' in payment['product_id']:
                     payment['plan'] = 'Monthly'
 
@@ -202,7 +195,7 @@ class TrainersData(APIView):
                         break
                 if is_unique:
                     trainer_data['users'].append(payment)
-                    payments_list.append(payment)     
+                    payments_list.append(payment)
             export_data['export_trainer_data'].append({'product_name':product.product_name, 'users_count': user_count,'users': payments_list})
             
             if not req_start_date:
