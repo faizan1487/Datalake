@@ -164,14 +164,14 @@ class TrainersData(APIView):
             payments_list = []
 
             for payment in payment_list:
-                if 'Monthly' in payment['product_id']:
-                    payment['plan'] = 'Monthly'
+                if 'Half Yearly' in payment['product_id']:
+                    payment['plan'] = 'Half Yearly'
                 elif 'Quarterly' in payment['product_id']:
                     payment['plan'] = 'Quarterly'
                 elif 'Yearly' in payment['product_id']:
                     payment['plan'] = 'Yearly'
-                elif 'Half Yearly' in payment['product_id']:
-                    payment['plan'] = 'Half Yearly'
+                elif 'Monthly' in payment['product_id']:
+                    payment['plan'] = 'Monthly'
 
                 is_unique = True
                 for pay in payments_list:
