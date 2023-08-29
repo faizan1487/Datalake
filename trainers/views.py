@@ -33,7 +33,7 @@ class MyPagination(PageNumberPagination):
 
 
 class TrainersData(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         active = self.request.GET.get('active', None) or None
@@ -47,10 +47,10 @@ class TrainersData(APIView):
         #8 queries outside loop
         trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
         if q:
-            # if request.user.is_admin:
-            trainer = trainers.get(email__iexact=q)
-            # else:
-            #     trainers = trainers.get(email__iexact=request.user.email)
+            if request.user.is_admin:
+                trainer = trainers.get(email__iexact=q)
+            else:
+                trainers = trainers.get(email__iexact=request.user.email)
         else:
             if request.user.is_admin:
                 trainer = trainers.get(email__iexact='sana@gmail.com')
@@ -164,6 +164,15 @@ class TrainersData(APIView):
             payments_list = []
 
             for payment in payment_list:
+                if 'Monthly' in payment['product_id']:
+                    payment['plan'] = 'Monthly'
+                elif 'Quarterly' in payment['product_id']:
+                    payment['plan'] = 'Quarterly'
+                elif 'Yearly' in payment['product_id']:
+                    payment['plan'] = 'Yearly'
+                elif 'Half Yearly' in payment['product_id']:
+                    payment['plan'] = 'Half Yearly'
+
                 is_unique = True
                 for pay in payments_list:
                     if payment['user_id'] == pay['user_id']:
