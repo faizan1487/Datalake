@@ -86,7 +86,23 @@ class TrainersData(APIView):
             products = trainer.products.all()
 
         if plan:
-            products = [product for product in products if plan.lower() in product.product_name.lower()]
+            # products = [product for product in products if plan.lower() in product.product_name.lower()]
+            products = []
+            for product in products:
+                if plan.lower() == 'half yearly':
+                    if plan.lower() in product.product_name.lower():
+                        products.append(product)
+                elif plan.lower() == 'yearly':
+                    if plan.lower() in product.product_name.lower():
+                        products.append(product)
+                elif plan.lower() == 'monthly':
+                    if plan.lower() in product.product_name.lower():
+                        products.append(product)
+                elif plan.lower() == 'quarterly':
+                    if plan.lower() in product.product_name.lower():
+                        products.append(product)
+        
+        # print(products)
 
         #total 5 queries in one loop
         for product in products:
