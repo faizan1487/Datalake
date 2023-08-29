@@ -87,20 +87,26 @@ class TrainersData(APIView):
 
         if plan:
             # products = [product for product in products if plan.lower() in product.product_name.lower()]
-            products = []
+            products_list = []
+            # print(plan.lower())
+            # print(products)
             for product in products:
+                # print(product)
                 if plan.lower() == 'half yearly':
                     if plan.lower() in product.product_name.lower():
-                        products.append(product)
+                        products_list.append(product)
                 elif plan.lower() == 'yearly':
                     if plan.lower() in product.product_name.lower():
-                        products.append(product)
+                        products_list.append(product)
                 elif plan.lower() == 'monthly':
+                    # print(plan)
                     if plan.lower() in product.product_name.lower():
-                        products.append(product)
+                        products_list.append(product)
                 elif plan.lower() == 'quarterly':
                     if plan.lower() in product.product_name.lower():
-                        products.append(product)
+                        products_list.append(product)
+            
+            products = products_list
         
         # print(products)
 
