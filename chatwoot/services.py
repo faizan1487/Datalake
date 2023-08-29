@@ -114,6 +114,7 @@ def week_month_convos(url,headers,params):
 def week_chatwoot_data(url,headers,params):
     # Initialize an empty dictionary to store the response data
     response_dict = {}
+    # print(params)
 
     # Make a GET request to the provided URL with headers and parameters
     response = requests.get(url, headers=headers, params=params)

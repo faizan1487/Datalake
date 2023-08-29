@@ -261,12 +261,14 @@ class AgentsReport(APIView):
         days = self.request.GET.get('days', None) or None
         id = self.request.GET.get('id', None) or None
         metric = self.request.GET.get('metric', None) or None
-
+        # print(days)
         if days is not None and int(days) in [7, 30, 90, 180, 365]:
             today = datetime.date.today()
             end_date = today
             start_date = end_date - datetime.timedelta(days=int(days))       
-    
+        
+        # print(start_date)
+        # print(end_date)
         params = {
             'type': 'agent',
             'id': id,
@@ -286,7 +288,8 @@ class AgentsReport(APIView):
         else:
             until = make_aware(datetime.datetime(2023, 9, 2), get_current_timezone())
 
-        
+        # print(start_date)
+        # print(end_date)
         # Calculate the time difference
         time_difference = until - since
         # Get the number of days from the time difference
