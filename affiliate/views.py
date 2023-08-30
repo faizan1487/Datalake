@@ -371,15 +371,11 @@ class AffiliateAnalytics(APIView):
             agent_sales = 0
             affiliate_commissions_sum = 0
             for commission in user.affiliate_commission.all():
-                # print(commission)
-                # commission_pkr = commission.commission_pkr
-                # commission_usd = commission.commission_usd
-                # print(commission_usd)
-                # converted_commission_pkr = int(commission_usd) * usd_rate['PKR']
-                # total_commission_pkr += float(commission_pkr) + converted_commission_pkr
-                # affiliate_commissions_sum += commission_pkr + converted_commission_pkr
-                # print(type(commission_pkr))
-                # print(type(converted_commission_pkr))
+                commission_pkr = commission.commission_pkr
+                commission_usd = commission.commission_usd
+                converted_commission_pkr = float(commission_usd) * usd_rate['PKR']
+                total_commission_pkr += float(commission_pkr) + float(converted_commission_pkr)
+                affiliate_commissions_sum += float(commission_pkr) + converted_commission_pkr
 
                 amount_pkr = commission.amount_pkr
                 amount_usd = commission.amount_usd
@@ -389,7 +385,7 @@ class AffiliateAnalytics(APIView):
 
 
             agent_data['agent_sales'] = agent_sales
-            agent_data['affiliate_commissions_sum'] = affiliate_commissions_sum
+            agent_data['affiliate_commissions_sum'] = int(affiliate_commissions_sum)
         
                 
             agents_list.append(agent_data)    
