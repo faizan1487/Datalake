@@ -341,7 +341,8 @@ class GetAffiliateUser(APIView):
 
 class AffiliateAnalytics(APIView):
     permission_classes = [IsAuthenticated]
-    def get(self, request):        
+    def get(self, request):       
+        metric = self.request.GET.get('metric', None) or None 
         # Fetch AffiliateUser(s) based on the provided email or a default email if not provided
         affiliateuser = AffiliateUser.objects.all()
         
@@ -351,23 +352,35 @@ class AffiliateAnalytics(APIView):
             'affiliate_clicks',
             'affiliate_commission'
         )
-
+        # print(affiliateuser)
         agents_list = []
         total_amount_pkr = 0
+        total_commission_pkr = 0
         usd_rate = get_USD_rate()
         # Iterate through each AffiliateUser and construct agent data
         for user in affiliateuser:
             agent_data = {
                 'agent_name': user.first_name,
-                'agent_leads': list(user.affiliate_leads.all().values()),
-                'agent_clicks': list(user.affiliate_clicks.all().values()),
+                'agent_leads': len(list(user.affiliate_leads.all().values())),
+                'agent_clicks': len(list(user.affiliate_clicks.all().values())),
                 'affiliate_commissions': list(user.affiliate_commission.all().values()),
-                'agent_sales': 0
+                'agent_sales': 0,
+                'affiliate_commissions_sum': 0
             }
 
             agent_sales = 0
+            affiliate_commissions_sum = 0
             for commission in user.affiliate_commission.all():
                 # print(commission)
+                # commission_pkr = commission.commission_pkr
+                # commission_usd = commission.commission_usd
+                # print(commission_usd)
+                # converted_commission_pkr = int(commission_usd) * usd_rate['PKR']
+                # total_commission_pkr += float(commission_pkr) + converted_commission_pkr
+                # affiliate_commissions_sum += commission_pkr + converted_commission_pkr
+                # print(type(commission_pkr))
+                # print(type(converted_commission_pkr))
+
                 amount_pkr = commission.amount_pkr
                 amount_usd = commission.amount_usd
                 converted_amount_pkr = amount_usd * usd_rate['PKR']
@@ -376,12 +389,14 @@ class AffiliateAnalytics(APIView):
 
 
             agent_data['agent_sales'] = agent_sales
-          
+            agent_data['affiliate_commissions_sum'] = affiliate_commissions_sum
+        
                 
-            agents_list.append(agent_data)
+            agents_list.append(agent_data)    
+        
 
         # Sort agents_list based on total_amount_pkr in descending order
-        sorted_agents = sorted(agents_list, key=lambda x: x['agent_sales'], reverse=True)
+        sorted_agents = sorted(agents_list, key=lambda x: x[metric], reverse=True)
 
         # Get the top 10 agents
         top_10_agents = sorted_agents[:10]
@@ -389,9 +404,9 @@ class AffiliateAnalytics(APIView):
         top_agents = []
         for agent in top_10_agents:
             agent_name = agent['agent_name']
-            agent_sale = agent.get('agent_sales', 0) 
+            value = agent.get(metric, 0) 
 
-            top_agents.append({'agent': agent_name,'agent_sales': agent_sale})
+            top_agents.append({'agent': agent_name, 'value': value})
 
         # print(top_agents)
         return Response(top_agents)

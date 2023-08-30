@@ -47,7 +47,7 @@ class GetFeedbacks(APIView):
     
 
 class GetFeedbackAnswers(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         # q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
