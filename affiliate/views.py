@@ -381,7 +381,7 @@ class GetAffiliateData(APIView):
 
 
 
-        agents_list = []
+        data = []
         total_amount_pkr = 0
         total_leads = 0
         total_clicks = 0
@@ -391,10 +391,8 @@ class GetAffiliateData(APIView):
         for user in affiliateuser:
             if metric == 'leads':
                 queryset = user.affiliate_leads.all().values()
-                # print(queryset)
                 start_date_lead = None
-                # start_date_click = None
-                # start_date_commission = None
+               
                 if queryset:
                     if start_date:
                         start_date_lead = start_date_click = start_date_commission = start_date
@@ -436,7 +434,7 @@ class GetAffiliateData(APIView):
                         end_date_click  = last_click['created_at'].date() + timedelta(days=1) if last_click else None
 
                     queryset = list(queryset.filter(created_at__range=(start_date_click, end_date_click + timedelta(days=1))))
-                    
+
             elif metric == 'commissions':
                 queryset = user.affiliate_commission.all().values()
                 start_date_commission = None
@@ -461,69 +459,21 @@ class GetAffiliateData(APIView):
 
             if queryset:
                 for i in queryset:
-                    agents_list.append(i)
+                    data.append(i)
 
         # print(agents_list)
         
-        if export == 'true':
-            #For CSV WORKING:
-            Header = []
-            for i in agents_list:
-                agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
-                for data_dict in agent_leads:
-                    if data_dict:
-                        Header.extend(['agent_name'])
-                        Header.extend(data_dict.keys())
-                        break
-            if Header:
-                pass
-            else:
-                Header = ['agent_name','first_name', 'last_name','email','contact','address','country','created_at']
-
-            # Create an empty DataFrame with the specified columns
-            # df = pd.DataFrame(columns=Header)
-            
-            # Create a list to hold the DataFrames
-            dfs = []
-
-            for i in agents_list:
-                agent_name = i.get('agent_name', "")
-                agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
-                for data_dict in agent_leads:
-                    if data_dict:
-                        data_dict["agent_name"] = agent_name
-                        # data_dict["product_name"] = product_name
-                        dfs.append(pd.DataFrame([data_dict]))
-                        # df = pd.concat([df, pd.DataFrame([data_dict])], ignore_index=True)
-                        # df = df.append(data_dict, ignore_index=True)
-            
-            # Concatenate all DataFrames in the list
-            # df = pd.concat(dfs, ignore_index=True)
-            if dfs:
-                df = pd.concat(dfs, ignore_index=True)
-            else:
-                df = pd.DataFrame()
-            
+        if export=='true':
+            df = pd.DataFrame(data)
+            # Merge dataframes
             file_name = f"AFFILIATE_DATA_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
             df = df.to_csv(index=False)
             s3 = upload_csv_to_s3(df,file_name)
             data = {'file_link': file_path,'export':'true'}
             return Response(data)
-
-
-        # Convert datetime objects to strings using a custom JSON encoder
-        # class CustomJSONEncoder(DjangoJSONEncoder):
-        #     def default(self, obj):
-        #         if isinstance(obj, datetime.datetime):
-        #             return obj.strftime('%Y-%m-%d %H:%M:%S')
-        #         return super().default(obj)
-
-        # response_data = {"agents": agents_list,'total_sales': total_amount_pkr,'total_commissions': total_commissions,
-        #                  'total_leads':total_leads,'total_clicks':total_clicks}
-        # Return the agent_data dictionary as a response
-        return Response(agents_list)
-        # return JsonResponse(response_data, encoder=CustomJSONEncoder, safe=False)
+        else:            
+            return Response(data)
 
 
 class AffiliateAnalytics(APIView):
