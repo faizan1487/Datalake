@@ -536,7 +536,7 @@ class ProductAnalytics(APIView):
             payment_list = list(payments["payments"].values())
             # count the product with most payments
             product_info = defaultdict(lambda: {'count': 0, 'payment_total': 0.0, 'plan': '','source':''})
-            usd_rate = get_USD_rate()
+            # usd_rate = get_USD_rate()
             for i in range(len(payments['payments'])):
                 try:
                     # print(i['payment_cycle'])
@@ -553,7 +553,8 @@ class ProductAnalytics(APIView):
                         if payment_list[i]['source'].lower() in sources:
                             product_info[product_name]['payment_total'] += float(payment_amount)
                         else:
-                            product_info[product_name]['payment_total']  += int(float(payment_amount)) * usd_rate['PKR']
+                            product_info[product_name]['payment_total']  += int(float(payment_amount))
+                            #  * usd_rate['PKR']
                 except Exception as e:
                     print(e)
                                     

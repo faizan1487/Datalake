@@ -75,7 +75,7 @@ class CreateAffiliateUser(APIView):
         total_leads = 0
         total_clicks = 0
         total_commissions = 0
-        usd_rate = get_USD_rate()
+        # usd_rate = get_USD_rate()
         # Iterate through each AffiliateUser and construct agent data
         for user in affiliateuser:
             products = [commission.product for commission in user.affiliate_commission.all()]
@@ -96,12 +96,14 @@ class CreateAffiliateUser(APIView):
             for commission in commissions:
                 amount_pkr = commission.amount_pkr
                 amount_usd = commission.amount_usd
-                converted_amount_pkr = amount_usd * usd_rate['PKR']
+                converted_amount_pkr = amount_usd 
+                # * usd_rate['PKR']
                 total_amount_pkr += amount_pkr + converted_amount_pkr
 
                 commission_pkr =  commission.commission_pkr
                 commission_usd = commission.commission_usd
-                converted_commission_pkr = float(commission_usd) * usd_rate['PKR']
+                converted_commission_pkr = float(commission_usd)
+                # * usd_rate['PKR']
                 total_commissions += float(commission_pkr) + converted_commission_pkr
                 agent_sales += amount_pkr + converted_amount_pkr
 
@@ -254,7 +256,7 @@ class GetAffiliateUser(APIView):
 
 
         agents_list = []
-        usd_rate = get_USD_rate()
+        # usd_rate = get_USD_rate()
         # Iterate through each AffiliateUser and construct agent data
         # for user in affiliateuser:
         agent_data = {
@@ -271,7 +273,8 @@ class GetAffiliateUser(APIView):
             # print(commission)
             amount_pkr = commission.amount_pkr
             amount_usd = commission.amount_usd
-            converted_amount_pkr = amount_usd * usd_rate['PKR']
+            converted_amount_pkr = amount_usd 
+            # * usd_rate['PKR']
             agent_sales += amount_pkr + converted_amount_pkr
 
 
@@ -359,16 +362,7 @@ class GetAffiliateData(APIView):
         except AffiliateUser.DoesNotExist:
             return Response("No matching record found for the provided email.")
         
-        if not start_date:
-            first_user = affiliateuser.exclude(created_at=None).order_by('created_at').first()
-            start_date = first_user.created_at.date() if first_user else None
-
-        if not end_date:
-            last_user = affiliateuser.exclude(created_at=None).order_by('-created_at').first()
-            end_date = last_user.created_at.date() if last_user else None
-
-        affiliateuser = affiliateuser.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
-        
+            
 
         # Fetch leads, clicks, and commissions related to the selected AffiliateUsers
         affiliateuser = affiliateuser.prefetch_related(
@@ -377,52 +371,48 @@ class GetAffiliateData(APIView):
             'affiliate_commission'
         )
 
+
+        
+
         if product:
             # affiliateuser = affiliateuser.filter(product=product)
             affiliateuser = affiliateuser.filter(affiliate_commission__product=product)
+
+
 
         agents_list = []
         total_amount_pkr = 0
         total_leads = 0
         total_clicks = 0
         total_commissions = 0
-        usd_rate = get_USD_rate()
+        # usd_rate = get_USD_rate()
         # Iterate through each AffiliateUser and construct agent data
         for user in affiliateuser:
-            # products = [commission.product for commission in user.affiliate_commission.all()]
-            # agent_data = {
-            #     'agent_name': user.first_name,
-            #     'agent_email': user.email,
-            #     'agent_id': user.id,
-            #     'agent_date': user.created_at,
-            #     'agent_leads': list(user.affiliate_leads.all().values()),
-            #     'agent_clicks': list(user.affiliate_clicks.all().values()),
-            #     'affiliate_commissions': list(user.affiliate_commission.all().values()),
-            #     'product': products,
-            #     'agent_sales': 0
-            # }
-
-            # agent_sales = 0
-            # commissions = user.affiliate_commission.all()
-            # for commission in commissions:
-            #     amount_pkr = commission.amount_pkr
-            #     amount_usd = commission.amount_usd
-            #     converted_amount_pkr = amount_usd * usd_rate['PKR']
-            #     total_amount_pkr += amount_pkr + converted_amount_pkr
-
-            #     commission_pkr =  commission.commission_pkr
-            #     commission_usd = commission.commission_usd
-            #     converted_commission_pkr = float(commission_usd) * usd_rate['PKR']
-            #     total_commissions += float(commission_pkr) + converted_commission_pkr
-            #     agent_sales += amount_pkr + converted_amount_pkr
-
-                
-            # total_clicks += len(list(user.affiliate_clicks.all()))
-            # total_leads += len(list(user.affiliate_leads.all()))
-
-            # agent_data['agent_sales'] = agent_sales
             if metric == 'leads':
                 queryset = user.affiliate_leads.all().values()
+
+                start_date_lead = None
+                # start_date_click = None
+                # start_date_commission = None
+                if start_date:
+                    start_date_lead = start_date_click = start_date_commission = start_date
+                else:
+                    # Calculate the earliest date among leads, clicks, and commissions
+                    first_lead = queryset.exclude(created_at=None).earliest('created_at')
+                    start_date_lead = first_lead.created_at.date() if first_lead else None
+
+                end_date_lead = None
+                if end_date:
+                    end_date_lead = end_date_click = end_date_commission = end_date
+                else:
+                    # Calculate the latest date among leads, clicks, and commissions
+                    last_lead = queryset.exclude(created_at=None).latest('created_at')
+                    end_date_lead  = last_lead.created_at.date() + timedelta(days=1) if last_lead else None
+
+                queryset = list(affiliateuser.affiliate_leads.filter(created_at__range=(start_date_lead, end_date_lead)).values()),
+                # 'agent_clicks': list(affiliateuser.affiliate_clicks.filter(created_at__range=(start_date_click, end_date_click)).values()),
+                # 'affiliate_commissions': list(affiliateuser.affiliate_commission.filter(created_at__range=(start_date_commission, end_date_commission)).values()),
+
             elif metric == 'clicks':
                 queryset = user.affiliate_clicks.all().values()
             elif metric == 'commissions':
@@ -431,6 +421,8 @@ class GetAffiliateData(APIView):
             if queryset:
                 for i in queryset:
                     agents_list.append(i)
+
+        # print(agents_list)
         
         if export == 'true':
             #For CSV WORKING:
@@ -510,7 +502,7 @@ class AffiliateAnalytics(APIView):
         agents_list = []
         total_amount_pkr = 0
         total_commission_pkr = 0
-        usd_rate = get_USD_rate()
+        # usd_rate = get_USD_rate()
         # Iterate through each AffiliateUser and construct agent data
         for user in affiliateuser:
             agent_data = {
@@ -527,13 +519,15 @@ class AffiliateAnalytics(APIView):
             for commission in user.affiliate_commission.all():
                 commission_pkr = commission.commission_pkr
                 commission_usd = commission.commission_usd
-                converted_commission_pkr = float(commission_usd) * usd_rate['PKR']
+                converted_commission_pkr = float(commission_usd) 
+                # * usd_rate['PKR']
                 total_commission_pkr += float(commission_pkr) + float(converted_commission_pkr)
                 affiliate_commissions_sum += float(commission_pkr) + converted_commission_pkr
 
                 amount_pkr = commission.amount_pkr
                 amount_usd = commission.amount_usd
-                converted_amount_pkr = amount_usd * usd_rate['PKR']
+                converted_amount_pkr = amount_usd 
+                # * usd_rate['PKR']
                 total_amount_pkr += amount_pkr + converted_amount_pkr
                 agent_sales += amount_pkr + converted_amount_pkr
 
