@@ -339,6 +339,160 @@ class GetAffiliateUser(APIView):
         return JsonResponse(agents_list, encoder=CustomJSONEncoder, safe=False)
 
 
+class GetAffiliateLeads(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        # Get query parameters from the request
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
+        email = self.request.GET.get('email', None) or None
+        product = self.request.GET.get('product', None) or None
+        metric = self.request.GET.get('metric', None) or None
+        export = self.request.GET.get('export', None) or None
+        
+        # Fetch AffiliateUser(s) based on the provided email or a default email if not provided
+        try:
+            if email:
+                affiliateuser = AffiliateUser.objects.filter(email=email)
+            else:
+                affiliateuser = AffiliateUser.objects.all()
+        except AffiliateUser.DoesNotExist:
+            return Response("No matching record found for the provided email.")
+        
+        if not start_date:
+            first_user = affiliateuser.exclude(created_at=None).order_by('created_at').first()
+            start_date = first_user.created_at.date() if first_user else None
+
+        if not end_date:
+            last_user = affiliateuser.exclude(created_at=None).order_by('-created_at').first()
+            end_date = last_user.created_at.date() if last_user else None
+
+        affiliateuser = affiliateuser.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
+        
+
+        # Fetch leads, clicks, and commissions related to the selected AffiliateUsers
+        affiliateuser = affiliateuser.prefetch_related(
+            'affiliate_leads',
+            'affiliate_clicks',
+            'affiliate_commission'
+        )
+
+        if product:
+            # affiliateuser = affiliateuser.filter(product=product)
+            affiliateuser = affiliateuser.filter(affiliate_commission__product=product)
+
+        agents_list = []
+        total_amount_pkr = 0
+        total_leads = 0
+        total_clicks = 0
+        total_commissions = 0
+        usd_rate = get_USD_rate()
+        # Iterate through each AffiliateUser and construct agent data
+        for user in affiliateuser:
+            # products = [commission.product for commission in user.affiliate_commission.all()]
+            # agent_data = {
+            #     'agent_name': user.first_name,
+            #     'agent_email': user.email,
+            #     'agent_id': user.id,
+            #     'agent_date': user.created_at,
+            #     'agent_leads': list(user.affiliate_leads.all().values()),
+            #     'agent_clicks': list(user.affiliate_clicks.all().values()),
+            #     'affiliate_commissions': list(user.affiliate_commission.all().values()),
+            #     'product': products,
+            #     'agent_sales': 0
+            # }
+
+            # agent_sales = 0
+            # commissions = user.affiliate_commission.all()
+            # for commission in commissions:
+            #     amount_pkr = commission.amount_pkr
+            #     amount_usd = commission.amount_usd
+            #     converted_amount_pkr = amount_usd * usd_rate['PKR']
+            #     total_amount_pkr += amount_pkr + converted_amount_pkr
+
+            #     commission_pkr =  commission.commission_pkr
+            #     commission_usd = commission.commission_usd
+            #     converted_commission_pkr = float(commission_usd) * usd_rate['PKR']
+            #     total_commissions += float(commission_pkr) + converted_commission_pkr
+            #     agent_sales += amount_pkr + converted_amount_pkr
+
+                
+            # total_clicks += len(list(user.affiliate_clicks.all()))
+            # total_leads += len(list(user.affiliate_leads.all()))
+
+            # agent_data['agent_sales'] = agent_sales
+            if metric == 'leads':
+                queryset = user.affiliate_leads.all().values()
+            elif metric == 'clicks':
+                queryset = user.affiliate_clicks.all().values()
+            elif metric == 'commissions':
+                queryset = user.affiliate_commission.all().values()
+
+            if queryset:
+                for i in queryset:
+                    agents_list.append(i)
+        
+        if export == 'true':
+            #For CSV WORKING:
+            Header = []
+            for i in agents_list:
+                agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
+                for data_dict in agent_leads:
+                    if data_dict:
+                        Header.extend(['agent_name'])
+                        Header.extend(data_dict.keys())
+                        break
+            if Header:
+                pass
+            else:
+                Header = ['agent_name','first_name', 'last_name','email','contact','address','country','created_at']
+
+            # Create an empty DataFrame with the specified columns
+            # df = pd.DataFrame(columns=Header)
+            
+            # Create a list to hold the DataFrames
+            dfs = []
+
+            for i in agents_list:
+                agent_name = i.get('agent_name', "")
+                agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
+                for data_dict in agent_leads:
+                    if data_dict:
+                        data_dict["agent_name"] = agent_name
+                        # data_dict["product_name"] = product_name
+                        dfs.append(pd.DataFrame([data_dict]))
+                        # df = pd.concat([df, pd.DataFrame([data_dict])], ignore_index=True)
+                        # df = df.append(data_dict, ignore_index=True)
+            
+            # Concatenate all DataFrames in the list
+            # df = pd.concat(dfs, ignore_index=True)
+            if dfs:
+                df = pd.concat(dfs, ignore_index=True)
+            else:
+                df = pd.DataFrame()
+            
+            file_name = f"AFFILIATE_DATA_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            df = df.to_csv(index=False)
+            s3 = upload_csv_to_s3(df,file_name)
+            data = {'file_link': file_path,'export':'true'}
+            return Response(data)
+
+
+        # Convert datetime objects to strings using a custom JSON encoder
+        # class CustomJSONEncoder(DjangoJSONEncoder):
+        #     def default(self, obj):
+        #         if isinstance(obj, datetime.datetime):
+        #             return obj.strftime('%Y-%m-%d %H:%M:%S')
+        #         return super().default(obj)
+
+        # response_data = {"agents": agents_list,'total_sales': total_amount_pkr,'total_commissions': total_commissions,
+        #                  'total_leads':total_leads,'total_clicks':total_clicks}
+        # Return the agent_data dictionary as a response
+        return Response(agents_list)
+        # return JsonResponse(response_data, encoder=CustomJSONEncoder, safe=False)
+
+
 class AffiliateAnalytics(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):       
@@ -386,8 +540,6 @@ class AffiliateAnalytics(APIView):
 
             agent_data['agent_sales'] = agent_sales
             agent_data['affiliate_commissions_sum'] = int(affiliate_commissions_sum)
-        
-                
             agents_list.append(agent_data)    
         
 

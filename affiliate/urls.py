@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (CreateAffiliateUser, CreateAffiliateClick, UserDelete, 
                     UpdateAffiliateUser, CreateAffiliateLead, CreateCommission,
-                    GetAffiliateUsersEmails,AffiliateAnalytics,GetAffiliateUser,AffiliateProducts)
+                    GetAffiliateUsersEmails,AffiliateAnalytics,GetAffiliateUser,AffiliateProducts,GetAffiliateLeads)
 
 urlpatterns = [
     path("create/", CreateAffiliateUser.as_view(), name='create-affiliate-user'),
@@ -15,4 +15,5 @@ urlpatterns = [
     path("getaffiliateanalytics/", AffiliateAnalytics.as_view(), name='get-affiliate-analytics'),
     path("affiliateuserdetails/<int:id>/", GetAffiliateUser.as_view(), name='get-affiliate-user-by-id'),
     path("affiliateproducts/", AffiliateProducts.as_view(), name='get-affiliate-products'),
+    path("getaffiliateleads/", GetAffiliateLeads.as_view(), name='get-affiliate-leads'),
 ]
