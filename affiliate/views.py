@@ -339,7 +339,7 @@ class GetAffiliateUser(APIView):
         return JsonResponse(agents_list, encoder=CustomJSONEncoder, safe=False)
 
 
-class GetAffiliateLeads(APIView):
+class GetAffiliateData(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         # Get query parameters from the request
