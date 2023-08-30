@@ -22,6 +22,7 @@ from django.http import JsonResponse
 import json
 from django.core.serializers.json import DjangoJSONEncoder
 import datetime
+from datetime import timedelta
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -390,33 +391,73 @@ class GetAffiliateData(APIView):
         for user in affiliateuser:
             if metric == 'leads':
                 queryset = user.affiliate_leads.all().values()
-
+                # print(queryset)
                 start_date_lead = None
                 # start_date_click = None
                 # start_date_commission = None
-                if start_date:
-                    start_date_lead = start_date_click = start_date_commission = start_date
-                else:
-                    # Calculate the earliest date among leads, clicks, and commissions
-                    first_lead = queryset.exclude(created_at=None).earliest('created_at')
-                    start_date_lead = first_lead.created_at.date() if first_lead else None
+                if queryset:
+                    if start_date:
+                        start_date_lead = start_date_click = start_date_commission = start_date
+                    else:
+                        # Calculate the earliest date among leads, clicks, and commissions
+                        first_lead = queryset.exclude(created_at=None).earliest('created_at')
+                        start_date_lead = first_lead['created_at'].date() if first_lead else None
 
-                end_date_lead = None
-                if end_date:
-                    end_date_lead = end_date_click = end_date_commission = end_date
-                else:
-                    # Calculate the latest date among leads, clicks, and commissions
-                    last_lead = queryset.exclude(created_at=None).latest('created_at')
-                    end_date_lead  = last_lead.created_at.date() + timedelta(days=1) if last_lead else None
+                    end_date_lead = None
+                    if end_date:
+                        end_date_lead = end_date_click = end_date_commission = end_date
+                        end_date_lead = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                    else:
+                        # Calculate the latest date among leads, clicks, and commissions
+                        last_lead = queryset.exclude(created_at=None).latest('created_at')
+                        end_date_lead  = last_lead['created_at'].date() if last_lead else None
 
-                queryset = list(affiliateuser.affiliate_leads.filter(created_at__range=(start_date_lead, end_date_lead)).values()),
-                # 'agent_clicks': list(affiliateuser.affiliate_clicks.filter(created_at__range=(start_date_click, end_date_click)).values()),
-                # 'affiliate_commissions': list(affiliateuser.affiliate_commission.filter(created_at__range=(start_date_commission, end_date_commission)).values()),
-
+                    queryset = list(queryset.filter(created_at__range=(start_date_lead, end_date_lead + timedelta(days=1))))
+                    
+                    
             elif metric == 'clicks':
                 queryset = user.affiliate_clicks.all().values()
+                start_date_click = None
+                if queryset:
+                    if start_date:
+                        start_date_click = start_date
+                    else:
+                        # Calculate the earliest date among leads, clicks, and commissions
+                        first_click = queryset.exclude(created_at=None).earliest('created_at')
+                        start_date_click = first_click['created_at'].date() if first_click else None
+
+                    end_date_click = None
+                    if end_date:
+                        end_date_click = end_date_commission = end_date
+                        end_date_click = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                    else:
+                        # Calculate the latest date among leads, clicks, and commissions
+                        last_click = queryset.exclude(created_at=None).latest('created_at')
+                        end_date_click  = last_click['created_at'].date() + timedelta(days=1) if last_click else None
+
+                    queryset = list(queryset.filter(created_at__range=(start_date_click, end_date_click + timedelta(days=1))))
+                    
             elif metric == 'commissions':
                 queryset = user.affiliate_commission.all().values()
+                start_date_commission = None
+                if queryset:
+                    if start_date:
+                        start_date_commission = start_date
+                    else:
+                        # Calculate the earliest date among leads, commissions, and commissions
+                        first_commission = queryset.exclude(created_at=None).earliest('created_at')
+                        start_date_commission = first_commission['created_at'].date() if first_commission else None
+
+                    end_date_commission = None
+                    if end_date:
+                        end_date_commission = end_date_commission = end_date
+                        end_date_commission = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                    else:
+                        # Calculate the latest date among leads, commissions, and commissions
+                        last_commission = queryset.exclude(created_at=None).latest('created_at')
+                        end_date_commission  = last_commission['created_at'].date() + timedelta(days=1) if last_commission else None
+
+                    queryset = list(queryset.filter(created_at__range=(start_date_commission, end_date_commission + timedelta(days=1))))
 
             if queryset:
                 for i in queryset:
