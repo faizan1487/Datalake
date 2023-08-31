@@ -635,12 +635,15 @@ class ProductAnalytics(APIView):
 
                 paginator = MyPagination()
                 # paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-                payments = {'product_with_max_revenue':product_with_max_revenue, 
-                            'max_revenue':max_revenue, 'product_with_min_revenue':product_with_min_revenue, 
-                            'min_revenue': min_revenue, 'most_payments_product':product_most_payments, 
-                            'most_payments_count':max_payments_count, 'least_payments_product':product_least_payments, 
-                            'least_payments_count':min_payments_count,'total_payments_pkr': total_payments_in_pkr, 
-                            'total_payments_usd': total_payments_in_usd,'product_info':list_of_products}
+                
+                data = [{'product_with_max_revenue':product_with_max_revenue}, 
+                        {'max_revenue':max_revenue}, {'product_with_min_revenue':product_with_min_revenue}, 
+                        {'min_revenue': min_revenue}, {'most_payments_product':product_most_payments}, 
+                        {'most_payments_count':max_payments_count}, {'least_payments_product':product_least_payments}, 
+                        {'least_payments_count':min_payments_count},{'total_payments_pkr': total_payments_in_pkr}, 
+                        {'total_payments_usd': total_payments_in_usd},{'product_info':list_of_products}]
+                payments = {'product_analytics': data,'product_info':list_of_products}
+                
                 
                 # return paginator.get_paginated_response(paginated_queryset)
                 return Response(payments)

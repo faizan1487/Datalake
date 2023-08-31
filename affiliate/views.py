@@ -23,6 +23,10 @@ import json
 from django.core.serializers.json import DjangoJSONEncoder
 import datetime
 from datetime import timedelta
+import csv
+import boto3
+from botocore.exceptions import NoCredentialsError
+
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -119,6 +123,9 @@ class CreateAffiliateUser(APIView):
         
         if export == 'true':
             #For CSV WORKING:
+            report = generate_csv(agents_list)
+            print(report)
+            return Response(report)
             Header = []
             for i in agents_list:
                 agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
@@ -191,6 +198,44 @@ class CreateAffiliateUser(APIView):
         if serializer.is_valid():  # Check if the serializer data is valid
             serializer.save()  # Save the serializer data to the database
             return Response(serializer.data, status=status.HTTP_201_CREATED)  # Return the serialized data with a successful response status
+
+
+def generate_csv(agents_list):
+    # response = HttpResponse(content_type='text/csv')
+    # response['Content-Disposition'] = 'attachment; filename="leads_and_commissions.csv"'
+    # Save the CSV data to a local file
+    csv_filename = "leads_and_commissions.csv" 
+    csv_filepath = os.path.join(settings.MEDIA_ROOT, csv_filename) 
+    print(csv_filepath)
+
+    with open(csv_filename, 'w', newline='') as csv_file:
+        writer = csv.writer(csv_file)
+
+        # Write leads section
+        writer.writerow(['Leads'])
+        writer.writerow(['Lead Name', 'Lead Email'])
+        # leads = Lead.objects.all()
+        for lead in agents_list:
+            writer.writerow([lead['agent_name'], lead['agent_email']])
+
+    s3 = boto3.client('s3')
+    bucket_name = 'al-baseer'
+    s3_key = '/home/faizan/Al-Baseer-Backend/media' + csv_filename
+
+    with open(csv_filename, 'rb') as csv_file:
+        s3.upload_file(csv_file, bucket_name, s3_key)
+
+    # Generate a pre-signed URL valid for 1 hour
+    presigned_url = s3.generate_presigned_url(
+        ClientMethod='get_object',
+        Params={'Bucket': bucket_name, 'Key': s3_key},
+        ExpiresIn=3600  # URL valid for 1 hour (3600 seconds)
+    )
+
+    print(presigned_url)
+    return Response(presigned_url)
+
+
 
 
 class GetAffiliateUser(APIView):
@@ -280,15 +325,7 @@ class GetAffiliateUser(APIView):
 
 
         agent_data['agent_sales'] = agent_sales
-        
-            
         agents_list.append(agent_data)
-
-        # Sort agents_list based on total_amount_pkr in descending order
-
-         # Calculate the sum of amount_pkr from all commissions for the current agent
-    
-
         if export == 'true':
             #For CSV WORKING:
             Header = []
