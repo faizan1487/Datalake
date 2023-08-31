@@ -641,7 +641,7 @@ class ProductAnalytics(APIView):
                         {'min_revenue': min_revenue}, {'most_payments_product':product_most_payments}, 
                         {'most_payments_count':max_payments_count}, {'least_payments_product':product_least_payments}, 
                         {'least_payments_count':min_payments_count},{'total_payments_pkr': total_payments_in_pkr}, 
-                        {'total_payments_usd': total_payments_in_usd},{'product_info':list_of_products}]
+                        {'total_payments_usd': total_payments_in_usd}]
                 payments = {'product_analytics': data,'product_info':list_of_products}
                 
                 
