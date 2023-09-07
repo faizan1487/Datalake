@@ -117,6 +117,7 @@ INSTALLED_APPS = [
     'stream.apps.StreamConfig',
     'affiliate.apps.AffiliateConfig',
     "corsheaders",
+    "secrets_api",
 ]
 
 if DEBUG:

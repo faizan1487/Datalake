@@ -36,6 +36,7 @@ urlpatterns = [
             template_name='docs.html',
             extra_context={'schema_url': 'api-schema'}
         ), name='swagger-ui'),
+    path('api/secrets/', include('secrets_api.urls')),
     
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
