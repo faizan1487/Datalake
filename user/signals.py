@@ -5,6 +5,7 @@ from .models import AlNafi_User, IslamicAcademy_User,PSWFormRecords
 from user.constants import COUNTRY_CODES
 from newsletter.signals import send_lead_post_request
 import environ
+from secrets_api.algorithem import round_robin
 
 env = environ.Env()
 env.read_env()
@@ -48,8 +49,10 @@ def usersignal(instance,source,sender):
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     # url = f'http://18.190.1.109/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     
+    user_api_key, user_secret_key = round_robin()
+
     headers = {
-        'Authorization': f'token {api_key}:{api_secret}',
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
         "Content-Type": "application/json",
         "Accept": "application/json",
     }

@@ -5,6 +5,7 @@ from .models import Thinkific_User, Thinkific_Users_Enrollments
 from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
 import environ
+from secrets_api.algorithem import round_robin
 
 env = environ.Env()
 env.read_env()
@@ -49,8 +50,11 @@ def usersignal(instance,source):
             
             url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{user.email}"]]'
             
+            user_api_key, user_secret_key = round_robin()
+
+
             headers = {
-                'Authorization': f'token {api_key}:{api_secret}',
+                'Authorization': f'token {user_api_key}:{user_secret_key}',
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             }    

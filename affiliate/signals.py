@@ -5,6 +5,7 @@ from .models import AffiliateUser, AffiliateLead
 from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
 import environ
+from secrets_api.algorithem import round_robin
 
 env = environ.Env()
 env.read_env()
@@ -20,10 +21,11 @@ def usersignal(instance,source):
     # Disconnect the post_save signal temporarily to avoid recursive calls
     post_save.disconnect(send_lead_post_request, sender=AffiliateLead)
 
+    user_api_key, user_secret_key = round_robin()
     
     # Prepare headers for the API request
     headers = {
-        'Authorization': f'token {api_key}:{api_secret}',
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
         "Content-Type": "application/json",
         "Accept": "application/json",
     }    
