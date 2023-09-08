@@ -72,7 +72,7 @@ def usersignal(instance,source):
         response = requests.post(post_url, headers=headers, json=data)
         print("response.text",response.text)
         response.raise_for_status()
-        print("response.status_code",response.status_code)
+        # print("response.status_code",response.status_code)
         if response.status_code == 200:
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']
