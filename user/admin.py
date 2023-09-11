@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import AlNafi_User
 from .models import Main_User
-from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form, Moc_Leads
+from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin
 
@@ -89,4 +89,14 @@ admin.site.register(User, UserModelAdmin)
 class NavbarLinkAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('name', 'path')
 
-admin.site.register(NavbarLink,NavbarLinkAdmin)   
+admin.site.register(NavbarLink,NavbarLinkAdmin)
+
+
+# For New Al-Nafi Main Site User Model:
+class NewAlNafiUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('email', 'verified', 'blocked', 'created_at')
+    list_filter = ('verified', 'blocked')
+    search_fields = ('email', 'student_email', 'phone')
+    list_per_page = 20
+
+admin.site.register(New_AlNafi_User, NewAlNafiUserAdmin)

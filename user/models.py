@@ -249,3 +249,28 @@ class NavbarLink(models.Model):
     def __str__(self):
         return self.name
     
+
+#For New Al-Nafi Main Site Users Table:
+class New_AlNafi_User(models.Model):
+    email = models.EmailField(max_length=255, unique=True)
+    student_email = models.EmailField(max_length=255, null=True, blank=True)
+    student_email_status = models.CharField(max_length=50, null=True, blank=True)
+    verified = models.BooleanField(default=False)
+    blocked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    meta_data = models.JSONField(null=True, blank=True)
+    facebook_user_id = models.CharField(null=True, blank=True, max_length=50)
+    google_user_id = models.CharField(null=True, blank=True, max_length=50)
+    provider = models.CharField(null=True, blank=True, max_length=50)
+    affiliate_code = models.CharField(max_length=30, null=True, blank=True)
+    source = models.CharField(max_length=30, null=True, blank=True,default='alnafi.com')
+    easypaisa_number = models.CharField(max_length=15, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.email or self.username}"
+    
+    class Meta:
+        managed = True
+        verbose_name = "New Al-Nafi User"
