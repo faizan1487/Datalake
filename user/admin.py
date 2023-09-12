@@ -97,6 +97,6 @@ class NewAlNafiUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('email', 'verified', 'blocked', 'created_at')
     list_filter = ('verified', 'blocked')
     search_fields = ('email', 'student_email', 'phone')
-    list_per_page = 20
+    list_per_page = 100
 
 admin.site.register(New_AlNafi_User, NewAlNafiUserAdmin)
