@@ -15,12 +15,15 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(post_save, sender=AlNafi_User)
 def send_alnafi_lead_post_request(sender, instance, **kwargs):
+    return
     # print("signal running")
     source='Alnafi'
     alnafi_user = usersignal(instance,source,sender)    
 
 @receiver(post_save, sender=IslamicAcademy_User)
 def send_islamic_lead_post_request(sender, instance, **kwargs):
+    return
+
     print("islamic user signal")
     source='IslamicAcademy'
     islamic_user = usersignal(instance,source,sender)
@@ -28,6 +31,8 @@ def send_islamic_lead_post_request(sender, instance, **kwargs):
 
 @receiver(post_save, sender=PSWFormRecords)
 def send_psw_lead_post_request(sender, instance, **kwargs):
+    return
+
     print("psw user signal")
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
