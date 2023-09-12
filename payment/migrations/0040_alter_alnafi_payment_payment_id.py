@@ -13,6 +13,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='alnafi_payment',
             name='payment_id',
-            field=models.IntegerField(null=True, unique=True),
+            field=models.IntegerField(null=True, unique=False),
         ),
     ]
