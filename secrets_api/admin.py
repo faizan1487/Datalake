@@ -8,7 +8,7 @@ class LastSecretApiUsingAdmin(ImportExportModelAdmin,ExportActionMixin,admin.Mod
     search_fields = ['user_name','turn_number','api_key','secret_key']
     list_filter = ['turn_number']
     # if not DEBUG:
-    readonly_fields = list_display
+    # readonly_fields = list_display
     
 
 admin.site.register(LastSecretApiUsing,LastSecretApiUsingAdmin)
@@ -18,6 +18,6 @@ class AllSecretsApiAdmin(ImportExportModelAdmin,ExportActionMixin,admin.ModelAdm
     search_fields = ['user_name','api_key','secret_key']
     list_filter = ['turn_number']
     # if not DEBUG:
-    readonly_fields = list_display
+    # readonly_fields = list_display
         
 admin.site.register(AllSecretsApi,AllSecretsApiAdmin)
