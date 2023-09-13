@@ -14,7 +14,7 @@ api_secret = env("FRAPPE_API_SECRET")
 
 @receiver(post_save, sender=StreamUser)
 def send_lead_post_request(sender, instance, created, **kwargs):
-    return
+    # return
     source='Stream'
     stream_user = usersignal(instance,source)
         

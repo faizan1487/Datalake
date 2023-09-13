@@ -13,7 +13,7 @@ api_secret = env("FRAPPE_API_SECRET")
 
 @receiver(post_save, sender=Newsletter)
 def send_lead_post_request(sender, instance, created, **kwargs):
-    return
+    # return
     source='Newsletter'
     newsletter = usersignal(instance,source)        
 

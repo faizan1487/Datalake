@@ -16,7 +16,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(post_save, sender=Thinkific_Users_Enrollments)
 def send_lead_post_request(sender, instance, **kwargs):
-    return
+    # return
     print("signal running")
     source='Thinkific'
     thinkific_user = usersignal(instance,source)
