@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 import requests
-from .models import AlNafi_User, IslamicAcademy_User,PSWFormRecords, Moc_Leads
+from .models import AlNafi_User, IslamicAcademy_User,PSWFormRecords, Moc_Leads,New_AlNafi_User
 from user.constants import COUNTRY_CODES
 from newsletter.signals import send_lead_post_request
 import environ
@@ -34,6 +34,11 @@ def send_psw_lead_post_request(sender, instance, **kwargs):
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
 
+@receiver(post_save, sender=New_AlNafi_User)
+def send_psw_lead_post_request(sender, instance, **kwargs):
+
+    source='NewAlnafiSignup'
+    psw_form_user = newsignupsignal(instance,source,sender)
 
 
 def usersignal(instance,source,sender):
@@ -194,3 +199,64 @@ def mocLeadsSignal(instance,source):
                 instance.erp_lead_id = erp_lead_id
                 print("Lead created successfully!")
 
+
+def newsignupsignal(instance,source,sender):
+
+
+    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    
+    user_api_key, user_secret_key = round_robin()
+
+    headers = {
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    country_code = getattr(instance, 'country', "Unknown")
+    country_name = None
+
+    if country_code:
+        for name, code in COUNTRY_CODES.items():
+            if code == country_code:
+                country_name = name
+                break
+
+    data = {
+            "first_name": instance.full_name or None,
+            "last_name": None,
+            "email_id": instance.email or None,
+            "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
+            "country": country_name,
+            "source": source
+            # Add other fields from the Main_User model to the data dictionary as needed
+        }
+    
+    response = requests.get(url, headers=headers)
+    lead_data = response.json()
+    # print(lead_data)
+    already_existed = len(lead_data["data"]) > 0
+
+    if already_existed:
+        lead_id = lead_data['data'][0]['name']
+        # if DEBUG:
+        #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
+        # else:
+        url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+        # print(data)
+        response = requests.put(url, headers=headers, json=data)
+        instance.erp_lead_id = lead_data['data'][0]['name']
+    else:
+        # if DEBUG:
+        #     url = 'http://3.142.247.16/api/resource/Lead'
+        # else:
+        url = 'https://crm.alnafi.com/api/resource/Lead'
+        # url = 'http://18.190.1.109/api/resource/Lead'
+        lead_data = response.json()
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+        if response.status_code == 200:
+            lead_data = response.json()
+            erp_lead_id = lead_data['data']['name']
+            if erp_lead_id:
+                instance.erp_lead_id = erp_lead_id
