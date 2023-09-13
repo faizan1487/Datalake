@@ -1,7 +1,7 @@
 from rest_framework.serializers import ModelSerializer
 from rest_framework import serializers
 from .models import AlNafi_User
-from .models import IslamicAcademy_User, User, NavbarLink, AlNafi_User,Main_User
+from .models import IslamicAcademy_User, User, NavbarLink, AlNafi_User,Main_User, New_AlNafi_User
 from .utils import Util
 from django.utils.encoding import smart_str, force_bytes, DjangoUnicodeDecodeError
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
@@ -176,3 +176,9 @@ class GroupsSerailizer(serializers.ModelSerializer):
 class UsersCombinedSerializer(serializers.Serializer):
     data1 = AlnafiUserSerializer(many=True)
     data2 = IslamicAcademyUserSerializer(many=True)
+
+    
+class NewAlnafiUserSerializer(serializers.Serializer):
+   class Meta:
+      model= New_AlNafi_User
+      fields = '__all__'

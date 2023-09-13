@@ -21,8 +21,8 @@ import os
 import pandas as pd
 from datetime import datetime, timedelta, date
 
-from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads
-from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
+from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User
+from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer, NewAlnafiUserSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
 from .services import (set_auth_token, checkSameDomain, GroupPermission,
@@ -610,7 +610,17 @@ class AllEmployees(APIView):
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(employees, request)
         return paginator.get_paginated_response(paginated_queryset)
+    
 
+
+class NewAlnafiUser(APIView):
+    def post(self, request):
+        serializer = NewAlnafiUserSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
