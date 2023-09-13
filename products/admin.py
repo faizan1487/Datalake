@@ -1,6 +1,6 @@
 from django.contrib import admin
 from rest_framework.serializers import ModelSerializer
-from .models import Alnafi_Product,IslamicAcademy_Product, Main_Product, Course, Track
+from .models import Alnafi_Product,IslamicAcademy_Product, Main_Product, Course, Track, New_Alnafi_Product
 from import_export.admin import ImportExportModelAdmin, ExportActionMixin
 
 # Register your models here.
@@ -55,3 +55,14 @@ class CourseAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 
 
 admin.site.register(Course, CourseAdmin)
+
+#For Al-Nafi New Main Site:
+class NewAlnafiProductAdmin(ImportExportModelAdmin, ExportActionMixin, admin.ModelAdmin):
+    list_display = ('id', 'product_type', 'product_slug', 'plan', 'name', 'bundle_Ids', 'amount_pkr', 'amount_usd', 'amount_gbp', 'old_amount_pkr', 'old_amount_usd', 'legacy_fee_pkr', 'legacy_fee_usd',
+                    'legacy_available', 'qarz_product', 'qarz_fee_pkr', 'qarz_fee_usd', 'lms_id', 'language', 'created_at', 'has_legacy_version', 'is_certificate_product', 'allow_coupon', 'courses')
+    search_fields = ("id", "name", "product_slug", "language",
+                     "bundle_Ids", "plan", "product_type")
+    list_filter = ('created_at', "language", "product_type", "plan")
+
+
+admin.site.register(New_Alnafi_Product, AlnafiProductAdmin)
