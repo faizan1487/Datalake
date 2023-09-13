@@ -146,8 +146,8 @@ def mocLeadsSignal(instance,source):
                 country_name = name
                 break
     data = {
-            "first_name": instance.first_name or None,
-            "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
+            "first_name": instance.full_name or None,
+            "last_name": None,
             "email_id": instance.email or None,
             "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
             "country": country_name,
