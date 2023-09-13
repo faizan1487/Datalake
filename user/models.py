@@ -253,6 +253,7 @@ class NavbarLink(models.Model):
 
 #For New Al-Nafi Main Site Users Table:
 class New_AlNafi_User(models.Model):
+    full_name = models.CharField(max_length=200,null=True,blank=True)
     email = models.EmailField(max_length=255, unique=True)
     student_email = models.EmailField(max_length=255, null=True, blank=True)
     student_email_status = models.CharField(max_length=50, null=True, blank=True)
