@@ -35,7 +35,7 @@ def send_psw_lead_post_request(sender, instance, **kwargs):
     psw_form_user = usersignal(instance,source,sender)
 
 @receiver(post_save, sender=New_AlNafi_User)
-def send_psw_lead_post_request(sender, instance, **kwargs):
+def send_alnafi_new_request(sender, instance, **kwargs):
 
     source='NewAlnafiSignup'
     psw_form_user = newsignupsignal(instance,source,sender)
