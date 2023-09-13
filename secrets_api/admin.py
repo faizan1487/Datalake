@@ -1,6 +1,6 @@
 from django.contrib import admin
 from secrets_api.models import LastSecretApiUsing, AllSecretsApi
-from albaseer.settings import DEBUG\
+from albaseer.settings import DEBUG
 from import_export.admin import ImportExportModelAdmin,ExportActionMixin
 
 class LastSecretApiUsingAdmin(ImportExportModelAdmin,ExportActionMixin,admin.ModelAdmin):
