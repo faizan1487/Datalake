@@ -15,14 +15,12 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(post_save, sender=AlNafi_User)
 def send_alnafi_lead_post_request(sender, instance, **kwargs):
-    return
     # print("signal running")
     source='Alnafi'
     alnafi_user = usersignal(instance,source,sender)    
 
 @receiver(post_save, sender=IslamicAcademy_User)
 def send_islamic_lead_post_request(sender, instance, **kwargs):
-    return
 
     print("islamic user signal")
     source='IslamicAcademy'
@@ -31,7 +29,6 @@ def send_islamic_lead_post_request(sender, instance, **kwargs):
 
 @receiver(post_save, sender=PSWFormRecords)
 def send_psw_lead_post_request(sender, instance, **kwargs):
-    return
 
     print("psw user signal")
     source='PSWFormRecords'
@@ -40,9 +37,9 @@ def send_psw_lead_post_request(sender, instance, **kwargs):
 
 
 def usersignal(instance,source,sender):
-    post_save.disconnect(send_alnafi_lead_post_request, sender=AlNafi_User)
-    post_save.disconnect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
-    post_save.disconnect(send_psw_lead_post_request, sender=PSWFormRecords)
+    # post_save.disconnect(send_alnafi_lead_post_request, sender=AlNafi_User)
+    # post_save.disconnect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
+    # post_save.disconnect(send_psw_lead_post_request, sender=PSWFormRecords)
 
     # try:
         # if DEBUG:
@@ -97,7 +94,7 @@ def usersignal(instance,source,sender):
         response = requests.put(url, headers=headers, json=data)
         instance.erp_lead_id = lead_data['data'][0]['name']
         # print("lead updated")
-        instance.save(update_fields=['erp_lead_id'])
+        # instance.save(update_fields=['erp_lead_id'])
     else:
             # if DEBUG:
             #     url = 'http://3.142.247.16/api/resource/Lead'
@@ -118,12 +115,12 @@ def usersignal(instance,source,sender):
                 if erp_lead_id:
                     # print("lead id exists")
                     instance.erp_lead_id = erp_lead_id
-                    instance.save(update_fields=['erp_lead_id'])
+                    # instance.save(update_fields=['erp_lead_id'])
                     # print("Lead created successfully!")
     # except:
-    post_save.connect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
-    post_save.connect(send_psw_lead_post_request, sender=PSWFormRecords)
-    post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
+    # post_save.connect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
+    # post_save.connect(send_psw_lead_post_request, sender=PSWFormRecords)
+    # post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
 
 #############################################################
 @receiver(post_save, sender=Moc_Leads)
@@ -163,9 +160,16 @@ def mocLeadsSignal(instance,source):
     print(response.status_code)
     # print(lead_data['data'])
     print(lead_data)
-    if 'data' not in lead_data:
-        print("in else")
+    if response.status_code == 403:
         return
+    # print(lead_data['data'])
+    print(lead_data)
+    if 'data' not in lead_data:
+        already_existed = len(lead_data["data"]) > 0
+    else:
+        already_existed = False
+
+   
     already_existed = len(lead_data["data"]) > 0
     # print(already_existed)
     if already_existed:

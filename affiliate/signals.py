@@ -58,21 +58,29 @@ def usersignal(instance,source):
     lead_data = response.json()
     # print(lead_data['data'])
     
-    already_existed = len(lead_data["data"]) > 0
+    if response.status_code == 403:
+        return
+    # print(lead_data['data'])
+    print(lead_data)
+    if 'data' not in lead_data:
+        already_existed = len(lead_data["data"]) > 0
+    else:
+        already_existed = False
+    # already_existed = len(lead_data["data"]) > 0
     # print(already_existed)
     if already_existed:
         # If the lead exists, update it with new data
         response = requests.put(url, headers=headers, json=data)
         instance.erp_lead_id = lead_data['data'][0]['name']
         # print("lead updated")
-        instance.save(update_fields=['erp_lead_id'])
+        # instance.save(update_fields=['erp_lead_id'])
     else:
         # If the lead doesn't exist, create a new one
         # print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
-        print("response.text",response.text)
-        response.raise_for_status()
+        # print("response.text",response.text)
+        # response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:
             lead_data = response.json()
@@ -80,7 +88,7 @@ def usersignal(instance,source):
             if erp_lead_id:
                 # print("lead id exists")
                 instance.erp_lead_id = erp_lead_id
-                instance.save(update_fields=['erp_lead_id'])
+                # instance.save(update_fields=['erp_lead_id'])
                 # print("Lead created successfully!")
     
     # Reconnect the post_save signal after processing

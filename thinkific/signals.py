@@ -97,7 +97,15 @@ def usersignal(instance,source):
             response = requests.get(url, headers=headers)
             lead_data = response.json()
             
+            
+        if response.status_code == 403:
+            return
+        # print(lead_data['data'])
+        print(lead_data)
+        if 'data' not in lead_data:
             already_existed = len(lead_data["data"]) > 0
+        else:
+            already_existed = False
 
 
             if already_existed:
@@ -110,7 +118,7 @@ def usersignal(instance,source):
 
                 response = requests.put(url, headers=headers, json=data)
                 user.erp_lead_id = lead_data['data'][0]['name']
-                user.save(update_fields=['erp_lead_id'])
+                # user.save(update_fields=['erp_lead_id'])
                 print("lead updadted")
             else:
 
@@ -126,7 +134,7 @@ def usersignal(instance,source):
                     erp_lead_id = lead_data['data']['name']
                     if erp_lead_id:
                         user.erp_lead_id = erp_lead_id
-                        user.save(update_fields=['erp_lead_id'])
+                        # user.save(update_fields=['erp_lead_id'])
                         print("lead created")
     except Exception as e:
         print('Error occurred while creating lead:')      

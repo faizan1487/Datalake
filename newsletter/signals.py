@@ -55,12 +55,15 @@ def usersignal(instance,source):
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     print(response.status_code)
+
+    if response.status_code == 403:
+        return
     # print(lead_data['data'])
     print(lead_data)
     if 'data' not in lead_data:
-        print("in else")
-        return
-    already_existed = len(lead_data["data"]) > 0
+        already_existed = len(lead_data["data"]) > 0
+    else:
+        already_existed = False
     # print(already_existed)
     if already_existed:
         response = requests.put(url, headers=headers, json=data)
@@ -83,7 +86,8 @@ def usersignal(instance,source):
             if erp_lead_id:
                 print("lead id exists")
                 instance.erp_lead_id = erp_lead_id
-                instance.save(update_fields=['erp_lead_id'])
-                print("Lead created successfully!")
 
+                # instance.save(update_fields=['erp_lead_id'])
+                print("Lead created successfully!")
+    return
     # post_save.connect(send_lead_post_request, sender=Newsletter)
