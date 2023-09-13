@@ -23,7 +23,7 @@ def send_lead_post_request(sender, instance, **kwargs):
         
 
 def usersignal(instance,source):
-    post_save.disconnect(send_lead_post_request, sender=Thinkific_Users_Enrollments)
+    # post_save.disconnect(send_lead_post_request, sender=Thinkific_Users_Enrollments)
     # if instance.is_processing:
     #     return
 
@@ -133,4 +133,4 @@ def usersignal(instance,source):
         print('Error:', response.status_code)
         print('Error:', response.text)
         print(e)
-    post_save.connect(send_lead_post_request, sender=Thinkific_Users_Enrollments)
+    # post_save.connect(send_lead_post_request, sender=Thinkific_Users_Enrollments)

@@ -21,7 +21,7 @@ def send_lead_post_request(sender, instance, created, **kwargs):
 
 def usersignal(instance,source):
     # post_save.disconnect(send_alnafi_lead_post_request, sender=sender)
-    post_save.disconnect(send_lead_post_request, sender=StreamUser)
+    # post_save.disconnect(send_lead_post_request, sender=StreamUser)
     # if instance.is_processing:
     #     return
     user_api_key, user_secret_key = round_robin()
@@ -78,4 +78,4 @@ def usersignal(instance,source):
                 instance.save(update_fields=['erp_lead_id'])
                 print("Lead created successfully!")
                 
-    post_save.connect(send_lead_post_request, sender=StreamUser)
+    # post_save.connect(send_lead_post_request, sender=StreamUser)

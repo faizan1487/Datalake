@@ -20,7 +20,7 @@ def send_lead_post_request(sender, instance, created, **kwargs):
 
 def usersignal(instance,source):
     # Disconnect the post_save signal temporarily to avoid recursive calls
-    post_save.disconnect(send_lead_post_request, sender=AffiliateLead)
+    # post_save.disconnect(send_lead_post_request, sender=AffiliateLead)
 
     user_api_key, user_secret_key = round_robin()
     
@@ -84,4 +84,4 @@ def usersignal(instance,source):
                 # print("Lead created successfully!")
     
     # Reconnect the post_save signal after processing
-    post_save.connect(send_lead_post_request, sender=AffiliateLead)
+    # post_save.connect(send_lead_post_request, sender=AffiliateLead)

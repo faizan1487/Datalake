@@ -20,7 +20,7 @@ def send_lead_post_request(sender, instance, created, **kwargs):
 
 def usersignal(instance,source):
     # post_save.disconnect(send_alnafi_lead_post_request, sender=sender)
-    post_save.disconnect(send_lead_post_request, sender=Newsletter)
+    # post_save.disconnect(send_lead_post_request, sender=Newsletter)
     # if instance.is_processing:
     #     return
     user_api_key, user_secret_key = round_robin()
@@ -50,16 +50,22 @@ def usersignal(instance,source):
             "source": source
             # Add other fields from the Main_User model to the data dictionary as needed
         }
-    
+    print(data)
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     response = requests.get(url, headers=headers)
     lead_data = response.json()
+    print(response.status_code)
     # print(lead_data['data'])
-    
+    print(lead_data)
+    if 'data' not in lead_data:
+        print("in else")
+        return
     already_existed = len(lead_data["data"]) > 0
     # print(already_existed)
     if already_existed:
         response = requests.put(url, headers=headers, json=data)
+        print(response.status_code)
+        print(response.json())
         instance.erp_lead_id = lead_data['data'][0]['name']
         print("lead updated")
         instance.save(update_fields=['erp_lead_id'])
@@ -67,6 +73,8 @@ def usersignal(instance,source):
         print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
+        print(response.status_code)
+        print(response.json())
         response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:
@@ -78,4 +86,4 @@ def usersignal(instance,source):
                 instance.save(update_fields=['erp_lead_id'])
                 print("Lead created successfully!")
 
-    post_save.connect(send_lead_post_request, sender=Newsletter)
+    # post_save.connect(send_lead_post_request, sender=Newsletter)
