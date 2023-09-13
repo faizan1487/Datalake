@@ -149,6 +149,7 @@ class Moc_Leads(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
     form = models.CharField(max_length=255, null=True, blank=True)
+    country = models.CharField(max_length=100, null=True, blank=True)
     source = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(null=True, blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
