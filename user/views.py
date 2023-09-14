@@ -620,7 +620,7 @@ class NewAlnafiUser(APIView):
         student_email = request.data.get('student_email')
         student_email_id = request.data.get('student_email_id')
         verified= request.data.get('verified')
-        blocked= request.data.get('blocked')
+        blocked= request.data.get('blocked') or False
         created_at= request.data.get('created_at')
         phone = request.data.get('phone')
         meta_data = request.data.get('meta_data')
@@ -631,7 +631,9 @@ class NewAlnafiUser(APIView):
         source = request.data.get('source')
         easypaisa_number = request.data.get('easypaisa_number')
         created_at = request.data.get('created_at')
-        user = New_AlNafi_User.objects.create(
+        
+        try:
+            user = New_AlNafi_User.objects.create(
             email=email,
             student_email=student_email,
             student_email_status=student_email_id,
@@ -647,12 +649,10 @@ class NewAlnafiUser(APIView):
             source=source,
             easypaisa_number=easypaisa_number
         )
-        try:
             # Save the new user instance to the database
-            user.save()
             return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
         except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({'error': 'Something Went Wrong'}, status=status.HTTP_208_ALREADY_REPORTED)
 
 # env = environ.Env()
 # env.read_env()
