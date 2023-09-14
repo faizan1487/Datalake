@@ -177,8 +177,3 @@ class UsersCombinedSerializer(serializers.Serializer):
     data1 = AlnafiUserSerializer(many=True)
     data2 = IslamicAcademyUserSerializer(many=True)
 
-    
-class NewAlnafiUserSerializer(serializers.Serializer):
-   class Meta:
-      model= New_AlNafi_User
-      fields = '__all__'

@@ -22,7 +22,7 @@ import pandas as pd
 from datetime import datetime, timedelta, date
 
 from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User
-from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer, NewAlnafiUserSerializer,
+from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
 UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
 UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
 from .services import (set_auth_token, checkSameDomain, GroupPermission,
@@ -38,6 +38,8 @@ from user.constants import COUNTRY_CODES
 import requests
 import csv
 from rest_framework.parsers import MultiPartParser, FormParser
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 
 # Create your views here.
@@ -611,18 +613,46 @@ class AllEmployees(APIView):
         paginated_queryset = paginator.paginate_queryset(employees, request)
         return paginator.get_paginated_response(paginated_queryset)
     
-
-
 class NewAlnafiUser(APIView):
+
     def post(self, request):
-        serializer = NewAlnafiUserSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
+        email = request.data.get('email')
+        student_email = request.data.get('student_email')
+        student_email_id = request.data.get('student_email_id')
+        verified= request.data.get('verified')
+        blocked= request.data.get('blocked')
+        created_at= request.data.get('created_at')
+        phone = request.data.get('phone')
+        meta_data = request.data.get('meta_data')
+        facebook_user_id = request.data.get('facebook_user_id')
+        google_user_id = request.data.get('google_user_id')
+        provider = request.data.get('provider')
+        affiliate_code = request.data.get('affiliate_code')
+        source = request.data.get('source')
+        easypaisa_number = request.data.get('easypaisa_number')
+        created_at = request.data.get('created_at')
+        user = New_AlNafi_User.objects.create(
+            email=email,
+            student_email=student_email,
+            student_email_status=student_email_id,
+            verified=verified,
+            blocked=blocked,
+            created_at=created_at,
+            phone=phone,
+            meta_data=meta_data,
+            facebook_user_id=facebook_user_id,
+            google_user_id=google_user_id,
+            provider=provider,
+            affiliate_code=affiliate_code,
+            source=source,
+            easypaisa_number=easypaisa_number
+        )
+        try:
+            # Save the new user instance to the database
+            user.save()
+            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 # env = environ.Env()
 # env.read_env()

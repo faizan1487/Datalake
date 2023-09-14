@@ -6,7 +6,7 @@ from user.constants import COUNTRY_CODES
 from newsletter.signals import send_lead_post_request
 import environ
 from secrets_api.algorithem import round_robin
-
+from albaseer.settings import DEBUG
 env = environ.Env()
 env.read_env()
 api_key = env("FRAPPE_API_KEY")
