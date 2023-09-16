@@ -62,7 +62,7 @@ def usersignal(instance,source):
         return
     # print(lead_data['data'])
     print(lead_data)
-    if 'data' not in lead_data:
+    if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
     else:
         already_existed = False
@@ -77,7 +77,7 @@ def usersignal(instance,source):
         print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
-        response.raise_for_status()
+        # response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:
             lead_data = response.json()

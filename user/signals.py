@@ -35,8 +35,7 @@ def send_psw_lead_post_request(sender, instance, **kwargs):
     psw_form_user = usersignal(instance,source,sender)
 
 @receiver(post_save, sender=New_AlNafi_User)
-def send_alnafi_new_request(sender, instance, **kwargs):
-
+def send_alnafi_new_request(sender, instance, created, *args, **kwargs):
     source='NewAlnafiSignup'
     psw_form_user = newsignupsignal(instance,source,sender)
 
@@ -111,7 +110,6 @@ def usersignal(instance,source,sender):
             # print(lead_data)
             response = requests.post(url, headers=headers, json=data)
             # print("response.status_code",response.text)
-            response.raise_for_status()
             # print("response.status_code",response.status_code)
             if response.status_code == 200:
                 lead_data = response.json()
@@ -169,7 +167,7 @@ def mocLeadsSignal(instance,source):
         return
     # print(lead_data['data'])
     print(lead_data)
-    if 'data' not in lead_data:
+    if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
     else:
         already_existed = False
@@ -234,9 +232,10 @@ def newsignupsignal(instance,source,sender):
     
     response = requests.get(url, headers=headers)
     lead_data = response.json()
-    # print(lead_data)
-    already_existed = len(lead_data["data"]) > 0
-
+    if 'data' in lead_data:
+        already_existed = len(lead_data["data"]) > 0
+    else:
+        already_existed = False
     if already_existed:
         lead_id = lead_data['data'][0]['name']
         # if DEBUG:
@@ -254,7 +253,6 @@ def newsignupsignal(instance,source,sender):
         # url = 'http://18.190.1.109/api/resource/Lead'
         lead_data = response.json()
         response = requests.post(url, headers=headers, json=data)
-        response.raise_for_status()
         if response.status_code == 200:
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']

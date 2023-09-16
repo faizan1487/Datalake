@@ -616,13 +616,13 @@ class AllEmployees(APIView):
 class NewAlnafiUser(APIView):
 
     def post(self, request):
+        full_name= request.data.get('full_name')
         email = request.data.get('email')
         student_email = request.data.get('student_email')
-        student_email_id = request.data.get('student_email_id')
-        verified= request.data.get('verified')
-        blocked= request.data.get('blocked') or False
-        created_at= request.data.get('created_at')
+        student_email_status = request.data.get('student_email_status')
         phone = request.data.get('phone')
+        verified = request.data.get('verified')
+        blocked = request.data.get('blocked')
         meta_data = request.data.get('meta_data')
         facebook_user_id = request.data.get('facebook_user_id')
         google_user_id = request.data.get('google_user_id')
@@ -630,16 +630,15 @@ class NewAlnafiUser(APIView):
         affiliate_code = request.data.get('affiliate_code')
         source = request.data.get('source')
         easypaisa_number = request.data.get('easypaisa_number')
-        created_at = request.data.get('created_at')
         
         try:
             user = New_AlNafi_User.objects.create(
+            full_name=full_name,
             email=email,
             student_email=student_email,
-            student_email_status=student_email_id,
-            verified=verified,
+            student_email_status=student_email_status,
             blocked=blocked,
-            created_at=created_at,
+            verified=verified,
             phone=phone,
             meta_data=meta_data,
             facebook_user_id=facebook_user_id,
@@ -649,7 +648,6 @@ class NewAlnafiUser(APIView):
             source=source,
             easypaisa_number=easypaisa_number
         )
-            # Save the new user instance to the database
             return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
         except Exception as e:
             return Response({'error': 'Something Went Wrong'}, status=status.HTTP_208_ALREADY_REPORTED)

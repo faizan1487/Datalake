@@ -102,7 +102,7 @@ def usersignal(instance,source):
             return
         # print(lead_data['data'])
         print(lead_data)
-        if 'data' not in lead_data:
+        if 'data' in lead_data:
             already_existed = len(lead_data["data"]) > 0
         else:
             already_existed = False
@@ -128,7 +128,6 @@ def usersignal(instance,source):
                 url = 'https://crm.alnafi.com/api/resource/Lead'
 
                 response = requests.post(url, headers=headers, json=data)
-                response.raise_for_status()
                 if response.status_code == 200:
                     lead_data = response.json()
                     erp_lead_id = lead_data['data']['name']

@@ -26,7 +26,7 @@ def send_payment_post_request(sender, instance, **kwargs):
 
     try:
         response = requests.get(url, headers=headers)
-        response.raise_for_status()
+        # response.raise_for_status()
         data = response.json()
         payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
         # print(payment_user)
