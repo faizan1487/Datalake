@@ -633,7 +633,7 @@ class NewAlnafiUser(APIView):
         
         try:
             user = New_AlNafi_User.objects.create(
-            full_name=full_name,
+            first_name=full_name,
             email=email,
             student_email=student_email,
             student_email_status=student_email_status,
