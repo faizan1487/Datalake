@@ -94,8 +94,8 @@ admin.site.register(NavbarLink,NavbarLinkAdmin)
 
 # For New Al-Nafi Main Site User Model:
 class NewAlNafiUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('email', 'verified', 'blocked', 'created_at')
-    list_filter = ('verified', 'blocked')
+    list_display = ('username', 'email', 'created_at', 'phone', 'source', 'first_name', 'last_name', 'date_joined')
+    list_filter = ('source','created_at','verified', 'blocked')
     search_fields = ('email', 'student_email', 'phone')
     list_per_page = 100
 
