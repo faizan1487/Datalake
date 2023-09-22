@@ -205,6 +205,8 @@ class NavbarLink(models.Model):
 class New_Al_Nafi_Payments(models.Model):
     # id = models.AutoField(primary_key=True)
     customer_id = models.CharField(max_length=200, null=True, blank=True)
+    customer_email = models.CharField(max_length=300, null=True, blank=False)
+    first_name = models.CharField(max_length=200, null=True, blank=True)
     first_name = models.CharField(max_length=200, null=True, blank=True)
     last_name = models.CharField(max_length=200, null=True, blank=True)
     username = models.CharField(max_length=200, null=True, blank=True)

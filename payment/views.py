@@ -3,7 +3,8 @@ from user.models import User
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Al_Nafi_Payments
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
-                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
+                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,
+                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
 from .services import (json_to_csv, renewal_no_of_payments,search_payment,
                        main_no_of_payments,no_of_payments,get_USD_rate)
 from rest_framework.views import APIView
@@ -46,15 +47,15 @@ post_save = Signal()
 class NewAlnafiPayment(APIView):
     def post(self, request):
         data = request.data
-        payment_id = data.get('payment_id')
+        order_id = data.get('orderId')
         # print(payment_id)
 
         try:
-            instance = New_Al_Nafi_Payments.objects.filter(payment_id=payment_id)
+            instance = New_Al_Nafi_Payments.objects.filter(orderId=order_id)
             # print(instance)
-            serializer = AlNafiPaymentSerializer(instance.first(), data=data)
+            serializer = New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
         except:
-            serializer = AlNafiPaymentSerializer(data=data)
+            serializer = New_Al_Nafi_Payments_Serializer(data=data)
 
         
         if serializer.is_valid():

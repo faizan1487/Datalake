@@ -1,13 +1,20 @@
 from django.contrib import admin
-from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment
+from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment,New_Al_Nafi_Payments
 from import_export.admin import ImportExportModelAdmin
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
-from .models import Main_Payment
 
 # Register your models here.    
 
 #For Navbar:
-  
+
+
+#For New Alnafi Payments:
+class New_Al_Nafi_PaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('customer_id','orderId','first_name','last_name', 'username', 'customer_email', 'phone')
+    # search_fields = ('customer_email','payment_id', 'alnafi_order_id', 'name', 'phone','product_name')
+
+admin.site.register(New_Al_Nafi_Payments,New_Al_Nafi_PaymentsAdmin)     
+
 
 #For Stripe Payments:
 class StripePaymentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
