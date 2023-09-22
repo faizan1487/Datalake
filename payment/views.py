@@ -1,6 +1,6 @@
 from rest_framework import status
 from user.models import User
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Al_Nafi_Payments
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,UBL_Manual_PaymentSerializer)
@@ -41,6 +41,30 @@ class MyPagination(PageNumberPagination):
     max_page_size = 100           
 
 post_save = Signal()
+
+
+class NewAlnafiPayment(APIView):
+    def post(self, request):
+        data = request.data
+        payment_id = data.get('payment_id')
+        # print(payment_id)
+
+        try:
+            instance = New_Al_Nafi_Payments.objects.filter(payment_id=payment_id)
+            # print(instance)
+            serializer = AlNafiPaymentSerializer(instance.first(), data=data)
+        except:
+            serializer = AlNafiPaymentSerializer(data=data)
+
+        
+        if serializer.is_valid():
+            serializer.save()
+            # print("valid")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 # delete this api before production
 class AlnafiPayment(APIView):
     def get(self, request):
