@@ -137,7 +137,7 @@ class TrainersData(APIView):
             product_payments = product_payments.filter(order_datetime__range=(start_date, end_date))
             
             #2 queries from here
-            users = list(product_payments.values('user__first_name','user__phone','product__product_name'))
+            users = list(product_payments.values('user__first_name','user__last_name','user__phone','product__product_name'))
             payment_list = list(product_payments.values('alnafi_payment_id','user_id','source',
                                                                 'product_id','amount','currency',
                                                                 'order_datetime',
@@ -146,6 +146,8 @@ class TrainersData(APIView):
             for i in range(len(payment_list)):
                 try:
                     payment_list[i]['user_id'] = users[i]['user__first_name']
+                    payment_list[i]['first_name'] = users[i]['user__first_name']
+                    payment_list[i]['last_name'] = users[i]['user__last_name']
                     payment_list[i]['product_id'] = users[i]['product__product_name']
                 except Exception as e:
                     pass
