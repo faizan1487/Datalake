@@ -207,7 +207,6 @@ class New_Al_Nafi_Payments(models.Model):
     customer_id = models.CharField(max_length=200, null=True, blank=True)
     customer_email = models.CharField(max_length=300, null=True, blank=False)
     first_name = models.CharField(max_length=200, null=True, blank=True)
-    first_name = models.CharField(max_length=200, null=True, blank=True)
     last_name = models.CharField(max_length=200, null=True, blank=True)
     username = models.CharField(max_length=200, null=True, blank=True)
     phone = models.CharField(max_length=200, null=True, blank=True)
@@ -223,6 +222,7 @@ class New_Al_Nafi_Payments(models.Model):
     product_amount = models.CharField(max_length=200, null=True, blank=True)
 
     orderId = models.CharField(max_length=100, unique=True)
+    source = models.CharField(max_length=150, null=True, blank=True)
 
     amount = models.IntegerField(null=True, blank=True)
     amount_pkr = models.IntegerField(null=True, blank=True)
