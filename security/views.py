@@ -281,6 +281,7 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
     permission_classes=[IsAuthenticated]
     def put(self, request, pk):
         data = request.data.copy()
+        print(data)
         assigned_to_names_str = data.get('assigned_to')
         if assigned_to_names_str is not None:
             assigned_to_names = assigned_to_names_str.split(',')
@@ -298,7 +299,7 @@ class ScanRetrieveUpdateDeleteAPIView(APIView):
         try:
             scan = Scan.objects.get(id=pk)
             attributes_to_update = [
-                'scan_type', 'scan_date','remediation', 'scan_progress', 'testing_method', 'target', 'target_value', 'application_type'
+                'scan_type', 'scan_date','remediation', 'scan_progress', 'testing_method', 'target', 'target_value', 'application_type','severity'
             ]
 
             for attribute in attributes_to_update:

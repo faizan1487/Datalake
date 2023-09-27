@@ -2,11 +2,15 @@ from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,
                     TokenRefreshView,UsersDelete,Navbar,AlnafiUser,AllEmployees,GetUser,
-                    GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser)
+                    GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser,UploadMocLeads,getUsser)
 from django.http import HttpResponse
 
 urlpatterns = [
     path("", lambda req: HttpResponse(status=200)),
+
+    path('upload-moc-leads/',UploadMocLeads.as_view()),
+    path('getusers/',getUsser.as_view(), name='get-users'),
+
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
     path('islamicuser/',IslamicUser.as_view(), name='islamic-user'),
     path('userdelete/', UsersDelete.as_view(), name='user-delete'),

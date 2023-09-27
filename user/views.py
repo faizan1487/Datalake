@@ -40,6 +40,55 @@ import csv
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+import time
+
+
+
+
+from user.models import Moc_Leads
+import pandas as pd
+
+class UploadMocLeads(APIView):
+    def post(self,request):
+        data = pd.read_excel('/Users/muhammadsameer/Desktop/Al Nafi/Al-Baseer-Backend/user/other_moc.xlsx')
+        lst = []
+
+        for index, row in data.iterrows():
+            full_name = row['full_name']
+            email = row['email']
+            phone = row['phone']
+            form = row['form']
+            country = row['country']
+            source = row['source']
+            created_at = row['created_at']
+            try:
+                print(email)
+                moc = Moc_Leads.objects.create(
+                    full_name=full_name,
+                    email=email,
+                    phone=phone,
+                    form=form,
+                    country= country,
+                    source=source,
+                    created_at=created_at
+                )
+            except Exception as e:
+                print(e)
+                lst.append(row['email'])
+
+        data_Frame = pd.DataFrame(lst)
+        data_Frame.to_csv("error.csv")
+
+
+        return Response({{"msg":"done"}})
+
+
+
+
+
+
+
+
 
 
 # Create your views here.
@@ -652,81 +701,12 @@ class NewAlnafiUser(APIView):
         except Exception as e:
             return Response({'error': 'Something Went Wrong'}, status=status.HTTP_208_ALREADY_REPORTED)
 
-# env = environ.Env()
-# env.read_env()
-# DEBUG = env('DEBUG',cast=bool)
-# import guacamole
 
 
-# class Guacamoli(APIView):
-#     def get(self, request):
-#         url = env('GUACAMOLE_SERVER_URL')
-#         source = env('GUACAMOLE_DATA_SOURCE')
-#         username = env('GUACAMOLE_USERNAME')
-#         password = env('GUACAMOLE_PASSWORD')
-
-
-
-#         session = guacamole.session("https://lab.alnafi.com/","postgresql","nafisuperadminlabsalnafi", "IO*91^%82**/>,.;'=_-|||")
-#         print(session.get_user("appinventorpak1@gmail.com"))
-#         return Response("vbdisvu")
-
-# class UserLogoutView(APIView):
-#     authentication_classes = [JWTAuthentication]
-
-#     def post(self, request):
-#         try:
-#             refresh_token = request.data["refresh_token"]
-#             token = RefreshToken(refresh_token)
-#             user = request.user
-#             print(user)
-#             if not isinstance(user, AnonymousUser):
-#                 user.outstanding_token_set.add(token)
-#             return Response({"message": "Logout successful"}, status=200)
-#         except Exception as e:
-#             return Response({"error": str(e)}, status=400)
-
-
-
-# class GetNoOfUsers(APIView):
-#     # permission_classes = [IsAuthenticated]
-#     # permission_classes = [GroupPermission]
-#     # required_groups = ['Support', 'Admin']
-#     def get(self, request):
-#         start_date = self.request.GET.get('start_date', None) or None
-#         end_date = self.request.GET.get('end_date', None) or None
-#         source = self.request.GET.get('source', None) or None
-#         url = request.build_absolute_uri()
-
-
-#         # users = no_of_users(start_date,end_date,source)
-#         # response_data = {"no_of_users": users}
-#         # return Response(response_data)
-#         if source == 'alnafiuser':
-#             alnafi_no_of_users = cache.get(url)
-#             if alnafi_no_of_users is None:
-#                 alnafi_no_of_users = alnafi_no_users(start_date, end_date)
-#                 cache.set(url, alnafi_no_of_users)
-#             response_data = {"alnafi_no_of_users": alnafi_no_of_users}
-#         elif source == 'islamicacademyuser':
-#             academy_no_of_users = cache.get(url)
-#             if academy_no_of_users is None:
-#                 academy_no_of_users = islamic_no_users(start_date,end_date)
-#                 cache.set(url, academy_no_of_users)
-#             response_data = {"academy_no_of_users": academy_no_of_users,}
-#         else:
-#             alnafi_no_of_users = cache.get(url+'alnafi')
-#             if alnafi_no_of_users is None:
-#                 alnafi_no_of_users = alnafi_no_users(start_date, end_date)
-#                 cache.set(url+'alnafi', alnafi_no_of_users)
-
-#             academy_no_of_users = cache.get(url+'academy')
-#             if academy_no_of_users is None:
-#                 academy_no_of_users = islamic_no_users(start_date,end_date)
-#                 cache.set(url+'academy', academy_no_of_users)
-
-#             response_data = {"alnafi_no_of_users": alnafi_no_of_users,
-#                             "academy_no_of_users": academy_no_of_users}
-
-#         return Response(response_data)
-
+class getUsser(APIView):
+    def get(self,request):
+        user = Moc_Leads.objects.all()
+        for us in user:
+            time.sleep(1)
+            us.save()
+        return Response(status=200)
