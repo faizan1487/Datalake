@@ -21,23 +21,23 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def send_payment_post_request(sender, instance, **kwargs):
-    print("signal running")
-    url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000'
-    # api_key = '351b6479c5a4a16'
-    # api_secret = 'e459db7e2d30b34'
+    # print("signal running")
+    url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
     api_key, api_secret = round_robin_support()
-
+    api_key = '351b6479c5a4a16'
+    api_secret = 'e459db7e2d30b34'
+  
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",
         "Accept": "application/json",
     }
-
     try:
-        print("in try")
+        # print("in try")
         response = requests.get(url, headers=headers)
         # response.raise_for_status()
         data = response.json()
+        # print(response.text)
         payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
         # print(payment_user)
         # print(data)
@@ -52,7 +52,7 @@ def send_payment_post_request(sender, instance, **kwargs):
             full_name = f'{first_name} {last_name}'.strip()
             # print("full name", full_name)
             # uncomment this check condition for customer
-            if data['data'][i]['name'] == instance.erp_lead_id:
+            if data['data'][i]['customer_email'] == instance.customer_email:
                 # print("customer exists")
                 customer_id = data['data'][i]['name']
                 # print(customer_id)
@@ -61,7 +61,14 @@ def send_payment_post_request(sender, instance, **kwargs):
                 # else:
                 url = f'https://crm.alnafi.com/api/resource/Suppport/{customer_id}'
                 # url = f'http://18.190.1.109/api/api/resource/Lead/{lead_id}'
-                # print(data)
+
+                
+                current_date = datetime.now().date()
+                if instance.expiration_datetime and instance.expiration_datetime.date() >= current_date:
+                    expiration_status = 'Active'
+                else:
+                    expiration_status = 'Expired'
+
                 customer_data = {
                     "full_name": full_name or None,
                     "contact_no": payment_user[0].phone or None,
@@ -70,17 +77,17 @@ def send_payment_post_request(sender, instance, **kwargs):
                     "product_name": instance.product_name or None,
                     "price_pkr": instance.amount_pkr or None,
                     "price_usd": instance.amount_usd or None,
-                    "payment_source": instance.source.capitalize() or None,
+                    "payment_source": instance.source.capitalize() if instance.source else None,
                     "payment_date": instance.order_datetime.isoformat() if instance.order_datetime else None,
                     "expiration_date": instance.expiration_datetime.isoformat() if instance.expiration_datetime else None,
-                    # "expiration_status": payment_user[0].expiration_status or None,
+                    "expiration_status": expiration_status,
                 }
-                print(customer_data)
+                # print(customer_data)
                 response = requests.put(url, headers=headers, json=customer_data)
-                print(response)
-                print(response.text)
-                instance.erp_lead_id = data['data'][i]['name']
-                print("lead updated")
+                # print(response)
+                # print(response.text)
+                instance.customer_email = data['data'][i]['customer_email']
+                # print("lead updated")
                 break
         else:
             first_name = payment_user[0].first_name if payment_user[0].first_name else ''
@@ -109,6 +116,14 @@ def create_customer(instance,headers,full_name,payment_user):
             if code == country_code:
                 country_name = name
                 break
+
+    
+    current_date = datetime.now().date()
+    if instance.expiration_datetime and instance.expiration_datetime.date() >= current_date:
+        expiration_status = 'Active'
+    else:
+        expiration_status = 'Expired'
+
     customer_data = {
         "full_name": full_name or None,
         "contact_no": payment_user[0].phone or None,
@@ -117,23 +132,22 @@ def create_customer(instance,headers,full_name,payment_user):
         "product_name": instance.product_name or None,
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
-        "payment_source": instance.source.capitalize() or None,
+        "payment_source": instance.source.capitalize() if instance.source else None,
         "payment_date": instance.order_datetime.isoformat() if instance.order_datetime else None,
         "expiration_date": instance.expiration_datetime.isoformat() if instance.expiration_datetime else None,
-        # "expiration_status": payment_user[0].expiration_status or None,
+        "expiration_status": expiration_status,
     }
-    # print(customer_data)
 
     response = requests.post(customer_url, headers=headers, json=customer_data)
-    print(response)
-    print('Error:', response.text)
+    # print(response)
+    # print(response.text)
     if response.status_code == 200:
         lead_data = response.json()
         print(lead_data)
-        erp_lead_id = lead_data['data']['name']
-        if erp_lead_id:
+        customer_email = lead_data['data']['customer_email']
+        if customer_email:
             # print("lead id exists")
-            instance.erp_lead_id = erp_lead_id
+            instance.customer_email = customer_email
             # print("Lead created successfully!")
 
 

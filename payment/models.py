@@ -28,6 +28,8 @@ class AlNafi_Payment(models.Model):
     coupon_code = models.CharField(max_length=200, null=True, blank=True)
     is_upgrade_payment = models.BooleanField(default=False)
     affiliate = models.CharField(max_length=200,null=True, blank=True)
+    # erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
+    erp_lead = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):
         return f"{self.customer_email}"
