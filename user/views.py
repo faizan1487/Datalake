@@ -50,7 +50,7 @@ import pandas as pd
 
 class UploadMocLeads(APIView):
     def post(self,request):
-        data = pd.read_excel('/Users/muhammadsameer/Desktop/Al Nafi/Al-Baseer-Backend/user/other_moc.xlsx')
+        data = pd.read_excel('/home/faizan/albaseer/Al-Baseer-Backend/user/google_leads.xlsx')
         lst = []
 
         for index, row in data.iterrows():

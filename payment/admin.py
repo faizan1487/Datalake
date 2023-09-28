@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment,New_Al_Nafi_Payments
+from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment
 from import_export.admin import ImportExportModelAdmin
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
@@ -9,11 +9,11 @@ from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
 
 #For New Alnafi Payments:
-class New_Al_Nafi_PaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('orderId','first_name','last_name', 'username', 'customer_email', 'phone')
-    # search_fields = ('customer_email','payment_id', 'alnafi_order_id', 'name', 'phone','product_name')
+# class New_Al_Nafi_PaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+#     list_display = ('orderId','first_name','last_name', 'username', 'customer_email', 'phone')
+#     # search_fields = ('customer_email','payment_id', 'alnafi_order_id', 'name', 'phone','product_name')
 
-admin.site.register(New_Al_Nafi_Payments,New_Al_Nafi_PaymentsAdmin)     
+# admin.site.register(New_Al_Nafi_Payments,New_Al_Nafi_PaymentsAdmin)     
 
 
 #For Stripe Payments:

@@ -1,10 +1,10 @@
 from rest_framework import status
 from user.models import User
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Al_Nafi_Payments
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment
 from products.models import Main_Product
 from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
                          AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,
-                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
+                         UBL_Manual_PaymentSerializer)
 from .services import (json_to_csv, renewal_no_of_payments,search_payment,
                        main_no_of_payments,no_of_payments,get_USD_rate)
 from rest_framework.views import APIView
@@ -44,26 +44,26 @@ class MyPagination(PageNumberPagination):
 post_save = Signal()
 
 
-class NewAlnafiPayment(APIView):
-    def post(self, request):
-        data = request.data
-        order_id = data.get('orderId')
-        # print(payment_id)
+# class NewAlnafiPayment(APIView):
+#     def post(self, request):
+#         data = request.data
+#         order_id = data.get('orderId')
+#         # print(payment_id)
 
-        try:
-            instance = New_Al_Nafi_Payments.objects.filter(orderId=order_id)
-            # print(instance)
-            serializer = New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
-        except:
-            serializer = New_Al_Nafi_Payments_Serializer(data=data)
+#         try:
+#             instance = New_Al_Nafi_Payments.objects.filter(orderId=order_id)
+#             # print(instance)
+#             serializer = New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
+#         except:
+#             serializer = New_Al_Nafi_Payments_Serializer(data=data)
 
         
-        if serializer.is_valid():
-            serializer.save()
-            # print("valid")
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         if serializer.is_valid():
+#             serializer.save()
+#             # print("valid")
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # delete this api before production

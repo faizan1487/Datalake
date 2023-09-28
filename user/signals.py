@@ -81,7 +81,7 @@ def usersignal(instance,source,sender):
             "source": source
             # Add other fields from the Main_User model to the data dictionary as needed
         }
-    
+    print(data)
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     # print(lead_data)
@@ -152,13 +152,14 @@ def mocLeadsSignal(instance,source):
             "first_name": instance.full_name or None,
             "last_name": None,
             "email_id": instance.email or None,
-            "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
+            "mobile_no": str(instance.phone) if hasattr(instance, 'phone') else None,
             "country": country_name,
             "source": source,
             "interest": instance.interest,
             "qualification": instance.qualification
             # Add other fields from the Main_User model to the data dictionary as needed
         }
+    print(data)
     # print(instance.email)
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     response = requests.get(url, headers=headers)
