@@ -10,7 +10,7 @@ from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
 #For New Alnafi Payments:
 class New_Al_Nafi_PaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('customer_id','orderId','first_name','last_name', 'username', 'customer_email', 'phone')
+    list_display = ('orderId','first_name','last_name', 'username', 'customer_email', 'phone')
     # search_fields = ('customer_email','payment_id', 'alnafi_order_id', 'name', 'phone','product_name')
 
 admin.site.register(New_Al_Nafi_Payments,New_Al_Nafi_PaymentsAdmin)     
