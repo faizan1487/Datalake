@@ -69,6 +69,28 @@ def send_payment_post_request(sender, instance, **kwargs):
                 else:
                     expiration_status = 'Expired'
 
+
+                if instance.order_datetime:
+                    order_datetime_str = str(instance.order_datetime)
+                    # Parse the original datetime string
+                    order_datetime = datetime.fromisoformat(order_datetime_str)
+
+                    # Format it in the expected format
+                    formatted_order_datetime_str = order_datetime.strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    formatted_order_datetime_str = None
+
+                if instance.expiration_datetime:
+                    expire_datetime_str = str(instance.expiration_datetime)
+                    # Parse the original datetime string
+                    expire_datetime = datetime.fromisoformat(expire_datetime_str)
+
+                    # Format it in the expected format
+                    formatted_expire_datetime_str = expire_datetime.strftime('%Y-%m-%d %H:%M:%S')
+                else:
+                    formatted_expire_datetime_str = None
+
+
                 customer_data = {
                     "full_name": full_name or None,
                     "contact_no": payment_user[0].phone or None,
@@ -78,8 +100,10 @@ def send_payment_post_request(sender, instance, **kwargs):
                     "price_pkr": instance.amount_pkr or None,
                     "price_usd": instance.amount_usd or None,
                     "payment_source": instance.source.capitalize() if instance.source else None,
-                    "payment_date": instance.order_datetime.isoformat() if instance.order_datetime else None,
-                    "expiration_date": instance.expiration_datetime.isoformat() if instance.expiration_datetime else None,
+                    # "payment_date": instance.order_datetime.isoformat() if instance.order_datetime else None,
+                    "payment_date": formatted_order_datetime_str,
+                    # "expiration_date": instance.expiration_datetime.isoformat() if instance.expiration_datetime else None,
+                    "expiration_date": formatted_expire_datetime_str,
                     "expiration_status": expiration_status,
                 }
                 # print(customer_data)
@@ -124,6 +148,27 @@ def create_customer(instance,headers,full_name,payment_user):
     else:
         expiration_status = 'Expired'
 
+    if instance.order_datetime:
+        order_datetime_str = str(instance.order_datetime)
+        # Parse the original datetime string
+        order_datetime = datetime.fromisoformat(order_datetime_str)
+
+        # Format it in the expected format
+        formatted_order_datetime_str = order_datetime.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        formatted_order_datetime_str = None
+
+    if instance.expiration_datetime:
+        expire_datetime_str = str(instance.expiration_datetime)
+        # Parse the original datetime string
+        expire_datetime = datetime.fromisoformat(expire_datetime_str)
+
+        # Format it in the expected format
+        formatted_expire_datetime_str = expire_datetime.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        formatted_expire_datetime_str = None
+
+
     customer_data = {
         "full_name": full_name or None,
         "contact_no": payment_user[0].phone or None,
@@ -133,8 +178,10 @@ def create_customer(instance,headers,full_name,payment_user):
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
         "payment_source": instance.source.capitalize() if instance.source else None,
-        "payment_date": instance.order_datetime.isoformat() if instance.order_datetime else None,
-        "expiration_date": instance.expiration_datetime.isoformat() if instance.expiration_datetime else None,
+        # "payment_date": instance.order_datetime.isoformat() if instance.order_datetime else None,
+        "payment_date": formatted_order_datetime_str,
+        # "expiration_date": instance.expiration_datetime.isoformat() if instance.expiration_datetime else None,
+        "expiration_date": formatted_expire_datetime_str,
         "expiration_status": expiration_status,
     }
 
