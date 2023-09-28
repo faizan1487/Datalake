@@ -41,16 +41,12 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import time
-
-
-
-
 from user.models import Moc_Leads
 import pandas as pd
 
 class UploadMocLeads(APIView):
     def post(self,request):
-        data = pd.read_excel('/home/faizan/albaseer/Al-Baseer-Backend/user/google_leads.xlsx')
+        data = pd.read_csv('/Users/muhammadsameer/Desktop/Al Nafi/Al-Baseer-Backend/user/other_moc.xlsx')
         lst = []
 
         for index, row in data.iterrows():
@@ -61,6 +57,12 @@ class UploadMocLeads(APIView):
             country = row['country']
             source = row['source']
             created_at = row['created_at']
+            # Convert 'created_at' to the desired format
+            # created_at_str = row['created_at']
+
+            # Assuming the original format is "%m/%d/%Y %H:%M:%S"
+            # You can adjust the format string as needed
+            # created_at = pd.to_datetime(created_at_str, format="%m/%d/%Y %H:%M:%S")
             try:
                 print(email)
                 moc = Moc_Leads.objects.create(

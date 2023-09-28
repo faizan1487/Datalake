@@ -33,19 +33,19 @@ def send_payment_post_request(sender, instance, **kwargs):
         "Accept": "application/json",
     }
     try:
-        # print("in try")
+        print("in try")
         response = requests.get(url, headers=headers)
         # response.raise_for_status()
         data = response.json()
-        # print(response.text)
+        print(response.text)
         payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
-        # print(payment_user)
-        # print(data)
+        print(payment_user)
+        print(data)
         # print(len(data['data']))
         if not payment_user:
             return
         for i in range(len(data['data'])):
-            # print("in for")
+            print("in for")
             # print(payment_user)
             first_name = payment_user[0].first_name if payment_user[0].first_name else ''
             last_name = payment_user[0].last_name if payment_user[0].last_name else ''
@@ -53,7 +53,7 @@ def send_payment_post_request(sender, instance, **kwargs):
             # print("full name", full_name)
             # uncomment this check condition for customer
             if data['data'][i]['customer_email'] == instance.customer_email:
-                # print("customer exists")
+                print("customer exists")
                 customer_id = data['data'][i]['name']
                 # print(customer_id)
                 # if DEBUG:
@@ -85,9 +85,9 @@ def send_payment_post_request(sender, instance, **kwargs):
                 # print(customer_data)
                 response = requests.put(url, headers=headers, json=customer_data)
                 # print(response)
-                # print(response.text)
+                print(response.text)
                 instance.customer_email = data['data'][i]['customer_email']
-                # print("lead updated")
+                print("lead updated")
                 break
         else:
             first_name = payment_user[0].first_name if payment_user[0].first_name else ''
@@ -140,7 +140,7 @@ def create_customer(instance,headers,full_name,payment_user):
 
     response = requests.post(customer_url, headers=headers, json=customer_data)
     # print(response)
-    # print(response.text)
+    print(response.text)
     if response.status_code == 200:
         lead_data = response.json()
         print(lead_data)
@@ -148,7 +148,7 @@ def create_customer(instance,headers,full_name,payment_user):
         if customer_email:
             # print("lead id exists")
             instance.customer_email = customer_email
-            # print("Lead created successfully!")
+            print("Lead created successfully!")
 
 
 

@@ -182,9 +182,9 @@ def mocLeadsSignal(instance,source):
     if already_existed:
         print("already exixts")
         # auth_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/demo-user/'
-        auth_url = 'https://stage-auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
+        auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
         # enrollment_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/enrollment-user/'
-        enrollment_url = 'https://stage-auth.alnafi.edu.pk/api/v1.0/enrollments/enrollment-user/'
+        enrollment_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/enrollment-user/'
         auth_headers = {
         "Content-Type": "application/json",
         "Accept": "application/json",
@@ -195,13 +195,15 @@ def mocLeadsSignal(instance,source):
         demo_user = requests.get(auth_url, headers=auth_headers, params=query_parameters)
         # print(demo_user)
         enrollment_user = requests.get(enrollment_url, headers=auth_headers, params=query_parameters)
-        print(demo_user.status_code)
+        
+        print("demo status code", demo_user.status_code)
         if demo_user.status_code == 200:
             # Parse the response content as JSON
             demo_data = demo_user.json()
             print(demo_data)
             data['demo_product'] = demo_data['product_name']
-        print(enrollment_user.status_code)
+
+        print("enrollment status code",enrollment_user.status_code)
         if enrollment_user.status_code == 200:
             # Parse the response content as JSON
             enrollment_data = enrollment_user.json()
