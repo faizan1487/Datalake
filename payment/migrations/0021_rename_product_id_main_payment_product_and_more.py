@@ -12,12 +12,12 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RenameField(
             model_name='main_payment',
-            old_name='product_id',
+            old_name='product',
             new_name='product',
         ),
         migrations.RenameField(
             model_name='main_payment',
-            old_name='user_id',
+            old_name='user',
             new_name='user',
         ),
     ]

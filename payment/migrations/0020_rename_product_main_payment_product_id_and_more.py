@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.RenameField(
             model_name='main_payment',
             old_name='product',
-            new_name='product_id',
+            new_name='product',
         ),
         migrations.RenameField(
             model_name='main_payment',
             old_name='user',
-            new_name='user_id',
+            new_name='user',
         ),
     ]

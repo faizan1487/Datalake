@@ -46,7 +46,7 @@ import pandas as pd
 
 class UploadMocLeads(APIView):
     def post(self,request):
-        data = pd.read_csv('/Users/muhammadsameer/Desktop/Al Nafi/Al-Baseer-Backend/user/other_moc.xlsx')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/mainsite.csv')
         lst = []
 
         for index, row in data.iterrows():
