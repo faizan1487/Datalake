@@ -382,7 +382,8 @@ class ActivePayments(APIView):
         payments = payments.filter(Q(expiration_datetime__date__gte=start_date) & Q(expiration_datetime__date__lte=end_date))
         # print(payments.count())
         if q:
-            payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
+            payments = payments.filter(user__email__icontains=q) 
+            # payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
             
         if product:
             payments = payments.filter(product__product_name__icontains=product)
