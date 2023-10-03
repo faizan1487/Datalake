@@ -56,13 +56,13 @@ class UploadMocLeads(APIView):
             form = row['form']
             country = row['country']
             source = row['source']
-            created_at = row['created_at']
+            # created_at = row['created_at']
             # Convert 'created_at' to the desired format
-            # created_at_str = row['created_at']
+            created_at_str = row['created_at']
 
             # Assuming the original format is "%m/%d/%Y %H:%M:%S"
             # You can adjust the format string as needed
-            # created_at = pd.to_datetime(created_at_str, format="%m/%d/%Y %H:%M:%S")
+            created_at = pd.to_datetime(created_at_str, format="%m/%d/%Y %H:%M:%S")
             try:
                 print(email)
                 moc = Moc_Leads.objects.create(

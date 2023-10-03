@@ -384,6 +384,8 @@ class ActivePayments(APIView):
 
         payments = payments.filter(Q(expiration_datetime__date__gte=start_date) & Q(expiration_datetime__date__lte=end_date))
         print(payments.count())
+
+
         if q:
             payments = payments.filter(user__email__icontains=q) 
             # payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
@@ -411,8 +413,9 @@ class ActivePayments(APIView):
                 payments = payments.filter(
                     Q(product__product_plan__iexact=plan) | Q(product__product_plan__iexact=plan_mapping.get(plan, ''))
                 )
-        else:
-            payments = payments.filter(product__product_plan__isnull=False)
+        #uncomment this before pushing
+        # else:
+        #     payments = payments.filter(product__product_plan__isnull=False)
 
         # print(payments.count())
         # print("after plan filter", payments.count())
@@ -430,6 +433,23 @@ class ActivePayments(APIView):
                     return obj.isoformat()  # Convert datetime to ISO 8601 format
                 raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
             
+        if request.user.is_admin:
+            pass
+        else:
+            payments = payments.filter(user__email__iexact=q)
+            users = list(payments.values('user__email','user__phone'))
+            products = list(payments.values('product__product_name'))
+            payment_list = list(payments.values())                          
+            for i in range(len(payment_list)):
+                try:
+                    payment_list[i]['user_id'] = users[i]['user__email']
+                    payment_list[i]['phone'] = users[i]['user__phone']
+                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                    payment_list[i]['is_active'] = payments[i]['is_active']
+                except Exception as e:
+                    pass
+            return Response(payment_list)
+        
         users = list(payments.values('user__email','user__phone'))
         products = list(payments.values('product__product_name'))
         payment_list = list(payments.values())                          
@@ -441,6 +461,8 @@ class ActivePayments(APIView):
                 payment_list[i]['is_active'] = payments[i]['is_active']
             except Exception as e:
                 pass
+
+        
         
         if export == 'true':
             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -455,7 +477,10 @@ class ActivePayments(APIView):
             
             paginator = MyPagination()
             paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-            return paginator.get_paginated_response(paginated_queryset)     
+            if request.user.is_admin:
+                return paginator.get_paginated_response(paginated_queryset)  
+            else:
+                return Response("no data")  
 
 #optimized       
 class SearchPayments(APIView):
