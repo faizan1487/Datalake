@@ -1,19 +1,9 @@
 from django.contrib import admin
-from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment
+from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment,New_Alnafi_Payments
 from import_export.admin import ImportExportModelAdmin, ExportActionModelAdmin
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
 # Register your models here.    
-
-#For Navbar:
-
-
-#For New Alnafi Payments:
-# class New_Al_Nafi_PaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-#     list_display = ('orderId','first_name','last_name', 'username', 'customer_email', 'phone')
-#     # search_fields = ('customer_email','payment_id', 'alnafi_order_id', 'name', 'phone','product_name')
-
-# admin.site.register(New_Al_Nafi_Payments,New_Al_Nafi_PaymentsAdmin)     
 
 
 #For Stripe Payments:
@@ -67,3 +57,12 @@ class MainPaymentAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.Mode
     list_filter = ('source', 'internal_source', 'status', 'order_datetime', 'expiration_datetime', 'activation_datetime', 'token_paid_datetime', 'qarz', 'is_upgrade_payment')
 
 admin.site.register(Main_Payment, MainPaymentAdmin)
+
+
+#For New Alnafi Payments:
+class New_Alnafi_PaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('orderId','product_names','customer_email','username','created_at','expiration_date','payment_date','amount','status','updated_at','card_number','account_number','meta','payment_method_name','payment_method_currency','payment_method_source_name','country','pk_invoice_number','us_invoice_number','send_invoice','purpose','depositor_name','application_id','coupon_id','additional_months','is_manual','amount_pkr','amount_usd','webhook_called','old_payments','remarks','transaction_id')
+    search_fields = ('orderId', 'product_names', 'customer_email', 'username', 'card_number', 'account_number', 'pk_invoice_number', 'us_invoice_number', 'depositor_name', 'coupon_id', 'transaction_id')
+    list_filter = ('created_at', 'expiration_date', 'payment_date', 'status', 'payment_method_name', 'payment_method_currency', 'payment_method_source_name', 'country', 'send_invoice', 'is_manual', 'webhook_called')
+
+admin.site.register(New_Alnafi_Payments,New_Alnafi_PaymentsAdmin)     

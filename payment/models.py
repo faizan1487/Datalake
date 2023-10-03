@@ -203,67 +203,44 @@ class NavbarLink(models.Model):
     def __str__(self):
         return self.name
 
+class New_Alnafi_Payments(models.Model):
+    orderId = models.CharField(unique=True, max_length=255, blank=True, null=True)
+    amount = models.IntegerField(null=True, blank=True)
+    status = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
+    card_number = models.CharField(max_length=255, blank=True, null=True)
+    account_number = models.CharField(max_length=255, blank=True, null=True)
+    meta = models.JSONField(null=True, blank=True)
+    payment_method_name = models.CharField(max_length=255, blank=True, null=True)
+    payment_method_currency = models.CharField(max_length=255, blank=True, null=True)
+    payment_method_source_name = models.CharField(max_length=255, blank=True, null=True)
+    product_names = models.JSONField(null=True, blank=True)
+    username = models.CharField(max_length=200, null=True, blank=True)
+    country = models.CharField(max_length=255, blank=True, null=True)
+    pk_invoice_number = models.CharField(max_length=255, blank=True, null=True)
+    us_invoice_number = models.CharField(max_length=255, blank=True, null=True)
+    send_invoice = models.BooleanField(default=False)
+    purpose = models.CharField(max_length=255, blank=True, null=True)
+    depositor_name = models.CharField(max_length=255, blank=True, null=True)
+    application_id = models.CharField(max_length=255, blank=True, null=True)
+    customer_email = models.CharField(max_length=300, null=True, blank=True)
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    payment_date = models.DateTimeField(blank=True, null=True)
+    coupon_id = models.CharField(max_length=255, blank=True, null=True)
+    additional_months = models.IntegerField(null=True, blank=True)
+    is_manual = models.BooleanField(default=False)
+    amount_pkr = models.IntegerField(null=True, blank=True)
+    amount_usd = models.IntegerField(null=True, blank=True)
+    webhook_called = models.BooleanField(default=False)
+    old_payments = models.IntegerField(null=True, blank=True)
+    remarks = models.CharField(max_length=1000,null=True, blank=True)
+    transaction_id = models.CharField(max_length=255,null=True, blank=True)
 
-# class New_Al_Nafi_Payments(models.Model):
-#     # id = models.AutoField(primary_key=True)
-#     # customer_id = models.CharField(max_length=200, null=True, blank=True)
-#     customer_email = models.CharField(max_length=300, null=True, blank=False)
-#     first_name = models.CharField(max_length=200, null=True, blank=True)
-#     last_name = models.CharField(max_length=200, null=True, blank=True)
-#     username = models.CharField(max_length=200, null=True, blank=True)
-#     phone = models.CharField(max_length=200, null=True, blank=True)
-#     affiliate_code = models.CharField(max_length=200, null=True, blank=True)
-    
-#     coupon_id = models.CharField(max_length=200, null=True, blank=True)
-#     application = models.CharField(max_length=200, null=True, blank=True)
 
-#     payment_method = models.CharField(max_length=200, null=True, blank=True)
-#     product_ids = models.JSONField(null=True)
-#     product_data = models.JSONField(null=True, blank=True)
-#     product_name = models.CharField(max_length=200, null=True, blank=True)
-#     product_amount = models.CharField(max_length=200, null=True, blank=True)
+    class Meta:
+        managed = True
+        verbose_name = "New Al-Nafi Payment"
 
-#     orderId = models.CharField(max_length=100, unique=True)
-#     source = models.CharField(max_length=150, null=True, blank=True)
-
-#     amount = models.IntegerField(null=True, blank=True)
-#     amount_pkr = models.IntegerField(null=True, blank=True)
-#     amount_usd = models.IntegerField(null=True, blank=True)
-#     country = models.CharField(max_length=3, default="US")
-
-#     STATUS_CHOICES = [
-#         ("pending", "Pending"),
-#         ("failed", "Failed"),
-#         ("paid", "Paid"),
-#         ("not_enough_balance", "Not Enough Balance"),
-#         ("cancelled", "Cancelled"),
-#         ("incorrect_details", "Incorrect Details"),
-#         ("inactive_account", "Inactive Account"),
-#         ("no_account", "Account Does Not Exist"),
-#         ("invalid_pin", "Invalid Pin"),
-#         ("archived","Archived")
-#     ]
-#     status = models.CharField(max_length=100, default="pending", choices=STATUS_CHOICES)
-#     payment_proof = models.ImageField(upload_to="payment_proofs/", null=True, blank=True)
-#     created_at = models.DateTimeField(default=datetime.now)
-#     # created_at = models.DateTimeField(auto_now_add=True)
-#     updated_at = models.DateTimeField(auto_now=True)
-#     card_number = models.CharField(max_length=100, null=True, blank=True)
-#     account_number = models.CharField(max_length=100, null=True, blank=True)
-#     send_invoice = models.BooleanField(default=False)
-#     pk_invoice_number= models.CharField(max_length = 5,null=True,blank=True)
-#     us_invoice_number= models.CharField(max_length = 5,null=True,blank=True)
-#     meta = models.JSONField(null=True, blank=True)
-#     depositor_name = models.CharField(max_length=100, null=True, blank=True)
-#     purpose = models.CharField(max_length=100, default="products")
-#     payment_date = models.DateTimeField(auto_now_add=True)
-#     expiration_date = models.DateTimeField(null=True, blank=True)
-#     additional_months = models.IntegerField(default=0)
-#     dynamic_checkout_link = models.CharField(max_length=1000, null=True, blank=True)
-#     is_manual = models.BooleanField(default=False)
-#     webhook_called = models.BooleanField(default=False)
-#     old_payments = models.IntegerField(default=False)
-#     remarks = models.TextField(null=True,blank=True)
-
-#     def _str_(self):
-#         return self.orderId or '-'
+    def _str_(self):
+        return self.orderId or '-'
