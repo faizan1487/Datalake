@@ -369,74 +369,94 @@ class ActivePayments(APIView):
         payments = payments.filter(expiration_datetime__date__gt=date.today())
         # print(payments)
 
-        if not start_date:
-            first_payment = min(payments, key=lambda obj: obj['expiration_datetime'])
-            start_date = first_payment['expiration_datetime'].date() if first_payment else None
+        if payments:
 
-        if not end_date:
-            last_payment = max(payments, key=lambda obj: obj['expiration_datetime'])
-            end_date = last_payment['expiration_datetime'].date() if last_payment else None
+            if not start_date:
+                first_payment = min(payments, key=lambda obj: obj['expiration_datetime'])
+                start_date = first_payment['expiration_datetime'].date() if first_payment else None
 
-        # print(first_payment)
-        # print(last_payment)
-        # print(start_date)
-        # print(end_date)
+            if not end_date:
+                last_payment = max(payments, key=lambda obj: obj['expiration_datetime'])
+                end_date = last_payment['expiration_datetime'].date() if last_payment else None
 
-        payments = payments.filter(Q(expiration_datetime__date__gte=start_date) & Q(expiration_datetime__date__lte=end_date))
-        print(payments.count())
+            # print(first_payment)
+            # print(last_payment)
+            # print(start_date)
+            # print(end_date)
+
+            payments = payments.filter(Q(expiration_datetime__date__gte=start_date) & Q(expiration_datetime__date__lte=end_date))
+            # print(payments.count())
 
 
-        if q:
-            payments = payments.filter(user__email__icontains=q) 
-            # payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
-            
-        if product:
-            payments = payments.filter(product__product_name__icontains=product)
-  
-        plan_mapping = {
-            'yearly': 'Yearly',
-            'halfyearly': 'Half Yearly',
-            'quarterly': 'Quarterly',
-            'monthly': 'Monthly',
-        }
-        #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
-        # This field represents the uppercase version of the product_plan field of the associated product.
-        payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
-        # print(payments.count())
-        #If the plan is provided and it is not 'all', the queryset is further filtered using
-        # the filter() function. It applies a condition using the Q object, which checks if 
-        # the product_plan is an exact case-insensitive match to the given plan 
-        # or if it matches any plan name from the plan_mapping dictionary.
-        # print(payments)
-        if plan:
-            if plan.lower() != 'all':
-                payments = payments.filter(
-                    Q(product__product_plan__iexact=plan) | Q(product__product_plan__iexact=plan_mapping.get(plan, ''))
-                )
-        #uncomment this before pushing
-        # else:
-        #     payments = payments.filter(product__product_plan__isnull=False)
+            if q:
+                payments = payments.filter(user__email__icontains=q) 
+                # payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
+                
+            if product:
+                payments = payments.filter(product__product_name__icontains=product)
+    
+            plan_mapping = {
+                'yearly': 'Yearly',
+                'halfyearly': 'Half Yearly',
+                'quarterly': 'Quarterly',
+                'monthly': 'Monthly',
+            }
+            #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
+            # This field represents the uppercase version of the product_plan field of the associated product.
+            payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
+            # print(payments.count())
+            #If the plan is provided and it is not 'all', the queryset is further filtered using
+            # the filter() function. It applies a condition using the Q object, which checks if 
+            # the product_plan is an exact case-insensitive match to the given plan 
+            # or if it matches any plan name from the plan_mapping dictionary.
+            # print(payments)
+            if plan:
+                if plan.lower() != 'all':
+                    payments = payments.filter(
+                        Q(product__product_plan__iexact=plan) | Q(product__product_plan__iexact=plan_mapping.get(plan, ''))
+                    )
+            #uncomment this before pushing
+            # else:
+            #     payments = payments.filter(product__product_plan__isnull=False)
 
-        # print(payments.count())
-        # print("after plan filter", payments.count())
+            # print(payments.count())
+            # print("after plan filter", payments.count())
 
-        for i, data in enumerate(payments):
-            # date_string = data['expiration_datetime']
-            date_string = payments[i]['expiration_datetime']
-            if date_string:
-                payments[i]['is_active'] = date_string.date() >= date.today()
+            for i, data in enumerate(payments):
+                # date_string = data['expiration_datetime']
+                date_string = payments[i]['expiration_datetime']
+                if date_string:
+                    payments[i]['is_active'] = date_string.date() >= date.today()
+                else:
+                    payments[i]['is_active'] = False
+
+            def json_serializable(obj):
+                    if isinstance(obj, datetime):
+                        return obj.isoformat()  # Convert datetime to ISO 8601 format
+                    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+                
+            if request.user.is_admin:
+                pass
             else:
-                payments[i]['is_active'] = False
-
-        def json_serializable(obj):
-                if isinstance(obj, datetime):
-                    return obj.isoformat()  # Convert datetime to ISO 8601 format
-                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+                if q:
+                    print(payments.count())
+                    payments = payments.filter(user__email__iexact=q)
+                    print(payments.count())
+                    users = list(payments.values('user__email','user__phone'))
+                    products = list(payments.values('product__product_name'))
+                    payment_list = list(payments.values())                          
+                    for i in range(len(payment_list)):
+                        try:
+                            payment_list[i]['user_id'] = users[i]['user__email']
+                            payment_list[i]['phone'] = users[i]['user__phone']
+                            payment_list[i]['product_id'] = products[i]['product__product_name']
+                            payment_list[i]['is_active'] = payments[i]['is_active']
+                        except Exception as e:
+                            pass
+                    return Response(payment_list)
+                else:
+                    return Response("Please enter email")
             
-        if request.user.is_admin:
-            pass
-        else:
-            payments = payments.filter(user__email__iexact=q)
             users = list(payments.values('user__email','user__phone'))
             products = list(payments.values('product__product_name'))
             payment_list = list(payments.values())                          
@@ -448,39 +468,28 @@ class ActivePayments(APIView):
                     payment_list[i]['is_active'] = payments[i]['is_active']
                 except Exception as e:
                     pass
-            return Response(payment_list)
-        
-        users = list(payments.values('user__email','user__phone'))
-        products = list(payments.values('product__product_name'))
-        payment_list = list(payments.values())                          
-        for i in range(len(payment_list)):
-            try:
-                payment_list[i]['user_id'] = users[i]['user__email']
-                payment_list[i]['phone'] = users[i]['user__phone']
-                payment_list[i]['product_id'] = products[i]['product__product_name']
-                payment_list[i]['is_active'] = payments[i]['is_active']
-            except Exception as e:
-                pass
 
-        
-        
-        if export == 'true':
-            file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-            df = pd.DataFrame(payment_list).to_csv(index=False)
-            s3 = upload_csv_to_s3(df, file_name)
-            data = {'file_link': file_path, 'export': 'true'}
-            return Response(data)
-        else:
-            payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
-            payment_objects = json.loads(payment_json)
             
-            paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-            if request.user.is_admin:
-                return paginator.get_paginated_response(paginated_queryset)  
+            
+            if export == 'true':
+                file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                df = pd.DataFrame(payment_list).to_csv(index=False)
+                s3 = upload_csv_to_s3(df, file_name)
+                data = {'file_link': file_path, 'export': 'true'}
+                return Response(data)
             else:
-                return Response("no data")  
+                payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+                payment_objects = json.loads(payment_json)
+                
+                paginator = MyPagination()
+                paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+                if request.user.is_admin:
+                    return paginator.get_paginated_response(paginated_queryset)  
+                else:
+                    return Response("no data")  
+        else:
+            return Response("No data")
 
 #optimized       
 class SearchPayments(APIView):
