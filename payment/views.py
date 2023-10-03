@@ -265,7 +265,8 @@ class RenewalPayments(APIView):
             # cache.set(url, payments)
 
         if q:
-            payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
+            payments = payments.filter(user__email__icontains=q) 
+            # payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
             
         if source:
             payments = payments.filter(source=source)
@@ -700,7 +701,8 @@ class PaymentValidation(APIView):
             payments = payments.filter(source=source)
 
         if q:
-            payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))   
+            payments = payments.filter(user__email__icontains=q) 
+            # payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))   
 
         
         valid_payments = []

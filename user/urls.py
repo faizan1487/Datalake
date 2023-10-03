@@ -7,8 +7,9 @@ from django.http import HttpResponse
 
 urlpatterns = [
     path("", lambda req: HttpResponse(status=200)),
-
     path('upload-moc-leads/',UploadMocLeads.as_view()),
+    
+    #below api ths is for moc leads
     path('getusers/',getUsser.as_view(), name='get-users'),
 
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),

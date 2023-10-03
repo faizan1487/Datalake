@@ -76,18 +76,34 @@ def search_users(q, start_date, req_end_date, is_converted,source):
         users = users.filter(source=source)
     
 
+    # if users:
+    #     if not start_date:
+    #         first_user = users.exclude(created_at=None).last()
+    #         date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
+    #         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
+    #         start_date = new_date_obj
+    
     if users:
         if not start_date:
             first_user = users.exclude(created_at=None).last()
-            date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-            new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-            start_date = new_date_obj
+            if first_user and first_user['created_at']:
+                date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f")
+                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                start_date = new_date_obj
+
+        # if not req_end_date:
+        #     last_user = users.exclude(created_at=None).first()
+        #     date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
+        #     new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
+        #     end_date = new_date_obj
 
         if not req_end_date:
             last_user = users.exclude(created_at=None).first()
-            date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-            new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-            end_date = new_date_obj
+            if last_user and last_user['created_at']:
+                date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f")
+                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                end_date = new_date_obj
+
 
         if req_end_date:
             end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
