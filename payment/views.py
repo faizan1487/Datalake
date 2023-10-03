@@ -364,8 +364,10 @@ class ActivePayments(APIView):
         end_date = self.request.GET.get('end_date', None) or None
 
         payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
+        # print(payments)
         payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
-        payments = payments.filter(expiration_datetime__date__gt=date.today())  
+        payments = payments.filter(expiration_datetime__date__gt=date.today())
+        # print(payments)
 
         if not start_date:
             first_payment = min(payments, key=lambda obj: obj['expiration_datetime'])
@@ -381,7 +383,7 @@ class ActivePayments(APIView):
         # print(end_date)
 
         payments = payments.filter(Q(expiration_datetime__date__gte=start_date) & Q(expiration_datetime__date__lte=end_date))
-        # print(payments.count())
+        print(payments.count())
         if q:
             payments = payments.filter(user__email__icontains=q) 
             # payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
@@ -398,10 +400,12 @@ class ActivePayments(APIView):
         #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
         # This field represents the uppercase version of the product_plan field of the associated product.
         payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
+        # print(payments.count())
         #If the plan is provided and it is not 'all', the queryset is further filtered using
         # the filter() function. It applies a condition using the Q object, which checks if 
         # the product_plan is an exact case-insensitive match to the given plan 
         # or if it matches any plan name from the plan_mapping dictionary.
+        # print(payments)
         if plan:
             if plan.lower() != 'all':
                 payments = payments.filter(
@@ -410,6 +414,7 @@ class ActivePayments(APIView):
         else:
             payments = payments.filter(product__product_plan__isnull=False)
 
+        # print(payments.count())
         # print("after plan filter", payments.count())
 
         for i, data in enumerate(payments):
