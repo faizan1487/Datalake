@@ -24,8 +24,8 @@ def send_payment_post_request(sender, instance, **kwargs):
     # print("signal running")
     url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
     api_key, api_secret = round_robin_support()
-    api_key = '351b6479c5a4a16'
-    api_secret = 'e459db7e2d30b34'
+    # api_key = '351b6479c5a4a16'
+    # api_secret = 'e459db7e2d30b34'
   
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
