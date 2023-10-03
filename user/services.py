@@ -110,7 +110,7 @@ def search_users(q, start_date, req_end_date, is_converted,source):
             end_date = end_date + timedelta(days=1)
         if q:
             users = users.filter(
-                Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q)| Q(id__iexact=q))   
+                Q(email__icontains=q) | Q(username__icontains=q) | Q(first_name__icontains=q)| Q(id__icontains=q))   
         
         users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
         users = paying_users_details(users, is_converted)
