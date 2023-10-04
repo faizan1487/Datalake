@@ -154,7 +154,9 @@ def mocLeadsSignal(instance,source):
             "email_id": instance.email or None,
             "mobile_no": str(instance.phone) if hasattr(instance, 'phone') else None,
             "country": country_name,
-            "source": source,
+            # "source": 'Student Want To Go Abroad Form',
+            "source":instance.source,
+            # "cv_link": instance.source or None,
             "interest": instance.interest,
             "qualification": instance.qualification
             # Add other fields from the Main_User model to the data dictionary as needed

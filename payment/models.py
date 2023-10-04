@@ -204,7 +204,7 @@ class NavbarLink(models.Model):
         return self.name
 
 class New_Alnafi_Payments(models.Model):
-    orderId = models.CharField(unique=True, max_length=255, blank=True, null=True)
+    orderId = models.CharField(unique=True, max_length=255)
     amount = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(null=True, blank=True)

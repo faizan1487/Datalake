@@ -46,7 +46,7 @@ import pandas as pd
 
 class UploadMocLeads(APIView):
     def post(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/mainsite.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/students.csv')
         lst = []
 
         for index, row in data.iterrows():
@@ -55,7 +55,7 @@ class UploadMocLeads(APIView):
             phone = row['phone']
             form = row['form']
             country = row['country']
-            source = row['source']
+            source = row['cv']
             # created_at = row['created_at']
             # Convert 'created_at' to the desired format
             created_at_str = row['created_at']

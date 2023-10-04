@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 import requests
-from .models import AlNafi_Payment,UBL_IPG_Payment,UBL_Manual_Payment,Stripe_Payment,Easypaisa_Payment
+from .models import AlNafi_Payment,New_Alnafi_Payments
 from rest_framework.response import Response
 from requests.exceptions import RequestException
 from user.models import Main_User
@@ -12,6 +12,8 @@ from datetime import datetime
 from user.constants import COUNTRY_CODES
 import environ
 from secrets_api.algorithem import round_robin_support
+from threading import Thread
+from threading import Timer
 
 env = environ.Env()
 env.read_env()
@@ -19,13 +21,24 @@ env.read_env()
 # api_secret = env("FRAPPE_API_SECRET")
 DEBUG = env('DEBUG',cast=bool)
 
+
+
+@receiver(pre_save, sender=New_Alnafi_Payments)
+def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+    model_name = 'new_alnafi'
+    Thread(target=send_payment_post_request, args=(instance,model_name,)).start()
+
+
 @receiver(pre_save, sender=AlNafi_Payment)
-def send_payment_post_request(sender, instance, **kwargs):
+def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
+    model_name = 'alnafi'
+    Thread(target=send_payment_post_request, args=(instance,model_name,)).start()
+
+
+def send_payment_post_request(instance,model_name, **kwargs):
     # print("signal running")
     url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
     api_key, api_secret = round_robin_support()
-    # api_key = '351b6479c5a4a16'
-    # api_secret = 'e459db7e2d30b34'
   
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
@@ -47,65 +60,15 @@ def send_payment_post_request(sender, instance, **kwargs):
         for i in range(len(data['data'])):
             print("in for")
             # print(payment_user)
-            first_name = payment_user[0].first_name if payment_user[0].first_name else ''
-            last_name = payment_user[0].last_name if payment_user[0].last_name else ''
-            full_name = f'{first_name} {last_name}'.strip()
-            # print("full name", full_name)
-            # uncomment this check condition for customer
             if data['data'][i]['customer_email'] == instance.customer_email:
-                print("customer exists")
+
+                if model_name == 'alnafi':
+                    customer_data = create_customer(instance,payment_user)
+                else:
+                    customer_data = new_alnafi_payment_support_data(instance, payment_user)
+
                 customer_id = data['data'][i]['name']
-                # print(customer_id)
-                # if DEBUG:
-                #     url = f'https://stage-erp.alnafi.com/api/resource/Suppport/{customer_id}'
-                # else:
                 url = f'https://crm.alnafi.com/api/resource/Suppport/{customer_id}'
-                # url = f'http://18.190.1.109/api/api/resource/Lead/{lead_id}'
-
-                
-                current_date = datetime.now().date()
-                if instance.expiration_datetime and instance.expiration_datetime.date() >= current_date:
-                    expiration_status = 'Active'
-                else:
-                    expiration_status = 'Expired'
-
-
-                if instance.order_datetime:
-                    order_datetime_str = str(instance.order_datetime)
-                    # Parse the original datetime string
-                    order_datetime = datetime.fromisoformat(order_datetime_str)
-
-                    # Format it in the expected format
-                    formatted_order_datetime_str = order_datetime.strftime('%Y-%m-%d %H:%M:%S')
-                else:
-                    formatted_order_datetime_str = None
-
-                if instance.expiration_datetime:
-                    expire_datetime_str = str(instance.expiration_datetime)
-                    # Parse the original datetime string
-                    expire_datetime = datetime.fromisoformat(expire_datetime_str)
-
-                    # Format it in the expected format
-                    formatted_expire_datetime_str = expire_datetime.strftime('%Y-%m-%d %H:%M:%S')
-                else:
-                    formatted_expire_datetime_str = None
-
-
-                customer_data = {
-                    "full_name": full_name or None,
-                    "contact_no": payment_user[0].phone or None,
-                    "customer_email": payment_user[0].email or None,
-                    "country": payment_user[0].country or None,
-                    "product_name": instance.product_name or None,
-                    "price_pkr": instance.amount_pkr or None,
-                    "price_usd": instance.amount_usd or None,
-                    "payment_source": instance.source.capitalize() if instance.source else None,
-                    # "payment_date": instance.order_datetime.isoformat() if instance.order_datetime else None,
-                    "payment_date": formatted_order_datetime_str,
-                    # "expiration_date": instance.expiration_datetime.isoformat() if instance.expiration_datetime else None,
-                    "expiration_date": formatted_expire_datetime_str,
-                    "expiration_status": expiration_status,
-                }
                 # print(customer_data)
                 response = requests.put(url, headers=headers, json=customer_data)
                 # print(response)
@@ -114,22 +77,98 @@ def send_payment_post_request(sender, instance, **kwargs):
                 print("lead updated")
                 break
         else:
-            first_name = payment_user[0].first_name if payment_user[0].first_name else ''
-            last_name = payment_user[0].last_name if payment_user[0].last_name else ''
-            full_name = f'{first_name} {last_name}'.strip()
-            customer = create_customer(instance,headers,full_name,payment_user)
+            customer_data = create_customer(instance,payment_user)
 
-
+            customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
+            response = requests.post(customer_url, headers=headers, json=customer_data)
+            # print(response)
+            print(response.text)
+            if response.status_code == 200:
+                lead_data = response.json()
+                print(lead_data)
+                customer_email = lead_data['data']['customer_email']
+                if customer_email:
+                    # print("lead id exists")
+                    instance.customer_email = customer_email
+                    print("Lead created successfully!")
     except RequestException as e:
         print("in except")
         print('Error occurred while making the request:', str(e))
-        print('Error:', response.status_code)
-        print('Error:', response.text) 
+        # print('Error:', response.status_code)
+        # print('Error:', response.text) 
      
-  
 
-def create_customer(instance,headers,full_name,payment_user):
-    customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
+
+
+def new_alnafi_payment_support_data(instance,payment_user):
+    first_name = payment_user[0].first_name if payment_user[0].first_name else ''
+    last_name = payment_user[0].last_name if payment_user[0].last_name else ''
+    full_name = f'{first_name} {last_name}'.strip()
+
+    # print("payment_user",payment_user)
+    # print("payment_user[0].erp_lead_id",payment_user[0].erp_lead_id)
+    country_code = payment_user[0].country or None
+    country_name = None
+
+    if country_code:
+        for name, code in COUNTRY_CODES.items():
+            if code == country_code:
+                country_name = name
+                break
+
+    
+    current_date = datetime.now().date()
+    if instance.expiration_date and instance.expiration_date.date() >= current_date:
+        expiration_status = 'Active'
+    else:
+        expiration_status = 'Expired'
+
+    if instance.payment_date:
+        order_datetime_str = str(instance.payment_date)
+        # Parse the original datetime string
+        order_datetime = datetime.fromisoformat(order_datetime_str)
+
+        # Format it in the expected format
+        formatted_order_datetime_str = order_datetime.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        formatted_order_datetime_str = None
+
+    if instance.expiration_date:
+        expire_datetime_str = str(instance.expiration_date)
+        # Parse the original datetime string
+        expire_datetime = datetime.fromisoformat(expire_datetime_str)
+
+        # Format it in the expected format
+        formatted_expire_datetime_str = expire_datetime.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        formatted_expire_datetime_str = None
+
+    
+    print(instance.product_names)
+    customer_data = {
+        "full_name": full_name or None,
+        "contact_no": payment_user[0].phone or None,
+        "customer_email": payment_user[0].email or None,
+        "country": country_name,
+        "product_name": instance.product_names or None,
+        "price_pkr": instance.amount_pkr or None,
+        "price_usd": instance.amount_usd or None,
+        "payment_source": instance.payment_method_source_name.capitalize() if instance.payment_method_source_name else None,
+        "payment_date": formatted_order_datetime_str,
+        "expiration_date": formatted_expire_datetime_str,
+        "expiration_status": expiration_status,
+    }
+    return customer_data
+
+
+
+
+
+def create_customer(instance,payment_user):
+    first_name = payment_user[0].first_name if payment_user[0].first_name else ''
+    last_name = payment_user[0].last_name if payment_user[0].last_name else ''
+    full_name = f'{first_name} {last_name}'.strip()
+
     # print("payment_user",payment_user)
     # print("payment_user[0].erp_lead_id",payment_user[0].erp_lead_id)
     country_code = payment_user[0].country or None
@@ -173,29 +212,16 @@ def create_customer(instance,headers,full_name,payment_user):
         "full_name": full_name or None,
         "contact_no": payment_user[0].phone or None,
         "customer_email": payment_user[0].email or None,
-        "country": payment_user[0].country or None,
+        "country": country_name,
         "product_name": instance.product_name or None,
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
         "payment_source": instance.source.capitalize() if instance.source else None,
-        # "payment_date": instance.order_datetime.isoformat() if instance.order_datetime else None,
         "payment_date": formatted_order_datetime_str,
-        # "expiration_date": instance.expiration_datetime.isoformat() if instance.expiration_datetime else None,
         "expiration_date": formatted_expire_datetime_str,
         "expiration_status": expiration_status,
     }
-
-    response = requests.post(customer_url, headers=headers, json=customer_data)
-    # print(response)
-    print(response.text)
-    if response.status_code == 200:
-        lead_data = response.json()
-        print(lead_data)
-        customer_email = lead_data['data']['customer_email']
-        if customer_email:
-            # print("lead id exists")
-            instance.customer_email = customer_email
-            print("Lead created successfully!")
+    return customer_data
 
 
 

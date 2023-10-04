@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, Serializer, SerializerMethodField, ValidationError
-from .models import UBL_IPG_Payment, AlNafi_Payment, Main_Payment,Easypaisa_Payment, Stripe_Payment, UBL_Manual_Payment
+from .models import UBL_IPG_Payment, AlNafi_Payment, Main_Payment,Easypaisa_Payment, Stripe_Payment, UBL_Manual_Payment, New_Alnafi_Payments
 from user.models import Main_User
 
 #For AlNafi (MainSite) Payments:
@@ -34,55 +34,55 @@ class AlNafiPaymentSerializer(ModelSerializer):
         return instance
 
 
-# class New_Al_Nafi_Payments_Serializer(ModelSerializer):
-#     class Meta:
-#         model = New_Al_Nafi_Payments
-#         fields = '__all__'
+class New_Al_Nafi_Payments_Serializer(ModelSerializer):
+    class Meta:
+        model = New_Alnafi_Payments
+        fields = '__all__'
 
-#     def update(self, instance, validated_data):
-#         instance.customer_id = validated_data.get('customer_id', instance.customer_id)
-#         instance.first_name = validated_data.get('first_name', instance.first_name)
-#         instance.customer_email = validated_data.get('customer_email', instance.customer_email)
-#         instance.last_name = validated_data.get('last_name', instance.last_name)
-#         instance.username = validated_data.get('username', instance.username)
-#         instance.phone = validated_data.get('phone', instance.phone)
-#         instance.affiliate_code = validated_data.get('affiliate_code', instance.affiliate_code)
-#         instance.coupon_id = validated_data.get('coupon_id', instance.coupon_id)
-#         instance.application = validated_data.get('application', instance.application)
-#         instance.payment_method = validated_data.get('payment_method', instance.payment_method)
-#         instance.product_ids = validated_data.get('product_ids', instance.product_ids)
-#         instance.product_data = validated_data.get('product_data', instance.product_data)
-#         instance.product_name = validated_data.get('product_name', instance.product_name)
-#         instance.product_amount = validated_data.get('product_amount', instance.product_amount)
-#         instance.orderId = validated_data.get('orderId', instance.orderId)
-#         instance.amount_pkr = validated_data.get('amount_pkr', instance.amount_pkr)
-#         instance.amount_usd = validated_data.get('amount_usd', instance.amount_usd)
-#         instance.country = validated_data.get('country', instance.country)
-#         instance.status = validated_data.get('status', instance.status)
-#         instance.payment_proof = validated_data.get('payment_proof', instance.payment_proof)
-#         instance.created_at = validated_data.get('created_at', instance.created_at)
-#         instance.updated_at = validated_data.get('updated_at', instance.updated_at)
-#         instance.card_number = validated_data.get('card_number', instance.card_number)
-#         instance.account_number = validated_data.get('account_number', instance.account_number)
-#         instance.send_invoice = validated_data.get('send_invoice', instance.send_invoice)
-#         instance.pk_invoice_number = validated_data.get('pk_invoice_number', instance.pk_invoice_number)
-#         instance.us_invoice_number = validated_data.get('us_invoice_number', instance.us_invoice_number)
-#         instance.meta = validated_data.get('meta', instance.meta)
-#         instance.depositor_name = validated_data.get('depositor_name', instance.depositor_name)
-#         instance.purpose = validated_data.get('purpose', instance.purpose)
-#         instance.payment_date = validated_data.get('payment_date', instance.payment_date)
-#         instance.expiration_date = validated_data.get('expiration_date', instance.expiration_date)
-#         instance.additional_months = validated_data.get('additional_months', instance.additional_months)
-#         instance.dynamic_checkout_link = validated_data.get('dynamic_checkout_link', instance.dynamic_checkout_link)
-#         instance.is_manual = validated_data.get('is_manual', instance.is_manual)
-#         instance.webhook_called = validated_data.get('webhook_called', instance.webhook_called)
-#         instance.old_payments = validated_data.get('old_payments', instance.old_payments)
-#         instance.remarks = validated_data.get('remarks', instance.remarks)
+    def update(self, instance, validated_data):
+        instance.customer_id = validated_data.get('customer_id', instance.customer_id)
+        instance.first_name = validated_data.get('first_name', instance.first_name)
+        instance.customer_email = validated_data.get('customer_email', instance.customer_email)
+        instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.username = validated_data.get('username', instance.username)
+        instance.phone = validated_data.get('phone', instance.phone)
+        instance.affiliate_code = validated_data.get('affiliate_code', instance.affiliate_code)
+        instance.coupon_id = validated_data.get('coupon_id', instance.coupon_id)
+        instance.application = validated_data.get('application', instance.application)
+        instance.payment_method = validated_data.get('payment_method', instance.payment_method)
+        instance.product_ids = validated_data.get('product_ids', instance.product_ids)
+        instance.product_data = validated_data.get('product_data', instance.product_data)
+        instance.product_name = validated_data.get('product_name', instance.product_name)
+        instance.product_amount = validated_data.get('product_amount', instance.product_amount)
+        instance.orderId = validated_data.get('orderId', instance.orderId)
+        instance.amount_pkr = validated_data.get('amount_pkr', instance.amount_pkr)
+        instance.amount_usd = validated_data.get('amount_usd', instance.amount_usd)
+        instance.country = validated_data.get('country', instance.country)
+        instance.status = validated_data.get('status', instance.status)
+        instance.payment_proof = validated_data.get('payment_proof', instance.payment_proof)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.updated_at = validated_data.get('updated_at', instance.updated_at)
+        instance.card_number = validated_data.get('card_number', instance.card_number)
+        instance.account_number = validated_data.get('account_number', instance.account_number)
+        instance.send_invoice = validated_data.get('send_invoice', instance.send_invoice)
+        instance.pk_invoice_number = validated_data.get('pk_invoice_number', instance.pk_invoice_number)
+        instance.us_invoice_number = validated_data.get('us_invoice_number', instance.us_invoice_number)
+        instance.meta = validated_data.get('meta', instance.meta)
+        instance.depositor_name = validated_data.get('depositor_name', instance.depositor_name)
+        instance.purpose = validated_data.get('purpose', instance.purpose)
+        instance.payment_date = validated_data.get('payment_date', instance.payment_date)
+        instance.expiration_date = validated_data.get('expiration_date', instance.expiration_date)
+        instance.additional_months = validated_data.get('additional_months', instance.additional_months)
+        instance.dynamic_checkout_link = validated_data.get('dynamic_checkout_link', instance.dynamic_checkout_link)
+        instance.is_manual = validated_data.get('is_manual', instance.is_manual)
+        instance.webhook_called = validated_data.get('webhook_called', instance.webhook_called)
+        instance.old_payments = validated_data.get('old_payments', instance.old_payments)
+        instance.remarks = validated_data.get('remarks', instance.remarks)
 
         
 
-#         instance.save()
-#         return instance
+        instance.save()
+        return instance
         
     
 

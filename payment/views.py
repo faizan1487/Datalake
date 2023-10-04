@@ -1,10 +1,9 @@
 from rest_framework import status
 from user.models import User
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments
 from products.models import Main_Product
-from .serializer import (StripePaymentSerializer, Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, 
-                         AlNafiPaymentSerializer,PaymentCombinedSerializer,LocalPaymentCombinedSerializer,MainPaymentSerializer,
-                         UBL_Manual_PaymentSerializer)
+from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
+                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
 from .services import (json_to_csv, renewal_no_of_payments,search_payment,
                        main_no_of_payments,no_of_payments,get_USD_rate)
 from rest_framework.views import APIView
@@ -44,26 +43,26 @@ class MyPagination(PageNumberPagination):
 post_save = Signal()
 
 
-# class NewAlnafiPayment(APIView):
-#     def post(self, request):
-#         data = request.data
-#         order_id = data.get('orderId')
-#         # print(payment_id)
+class NewAlnafiPayment(APIView):
+    def post(self, request):
+        data = request.data
+        order_id = data.get('orderId')
+        # print(payment_id)
 
-#         try:
-#             instance = New_Al_Nafi_Payments.objects.filter(orderId=order_id)
-#             # print(instance)
-#             serializer = New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
-#         except:
-#             serializer = New_Al_Nafi_Payments_Serializer(data=data)
+        try:
+            instance = New_Alnafi_Payments.objects.filter(orderId=order_id)
+            # print(instance)
+            serializer = New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
+        except:
+            serializer = New_Al_Nafi_Payments_Serializer(data=data)
 
         
-#         if serializer.is_valid():
-#             serializer.save()
-#             # print("valid")
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+        if serializer.is_valid():
+            serializer.save()
+            # print("valid")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # delete this api before production
@@ -401,10 +400,12 @@ class ActivePayments(APIView):
                 'quarterly': 'Quarterly',
                 'monthly': 'Monthly',
             }
+            
             #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
             # This field represents the uppercase version of the product_plan field of the associated product.
             payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
             # print(payments.count())
+
             #If the plan is provided and it is not 'all', the queryset is further filtered using
             # the filter() function. It applies a condition using the Q object, which checks if 
             # the product_plan is an exact case-insensitive match to the given plan 
@@ -415,9 +416,8 @@ class ActivePayments(APIView):
                     payments = payments.filter(
                         Q(product__product_plan__iexact=plan) | Q(product__product_plan__iexact=plan_mapping.get(plan, ''))
                     )
-            #uncomment this before pushing
-            # else:
-            #     payments = payments.filter(product__product_plan__isnull=False)
+            else:
+                payments = payments.filter(product__product_plan__isnull=False)
 
             # print(payments.count())
             # print("after plan filter", payments.count())
