@@ -55,7 +55,8 @@ class UploadMocLeads(APIView):
             phone = row['phone']
             form = row['form']
             country = row['country']
-            source = row['cv']
+            source = row['source']
+            cv_link = row['cv']
             # created_at = row['created_at']
             # Convert 'created_at' to the desired format
             created_at_str = row['created_at']
@@ -63,17 +64,45 @@ class UploadMocLeads(APIView):
             # Assuming the original format is "%m/%d/%Y %H:%M:%S"
             # You can adjust the format string as needed
             created_at = pd.to_datetime(created_at_str, format="%m/%d/%Y %H:%M:%S")
+            # try:
+            #     print(email)
+            #     moc = Moc_Leads.objects.create(
+            #         full_name=full_name,
+            #         email=email,
+            #         phone=phone,
+            #         form=form,
+            #         country= country,
+            #         source=source,
+            #         created_at=created_at,
+            #         cv_link=cv_link
+            #     )
+            # except Exception as e:
+            #     print(e)
+            #     lst.append(row['email'])
             try:
-                print(email)
-                moc = Moc_Leads.objects.create(
-                    full_name=full_name,
-                    email=email,
-                    phone=phone,
-                    form=form,
-                    country= country,
-                    source=source,
-                    created_at=created_at
-                )
+                moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
+                    'full_name': full_name,
+                    'phone': phone,
+                    'email': email,
+                    'form': form,
+                    'country': country,
+                    'source': source,
+                    'created_at': created_at,
+                    'cv_link': cv_link
+                })
+
+                # If the object was not created (i.e., it already existed), update its attributes
+                if not created:
+                    moc.full_name = full_name
+                    moc.email = email
+                    moc.phone = phone
+                    moc.form = form
+                    moc.country = country
+                    moc.source = source
+                    moc.created_at = created_at
+                    moc.cv_link = cv_link
+                    moc.save()
+
             except Exception as e:
                 print(e)
                 lst.append(row['email'])

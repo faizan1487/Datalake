@@ -46,6 +46,7 @@ post_save = Signal()
 class NewAlnafiPayment(APIView):
     def post(self, request):
         data = request.data
+        print(data)
         order_id = data.get('orderId')
         # print(payment_id)
 

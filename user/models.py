@@ -167,6 +167,7 @@ class Moc_Leads(models.Model):
     created_at = models.DateTimeField(null=True, blank=True)
     qualification = models.CharField(max_length=255, null=True, blank=True)
     interest = models.CharField(max_length=255, null=True, blank=True)
+    cv_link = models.CharField(max_length=255, null=True, blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):

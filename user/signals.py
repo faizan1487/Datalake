@@ -88,15 +88,17 @@ def usersignal(instance,source,sender):
     already_existed = len(lead_data["data"]) > 0
 
     if already_existed:
-        lead_id = lead_data['data'][0]['name']
-        # if DEBUG:
-        #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
-        # else:
-        url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
-        # url = f'http://18.190.1.109/api/api/resource/Lead/{lead_id}'
-        # print(data)
-        response = requests.put(url, headers=headers, json=data)
-        instance.erp_lead_id = lead_data['data'][0]['name']
+        # lead_id = lead_data['data'][0]['name']
+        # # if DEBUG:
+        # #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
+        # # else:
+        # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+        # # url = f'http://18.190.1.109/api/api/resource/Lead/{lead_id}'
+        # # print(data)
+        # response = requests.put(url, headers=headers, json=data)
+        # instance.erp_lead_id = lead_data['data'][0]['name']
+
+        pass
         # print("lead updated")
         # instance.save(update_fields=['erp_lead_id'])
     else:
@@ -154,21 +156,21 @@ def mocLeadsSignal(instance,source):
             "email_id": instance.email or None,
             "mobile_no": str(instance.phone) if hasattr(instance, 'phone') else None,
             "country": country_name,
-            # "source": 'Student Want To Go Abroad Form',
-            "source":instance.source,
-            # "cv_link": instance.source or None,
-            "interest": instance.interest,
-            "qualification": instance.qualification
+            "source":instance.source or None,
+            "form":instance.form or None,
+            "cv_link": instance.cv_link or None,
+            "interest": instance.interest or None,
+            "qualification": instance.qualification or None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
-    print(data)
+    # print(data)
     # print(instance.email)
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     # print(response.status_code)
     # print(lead_data['data'])
-    print(lead_data)
+    # print(lead_data)
     if response.status_code == 403:
         return
     # print(lead_data['data'])
@@ -182,7 +184,9 @@ def mocLeadsSignal(instance,source):
     already_existed = len(lead_data["data"]) > 0
     # print(already_existed)
     if already_existed:
-        print("already exixts")
+        #on update add demo and enrollment
+        # pass
+        # print("already exixts")
         # auth_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/demo-user/'
         auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
         # enrollment_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/enrollment-user/'
@@ -198,45 +202,51 @@ def mocLeadsSignal(instance,source):
         # print(demo_user)
         enrollment_user = requests.get(enrollment_url, headers=auth_headers, params=query_parameters)
         
-        print("demo status code", demo_user.status_code)
+        # print("demo status code", demo_user.status_code)
         if demo_user.status_code == 200:
             # Parse the response content as JSON
             demo_data = demo_user.json()
-            print(demo_data)
+            # print(demo_data)
             data['demo_product'] = demo_data['product_name']
 
-        print("enrollment status code",enrollment_user.status_code)
+        # print("enrollment status code",enrollment_user.status_code)
         if enrollment_user.status_code == 200:
             # Parse the response content as JSON
             enrollment_data = enrollment_user.json()
-            print(enrollment_data)
+            # print(enrollment_data)
             # print(data)
             if len(enrollment_data['enrollments']) > 1:
                 data['enrollment'] = enrollment_data['product_name']
         # print(data)
         email_id = lead_data['data'][0]['email_id']
         url = f'https://crm.alnafi.com/api/resource/Lead/{email_id}'
-        print(data)
+        # print(data)
         response = requests.put(url, headers=headers, json=data)
-        # print(response.status_code)
-        # print(response.json())
+        if response.status_code != 200:
+            print(data)
+            print(response.status_code)
+            print(response.json())
         instance.erp_lead_id = lead_data['data'][0]['name']
         print("lead updated")
     else:
         print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
-        print(response.status_code)
-        print(response.json())
+        # print(response.status_code)
+        # print(response.json())
         # response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']
             if erp_lead_id:
-                print("lead id exists")
+                # print("lead id exists")
                 instance.erp_lead_id = erp_lead_id
-                print("Lead created successfully!")
+                # print("Lead created successfully!")
+        else:
+            print(data)
+            print(response.status_code)
+            print(response.json())
 
 
 def newsignupsignal(instance,source,sender):
