@@ -17,7 +17,7 @@ class AlnafiUserSerializer(serializers.ModelSerializer):
         fields = ('username','first_name','last_name','email','phone','isAffiliate','isMentor','country','created_at','affiliate_code','login_source')
 
     def update(self, instance, validated_data):
-      # print("in update serializer")
+      print("in update serializer")
       instance.username = validated_data.get('username', instance.username)
       instance.first_name = validated_data.get('first_name', instance.first_name)
       instance.last_name = validated_data.get('last_name', instance.last_name)
