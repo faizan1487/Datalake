@@ -275,7 +275,7 @@ class Track(models.Model):
 
 # For Al-Nafi New Main Site Product:
 class New_Alnafi_Product(models.Model):
-    product_name = models.CharField(unique=True, max_length=255, blank=True, null=True)
+    product_name = models.CharField(max_length=255, blank=True, null=True)
     slug = models.CharField(max_length=255, null=True, blank=True)
     product_type = models.CharField(max_length=255, null=True, blank=True)
     product_plan = models.CharField(max_length=255, null=True, blank=True)
@@ -285,7 +285,7 @@ class New_Alnafi_Product(models.Model):
     discount_applied_pkr = models.CharField(max_length=100, blank=True, null=True)
     discount_applied_usd = models.CharField(max_length=100, blank=True, null=True)
     price_gbp = models.CharField(max_length=100, blank=True, null=True)
-    alnafi_product_id = models.CharField(max_length=100, null=True, blank=True)
+    alnafi_product_id = models.CharField(unique=True, max_length=100, null=True, blank=True)
     product_language = models.CharField(max_length=255, blank=True, null=True)
     is_certificate_product = models.BooleanField(default=False)
     bundle_ids = models.JSONField(null=True, blank=True)

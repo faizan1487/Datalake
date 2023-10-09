@@ -81,13 +81,14 @@ def usersignal(instance,source,sender):
             "source": source
             # Add other fields from the Main_User model to the data dictionary as needed
         }
-    print(data)
+    # print(data)
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     # print(lead_data)
     already_existed = len(lead_data["data"]) > 0
 
     if already_existed:
+        print("already exists")
         # lead_id = lead_data['data'][0]['name']
         # # if DEBUG:
         # #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
@@ -102,26 +103,26 @@ def usersignal(instance,source,sender):
         # print("lead updated")
         # instance.save(update_fields=['erp_lead_id'])
     else:
-            # if DEBUG:
-            #     url = 'http://3.142.247.16/api/resource/Lead'
-            # else:
-            url = 'https://crm.alnafi.com/api/resource/Lead'
-            # url = 'http://18.190.1.109/api/resource/Lead'
-            # print(headers)
+        # if DEBUG:
+        #     url = 'http://3.142.247.16/api/resource/Lead'
+        # else:
+        url = 'https://crm.alnafi.com/api/resource/Lead'
+        # url = 'http://18.190.1.109/api/resource/Lead'
+        # print(headers)
+        lead_data = response.json()
+        # print(lead_data)
+        response = requests.post(url, headers=headers, json=data)
+        # print("response.status_code",response.text)
+        # print("response.status_code",response.status_code)
+        if response.status_code == 200:
             lead_data = response.json()
             # print(lead_data)
-            response = requests.post(url, headers=headers, json=data)
-            # print("response.status_code",response.text)
-            # print("response.status_code",response.status_code)
-            if response.status_code == 200:
-                lead_data = response.json()
-                # print(lead_data)
-                erp_lead_id = lead_data['data']['name']
-                if erp_lead_id:
-                    # print("lead id exists")
-                    instance.erp_lead_id = erp_lead_id
-                    # instance.save(update_fields=['erp_lead_id'])
-                    # print("Lead created successfully!")
+            erp_lead_id = lead_data['data']['name']
+            if erp_lead_id:
+                # print("lead id exists")
+                instance.erp_lead_id = erp_lead_id
+                # instance.save(update_fields=['erp_lead_id'])
+                # print("Lead created successfully!")
     # except:
     # post_save.connect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
     # post_save.connect(send_psw_lead_post_request, sender=PSWFormRecords)

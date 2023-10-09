@@ -270,7 +270,7 @@ class AlnafiUser(APIView):
     # def get(self, request):
     #     Thread(target=self.get_thread, args=(request,)).start()
     #     return HttpResponse("working")
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         email_string = self.request.GET.get('emails', None) or None
         if email_string:
@@ -294,13 +294,14 @@ class AlnafiUser(APIView):
     
     def post(self, request):
         data = request.data
+        print(data)
         email = data.get("email")
         try:
             instance = AlNafi_User.objects.filter(email=email)
             # print("in update")
             serializer = AlnafiUserSerializer(instance.first(), data=data)
         except Exception as e:
-            # print(e)
+            print(e)
             # print("in post")
             serializer = AlnafiUserSerializer(data=data)
 
