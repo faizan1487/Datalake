@@ -81,7 +81,7 @@ def usersignal(instance,source,sender):
             "source": source
             # Add other fields from the Main_User model to the data dictionary as needed
         }
-    # print(data)
+    print(data)
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     # print(lead_data)
