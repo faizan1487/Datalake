@@ -25,7 +25,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    print("new alnafi signal running")
+    # print("new alnafi signal running")
     model_name = 'new_alnafi'
     # Thread(target=send_payment_post_request, args=(instance,model_name,)).start()
     data = send_payment_post_request(instance,model_name)
@@ -39,7 +39,7 @@ def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
 
 def send_payment_post_request(instance,model_name, **kwargs):
     # print("signal running")
-    print("model_name", model_name)
+    # print("model_name", model_name)
     url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
     api_key, api_secret = round_robin_support()
   
@@ -55,56 +55,58 @@ def send_payment_post_request(instance,model_name, **kwargs):
         data = response.json()
         # print(response.text)
         payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
-        print(payment_user)
+        # print(payment_user)
         # print(data)
         # print(len(data['data']))
         if not payment_user:
             return
         for i in range(len(data['data'])):
-            print("in for")
+            # print("in for")
             # print(payment_user)
             if data['data'][i]['customer_email'] == instance.customer_email:
-                print(model_name)
-                if model_name == 'alnafi':
-                    print("in if")
-                    customer_data = create_customer(instance,payment_user)
-                else:
-                    print("in else")
-                    customer_data = new_alnafi_payment_support_data(instance, payment_user)
+                pass
+                # print(model_name)
+                # if model_name == 'alnafi':
+                #     print("in if")
+                #     customer_data = create_customer(instance,payment_user)
+                # else:
+                #     print("in else")
+                #     customer_data = new_alnafi_payment_support_data(instance, payment_user)
 
-                customer_id = data['data'][i]['name']
-                url = f'https://crm.alnafi.com/api/resource/Suppport/{customer_id}'
+                # customer_id = data['data'][i]['name']
+                # url = f'https://crm.alnafi.com/api/resource/Suppport/{customer_id}'
                 # print(customer_data)
-                response = requests.put(url, headers=headers, json=customer_data)
+                # response = requests.put(url, headers=headers, json=customer_data)
                 # print(response)
-                print(response.text)
-                instance.customer_email = data['data'][i]['customer_email']
-                print("lead updated")
-                break
+                # print(response.text)
+                # instance.customer_email = data['data'][i]['customer_email']
+                # print("lead updated")
+                # break
         else:
             # customer_data = create_customer(instance,payment_user)
             if model_name == 'alnafi':
-                print("in if")
+                # print("in if")
                 customer_data = create_customer(instance,payment_user)
             else:
-                print("in else")
+                # print("in else")
                 customer_data = new_alnafi_payment_support_data(instance, payment_user)
 
             customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
             response = requests.post(customer_url, headers=headers, json=customer_data)
             # print(response)
-            print(response.text)
+            # print(response.text)
             if response.status_code == 200:
                 lead_data = response.json()
-                print(lead_data)
+                # print(lead_data)
                 customer_email = lead_data['data']['customer_email']
                 if customer_email:
                     # print("lead id exists")
                     instance.customer_email = customer_email
-                    print("Lead created successfully!")
+                    # print("Lead created successfully!")
     except RequestException as e:
-        print("in except")
-        print('Error occurred while making the request:', str(e))
+        pass
+        # print("in except")
+        # print('Error occurred while making the request:', str(e))
         # print('Error:', response.status_code)
         # print('Error:', response.text) 
      
@@ -113,7 +115,7 @@ def send_payment_post_request(instance,model_name, **kwargs):
 
 def new_alnafi_payment_support_data(instance,payment_user):
     print("in New Alnafi Payment fubc")
-    print(payment_user)
+    # print(payment_user)
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
     full_name = f'{first_name} {last_name}'.strip()
@@ -157,7 +159,7 @@ def new_alnafi_payment_support_data(instance,payment_user):
         formatted_expire_datetime_str = None
 
     
-    print(instance.product_names)
+    # print(instance.product_names)
     customer_data = {
         "full_name": full_name or None,
         "contact_no": payment_user[0].phone or None,

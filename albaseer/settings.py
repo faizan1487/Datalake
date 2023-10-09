@@ -46,6 +46,7 @@ CORS_ALLOWED_ORIGINS = [
     "https://sub.example.com",
     "http://localhost:3000",
     "http://127.0.0.1:9000",
+    "http://127.0.0.1:8000",
     'https://stage-api-al-baseer.alnafi.com',
     'http://stage-api-al-baseer.alnafi.com',
     'http://ec2-34-194-10-51.compute-1.amazonaws.com',

@@ -34,6 +34,8 @@ from threading import Thread
 from collections import defaultdict, OrderedDict
 
 
+
+
 class MyPagination(PageNumberPagination):
     page_size = 10
     page_query_param = 'page'
@@ -41,6 +43,7 @@ class MyPagination(PageNumberPagination):
     max_page_size = 100           
 
 post_save = Signal()
+
 
 
 class NewAlnafiPayment(APIView):
@@ -53,6 +56,7 @@ class NewAlnafiPayment(APIView):
         try:
             instance = New_Alnafi_Payments.objects.filter(orderId=order_id)
             # print(instance)
+            
             serializer = New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
         except:
             serializer = New_Al_Nafi_Payments_Serializer(data=data)
