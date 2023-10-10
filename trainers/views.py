@@ -23,6 +23,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import Trainer
 import re
+import pytz  # Import the pytz module for timezone handling
 
 
 class MyPagination(PageNumberPagination):
@@ -47,7 +48,9 @@ class TrainersData(APIView):
         # url = request.build_absolute_uri()
 
         #8 queries outside loop
-        trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
+        # trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
+        trainers = Trainer.objects.all().prefetch_related('products')
+        # print(trainers)
         if q:
             if request.user.is_admin:
                 trainer = trainers.get(email__iexact=q.strip())
@@ -61,6 +64,9 @@ class TrainersData(APIView):
         trainers_data = []
         exports_data = []
         current_datetime = datetime.now()
+        # Assuming current_datetime is an offset-naive datetime
+        current_datetime = current_datetime.replace(tzinfo=pytz.UTC)
+
         export_data = {
             'export_trainer_name': trainer.trainer_name,
             'export_trainer_data': []
@@ -153,25 +159,47 @@ class TrainersData(APIView):
                     pass
             
             #no effect on query
+            # if payment_list:
+            #     if active == 'true':
+            #         payment_list = [
+            #             {**payment, 'active': "true"}
+            #             for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
+            #         ]
+            #     elif active == 'false':
+            #         payment_list = [
+            #             {**payment, 'active': "false"}
+            #             for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime
+            #         ]
+            #     else:
+            #         active_payments = [
+            #             {**payment, 'active': "true"}
+            #             for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
+            #         ]
+            #         inactive_payments = [
+            #             {**payment, 'active': "false"}
+            #             for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime
+            #         ]
+            #         payment_list = active_payments + inactive_payments
+
             if payment_list:
                 if active == 'true':
                     payment_list = [
                         {**payment, 'active': "true"}
-                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
+                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime').replace(tzinfo=pytz.UTC) > current_datetime
                     ]
                 elif active == 'false':
                     payment_list = [
                         {**payment, 'active': "false"}
-                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime
+                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime').replace(tzinfo=pytz.UTC) < current_datetime
                     ]
                 else:
                     active_payments = [
                         {**payment, 'active': "true"}
-                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') > current_datetime
+                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime').replace(tzinfo=pytz.UTC) > current_datetime
                     ]
                     inactive_payments = [
                         {**payment, 'active': "false"}
-                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime') < current_datetime
+                        for payment in payment_list if payment.get('expiration_datetime') and payment.get('expiration_datetime').replace(tzinfo=pytz.UTC) < current_datetime
                     ]
                     payment_list = active_payments + inactive_payments
 
