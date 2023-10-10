@@ -22,9 +22,9 @@ import pandas as pd
 from datetime import datetime, timedelta, date
 
 from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User
-from .serializers import (AlnafiUserSerializer, IslamicAcademyUserSerializer, UserRegistrationSerializer,
-UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,SendPasswordResetEmailSerializer,
-UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,UsersCombinedSerializer, MainUserSerializer,MainUserCreateSerializer)
+from .serializers import (AlnafiUserSerializer,UserRegistrationSerializer,UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,
+                          SendPasswordResetEmailSerializer,UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,MainUserCreateSerializer,
+                          NewAlnafiUserSerializer)
 from .services import (set_auth_token, checkSameDomain, GroupPermission,
 loginUser,get_tokens_for_user,aware_utcnow,no_users_month,upload_csv_to_s3,search_users,search_employees)
 from .renderers import UserRenderer
@@ -112,13 +112,6 @@ class UploadMocLeads(APIView):
 
 
         return Response({{"msg":"done"}})
-
-
-
-
-
-
-
 
 
 
@@ -304,6 +297,28 @@ class AlnafiUser(APIView):
             print(e)
             print("in post")
             serializer = AlnafiUserSerializer(data=data)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        # print(serializer.errors)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+#Signal for newsite user
+class NewAlnafiUser(APIView): 
+    def post(self, request):
+        data = request.data
+        # print(data)
+        email = data.get("email")
+        try:
+            instance = New_AlNafi_User.objects.filter(email=email)
+            # print("in update")
+            serializer = NewAlnafiUserSerializer(instance.first(), data=data)
+        except Exception as e:
+            # print(e)
+            # print("in post")
+            serializer = NewAlnafiUserSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
@@ -694,44 +709,7 @@ class AllEmployees(APIView):
         paginated_queryset = paginator.paginate_queryset(employees, request)
         return paginator.get_paginated_response(paginated_queryset)
     
-class NewAlnafiUser(APIView):
 
-    def post(self, request):
-        full_name= request.data.get('full_name')
-        email = request.data.get('email')
-        student_email = request.data.get('student_email')
-        student_email_status = request.data.get('student_email_status')
-        phone = request.data.get('phone')
-        verified = request.data.get('verified')
-        blocked = request.data.get('blocked')
-        meta_data = request.data.get('meta_data')
-        facebook_user_id = request.data.get('facebook_user_id')
-        google_user_id = request.data.get('google_user_id')
-        provider = request.data.get('provider')
-        affiliate_code = request.data.get('affiliate_code')
-        source = request.data.get('source')
-        easypaisa_number = request.data.get('easypaisa_number')
-        
-        try:
-            user = New_AlNafi_User.objects.create(
-            first_name=full_name,
-            email=email,
-            student_email=student_email,
-            student_email_status=student_email_status,
-            blocked=blocked,
-            verified=verified,
-            phone=phone,
-            meta_data=meta_data,
-            facebook_user_id=facebook_user_id,
-            google_user_id=google_user_id,
-            provider=provider,
-            affiliate_code=affiliate_code,
-            source=source,
-            easypaisa_number=easypaisa_number
-        )
-            return Response({'message': 'User created successfully'}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({'error': 'Something Went Wrong'}, status=status.HTTP_208_ALREADY_REPORTED)
 
 
 

@@ -1,8 +1,8 @@
 from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
-                    UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,
-                    TokenRefreshView,UsersDelete,Navbar,AlnafiUser,AllEmployees,GetUser,
-                    GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser,UploadMocLeads,getUsser)
+                    UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,UsersDelete,Navbar,AlnafiUser,AllEmployees,
+                    GetUser,GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser,UploadMocLeads,getUsser,
+                    NewAlnafiUser)
 from django.http import HttpResponse
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     path('getusers/',getUsser.as_view(), name='get-users'),
 
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
+    path('newalnafiuser/', NewAlnafiUser.as_view(), name='new-alnafi-user'), #for new mainsite users
     path('islamicuser/',IslamicUser.as_view(), name='islamic-user'),
     path('userdelete/', UsersDelete.as_view(), name='user-delete'),
     # path("guacamoli/",Guacamoli.as_view(), name='guacamoli'),

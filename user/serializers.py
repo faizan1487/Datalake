@@ -36,6 +36,36 @@ class AlnafiUserSerializer(serializers.ModelSerializer):
 
       instance.save()
       return instance
+    
+
+
+class NewAlnafiUserSerializer(serializers.ModelSerializer):
+  class Meta:
+    model = New_AlNafi_User
+    # fields = ('username','first_name','last_name','email','phone','isAffiliate','isMentor','country','created_at','affiliate_code','login_source')
+    fields = '__all__'
+
+  def update(self, instance, validated_data):
+    # print("in new alnafi update serializer")
+    instance.username = validated_data.get('username', instance.username)
+    instance.first_name = validated_data.get('first_name', instance.first_name)
+    instance.last_name = validated_data.get('last_name', instance.last_name)
+    instance.student_email = validated_data.get('student_email', instance.student_email)
+    instance.student_email_status = validated_data.get('student_email_status', instance.student_email_status)
+    instance.verified = validated_data.get('verified', instance.verified)
+    instance.blocked = validated_data.get('blocked', instance.blocked)
+    instance.phone = validated_data.get('phone', instance.phone)
+    instance.meta_data = validated_data.get('meta_data', instance.meta_data)
+    instance.facebook_user_id = validated_data.get('facebook_user_id', instance.facebook_user_id)
+    instance.google_user_id = validated_data.get('google_user_id', instance.google_user_id)
+    instance.provider = validated_data.get('provider', instance.provider)
+    instance.source = validated_data.get('source', instance.source)
+    instance.easypaisa_number = validated_data.get('easypaisa_number', instance.easypaisa_number)
+    instance.affiliate_code = validated_data.get('affiliate_code', instance.affiliate_code)
+    instance.created_at = validated_data.get('created_at', instance.created_at)
+    
+    instance.save()
+    return instance
       
       
 # For Islamic Academy Users:
