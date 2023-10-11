@@ -133,10 +133,10 @@ def new_alnafi_payment_support_data(instance,payment_user):
 
     
     current_date = datetime.now().date()
-    if instance.expiration_date and instance.expiration_date.date() >= current_date:
-        expiration_status = 'Active'
-    else:
-        expiration_status = 'Expired'
+    # if instance.expiration_date and instance.expiration_date.date() >= current_date:
+    #     expiration_status = 'Active'
+    # else:
+    #     expiration_status = 'Expired'
 
     if instance.payment_date:
         order_datetime_str = str(instance.payment_date)
@@ -171,7 +171,7 @@ def new_alnafi_payment_support_data(instance,payment_user):
         "payment_source": instance.payment_method_source_name.capitalize() if instance.payment_method_source_name else None,
         "payment_date": formatted_order_datetime_str,
         "expiration_date": formatted_expire_datetime_str,
-        "expiration_status": expiration_status,
+        "expiration_status": 'Active',
     }
     return customer_data
 
