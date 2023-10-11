@@ -9,8 +9,6 @@ from secrets_api.algorithem import round_robin
 from albaseer.settings import DEBUG
 env = environ.Env()
 env.read_env()
-api_key = env("FRAPPE_API_KEY")
-api_secret = env("FRAPPE_API_SECRET")
 DEBUG = env('DEBUG',cast=bool)
 
 @receiver(post_save, sender=AlNafi_User)
@@ -129,20 +127,157 @@ def usersignal(instance,source,sender):
     # post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
 
 #############################################################
+# @receiver(post_save, sender=Moc_Leads)
+# def handle_lead_post_request(sender, instance, created, **kwargs):
+#     # return
+#     source=instance.source
+#     Moc_Leads = mocLeadsSignal(instance,source)   
+
 @receiver(post_save, sender=Moc_Leads)
 def handle_lead_post_request(sender, instance, created, **kwargs):
     # return
     source=instance.source
-    Moc_Leads = mocLeadsSignal(instance,source)   
+    Moc_Leads = mocdoctypeLeadsSignal(instance,source)
+
+
+def mocdoctypeLeadsSignal(instance,source):
+    print("mocdoctype signa;")
+    # api_key = env("FRAPPE_API_KEY")
+    api_key = '351b6479c5a4a16'
+    api_secret = 'e459db7e2d30b34'
+    # api_secret = env("FRAPPE_API_SECRET")
+    headers = {
+        'Authorization': f'token {api_key}:{api_secret}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    country_code = getattr(instance, 'country', "Unknown")
+    country_name = None
+
+    if country_code:
+        for name, code in COUNTRY_CODES.items():
+            if code == country_code:
+                country_name = name
+                break
+    # print(instance.email)
+    data = {
+            "full_name": instance.full_name or None,
+            "first_name": instance.full_name or None,
+            "last_name": None,
+            "email": instance.email or None,
+            "contact_no": str(instance.phone) if hasattr(instance, 'phone') else None,
+            "country": country_name,
+            "lead_source":instance.source or None,
+            "form":instance.form or None,
+            "cv_link": instance.cv_link or None,
+            "interest": instance.interest or None,
+            "qualification": instance.qualification or None,
+            # Add other fields from the Main_User model to the data dictionary as needed
+        }
+    # url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]&filters=[["MOC","email","=","{instance.email}"]]'
+    url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]'
+    response = requests.get(url, headers=headers)
+    # print(response.status_code)
+    # print(response.text)
+    lead_data = response.json()
+    # print(response.status_code)
+    # print(lead_data['data'])
+    # print(lead_data)
+    if response.status_code == 403:
+        return
+    # print(lead_data['data'])
+    # print(lead_data)
+    if 'data' in lead_data:
+        already_existed = len(lead_data["data"]) > 0
+    else:
+        already_existed = False
+
+
+    # print(lead_data)
+    already_existed = len(lead_data["data"]) > 0
+    # print(already_existed)
+    if already_existed:
+        pass
+        # #on update add demo and enrollment
+        # print("already exixts")
+        # # auth_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/demo-user/'
+        # auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
+        # # enrollment_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/enrollment-user/'
+        # enrollment_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/enrollment-user/'
+        # auth_headers = {
+        # "Content-Type": "application/json",
+        # "Accept": "application/json",
+        # }
+        # query_parameters = {
+        # "email": lead_data['data'][0]['email']  # Replace with the actual email you want to send
+        # }
+        # demo_user = requests.get(auth_url, headers=auth_headers, params=query_parameters)
+        # # print(demo_user)
+        # enrollment_user = requests.get(enrollment_url, headers=auth_headers, params=query_parameters)
+        
+        # # print("demo status code", demo_user.status_code)
+        # if demo_user.status_code == 200:
+        #     # Parse the response content as JSON
+        #     demo_data = demo_user.json()
+        #     # print(demo_data)
+        #     data['demo_product'] = demo_data['product_name']
+
+        # # print("enrollment status code",enrollment_user.status_code)
+        # if enrollment_user.status_code == 200:
+        #     # Parse the response content as JSON
+        #     enrollment_data = enrollment_user.json()
+        #     # print(enrollment_data)
+        #     # print(data)
+        #     if len(enrollment_data['enrollments']) > 1:
+        #         data['enrollment'] = enrollment_data['product_name']
+        # # print(data)
+        # email = lead_data['data'][0]['email']
+        # print(email)
+        # url = f'https://crm.alnafi.com/api/resource/moclead/{email}'
+        # # print(data)
+        # response = requests.put(url, headers=headers, json=data)
+        # if response.status_code != 200:
+        #     print(data)
+        #     print(response.status_code)
+        #     print(response.text)
+        #     print(response.json())
+        # # instance.erp_lead_id = lead_data['data'][0]['name']
+        # else:
+        #     print("lead updated")
+    else:
+        print("in else")
+        post_url = 'https://crm.alnafi.com/api/resource/moclead'
+        response = requests.post(post_url, headers=headers, json=data)
+        # print(response.status_code)
+        # print(response.json())
+        # response.raise_for_status()
+        # print("response.status_code",response.status_code)
+        if response.status_code == 200:
+            lead_data = response.json()
+            erp_lead_id = lead_data['data']['name']
+            if erp_lead_id:
+                # print("lead id exists")
+                # instance.erp_lead_id = erp_lead_id
+                print("Lead created successfully!")
+        else:
+            print(data)
+            print(response.status_code)
+            print(response.text)
+            print(response.json())
+
 
 def mocLeadsSignal(instance,source):
+    # print("sale doctype signa;")
     user_api_key, user_secret_key = round_robin()
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         "Content-Type": "application/json",
         "Accept": "application/json",
-    } 
+    }
+
+
     country_code = getattr(instance, 'country', "Unknown")
     country_name = None
 
@@ -167,7 +302,11 @@ def mocLeadsSignal(instance,source):
     # print(data)
     # print(instance.email)
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+    # url_moc = f'https://crm.alnafi.com/api/resource/MOC?fields=["name","email"]&filters=[["MOC","email","=","{instance.email}"]]'
+    # response_moc = requests.get(url_moc, headers=headers_moc)
     response = requests.get(url, headers=headers)
+
+    # moc_data = response_moc.json()
     lead_data = response.json()
     # print(response.status_code)
     # print(lead_data['data'])
@@ -180,6 +319,7 @@ def mocLeadsSignal(instance,source):
         already_existed = len(lead_data["data"]) > 0
     else:
         already_existed = False
+
 
    
     already_existed = len(lead_data["data"]) > 0
