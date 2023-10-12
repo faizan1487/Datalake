@@ -86,7 +86,9 @@ def usersignal(instance,source,sender):
     already_existed = len(lead_data["data"]) > 0
 
     if already_existed:
-        print("already exists")
+        print("already exixts")
+        pass
+        # print("already exists")
         # lead_id = lead_data['data'][0]['name']
         # # if DEBUG:
         # #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
@@ -97,9 +99,10 @@ def usersignal(instance,source,sender):
         # response = requests.put(url, headers=headers, json=data)
         # instance.erp_lead_id = lead_data['data'][0]['name']
 
-        pass
+        # # pass
         # print("lead updated")
         # instance.save(update_fields=['erp_lead_id'])
+        # break
     else:
         # if DEBUG:
         #     url = 'http://3.142.247.16/api/resource/Lead'
@@ -127,11 +130,11 @@ def usersignal(instance,source,sender):
     # post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
 
 #############################################################
-# @receiver(post_save, sender=Moc_Leads)
-# def handle_lead_post_request(sender, instance, created, **kwargs):
-#     # return
-#     source=instance.source
-#     Moc_Leads = mocLeadsSignal(instance,source)   
+@receiver(post_save, sender=Moc_Leads)
+def handle_lead_post_request(sender, instance, created, **kwargs):
+    # return
+    source=instance.source
+    Moc_Leads = mocLeadsSignal(instance,source)   
 
 @receiver(post_save, sender=Moc_Leads)
 def handle_lead_post_request(sender, instance, created, **kwargs):
@@ -181,9 +184,9 @@ def mocdoctypeLeadsSignal(instance,source):
     # print(response.status_code)
     # print(response.text)
     lead_data = response.json()
-    # print(response.status_code)
-    # print(lead_data['data'])
-    # print(lead_data)
+    print(response.status_code)
+    print(lead_data['data'])
+    print(lead_data)
     if response.status_code == 403:
         return
     # print(lead_data['data'])
@@ -200,7 +203,7 @@ def mocdoctypeLeadsSignal(instance,source):
     if already_existed:
         pass
         # #on update add demo and enrollment
-        # print("already exixts")
+        # # print("already exixts")
         # # auth_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/demo-user/'
         # auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
         # # enrollment_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/enrollment-user/'
@@ -233,15 +236,19 @@ def mocdoctypeLeadsSignal(instance,source):
         #         data['enrollment'] = enrollment_data['product_name']
         # # print(data)
         # email = lead_data['data'][0]['email']
-        # print(email)
+        # # print(email)
+        
+        # # url = f'https://crm.alnafi.com/api/resource/moclead?filters=[["MOC","email","=","{email}"]]'
         # url = f'https://crm.alnafi.com/api/resource/moclead/{email}'
+        # # print("url moc")
+        # # print(url)
         # # print(data)
         # response = requests.put(url, headers=headers, json=data)
         # if response.status_code != 200:
-        #     print(data)
+        #     # print(data)
         #     print(response.status_code)
-        #     print(response.text)
-        #     print(response.json())
+        #     # print(response.text)
+        #     # print(response.json())
         # # instance.erp_lead_id = lead_data['data'][0]['name']
         # else:
         #     print("lead updated")
@@ -361,6 +368,7 @@ def mocLeadsSignal(instance,source):
         # print(data)
         email_id = lead_data['data'][0]['email_id']
         url = f'https://crm.alnafi.com/api/resource/Lead/{email_id}'
+        print("url sale", url)
         # print(data)
         response = requests.put(url, headers=headers, json=data)
         if response.status_code != 200:

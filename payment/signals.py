@@ -27,17 +27,29 @@ DEBUG = env('DEBUG',cast=bool)
 def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     model_name = 'new_alnafi'
-    # Thread(target=send_payment_post_request, args=(instance,model_name,)).start()
-    data = send_payment_post_request(instance,model_name)
+    Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
+    # data = send_payment_support_module(instance,model_name)
 
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
     model_name = 'alnafi'
-    Thread(target=send_payment_post_request, args=(instance,model_name,)).start()
+    Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
 
-def send_payment_post_request(instance,model_name, **kwargs):
+@receiver(pre_save, sender=New_Alnafi_Payments)
+def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+    # print("new alnafi signal running")
+    Thread(target=change_lead_status_sales_module, args=(instance,)).start()
+    # data = send_payment_support_module(instance,model_name)
+
+
+@receiver(pre_save, sender=AlNafi_Payment)
+def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
+    Thread(target=change_lead_status_sales_module, args=(instance,)).start()
+
+
+def send_payment_support_module(instance,model_name, **kwargs):
     # print("signal running")
     # print("model_name", model_name)
     url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
@@ -68,7 +80,7 @@ def send_payment_post_request(instance,model_name, **kwargs):
                 # print(model_name)
                 # if model_name == 'alnafi':
                 #     print("in if")
-                #     customer_data = create_customer(instance,payment_user)
+                #     customer_data = alnafi_payment_support_data(instance,payment_user)
                 # else:
                 #     print("in else")
                 #     customer_data = new_alnafi_payment_support_data(instance, payment_user)
@@ -83,10 +95,10 @@ def send_payment_post_request(instance,model_name, **kwargs):
                 # print("lead updated")
                 # break
         else:
-            # customer_data = create_customer(instance,payment_user)
+            # customer_data = alnafi_payment_support_data(instance,payment_user)
             if model_name == 'alnafi':
                 # print("in if")
-                customer_data = create_customer(instance,payment_user)
+                customer_data = alnafi_payment_support_data(instance,payment_user)
             else:
                 # print("in else")
                 customer_data = new_alnafi_payment_support_data(instance, payment_user)
@@ -109,7 +121,53 @@ def send_payment_post_request(instance,model_name, **kwargs):
         # print('Error occurred while making the request:', str(e))
         # print('Error:', response.status_code)
         # print('Error:', response.text) 
-     
+
+
+
+def change_lead_status_sales_module(instance, **kwargs):
+    # print("change_lead_status_sales signal running")
+    # print("model_name", model_name)
+    # url = 'https://crm.alnafi.com/api/resource/Lead?limit_start=0&limit_page_length=23023&fields=["*"]'
+    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.customer_email}"]]'
+    api_key, api_secret = round_robin_support()
+  
+    headers = {
+        'Authorization': f'token {api_key}:{api_secret}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    try:
+        # print("in try")
+        response = requests.get(url, headers=headers)
+        # response.raise_for_status()
+        data = response.json()
+        already_existed = len(data["data"]) > 0
+
+        # print(response.status_code)
+        # print(data['data'])
+        if already_existed:
+            # print("already exists")
+            # if data['data'][0]['email_id'] == instance.customer_email:
+            lead_id = data['data'][0]['name']
+            url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+            # print(customer_data)
+            lead_data = {
+                "status": "Converted",
+            }
+            response = requests.put(url, headers=headers, json=lead_data)
+            # print(response)
+            # print(response.text)
+            instance.customer_email = data['data'][0]['email_id']
+            # print("lead updated")
+            # break
+        else:
+            pass
+    except RequestException as e:
+        pass
+        # print("in except")
+        # print('Error occurred while making the request:', str(e))
+        # print('Error:', response.status_code)
+        # print('Error:', response.text)     
 
 
 
@@ -133,6 +191,7 @@ def new_alnafi_payment_support_data(instance,payment_user):
 
     
     current_date = datetime.now().date()
+
     # if instance.expiration_date and instance.expiration_date.date() >= current_date:
     #     expiration_status = 'Active'
     # else:
@@ -178,7 +237,7 @@ def new_alnafi_payment_support_data(instance,payment_user):
 
 
 
-def create_customer(instance,payment_user):
+def alnafi_payment_support_data(instance,payment_user):
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
     full_name = f'{first_name} {last_name}'.strip()
