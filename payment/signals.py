@@ -23,7 +23,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 
 
-@receiver(pre_save, sender=New_Alnafi_Payments)
+# @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     model_name = 'new_alnafi'
@@ -31,20 +31,20 @@ def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kw
     # data = send_payment_support_module(instance,model_name)
 
 
-@receiver(pre_save, sender=AlNafi_Payment)
+# @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
 
-@receiver(pre_save, sender=New_Alnafi_Payments)
+# @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
     # data = send_payment_support_module(instance,model_name)
 
 
-@receiver(pre_save, sender=AlNafi_Payment)
+# @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
 
