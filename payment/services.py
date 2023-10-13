@@ -153,24 +153,31 @@ def renewal_no_of_payments(payments):
 
 
 def search_payment(export, q, start_date, end_date, plan, request, url, product, source, origin,status):
+    #uncomment line 158 before pushing
     payments = Main_Payment.objects.exclude(product__product_name__in=["test","Test Course","Test"]).exclude(amount=1)
+    # payments = Main_Payment.objects.all()
+
     payments = payments.exclude(amount__in=["",2,0,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10,1])
-    payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','Stripe', 'UBL_DD'])
+    # payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','Stripe', 'UBL_DD'])
 
     statuses = ["0",False,0]
     payments = payments.exclude(source='UBL_DD', status__in=statuses)
+
+    if source:
+        payments = payments.filter(source=source)
+    else:
+        payments = payments.filter(source__in=['Al-Nafi','NEW ALNAFI'])
+        
+
     if status:
         payments = payments.filter(status=status)
 
     if origin:
         if origin == 'local':
-            payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','UBL_DD'])
+            payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG','UBL_DD','Al-Nafi','NEW ALNAFI'])
         else:
-            payments = payments.filter(source='stripe')
+            payments = payments.filter(source='Stripe')
     # print(source)
-    if source:
-        payments = payments.filter(source=source)
-    # print(payments)
    
     if not start_date:
         first_payment = payments.exclude(order_datetime=None).last()
@@ -193,7 +200,6 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
         for keyword in keywords:
             query &= Q(product__product_name__icontains=keyword)
             payments = payments.filter(query)
-
     
             
     if plan:
@@ -205,6 +211,14 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
             payments = payments.filter(product__product_plan='Quarterly')
         elif plan == 'monthly':
             payments = payments.filter(product__product_plan='Monthly')
+
+
+
+    # print(payments.count())
+    # source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_DD']).order_by('-order_datetime').prefetch_related('user', 'product').values()
+    # print("source payments count", source_payments.count())
+
+    
             
     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
     payment_cycle_descriptions = {

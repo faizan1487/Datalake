@@ -516,6 +516,7 @@ class SearchPayments(APIView):
         # payments = cache.get(url+'payments')
         # if payments is None:
         # Search payments using utility function
+        # print(source)
         payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)
             # cache.set(url+'payments', payments)   
         
@@ -528,14 +529,89 @@ class SearchPayments(APIView):
 
             users = list(payments['payments'].values('user__email','user__phone','product__product_name'))
             payment_list = list(payments["payments"].values())
-            
+
+            # source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_DD']).order_by('-order_datetime').prefetch_related('user', 'product').values()
+            # product_ids = source_payments.values_list('product_id', flat=True)
+            # products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan')
+
+        
+
+            # valid_payments = []
             for i in range(len(payments['payments'])):
+                # valid_payment = {
+                # 'valid': True,
+                # 'reasons': []
+                # }
                 try:
+                # # print("in try")
+                # # print(payment_list[i]['user_id'])
+                # # print("payment_list[i]['alnafi_payment_id']",payment_list[i]['alnafi_payment_id'])
+
+                # source_payment = source_payments.filter(alnafi_payment_id=payment_list[i]['alnafi_payment_id'])
+                # # Assuming you want to retrieve products related to the first source payment
+                # print(products.filter(id=source_payment[0]['product_id']))
+
+
+
+                # # print(source_payment)
+                # if source_payment:
+                #     if float(source_payment[0]['amount']) == float(payment_list[i]['amount']):
+                #         pass    
+                #     else:
+                #         valid_payment['valid'] = False
+                #         valid_payment['reasons'].append('Payment Amount mismatch with source')
+
+                #         # print("source",source_payment)
+                #         # print("alnafi", payment_list[i])
+
+                #         # print("source_payment[0]['amount']",source_payment[0]['amount'])
+                #         # print("payment_list[i]['amount']", payment_list[i]['amount'])
+                #         # return Response("dhfuihi")
+                #     # print(source_payment)
+                #     if source_payment[0]['product_id'] == payment_list[i]['product_id']:
+                #         pass    
+                #     else:
+                #         valid_payment['valid'] = False
+                #         valid_payment['reasons'].append('Product mismatch with source')
+
+                    
+                    # print("source_payment[0]['product_id']['product_plan']", source_payment[0]['product_id'])
+
+                    # if source_payment[0]['product_id']:
+                    #     print(product_plan = source_payment[0])
+                        
+                    # if source_payment[0]['product_plan'] == 'Yearly':
+                    #     pass
+                        # tolerance = timedelta(days=15)
+                        # if latest_payment:
+                        #     expiry_date = payment['expiration_datetime'].date()
+                        #     expected_expiry = payment['order_datetime'].date() + timedelta(days=380) - tolerance
+
+                        #     if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=380) + tolerance):
+                        #         pass
+                        #     else:
+                        #         valid_payment['valid'] = False
+                        #         valid_payment['reasons'].append('Yearly expiration date mismatch')
+
+
+
+                # else:
+                #     valid_payment['valid'] = False
+                #     valid_payment['reasons'].append('No source payment found against this payment or the payment could be of stripe so still working on validating stripe payments')
+
+                # valid_payments.append(valid_payment)
+                    
+                # print(valid_payments)
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['phone'] = users[i]['user__phone']
                     payment_list[i]['product_id'] = users[i]['product__product_name']
+                # if valid_payments:
+                #     # print(i)
+                #     # print(valid_payments[i])
+                #     payment_list[i]['is_valid_payment'] = valid_payments[i]
+                
                 except Exception as e:
-                    pass  
+                    print(e)
             
            
             if export=='true':
