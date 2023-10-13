@@ -9,7 +9,7 @@ from products.models import Main_Product
 class AlNafi_Payment(models.Model):
     payment_id = models.IntegerField(null=True, blank=False)
     customer_email = models.CharField(max_length=300, null=True, blank=False)
-    product_name = models.CharField(max_length=330, null=True, blank=False)
+    product_name = models.JSONField(null=True, blank=True)
     amount_pkr = models.IntegerField(default=0)
     amount_usd = models.IntegerField(default=0)
     order_datetime = models.DateTimeField(default=datetime.now)
@@ -46,7 +46,7 @@ class UBL_Manual_Payment(models.Model):
     customer_email = models.CharField(max_length=200, null=True, blank=True)
     candidate_phone = models.CharField(max_length=45, null=True, blank=True)
     amount = models.IntegerField(null=True, blank=True)
-    product_name = models.CharField(max_length=200, null=True, blank=True)
+    product_name = models.JSONField(null=True, blank=True)
     status = models.BooleanField(default=False)
     deposit_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True ,null=True, blank=True)
@@ -69,7 +69,7 @@ class UBL_IPG_Payment(models.Model):
     transaction_id = models.CharField(max_length=50, null=False,blank=False)
     customer_email = models.EmailField(null=True,blank=True)
     card_mask = models.CharField(max_length=100, null=True,blank=True)
-    product_name = models.CharField(max_length=300, null=True,blank=True)
+    product_name = models.JSONField(null=True, blank=True)
     order_datetime = models.DateTimeField(max_length=60, null=False , blank=False)
     order_id = models.CharField(max_length=100, null=False,blank=False)
     amount = models.CharField(max_length=50, null=True,blank=True)
@@ -92,7 +92,7 @@ class UBL_IPG_Payment(models.Model):
 #For Easypaisa_Payments:
 class Easypaisa_Payment(models.Model):
     ops_id = models.CharField(max_length=50, null=True,blank=True)
-    product_name = models.CharField(max_length=200, null=True,blank=True)
+    product_name = models.JSONField(null=True, blank=True)
     order_id = models.CharField(max_length=50, null=True,blank=True)
     transaction_id = models.CharField(max_length=50, null=True,blank=True)
     order_datetime = models.DateTimeField(default=None, null=False , blank=False)
@@ -124,7 +124,7 @@ class Stripe_Payment(models.Model):
     name = models.CharField(max_length=50, null=True , blank=True)
     customer_email = models.CharField(null=True,blank=True, max_length=150)
     phone = models.CharField(max_length=50, null=True , blank=True)
-    product_name = models.CharField(max_length=150, null=True , blank=True)
+    product_name = models.JSONField(null=True, blank=True)
     amount = models.CharField(max_length=50, null=True , blank=True)
     order_datetime = models.DateTimeField(max_length=60, null=True , blank=True)
     status = models.CharField(max_length=50, null=True , blank=True)
@@ -204,7 +204,7 @@ class NavbarLink(models.Model):
         return self.name
 
 class New_Alnafi_Payments(models.Model):
-    orderId = models.CharField(unique=True, max_length=255)
+    orderId = models.CharField(max_length=255)
     amount = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(null=True, blank=True)
