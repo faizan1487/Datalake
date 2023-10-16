@@ -1,67 +1,74 @@
 import os
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albaseer.settings")
-
 import django
+from faker import Faker
+import random
+from datetime import datetime, timedelta
 
+# Set up Django environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albaseer.settings")  # Replace with your project's settings module
 django.setup()
 
-# import random
-# from thinkific.models import Thinkific_User, Thinkific_Users_Enrollments
-# from faker import Faker
-# import datetime
-# fake = Faker()
-# from decimal import Decimal
-
-from django.contrib.auth import get_user_model
-from faker import Faker
-from datetime import datetime
+# Import your model
+from payment.models import Main_Payment  # Replace 'your_app' with the name of your Django app
 from user.models import Main_User
-import random
+from products.models import Main_Product
+# Create a Faker instance
+fake = Faker()
 
-faker = Faker()
-User = get_user_model()
-num_fake_data = 90  # Number of fake data to create
+# Define a function to add fake data to the Main_Payment model
+def add_fake_payment_data(num_records,products,users):
+    for _ in range(num_records):
+        user_instance = random.choice(users)  # Select a random user from the list
+        payment = Main_Payment(
+            source_payment_id=fake.uuid4(),
+            alnafi_payment_id=fake.uuid4(),
+            easypaisa_ops_id=fake.uuid4(),
+            easypaisa_customer_msidn=fake.phone_number(),
+            card_mask=fake.credit_card_number(card_type="mastercard"),
+            user=user_instance,  # You may need to create user instances and assign them here
+            amount=fake.random_int(min=1, max=1000),
+            currency=fake.currency_code(),
+            source=fake.word(),
+            internal_source=fake.word(),
+            status=random.choice(["Pending", "Successful", "Failed"]),
+            order_datetime=fake.date_time_between(start_date="-1y", end_date="now"),
+            expiration_datetime=fake.date_time_between(start_date="now", end_date="+1y"),
+            activation_datetime=fake.date_time_between(start_date="now", end_date="+1y"),
+            token_paid_datetime=fake.date_time_between(start_date="now", end_date="+1y"),
+            easypaisa_fee_pkr=fake.random_int(min=1, max=100),
+            easypaisa_fed_pkr=fake.random_int(min=1, max=100),
+            ubl_captured=fake.word(),
+            ubl_reversed=fake.word(),
+            ubl_refund=fake.word(),
+            ubl_approval_code=fake.word(),
+            description=fake.sentence(),
+            qarz=fake.boolean(),
+            remarks=fake.text(),
+            payment_proof=fake.uri(),
+            send_invoice=fake.boolean(),
+            pk_invoice_number=fake.random_int(min=1000, max=9999),
+            us_invoice_number=fake.random_int(min=1000, max=9999),
+            sponsored=fake.boolean(),
+            coupon_code=fake.word(),
+            is_upgrade_payment=fake.boolean(),
+            affiliate=fake.word(),
+            candidate_name=fake.name(),
+            ubl_depositor_name=fake.name(),
+            candidate_phone=fake.phone_number(),
+            bin_bank_name=fake.word(),
+            error_reason=fake.sentence(),
+        )
 
-for _ in range(num_fake_data):
-    first_name = faker.name()
-    email = faker.email()
-    source = 'Newsletter'
-    phone = faker.phone_number()
-    created_at = faker.date_time_between(start_date='-1y', end_date='now')
+        payment.save()
+        # Assign one or more Main_Product instances to the product field
+        product_list = list(products)
+        random_products = random.sample(product_list, k=random.randint(1, len(product_list)))
+        payment.product.set(random_products)
+        payment.save()
 
-    user = Main_User.objects.create(
-        first_name=first_name,
-        email=email,
-        source=source,
-        phone=phone,
-        created_at=created_at,
-    )
-
-
-# def populate(value):
-#     for i in range(value):
-#         id=fake.random_int()
-#         email=fake.email()
-#         username = fake.user_name()
-#         user_id = fake.random_int()
-#         course_name = fake.words()
-#         course_id=fake.random_int()
-#         percentage_completed = fake.pydecimal(left_digits=1, right_digits=2, positive=True)
-#         expired = fake.pybool()
-#         is_free_trial = fake.pybool()
-#         completed = fake.pybool()
-#         started_at=fake.date_time_this_decade()
-#         activated_at = fake.date_time_this_decade()
-#         completed_at = fake.date_time_this_decade()
-#         updated_at = fake.date_time_this_decade()
-#         expiry_date = fake.date_time_this_decade()
-#         obj = Thinkific_Users_Enrollments.objects.get_or_create(id=id,username=username,     
-#                                                    email=email,user_id=user_id,course_name=course_name,course_id=course_id,percentage_completed=percentage_completed,expired=expired,is_free_trial=is_free_trial,completed=completed,started_at=started_at,activated_at=activated_at,completed_at=completed_at,updated_at=updated_at,expiry_date=expiry_date)
-        
-# def main():
-#     no = int(input("no of records: "))
-#     populate(no)
-    
-    
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    num_records_to_create = 100  # Adjust the number of records you want to create
+    products = Main_Product.objects.all()
+    users = Main_User.objects.all()
+    add_fake_payment_data(num_records_to_create,products,users)
+    print(f"Added {num_records_to_create} fake Main_Payment records.")

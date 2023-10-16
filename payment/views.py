@@ -636,28 +636,32 @@ class SearchPayments(APIView):
                         total_payments_in_usd += int(float(i['amount']))
                 
                 paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+                removed_duplicated = self.remove_duplicate_payments(payment_objects)
+                paginated_queryset = paginator.paginate_queryset(removed_duplicated, request)
+
                 payments = { 'total_payments_pkr': total_payments_in_pkr, 
                             'total_payments_usd': total_payments_in_usd, 
-                            'payments': paginated_queryset}
+                            'payments': removed_duplicated}
                 
                 return paginator.get_paginated_response(payments)
         else:
-            # return Response(self.remove_duplicate_payments(payments))
             return Response(payments)
     
-    # def remove_duplicate_payments(self, payments):
-    #     unique_result_payments = {}
-    #     # print(payments)
-    #     for payment in payments['payments']:
-    #         if payment['id'] in unique_result_payments:
-    #             unique_result_payments[payment['id']]['product_names'].append(payment['product_id'])
-    #         else:
-    #             unique_result_payments[payment['id']] = payment
-    #             payment['product_names'] = [payment['product_id'],]
+    def remove_duplicate_payments(self, payments):
+        unique_result_payments = []
 
-    #     payments['payments'] = unique_result_payments
-    #     return payments
+        for payment in payments:
+            found = False
+            for unique_payment in unique_result_payments:
+                if payment['id'] == unique_payment['id']:
+                    unique_payment['product_names'].append(payment['product_id'])
+                    found = True
+                    break
+            if not found:
+                payment['product_names'] = [payment['product_id']]
+                unique_result_payments.append(payment)
+
+        return unique_result_payments
                 
 
 class ProductAnalytics(APIView):
