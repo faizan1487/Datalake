@@ -40,13 +40,14 @@ def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    # print("new alnafi signal running")
+    print("new alnafi signal running for sales")
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
     # data = send_payment_support_module(instance,model_name)
 
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
+    print("alnafi signal running for sales")
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
 
 
