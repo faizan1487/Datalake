@@ -498,7 +498,7 @@ class ActivePayments(APIView):
 
 #optimized       
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
     # required_groups = ['Sales', 'Admin','Support','MOC']
     def get(self, request):
@@ -636,32 +636,32 @@ class SearchPayments(APIView):
                         total_payments_in_usd += int(float(i['amount']))
                 
                 paginator = MyPagination()
-                removed_duplicated = self.remove_duplicate_payments(payment_objects)
-                paginated_queryset = paginator.paginate_queryset(removed_duplicated, request)
+                # removed_duplicated = self.remove_duplicate_payments(payment_objects)
+                paginated_queryset = paginator.paginate_queryset(payment_objects, request)
 
                 payments = { 'total_payments_pkr': total_payments_in_pkr, 
                             'total_payments_usd': total_payments_in_usd, 
-                            'payments': removed_duplicated}
+                            'payments': paginated_queryset}
                 
                 return paginator.get_paginated_response(payments)
         else:
             return Response(payments)
     
-    def remove_duplicate_payments(self, payments):
-        unique_result_payments = []
+    # def remove_duplicate_payments(self, payments):
+    #     unique_result_payments = []
 
-        for payment in payments:
-            found = False
-            for unique_payment in unique_result_payments:
-                if payment['id'] == unique_payment['id']:
-                    unique_payment['product_names'].append(payment['product_id'])
-                    found = True
-                    break
-            if not found:
-                payment['product_names'] = [payment['product_id']]
-                unique_result_payments.append(payment)
+    #     for payment in payments:
+    #         found = False
+    #         for unique_payment in unique_result_payments:
+    #             if payment['id'] == unique_payment['id']:
+    #                 unique_payment['product_names'].append(payment['product_id'])
+    #                 found = True
+    #                 break
+    #         if not found:
+    #             payment['product_names'] = [payment['product_id']]
+    #             unique_result_payments.append(payment)
 
-        return unique_result_payments
+    #     return unique_result_payments
                 
 
 class ProductAnalytics(APIView):
