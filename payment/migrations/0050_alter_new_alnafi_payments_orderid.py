@@ -9,10 +9,10 @@ class Migration(migrations.Migration):
         ('payment', '0049_new_alnafi_payments'),
     ]
 
-    operations = [
-        migrations.AlterField(
-            model_name='new_alnafi_payments',
-            name='orderId',
-            field=models.CharField(blank=True, max_length=255, null=True, unique=True),
-        ),
-    ]
+    # operations = [
+    #     migrations.AlterField(
+    #         model_name='new_alnafi_payments',
+    #         name='orderId',
+    #         field=models.CharField(blank=True, max_length=255, null=True, unique=True),
+    #     ),
+    # ]

@@ -23,7 +23,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 
 
-# @receiver(pre_save, sender=New_Alnafi_Payments)
+@receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     model_name = 'new_alnafi'
@@ -31,20 +31,20 @@ def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kw
     # data = send_payment_support_module(instance,model_name)
 
 
-# @receiver(pre_save, sender=AlNafi_Payment)
+@receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
 
-# @receiver(pre_save, sender=New_Alnafi_Payments)
+@receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
     # data = send_payment_support_module(instance,model_name)
 
 
-# @receiver(pre_save, sender=AlNafi_Payment)
+@receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
 
@@ -73,10 +73,10 @@ def send_payment_support_module(instance,model_name, **kwargs):
         if not payment_user:
             return
         for i in range(len(data['data'])):
+            pass
             # print("in for")
             # print(payment_user)
-            if data['data'][i]['customer_email'] == instance.customer_email:
-                pass
+            # if data['data'][i]['customer_email'] == instance.customer_email:
                 # print(model_name)
                 # if model_name == 'alnafi':
                 #     print("in if")
@@ -116,8 +116,8 @@ def send_payment_support_module(instance,model_name, **kwargs):
                     instance.customer_email = customer_email
                     # print("Lead created successfully!")
     except RequestException as e:
-        pass
-        # print("in except")
+        # pass
+        print("in except")
         # print('Error occurred while making the request:', str(e))
         # print('Error:', response.status_code)
         # print('Error:', response.text) 
@@ -172,7 +172,7 @@ def change_lead_status_sales_module(instance, **kwargs):
 
 
 def new_alnafi_payment_support_data(instance,payment_user):
-    print("in New Alnafi Payment fubc")
+    # print("in New Alnafi Payment fubc")
     # print(payment_user)
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
@@ -218,13 +218,21 @@ def new_alnafi_payment_support_data(instance,payment_user):
         formatted_expire_datetime_str = None
 
     
+    if isinstance(instance.product_names, list):
+        # Handle the list of product names in a way that makes sense for your use case
+        # For example, you can join the list into a single string
+        product_name = ", ".join(instance.product_names)
+    else:
+        product_name = instance.product_names
+
+
     # print(instance.product_names)
     customer_data = {
         "full_name": full_name or None,
         "contact_no": payment_user[0].phone or None,
         "customer_email": payment_user[0].email or None,
         "country": country_name,
-        "product_name": instance.product_names or None,
+        "product_name": product_name,
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
         "payment_source": instance.payment_method_source_name.capitalize() if instance.payment_method_source_name else None,
@@ -280,20 +288,27 @@ def alnafi_payment_support_data(instance,payment_user):
     else:
         formatted_expire_datetime_str = None
 
+    if isinstance(instance.product_name, list):
+        # Handle the list of product names in a way that makes sense for your use case
+        # For example, you can join the list into a single string
+        product_name = ", ".join(instance.product_name)
+    else:
+        product_name = instance.product_name
 
     customer_data = {
         "full_name": full_name or None,
         "contact_no": payment_user[0].phone or None,
         "customer_email": payment_user[0].email or None,
         "country": country_name,
-        "product_name": instance.product_name or None,
+        "product_name": product_name,
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
         "payment_source": instance.source.capitalize() if instance.source else None,
         "payment_date": formatted_order_datetime_str,
         "expiration_date": formatted_expire_datetime_str,
-        "expiration_status": expiration_status,
+        "expiration_status": 'Active',
     }
+    # print(customer_data)
     return customer_data
 
 

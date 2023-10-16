@@ -9,8 +9,8 @@ class Migration(migrations.Migration):
         ('payment', '0047_remove_new_al_nafi_payments_customer_id'),
     ]
 
-    operations = [
-        migrations.DeleteModel(
-            name='New_Al_Nafi_Payments',
-        ),
-    ]
+    # operations = [
+    #     migrations.DeleteModel(
+    #         name='New_Al_Nafi_Payments',
+    #     ),
+    # ]

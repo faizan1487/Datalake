@@ -15,9 +15,9 @@ class Migration(migrations.Migration):
             model_name='main_payment',
             name='product',
         ),
-        migrations.AddField(
-            model_name='main_payment',
-            name='product',
-            field=models.ManyToManyField(blank=True, related_name='product_payments', to='products.main_product'),
-        ),
+        # migrations.AddField(
+        #     model_name='main_payment',
+        #     name='product',
+        #     field=models.ManyToManyField(blank=True, related_name='product_payments', to='products.main_product'),
+        # ),
     ]

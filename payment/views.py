@@ -643,7 +643,20 @@ class SearchPayments(APIView):
                 
                 return paginator.get_paginated_response(payments)
         else:
-            return Response(payments)
+            return Response(self.remove_duplicate_payments(payments))
+    
+    def remove_duplicate_payments(self, payments):
+        unique_result_payments = {}
+        # print(payments)
+        for payment in payments['payments']:
+            if payment['id'] in unique_result_payments:
+                unique_result_payments[payment['id']]['product_names'].append(payment['product_id'])
+            else:
+                unique_result_payments[payment['id']] = payment
+                payment['product_names'] = [payment['product_id'],]
+
+        payments['payments'] = unique_result_payments
+        return payments
                 
 
 class ProductAnalytics(APIView):

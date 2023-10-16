@@ -9,11 +9,11 @@ class Migration(migrations.Migration):
         ('payment', '0050_alter_new_alnafi_payments_orderid'),
     ]
 
-    operations = [
-        migrations.AlterField(
-            model_name='new_alnafi_payments',
-            name='orderId',
-            field=models.CharField(default='nodata', max_length=255, unique=True),
-            preserve_default=False,
-        ),
-    ]
+    # operations = [
+    #     migrations.AlterField(
+    #         model_name='new_alnafi_payments',
+    #         name='orderId',
+    #         field=models.CharField(default='nodata', max_length=255, unique=True),
+    #         preserve_default=False,
+    #     ),
+    # ]

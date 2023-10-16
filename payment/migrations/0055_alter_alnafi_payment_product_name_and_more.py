@@ -20,11 +20,11 @@ class Migration(migrations.Migration):
             name='product_name',
             field=models.JSONField(blank=True, null=True),
         ),
-        migrations.AlterField(
-            model_name='new_alnafi_payments',
-            name='orderId',
-            field=models.CharField(max_length=255),
-        ),
+        # migrations.AlterField(
+        #     model_name='new_alnafi_payments',
+        #     name='orderId',
+        #     field=models.CharField(max_length=255),
+        # ),
         migrations.AlterField(
             model_name='stripe_payment',
             name='product_name',

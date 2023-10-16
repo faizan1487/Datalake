@@ -13,19 +13,19 @@ class Migration(migrations.Migration):
         migrations.DeleteModel(
             name='New_Alnafi_Product',
         ),
-        migrations.AddField(
-            model_name='main_product',
-            name='discount_applied_pkr',
-            field=models.CharField(blank=True, max_length=100, null=True),
-        ),
-        migrations.AddField(
-            model_name='main_product',
-            name='discount_applied_usd',
-            field=models.CharField(blank=True, max_length=100, null=True),
-        ),
-        migrations.AddField(
-            model_name='main_product',
-            name='duration',
-            field=models.CharField(blank=True, max_length=50, null=True),
-        ),
+        # migrations.AddField(
+        #     model_name='main_product',
+        #     name='discount_applied_pkr',
+        #     field=models.CharField(blank=True, max_length=100, null=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='main_product',
+        #     name='discount_applied_usd',
+        #     field=models.CharField(blank=True, max_length=100, null=True),
+        # ),
+        # migrations.AddField(
+        #     model_name='main_product',
+        #     name='duration',
+        #     field=models.CharField(blank=True, max_length=50, null=True),
+        # ),
     ]

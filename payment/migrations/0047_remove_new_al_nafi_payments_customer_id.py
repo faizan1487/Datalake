@@ -9,9 +9,9 @@ class Migration(migrations.Migration):
         ('payment', '0046_alnafi_payment_erp_lead'),
     ]
 
-    operations = [
-        migrations.RemoveField(
-            model_name='new_al_nafi_payments',
-            name='customer_id',
-        ),
-    ]
+    # operations = [
+    #     migrations.RemoveField(
+    #         model_name='new_al_nafi_payments',
+    #         name='customer_id',
+    #     ),
+    # ]

@@ -12,13 +12,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name='main_payment',
-            name='product',
-        ),
-        migrations.AddField(
-            model_name='main_payment',
-            name='product',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='product_payments', to='products.main_product'),
-        ),
+        # migrations.RemoveField(
+        #     model_name='main_payment',
+        #     name='product',
+        # ),
+        # migrations.AddField(
+        #     model_name='main_payment',
+        #     name='product',
+        #     field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='product_payments', to='products.main_product'),
+        # ),
     ]
