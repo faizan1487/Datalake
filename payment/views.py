@@ -42,10 +42,7 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
-post_save = Signal()
-
-
-
+0
 class NewAlnafiPayment(APIView):
     def post(self, request):
         data = request.data
@@ -239,11 +236,6 @@ class MainPaymentAPIView(APIView):
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status= 400)
 
-# class PaymentDelete(APIView):
-#     def get(self, request):
-#         objs = UBL_Manual_Payment.objects.all()
-#         objs.delete()
-#         return Response('deleted')
 
 
 #class SearchAlnafiPayment
@@ -498,9 +490,7 @@ class ActivePayments(APIView):
 
 #optimized       
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin','Support','MOC']
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # Retrieve query parameters
         query = self.request.GET.get('q', None) or None
@@ -513,12 +503,8 @@ class SearchPayments(APIView):
         product = self.request.GET.get('product', None) or None  
         status = self.request.GET.get('status', None) or None
         url = request.build_absolute_uri()
-        # payments = cache.get(url+'payments')
-        # if payments is None:
-        # Search payments using utility function
-        # print(source)
+
         payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)
-            # cache.set(url+'payments', payments)   
         
         if payments['success'] == 'true':
             # Serialize datetime objects to ISO 8601 format
@@ -529,87 +515,11 @@ class SearchPayments(APIView):
 
             users = list(payments['payments'].values('user__email','user__phone','product__product_name'))
             payment_list = list(payments["payments"].values())
-
-            # source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe','UBL_DD']).order_by('-order_datetime').prefetch_related('user', 'product').values()
-            # product_ids = source_payments.values_list('product_id', flat=True)
-            # products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan')
-
-        
-
-            # valid_payments = []
             for i in range(len(payments['payments'])):
-                # valid_payment = {
-                # 'valid': True,
-                # 'reasons': []
-                # }
                 try:
-                # # print("in try")
-                # # print(payment_list[i]['user_id'])
-                # # print("payment_list[i]['alnafi_payment_id']",payment_list[i]['alnafi_payment_id'])
-
-                # source_payment = source_payments.filter(alnafi_payment_id=payment_list[i]['alnafi_payment_id'])
-                # # Assuming you want to retrieve products related to the first source payment
-                # print(products.filter(id=source_payment[0]['product_id']))
-
-
-
-                # # print(source_payment)
-                # if source_payment:
-                #     if float(source_payment[0]['amount']) == float(payment_list[i]['amount']):
-                #         pass    
-                #     else:
-                #         valid_payment['valid'] = False
-                #         valid_payment['reasons'].append('Payment Amount mismatch with source')
-
-                #         # print("source",source_payment)
-                #         # print("alnafi", payment_list[i])
-
-                #         # print("source_payment[0]['amount']",source_payment[0]['amount'])
-                #         # print("payment_list[i]['amount']", payment_list[i]['amount'])
-                #         # return Response("dhfuihi")
-                #     # print(source_payment)
-                #     if source_payment[0]['product_id'] == payment_list[i]['product_id']:
-                #         pass    
-                #     else:
-                #         valid_payment['valid'] = False
-                #         valid_payment['reasons'].append('Product mismatch with source')
-
-                    
-                    # print("source_payment[0]['product_id']['product_plan']", source_payment[0]['product_id'])
-
-                    # if source_payment[0]['product_id']:
-                    #     print(product_plan = source_payment[0])
-                        
-                    # if source_payment[0]['product_plan'] == 'Yearly':
-                    #     pass
-                        # tolerance = timedelta(days=15)
-                        # if latest_payment:
-                        #     expiry_date = payment['expiration_datetime'].date()
-                        #     expected_expiry = payment['order_datetime'].date() + timedelta(days=380) - tolerance
-
-                        #     if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=380) + tolerance):
-                        #         pass
-                        #     else:
-                        #         valid_payment['valid'] = False
-                        #         valid_payment['reasons'].append('Yearly expiration date mismatch')
-
-
-
-                # else:
-                #     valid_payment['valid'] = False
-                #     valid_payment['reasons'].append('No source payment found against this payment or the payment could be of stripe so still working on validating stripe payments')
-
-                # valid_payments.append(valid_payment)
-                    
-                # print(valid_payments)
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['phone'] = users[i]['user__phone']
                     payment_list[i]['product_id'] = users[i]['product__product_name']
-                # if valid_payments:
-                #     # print(i)
-                #     # print(valid_payments[i])
-                #     payment_list[i]['is_valid_payment'] = valid_payments[i]
-                
                 except Exception as e:
                     print(e)
             
@@ -636,8 +546,8 @@ class SearchPayments(APIView):
                         total_payments_in_usd += int(float(i['amount']))
                 
                 paginator = MyPagination()
-                # removed_duplicated = self.remove_duplicate_payments(payment_objects)
-                paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+                removed_duplicated = self.remove_duplicate_payments(payment_objects)
+                paginated_queryset = paginator.paginate_queryset(removed_duplicated, request)
 
                 payments = { 'total_payments_pkr': total_payments_in_pkr, 
                             'total_payments_usd': total_payments_in_usd, 
@@ -648,21 +558,52 @@ class SearchPayments(APIView):
             return Response(payments)
     
     # def remove_duplicate_payments(self, payments):
-    #     unique_result_payments = []
-
+    #     unique_result_payments = {}
+        
     #     for payment in payments:
-    #         found = False
-    #         for unique_payment in unique_result_payments:
-    #             if payment['id'] == unique_payment['id']:
-    #                 unique_payment['product_names'].append(payment['product_id'])
-    #                 found = True
-    #                 break
-    #         if not found:
-    #             payment['product_names'] = [payment['product_id']]
-    #             unique_result_payments.append(payment)
+    #         payment_id = payment['id']
+    #         print(unique_result_payments)
+            
+    #         if payment_id not in unique_result_payments:
+    #             unique_result_payments[payment_id] = payment
+    #         else:
+    #             try:
+    #                 unique_result_payments[payment_id]['product_names'].append(payment['product_id'])
+    #             except Exception as e:
+    #                 print(e)
+        
+    #     return list(unique_result_payments.values())
 
-    #     return unique_result_payments
+    def remove_duplicate_payments(self, payments):
+        unique_result_payments = []
+
+        for payment in payments:
+            found = False
+            for unique_payment in unique_result_payments:
+                if payment['id'] == unique_payment['id']:
+                    unique_payment['product_names'].append(payment['product_id'])
+                    found = True
+                    break
+            if not found:
+                payment['product_names'] = [payment['product_id']]
+                unique_result_payments.append(payment)
+
+        return unique_result_payments
                 
+    # def remove_duplicate_payments(self, payments):
+    #     unique_result_payments = {}
+    #     # print(payments)
+    #     for payment in payments:
+    #         if payment['id'] in unique_result_payments:
+    #             unique_result_payments[payment['id']]['product_names'].append(payment['product_id'])
+    #         else:
+    #             unique_result_payments[payment['id']] = payment
+    #             payment['product_names'] = [payment['product_id'],]
+
+    #     payments = unique_result_payments
+    #     return payments
+    
+
 
 class ProductAnalytics(APIView):
     permission_classes = [IsAuthenticated]
@@ -1030,4 +971,9 @@ class RenewalNoOfPayments(APIView):
         return Response(response_data)
         
         
-            
+
+# class PaymentDelete(APIView):
+#     def get(self, request):
+#         objs = UBL_Manual_Payment.objects.all()
+#         objs.delete()
+#         return Response('deleted')

@@ -148,14 +148,15 @@ def change_lead_status_sales_module(instance, **kwargs):
         # print(response.status_code)
         # print(data['data'])
         if already_existed:
-            # print("already exists")
-            # if data['data'][0]['email_id'] == instance.customer_email:
+            converted_date = datetime.now().date()
             lead_id = data['data'][0]['name']
             url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
             # print(customer_data)
             lead_data = {
                 "status": "Converted",
+                "converted_date": converted_date.isoformat()
             }
+            # print(lead_data)
             response = requests.put(url, headers=headers, json=lead_data)
             # print(response)
             # print(response.text)

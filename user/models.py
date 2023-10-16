@@ -164,7 +164,7 @@ class Moc_Leads(models.Model):
     form = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
     source = models.CharField(max_length=255, null=True, blank=True)
-    created_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     qualification = models.CharField(max_length=255, null=True, blank=True)
     interest = models.CharField(max_length=255, null=True, blank=True)
     cv_link = models.CharField(max_length=255, null=True, blank=True)
