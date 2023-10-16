@@ -154,17 +154,17 @@ def renewal_no_of_payments(payments):
 
 def search_payment(export, q, start_date, end_date, plan, request, url, product, source, origin,status):
     #uncomment line 158 before pushing
-    # payments = Main_Payment.objects.exclude(product__product_name__in=["test","Test Course","Test"]).exclude(amount=1)
-    payments = Main_Payment.objects.filter(user__email__icontains=q)
-    for payment in payments:
-        first_payment = payments.get(id=payment.id)
+    payments = Main_Payment.objects.exclude(product__product_name__in=["test","Test Course","Test"]).exclude(amount=1)
+    # payments = Main_Payment.objects.filter(user__email__icontains=q)
+    # for payment in payments:
+    #     first_payment = payments.get(id=payment.id)
 
-        if first_payment.id == payment.id:
-            products = payment.product.all()
-            for product in products:
-                print(product)
-                payment.product.add(product)
-                payment['products'] = product.product_name
+    #     if first_payment.id == payment.id:
+    #         products = payment.product.all()
+    #         for product in products:
+    #             print(product)
+    #             payment.product.add(product)
+    #             payment['products'] = product.product_name
 
     
     # print(payments)
