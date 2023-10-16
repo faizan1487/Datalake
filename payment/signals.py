@@ -105,8 +105,8 @@ def send_payment_support_module(instance,model_name, **kwargs):
 
             customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
             response = requests.post(customer_url, headers=headers, json=customer_data)
-            # print(response)
-            # print(response.text)
+            print(response)
+            print(response.text)
             if response.status_code == 200:
                 lead_data = response.json()
                 # print(lead_data)
@@ -118,9 +118,9 @@ def send_payment_support_module(instance,model_name, **kwargs):
     except RequestException as e:
         # pass
         print("in except")
-        # print('Error occurred while making the request:', str(e))
-        # print('Error:', response.status_code)
-        # print('Error:', response.text) 
+        print('Error occurred while making the request:', str(e))
+        print('Error:', response.status_code)
+        print('Error:', response.text) 
 
 
 
