@@ -25,7 +25,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    # print("new alnafi signal running")
+    print("new alnafi signal running")
     model_name = 'new_alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
     # data = send_payment_support_module(instance,model_name)
@@ -33,6 +33,7 @@ def new_alnafi_payment_signal(sender, instance: New_Alnafi_Payments, *args, **kw
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
+    print("alnafi signal running")
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
@@ -50,7 +51,7 @@ def alnafi_payment_signal(sender, instance: AlNafi_Payment, *args, **kwargs):
 
 
 def send_payment_support_module(instance,model_name, **kwargs):
-    # print("signal running")
+    print("signal FUNCTION running")
     # print("model_name", model_name)
     url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
     api_key, api_secret = round_robin_support()
@@ -61,7 +62,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
         "Accept": "application/json",
     }
     try:
-        # print("in try")
+        print("in try")
         response = requests.get(url, headers=headers)
         # response.raise_for_status()
         data = response.json()
@@ -97,10 +98,10 @@ def send_payment_support_module(instance,model_name, **kwargs):
         else:
             # customer_data = alnafi_payment_support_data(instance,payment_user)
             if model_name == 'alnafi':
-                # print("in if")
+                print("in if")
                 customer_data = alnafi_payment_support_data(instance,payment_user)
             else:
-                # print("in else")
+                print("in else")
                 customer_data = new_alnafi_payment_support_data(instance, payment_user)
 
             customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
@@ -172,7 +173,7 @@ def change_lead_status_sales_module(instance, **kwargs):
 
 
 def new_alnafi_payment_support_data(instance,payment_user):
-    # print("in New Alnafi Payment fubc")
+    print("in New Alnafi Payment fubc")
     # print(payment_user)
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
