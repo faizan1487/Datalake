@@ -178,15 +178,15 @@ def mocdoctypeLeadsSignal(instance,source):
             "qualification": instance.qualification or None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
-    # url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]&filters=[["MOC","email","=","{instance.email}"]]'
-    url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]'
+    url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]&filters=[["moclead","email","=","{instance.email}"]]'
+    # url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]'
     response = requests.get(url, headers=headers)
-    # print(response.status_code)
-    # print(response.text)
-    lead_data = response.json()
     print(response.status_code)
-    print(lead_data['data'])
-    print(lead_data)
+    print(response.text)
+    lead_data = response.json()
+    # print(response.status_code)
+    # print(lead_data['data'])
+    # print(lead_data)
     if response.status_code == 403:
         return
     # print(lead_data['data'])
@@ -256,8 +256,8 @@ def mocdoctypeLeadsSignal(instance,source):
         print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/moclead'
         response = requests.post(post_url, headers=headers, json=data)
-        # print(response.status_code)
-        # print(response.json())
+        print(response.status_code)
+        print(response.json())
         # response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:
@@ -275,7 +275,7 @@ def mocdoctypeLeadsSignal(instance,source):
 
 
 def mocLeadsSignal(instance,source):
-    # print("sale doctype signa;")
+    print("sale doctype signa;")
     user_api_key, user_secret_key = round_robin()
 
     headers = {

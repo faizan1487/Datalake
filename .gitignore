@@ -23,7 +23,7 @@ dump.rdb
 # Files inside media
 media
 practice.py
-
+populate.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

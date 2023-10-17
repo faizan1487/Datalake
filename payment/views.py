@@ -33,6 +33,15 @@ from django.dispatch import Signal
 from threading import Thread
 from collections import defaultdict, OrderedDict
 
+from django.utils import timezone
+from django.db.models import Q
+from django.db.models import F
+from django.db.models import Value
+from django.db.models import CharField
+from django.db.models import Case, When
+
+
+
 
 
 
@@ -42,7 +51,7 @@ class MyPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 100           
 
-0
+
 class NewAlnafiPayment(APIView):
     def post(self, request):
         data = request.data
@@ -488,107 +497,6 @@ class ActivePayments(APIView):
         else:
             return Response("No data")
 
-#optimized       
-class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        # Retrieve query parameters
-        query = self.request.GET.get('q', None) or None
-        source = self.request.GET.get('source', None) or None
-        origin = self.request.GET.get('origin', None) or None
-        start_date = self.request.GET.get('start_date', None) or None
-        end_date = self.request.GET.get('end_date', None) or None
-        export = self.request.GET.get('export', None) or None
-        plan = self.request.GET.get('plan', None) or None   
-        product = self.request.GET.get('product', None) or None  
-        status = self.request.GET.get('status', None) or None
-        url = request.build_absolute_uri()
-
-        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)
-        
-        if payments['success'] == 'true':
-            # Serialize datetime objects to ISO 8601 format
-            def json_serializable(obj):
-                    if isinstance(obj, datetime):
-                        return obj.isoformat()  # Convert datetime to ISO 8601 format
-                    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
-
-            users = list(payments['payments'].values('user__email','user__phone','product__product_name'))
-            payment_list = list(payments["payments"].values())
-            for i in range(len(payments['payments'])):
-                try:
-                    payment_list[i]['user_id'] = users[i]['user__email']
-                    payment_list[i]['phone'] = users[i]['user__phone']
-                    payment_list[i]['product_id'] = users[i]['product__product_name']
-                except Exception as e:
-                    print(e)
-            
-           
-            if export=='true':
-                df = pd.DataFrame(payment_list)
-                # Merge dataframes
-                file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                df = df.to_csv(index=False)
-                s3 = upload_csv_to_s3(df,file_name)
-                data = {'file_link': file_path,'export':'true'}
-                return Response(data)
-            else:            
-                payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
-                payment_objects = json.loads(payment_json)
-                total_payments_in_pkr = 0
-                total_payments_in_usd = 0
-                sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
-                for i in payment_objects:
-                    if i['source'].lower() in sources:
-                        total_payments_in_pkr += int(float(i['amount']))
-                    else:
-                        total_payments_in_usd += int(float(i['amount']))
-                
-                paginator = MyPagination()
-                # removed_duplicated = self.remove_duplicate_payments(payment_objects)
-                # paginated_queryset = paginator.paginate_queryset(removed_duplicated, request)
-                paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-
-                payments = { 'total_payments_pkr': total_payments_in_pkr, 
-                            'total_payments_usd': total_payments_in_usd, 
-                            'payments': paginated_queryset}
-                
-                return paginator.get_paginated_response(payments)
-        else:
-            return Response(payments)
-    
-   
-    
-    # def remove_duplicate_payments(self, payments):
-    #     unique_result_payments = []
-
-    #     for payment in payments:
-    #         found = False
-    #         for unique_payment in unique_result_payments:
-    #             if payment['id'] == unique_payment['id']:
-    #                 unique_payment['product_names'].append(payment['product_id'])
-    #                 found = True
-    #                 break
-    #         if not found:
-    #             payment['product_names'] = [payment['product_id']]
-    #             unique_result_payments.append(payment)
-
-    #     return unique_result_payments
-                
-    # def remove_duplicate_payments(self, payments):
-    #     unique_result_payments = {}
-    #     # print(payments)
-    #     for payment in payments:
-    #         if payment['id'] in unique_result_payments:
-    #             unique_result_payments[payment['id']]['product_names'].append(payment['product_id'])
-    #         else:
-    #             unique_result_payments[payment['id']] = payment
-    #             payment['product_names'] = [payment['product_id'],]
-
-    #     payments = unique_result_payments
-    #     return payments
-    
 
 
 class ProductAnalytics(APIView):
@@ -957,6 +865,122 @@ class RenewalNoOfPayments(APIView):
         return Response(response_data)
         
         
+
+
+
+
+
+
+#optimized       
+class SearchPayments(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        # Retrieve query parameters
+        query = self.request.GET.get('q', None) or None
+        source = self.request.GET.get('source', None) or None
+        origin = self.request.GET.get('origin', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        end_date = self.request.GET.get('end_date', None) or None
+        export = self.request.GET.get('export', None) or None
+        plan = self.request.GET.get('plan', None) or None   
+        product = self.request.GET.get('product', None) or None  
+        status = self.request.GET.get('status', None) or None
+        url = request.build_absolute_uri()
+
+        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)
+        
+        if payments['success'] == 'true':
+            # Serialize datetime objects to ISO 8601 format
+            def json_serializable(obj):
+                    if isinstance(obj, datetime):
+                        return obj.isoformat()  # Convert datetime to ISO 8601 format
+                    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+            users = list(payments['payments'].values('user__email','user__phone','product__product_name'))
+            payment_list = list(payments["payments"].values())
+            for i in range(len(payments['payments'])):
+                try:
+                    payment_list[i]['user_id'] = users[i]['user__email']
+                    payment_list[i]['phone'] = users[i]['user__phone']
+                    payment_list[i]['product_id'] = users[i]['product__product_name']
+                except Exception as e:
+                    print(e)
+            
+           
+            if export=='true':
+                df = pd.DataFrame(payment_list)
+                # Merge dataframes
+                file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                df = df.to_csv(index=False)
+                s3 = upload_csv_to_s3(df,file_name)
+                data = {'file_link': file_path,'export':'true'}
+                return Response(data)
+            else:            
+                payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+                payment_objects = json.loads(payment_json)
+                total_payments_in_pkr = 0
+                total_payments_in_usd = 0
+                sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
+                for i in payment_objects:
+                    if i['source'].lower() in sources:
+                        total_payments_in_pkr += int(float(i['amount']))
+                    else:
+                        total_payments_in_usd += int(float(i['amount']))
+                
+                paginator = MyPagination()
+                removed_duplicated = self.remove_duplicate_payments(payment_objects)
+                paginated_queryset = paginator.paginate_queryset(removed_duplicated, request)
+                # paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+
+                payments = { 'total_payments_pkr': total_payments_in_pkr, 
+                            'total_payments_usd': total_payments_in_usd, 
+                            'payments': paginated_queryset}
+                
+                return paginator.get_paginated_response(payments)
+        else:
+            return Response(payments)
+    
+   
+    
+    def remove_duplicate_payments(self, payments):
+        unique_result_payments = []
+
+        for payment in payments:
+            found = False
+            for unique_payment in unique_result_payments:
+                if payment['id'] == unique_payment['id']:
+                    unique_payment['product_names'].append(payment['product_id'])
+                    found = True
+                    break
+            if not found:
+                payment['product_names'] = [payment['product_id']]
+                unique_result_payments.append(payment)
+
+        return unique_result_payments
+                
+    # def remove_duplicate_payments(self, payments):
+    #     unique_result_payments = {}
+    #     # print(payments)
+    #     for payment in payments:
+    #         if payment['id'] in unique_result_payments:
+    #             unique_result_payments[payment['id']]['product_names'].append(payment['product_id'])
+    #         else:
+    #             unique_result_payments[payment['id']] = payment
+    #             payment['product_names'] = [payment['product_id'],]
+
+    #     payments = unique_result_payments
+    #     return payments
+
+
+
+
+
+
+
+
+
+
 
 # class PaymentDelete(APIView):
 #     def get(self, request):
