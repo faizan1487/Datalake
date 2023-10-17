@@ -309,22 +309,22 @@ class AlnafiUser(APIView):
 class NewAlnafiUser(APIView): 
     def post(self, request):
         data = request.data
-        # print(data)
+        print(data)
         email = data.get("email")
         try:
             instance = New_AlNafi_User.objects.filter(email=email)
-            # print("in update")
+            print("in update")
             serializer = NewAlnafiUserSerializer(instance.first(), data=data)
         except Exception as e:
-            # print(e)
-            # print("in post")
+            print(e)
+            print("in post")
             serializer = NewAlnafiUserSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        # print(serializer.errors)
+        print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
