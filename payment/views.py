@@ -918,8 +918,9 @@ class SearchPayments(APIView):
                     'phone': payment['user_phone'],
                     'source': payment['source'],
                     'amount': payment['amount'],
+                    'product_names': [payment['product']],
+                    'plan': payment['plan'],
                     'order_datetime': payment['order_datetime'].isoformat(),
-                    'product_names': [payment['product']]
                 }
                 payment_list.append(payment_data)
 
@@ -1018,9 +1019,10 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                                          'order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask')
         # print(payments_data)
         payments = [{'user': payment['user__email'],'user_phone': payment['user__phone'], 'product': payment['product__product_name'],
-                     'plan':payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'],
+                     'plan': payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'],
                      'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
                      'id': payment['id']} for payment in payments_data]
+        # print(payments)
         return payments, True
 
 
