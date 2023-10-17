@@ -369,13 +369,12 @@ class ActivePayments(APIView):
         end_date = self.request.GET.get('end_date', None) or None
 
         payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
-        # print(payments)
         payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
         payments = payments.filter(expiration_datetime__date__gt=date.today())
+        # print(payments.count())
         # print(payments)
 
         if payments:
-
             if not start_date:
                 first_payment = min(payments, key=lambda obj: obj['expiration_datetime'])
                 start_date = first_payment['expiration_datetime'].date() if first_payment else None
@@ -409,25 +408,21 @@ class ActivePayments(APIView):
             
             #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
             # This field represents the uppercase version of the product_plan field of the associated product.
+            # print(payments.values('id'))
             payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
-            # print(payments.count())
-
+            # print(payments.values('id'))
             #If the plan is provided and it is not 'all', the queryset is further filtered using
             # the filter() function. It applies a condition using the Q object, which checks if 
             # the product_plan is an exact case-insensitive match to the given plan 
             # or if it matches any plan name from the plan_mapping dictionary.
-            # print(payments)
             if plan:
                 if plan.lower() != 'all':
                     payments = payments.filter(
                         Q(product__product_plan__iexact=plan) | Q(product__product_plan__iexact=plan_mapping.get(plan, ''))
                     )
-            else:
-                payments = payments.filter(product__product_plan__isnull=False)
-
-            # print(payments.count())
-            # print("after plan filter", payments.count())
-
+            # else:
+            #     payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
+         
             for i, data in enumerate(payments):
                 # date_string = data['expiration_datetime']
                 date_string = payments[i]['expiration_datetime']
@@ -866,8 +861,7 @@ class RenewalNoOfPayments(APIView):
         
 
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]
-      
+    permission_classes = [IsAuthenticated]   
     # Define the sources list here
     def get(self, request):
         query = self.request.GET.get('q', None)
@@ -935,8 +929,6 @@ class SearchPayments(APIView):
             s3 = upload_csv_to_s3(df, file_name)
             data = {'file_link': file_path, 'export': 'true'}
             return data
-
-
 
         return {
             'total_payments_pkr': total_payments_in_pkr,
