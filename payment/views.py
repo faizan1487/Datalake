@@ -4,8 +4,7 @@ from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_P
 from products.models import Main_Product
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
                          UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
-from .services import (json_to_csv, renewal_no_of_payments,search_payment,
-                       main_no_of_payments,no_of_payments,get_USD_rate)
+from .services import (json_to_csv, renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -881,13 +880,17 @@ class SearchPayments(APIView):
         product = self.request.GET.get('product', None)
         status = self.request.GET.get('status', None)
 
-        payments, success = search_payment(export, query, start_date, end_date, plan, source, origin, status,product)
-
+        payments, success= search_payment(export, query, start_date, end_date, plan, source, origin, status,product)
         if success:
             payments = self.process_payments(payments, export)
+            # print(payments)
+            if export == 'true':
+                return Response(payments)
+            
             return self.paginate_response(request, payments)
         else:
-            return JsonResponse(payments)
+            payments = []
+            return Response(payments)
 
     def process_payments(self, payments, export):
         payment_list = []
@@ -913,7 +916,6 @@ class SearchPayments(APIView):
                     'id': payment['id'],
                     'user_id': payment['user'],
                     'phone': payment['user_phone'],
-                    # 'product_id': payment['product'],
                     'source': payment['source'],
                     'amount': payment['amount'],
                     'order_datetime': payment['order_datetime'].isoformat(),
@@ -924,15 +926,16 @@ class SearchPayments(APIView):
         sources = ['ubl_dd', 'al-nafi', 'easypaisa', 'ubl_ipg']
         total_payments_in_pkr = sum(float(p['amount']) for p in payment_list if p['source'].lower() in sources)
         total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
-
+        
         if export == 'true':
-            df = pd.DataFrame(payment_list)
-            file_name = f"Payments_DATA_{timezone.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-            df.to_csv(file_path, index=False)
-            s3 = upload_csv_to_s3(file_path, file_name)
+            df = pd.DataFrame(payment_list).to_csv(index=False)
+            s3 = upload_csv_to_s3(df, file_name)
             data = {'file_link': file_path, 'export': 'true'}
             return data
+
+
 
         return {
             'total_payments_pkr': total_payments_in_pkr,
@@ -1006,9 +1009,9 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
             output_field=CharField()
         )
     )
-
     if not payments:
-        return {"payments": payments, "success": False}
+        # payments = {"payments": payments, "success": 'False'}
+        return payments, False
     else:
         # print(payments.values())
         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
@@ -1019,8 +1022,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                      'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
                      'id': payment['id']} for payment in payments_data]
         return payments, True
-
-
 
 
 
