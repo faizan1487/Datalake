@@ -867,6 +867,165 @@ class RenewalNoOfPayments(APIView):
         
 
 
+# from django.db.models import Q, F, Value, Case, When, CharField
+# from django.utils import timezone
+# from django.http import JsonResponse
+# from django.core.paginator import Paginator
+# import pandas as pd
+# import json
+# import os
+
+# class SearchPayments(APIView):
+#     permission_classes = [IsAuthenticated]
+      
+#     # Define the sources list here
+#     def get(self, request):
+#         query = self.request.GET.get('q', None)
+#         source = self.request.GET.get('source', None)
+#         origin = self.request.GET.get('origin', None)
+#         start_date = self.request.GET.get('start_date', None)
+#         end_date = self.request.GET.get('end_date', None)
+#         export = self.request.GET.get('export', None)
+#         plan = self.request.GET.get('plan', None)
+#         product = self.request.GET.get('product', None)
+#         status = self.request.GET.get('status', None)
+
+#         payments, success = search_payment(export, query, start_date, end_date, plan, source, origin, status,product)
+
+#         if success:
+#             payments = self.process_payments(payments, export)
+#             return self.paginate_response(request, payments)
+#         else:
+#             return JsonResponse(payments)
+
+#     def process_payments(self, payments, export):
+#         payment_list = []
+        
+#         unique_payment_ids = set()
+
+#         for payment in payments:
+#             payment_id = payment['id']
+#             if payment_id in unique_payment_ids:
+#                 continue
+#             # print(payment)
+#             user = payment['user']
+#             # print(user)
+#             product = payment['product']
+#             payment_data = {
+#                 'user_id': user,
+#                 'phone': payment['user_phone'],
+#                 'product_id': payment['product'],
+#                 'plan': payment['plan'],
+#                 'source': payment['source'],
+#                 'amount': payment['amount'],
+#                 'order_datetime': payment['order_datetime'].isoformat()
+#             }
+#             payment_list.append(payment_data)
+#             unique_payment_ids.add(payment_id)
+
+#         sources = ['ubl_dd', 'al-nafi', 'easypaisa', 'ubl_ipg']
+#         total_payments_in_pkr = sum(float(p['amount']) for p in payment_list if p['source'].lower() in sources)
+#         total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
+
+#         if export == 'true':
+#             df = pd.DataFrame(payment_list)
+#             file_name = f"Payments_DATA_{timezone.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+#             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+#             df.to_csv(file_path, index=False)
+#             s3 = upload_csv_to_s3(file_path, file_name)
+#             data = {'file_link': file_path, 'export': 'true'}
+#             return data
+
+#         return {
+#             'total_payments_pkr': total_payments_in_pkr,
+#             'total_payments_usd': total_payments_in_usd,
+#             'payments': payment_list
+#         }
+
+#     def paginate_response(self, request, payments):
+#         paginator = MyPagination()
+#         paginated_queryset = paginator.paginate_queryset(payments['payments'], request)
+#         return paginator.get_paginated_response(paginated_queryset)
+
+    
+
+# def search_payment(export, q, start_date, end_date, plan, source, origin, status,product):
+#     payments = Main_Payment.objects.exclude(product__product_name__in=["test", "Test Course", "Test"]).exclude(
+#         amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
+#     statuses = ["0", False, 0]
+#     payments = payments.exclude(source='UBL_DD', status__in=statuses)
+
+#     if status:
+#         payments = payments.filter(status=status)
+
+#     if source:
+#         payments = payments.filter(source=source)
+
+#     if origin:
+#         if origin == 'local':
+#             payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Al-Nafi', 'NEW ALNAFI'])
+#         else:
+#             payments = payments.filter(source='Stripe')
+
+#     if not start_date:
+#         first_payment = payments.exclude(order_datetime=None).last()
+#         start_date = first_payment.order_datetime.date() if first_payment else None
+
+#     if not end_date:
+#         last_payment = payments.exclude(order_datetime=None).first()
+#         end_date = last_payment.order_datetime.date() if last_payment else None
+
+#     payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
+
+#     if q:
+#         payments = payments.filter(user__email__icontains=q)
+
+#     if product:
+#         keywords = product.split()
+#         query = Q()
+#         for keyword in keywords:
+#             query &= Q(product__product_name__icontains=keyword)
+#         payments = payments.filter(query)
+
+#     if plan:
+#         payments = payments.filter(product__product_plan=plan)
+
+#     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
+#     payment_cycle_descriptions = {
+#         'Monthly': 'Monthly',
+#         'Yearly': 'Yearly',
+#         'Half Yearly': 'Half-Yearly',
+#         'Quarterly': 'Quarterly'
+#         # Add more plan-value pairs as needed
+#     }
+
+#     payments = payments.annotate(
+#         payment_cycle=Case(
+#             *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
+#             default=Value('Unknown Plan'),
+#             output_field=CharField()
+#         )
+#     )
+
+#     if not payments:
+#         return {"payments": payments, "success": False}
+#     else:
+#         print(payments.values())
+#         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
+#                                          'order_datetime', 'id','payment_cycle')
+#         # print(payments_data)
+#         payments = [{'user': payment['user__email'],'user_phone': payment['user__phone'], 'product': payment['product__product_name'],
+#                      'plan':payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'], 
+#                      'order_datetime': payment['order_datetime'], 'id': payment['id']} for payment in payments_data]
+#         return payments, True
+
+
+
+
+
+
+
+
 
 
 
@@ -940,7 +1099,6 @@ class SearchPayments(APIView):
                 return paginator.get_paginated_response(payments)
         else:
             return Response(payments)
-    
    
     
     # def remove_duplicate_payments(self, payments):
