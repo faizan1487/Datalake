@@ -161,14 +161,14 @@ def search_payment(export, q, start_date, end_date, plan, request, url, product,
     statuses = ["0",False,0]
     payments = payments.exclude(source='UBL_DD', status__in=statuses)
 
-    if source:
-            payments = payments.filter(Q(source=source) | Q(source__in=['Al-Nafi', 'NEW ALNAFI']))
+    # if source:
+    #         payments = payments.filter(Q(source=source) | Q(source__in=['Al-Nafi', 'NEW ALNAFI']))
 
     if status:
         payments = payments.filter(status=status)
     
-    # if source:
-    #     payments = payments.filter(source=source)
+    if source:
+        payments = payments.filter(source=source)
     # else:
     #     payments = payments.filter(source__in=['Al-Nafi','NEW ALNAFI'])
         

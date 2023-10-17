@@ -558,23 +558,8 @@ class SearchPayments(APIView):
         else:
             return Response(payments)
     
-    # def remove_duplicate_payments(self, payments):
-    #     unique_result_payments = {}
-        
-    #     for payment in payments:
-    #         payment_id = payment['id']
-    #         print(unique_result_payments)
-            
-    #         if payment_id not in unique_result_payments:
-    #             unique_result_payments[payment_id] = payment
-    #         else:
-    #             try:
-    #                 unique_result_payments[payment_id]['product_names'].append(payment['product_id'])
-    #             except Exception as e:
-    #                 print(e)
-        
-    #     return list(unique_result_payments.values())
-
+   
+    
     # def remove_duplicate_payments(self, payments):
     #     unique_result_payments = []
 

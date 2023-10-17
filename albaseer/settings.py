@@ -9,6 +9,7 @@ from datetime import timedelta
 env = environ.Env()
 env.read_env()
 DEBUG = env('DEBUG',cast=bool)
+# print(DEBUG)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 BASE_URL = "https://stage-api-al-baseer.alnafi.com/"
