@@ -914,6 +914,8 @@ class SearchPayments(APIView):
                     'amount': payment['amount'],
                     'product_names': [payment['product']],
                     'plan': payment['plan'],
+                    'alnafi_payment_id': payment['alnafi_payment_id'],
+                    'card_mask': payment['card_mask'],
                     'order_datetime': payment['order_datetime'].isoformat(),
                 }
                 payment_list.append(payment_data)
