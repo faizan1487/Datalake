@@ -247,12 +247,13 @@ class MainPaymentAPIView(APIView):
 
 
 
-#class SearchAlnafiPayment
+#class SearchAlnafiPayment 
+#product issue and response time fixed,export not fixed
+#bug in filtering with email product duplicates
 class RenewalPayments(APIView):
     permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin','Support']
     def get(self, request):
+        # print("renewal payment function")
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -263,15 +264,15 @@ class RenewalPayments(APIView):
         active = self.request.GET.get('is_active', None) or None
         product = self.request.GET.get('product', None) or None
 
-        # payments = cache.get(url)
-        # if payments is None:
-        payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
+       
+        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(product__product_name="test").select_related('product').values()
         payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
-            # cache.set(url, payments)
+        # print(payments.count())
+        # print(payments.values('id'))
 
         if q:
             payments = payments.filter(user__email__icontains=q) 
-            # payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))            
+            # payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
             
         if source:
             payments = payments.filter(source=source)
@@ -280,8 +281,10 @@ class RenewalPayments(APIView):
             payments = payments.filter(product__product_name__icontains=product)
 
         if expiration:
+            # print("in expiration")
             expiration_date = date.today() + timedelta(days=int(expiration))
             if exact == 'true':
+                # print("in exact true")
                 payments = payments.filter(expiration_datetime__date=expiration_date)
             else:
                 payments = payments.filter(
@@ -312,8 +315,11 @@ class RenewalPayments(APIView):
                 payments = payments.filter(
                     Q(product__product_plan__iexact=plan) | Q(product__product_plan__iexact=plan_mapping.get(plan, ''))
                 )
-        else:
-            payments = payments.filter(product__product_plan__isnull=False)
+        # else:
+        #     payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
+
+        # print(payments.count())
+        # print(payments.values('id'))
 
         for i, data in enumerate(payments):
             # date_string = data['expiration_datetime']
@@ -352,10 +358,51 @@ class RenewalPayments(APIView):
             payment_objects = json.loads(payment_json)
             
             paginator = MyPagination()
-            paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+            removed_duplicated = self.remove_duplicate_payments(payment_objects)
+            paginated_queryset = paginator.paginate_queryset(removed_duplicated, request)
             return paginator.get_paginated_response(paginated_queryset)     
 
+    def remove_duplicate_payments(self,payments):
+        payment_list = []
+        
+        for payment in payments:
+            # print(payment)
+            payment_id = payment['id']
+            payment_found = False
 
+            for existing_payment in payment_list:
+                # print(existing_payment)
+                if existing_payment['id'] == payment_id:
+                    # If payment with the same id exists in the list, append the product name
+                    existing_payment['product_names'].append(payment['product_id'])
+                    payment_found = True
+                    break
+
+            if not payment_found:
+                # print(payment)
+                # If payment is not found in the list, create a new entry
+
+                payment_data = {
+                    'id': payment['id'],
+                    'user_id': payment['user_id'],
+                    'phone': payment['phone'],
+                    'source': payment['source'],
+                    'amount': payment['amount'],
+                    'product_names': [payment['product_id']],
+                    'plan': payment['payment_cycle'],
+                    'alnafi_payment_id': payment['alnafi_payment_id'],
+                    'card_mask': payment['card_mask'],
+                    'order_datetime': payment['order_datetime'],
+                    'expiry_datetime': payment['expiration_datetime'],
+                    'order_id': payment['source_payment_id'],
+                    'qarz_e_hasna': payment['qarz'],
+                    'is_active': payment['is_active'],
+                }
+                payment_list.append(payment_data)
+        
+        return payment_list
+
+#product issue and response time fixed,export not fixed
 class ActivePayments(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -366,7 +413,7 @@ class ActivePayments(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
 
-        payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").select_related('product').values()
+        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(product__product_name="test").select_related('product').values()
         payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
         payments = payments.filter(expiration_datetime__date__gt=date.today())
         # print(payments.count())
@@ -904,7 +951,7 @@ class RenewalNoOfPayments(APIView):
         response_data = renewal_no_of_payments(payments)
         return Response(response_data)
         
-#product issue and response time fixed
+#product issue and response time fixed,export not fixed
 class SearchPayments(APIView):
     permission_classes = [IsAuthenticated]   
     # Define the sources list here
