@@ -358,8 +358,6 @@ class RenewalPayments(APIView):
 
 class ActivePayments(APIView):
     permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin','Support']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         export = self.request.GET.get('export', None) or None
@@ -383,14 +381,7 @@ class ActivePayments(APIView):
                 last_payment = max(payments, key=lambda obj: obj['expiration_datetime'])
                 end_date = last_payment['expiration_datetime'].date() if last_payment else None
 
-            # print(first_payment)
-            # print(last_payment)
-            # print(start_date)
-            # print(end_date)
-
             payments = payments.filter(Q(expiration_datetime__date__gte=start_date) & Q(expiration_datetime__date__lte=end_date))
-            # print(payments.count())
-
 
             if q:
                 payments = payments.filter(user__email__icontains=q) 
@@ -408,9 +399,9 @@ class ActivePayments(APIView):
             
             #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
             # This field represents the uppercase version of the product_plan field of the associated product.
-            # print(payments.values('id'))
+
             payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
-            # print(payments.values('id'))
+            
             #If the plan is provided and it is not 'all', the queryset is further filtered using
             # the filter() function. It applies a condition using the Q object, which checks if 
             # the product_plan is an exact case-insensitive match to the given plan 
@@ -420,8 +411,8 @@ class ActivePayments(APIView):
                     payments = payments.filter(
                         Q(product__product_plan__iexact=plan) | Q(product__product_plan__iexact=plan_mapping.get(plan, ''))
                     )
-            # else:
-            #     payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
+            else:
+                payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
          
             for i, data in enumerate(payments):
                 # date_string = data['expiration_datetime']
@@ -431,18 +422,25 @@ class ActivePayments(APIView):
                 else:
                     payments[i]['is_active'] = False
 
+            # print(payments)
+
             def json_serializable(obj):
                     if isinstance(obj, datetime):
                         return obj.isoformat()  # Convert datetime to ISO 8601 format
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
                 
             if request.user.is_admin:
+                # print("admin user")
                 pass
             else:
                 if q:
-                    print(payments.count())
                     payments = payments.filter(user__email__iexact=q)
-                    print(payments.count())
+                    for i, data in enumerate(payments):
+                        date_string = payments[i]['expiration_datetime']
+                        if date_string:
+                            payments[i]['is_active'] = date_string.date() >= date.today()
+                        else:
+                            payments[i]['is_active'] = False
                     users = list(payments.values('user__email','user__phone'))
                     products = list(payments.values('product__product_name'))
                     payment_list = list(payments.values())                          
@@ -454,15 +452,19 @@ class ActivePayments(APIView):
                             payment_list[i]['is_active'] = payments[i]['is_active']
                         except Exception as e:
                             pass
-                    return Response(payment_list)
+                    # print(payment_list)
+                    removed_duplicate = self.remove_duplicate_payments(payment_list)
+                    return Response(removed_duplicate)
                 else:
                     return Response("Please enter email")
             
+            # print("admin user")
             users = list(payments.values('user__email','user__phone'))
             products = list(payments.values('product__product_name'))
             payment_list = list(payments.values())                          
             for i in range(len(payment_list)):
                 try:
+                    # print("payments[i]",payments[i])
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['phone'] = users[i]['user__phone']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
@@ -485,12 +487,55 @@ class ActivePayments(APIView):
                 
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+                removed_duplicates = self.remove_duplicate_payments(paginated_queryset)
                 if request.user.is_admin:
-                    return paginator.get_paginated_response(paginated_queryset)  
+                    return paginator.get_paginated_response(removed_duplicates)  
                 else:
                     return Response("no data")  
         else:
             return Response("No data")
+
+
+    def remove_duplicate_payments(self,payments):
+        payment_list = []
+        
+        for payment in payments:
+            # print(payment)
+            payment_id = payment['id']
+            payment_found = False
+
+            for existing_payment in payment_list:
+                # print(existing_payment)
+                if existing_payment['id'] == payment_id:
+                    # If payment with the same id exists in the list, append the product name
+                    existing_payment['product_names'].append(payment['product_id'])
+                    payment_found = True
+                    break
+
+            if not payment_found:
+                # print(payment)
+                # If payment is not found in the list, create a new entry
+
+                payment_data = {
+                    'id': payment['id'],
+                    'user_id': payment['user_id'],
+                    'phone': payment['phone'],
+                    'source': payment['source'],
+                    'amount': payment['amount'],
+                    'product_names': [payment['product_id']],
+                    'plan': payment['payment_cycle'],
+                    'alnafi_payment_id': payment['alnafi_payment_id'],
+                    'card_mask': payment['card_mask'],
+                    'order_datetime': payment['order_datetime'],
+                    'expiry_datetime': payment['expiration_datetime'],
+                    'order_id': payment['source_payment_id'],
+                    'qarz_e_hasna': payment['qarz'],
+                    'is_active': payment['is_active'],
+                }
+                payment_list.append(payment_data)
+        
+        return payment_list
+
 
 
 
@@ -859,7 +904,7 @@ class RenewalNoOfPayments(APIView):
         response_data = renewal_no_of_payments(payments)
         return Response(response_data)
         
-
+#product issue and response time fixed
 class SearchPayments(APIView):
     permission_classes = [IsAuthenticated]   
     # Define the sources list here
