@@ -1,3 +1,4 @@
+from sre_constants import SUCCESS
 from rest_framework import status
 from user.models import User
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments
@@ -55,7 +56,7 @@ class MyPagination(PageNumberPagination):
 class NewAlnafiPayment(APIView):
     def post(self, request):
         data = request.data
-        print(data)
+        # print(data)
         order_id = data.get('orderId')
         # print(payment_id)
 
@@ -250,6 +251,7 @@ class MainPaymentAPIView(APIView):
 #class SearchAlnafiPayment 
 #product issue and response time fixed,
 #bug in filtering with email product duplicates
+
 class RenewalPayments(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -519,9 +521,7 @@ class ActivePayments(APIView):
                     payment_list[i]['is_active'] = payments[i]['is_active']
                 except Exception as e:
                     pass
-
-            
-            
+       
             if export == 'true':
                 removed_duplicates = self.remove_duplicate_payments(payment_list)
                 file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
@@ -586,12 +586,8 @@ class ActivePayments(APIView):
         return payment_list
 
 
-
-
 class ProductAnalytics(APIView):
-    permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin','Support','MOC']
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -613,40 +609,41 @@ class ProductAnalytics(APIView):
 
 
         order = self.request.GET.get('order')
-        payments = search_payment(export,query,start_date,end_date,plan,request,url,product,source,origin,status)        
-        if payments['success'] == 'true':
+        payments, success = search_payment(export, query,start_date, end_date, plan, source, origin, status,product) 
+        # pri/t(payments)       
+        if success:
             def json_serializable(obj):
                     if isinstance(obj, datetime):
                         return obj.isoformat()  # Convert datetime to ISO 8601 format
                     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
-
-
-            users = list(payments['payments'].values('user__email','product__product_name','payment_cycle','source','order_datetime'))
-            payment_list = list(payments["payments"].values())
+        
             # count the product with most payments
             product_info = defaultdict(lambda: {'count': 0, 'payment_total': 0.0, 'plan': '','source':''})
             # usd_rate = get_USD_rate()
-            for i in range(len(payments['payments'])):
-                try:
+            for i in range(len(payments)):
+                # try:
                     # print(i['payment_cycle'])
-                    payment_list[i]['user_id'] = users[i]['user__email']
-                    payment_list[i]['product_id'] = users[i]['product__product_name']
-                    payment_amount = payment_list[i]['amount']
-                    product_name = users[i]['product__product_name']
-                    if product_name and payment_amount:
-                        product_info[product_name]['count'] += 1
-                        product_info[product_name]['plan'] = users[i]['payment_cycle']
-                        product_info[product_name]['source'] = users[i]['source']
-                        product_info[product_name]['order_datetime'] = users[i]['order_datetime']
-                        sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
-                        if payment_list[i]['source'].lower() in sources:
-                            product_info[product_name]['payment_total'] += float(payment_amount)
-                        else:
-                            product_info[product_name]['payment_total']  += int(float(payment_amount))
+                    # payments[i]['user_id'] = users[i]['user__email']
+                    # payment[i]['product_id'] = users[i]['product__product_name']
+                payment_amount = payments[i]['amount']
+                product_name = payments[i]['product']
+                print
+                # print("payments[i]['product']",payments[i]['product'])
+                if product_name and payment_amount:
+                    product_info[product_name]['count'] += 1
+                    product_info[product_name]['plan'] = payments[i]['plan']
+                    product_info[product_name]['source'] = payments[i]['source']
+                    product_info[product_name]['order_datetime'] = payments[i]['order_datetime']
+                    sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
+                    if payments[i]['source'].lower() in sources:
+                        product_info[product_name]['payment_total'] += float(payment_amount)
+                    else:
+                        product_info[product_name]['payment_total']  += int(float(payment_amount))
                             #  * usd_rate['PKR']
-                except Exception as e:
-                    print(e)
-                                    
+                # except Exception as e:
+                #     # pass
+                #     print(e)
+            # print(product_info)
             # Generate dynamic sorting key based on criteria
             def dynamic_sort(data, criteria, order):
                 # Generate dynamic sorting key based on criteria
@@ -666,7 +663,8 @@ class ProductAnalytics(APIView):
                 return OrderedDict((product, data[product]) for product in sorted_products)
             
             # Example usage
-            sorted_by_count_and_payment = dynamic_sort(product_info, sort_by, order)            
+            sorted_by_count_and_payment = dynamic_sort(product_info, sort_by, order)    
+            # print(sorted_by_count_and_payment)        
             # sorted_products = sorted(product_info.keys(), key=lambda k: (product_info[k]['count'], product_info[k]['payment_total']), reverse=True)
             # sorted_dict = OrderedDict((product, product_info[product]) for product in sorted_products)
             
@@ -675,25 +673,31 @@ class ProductAnalytics(APIView):
             product_with_min_revenue = min(product_info, key=lambda k: product_info[k]['payment_total'])
             min_revenue = product_info[product_with_min_revenue]['payment_total']
 
-
+            print("product_with_max_revenue",product_with_max_revenue)
+            print("max revenue", max_revenue)
+            print("product_with_min_revenue",product_with_min_revenue)
+            print("min revenue", min_revenue)
             # print(product_info) 
             # Find the product with the most payments
             max_product = max(product_info, key=lambda k: product_info[k]['count'])
             max_product_details = product_info[max_product]
-            # print(max_product)/
             product_most_payments = max_product
             max_payments_count = max_product_details['count']
+            print("max_product_details",max_product_details)
+            print("max_payments_count",max_payments_count)
 
             # # Find the product with the least payments
             min_product = min(product_info, key=lambda k: product_info[k]['count'])
             min_product_details = product_info[min_product]
             product_least_payments = min_product
             min_payments_count = min_product_details['count']
+
+            print("min_product_details",min_product_details,min_payments_count)
            
 
            
             if export=='true':
-                df = pd.DataFrame(payment_list)
+                df = pd.DataFrame(payments)
                 # Merge dataframes
                 file_name = f"Payments_DATA_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -702,7 +706,7 @@ class ProductAnalytics(APIView):
                 data = {'file_link': file_path,'export':'true'}
                 return Response(data)
             else:            
-                payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+                payment_json = json.dumps(payments, default=json_serializable)  # Serialize the list to JSON with custom encoder
                 payment_objects = json.loads(payment_json)
                 
                 total_payments_in_pkr = 0
@@ -718,9 +722,6 @@ class ProductAnalytics(APIView):
                         total_payments_in_usd += int(float(i['amount']))
                 
                 list_of_products = [{"product_name": key, "details": value} for key, value in sorted_by_count_and_payment.items()]
-
-                
-
 
                 paginator = MyPagination()
                 # paginated_queryset = paginator.paginate_queryset(payment_objects, request)
@@ -740,179 +741,6 @@ class ProductAnalytics(APIView):
             response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
             return Response(response_data)
 
-
-
-#optimized
-class PaymentValidation(APIView):
-    permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Sales', 'Admin']
-    def get(self, request):
-        q = self.request.GET.get('q', None) or None
-        source = self.request.GET.get('source', None) or None
-        export = self.request.GET.get('export', None) or None
-        # create a datetime object for 24 hours ago
-        url = request.build_absolute_uri()  
-        
-        # payments = cache.get(url)'Al-Nafi'
-        # if payments is None:
-        payments = Main_Payment.objects.filter(source='Al-Nafi').exclude(product__product_name="test").values()
-        payments = payments.exclude(amount__in=[0,0.1,1,2,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0,10])
-        # cache.set(url, payments)      
-        if source:
-            payments = payments.filter(source=source)
-
-        if q:
-            payments = payments.filter(user__email__icontains=q) 
-            # payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))   
-
-        
-        valid_payments = []
-
-        product_ids = set(payments.values_list('product_id', flat=True))
-        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan')
-
-        source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).order_by('-order_datetime').prefetch_related('user', 'product').values()
-        latest_payments = {}
-        ##Removes duplicates from source_payments and only adds the latest payment into the latest payment dict
-        for payment in source_payments:
-            key = (payment['user_id'], payment['product_id'])
-            if key not in latest_payments:
-                latest_payments[key] = payment
-                
-        for payment in payments:
-            valid_payment = {
-                'valid': True,
-                'reasons': []
-            }
-
-            try:
-                product = next(filter(lambda p: p['id'] == payment['product_id'], products), None)
-                if product:
-                    if payment['currency'] == 'PKR':
-                        product_amount_without_zeros = str(product['amount_pkr']).rstrip('0').rstrip('.')
-                        if product_amount_without_zeros == payment['amount']:
-                            pass
-                        else:
-                            valid_payment['valid'] = False
-                            valid_payment['reasons'].append('Product and Payment Amount mismatch')
-                    elif payment['currency'] == 'USD':
-                        product_amount_without_zeros = str(product['amount_usd']).rstrip('0').rstrip('.')
-                        if product_amount_without_zeros == payment['amount']:
-                            pass
-                        else:
-                            valid_payment['valid'] = False
-                            valid_payment['reasons'].append('Product and Payment Amount mismatch')
-
-                    else:
-                        valid_payment['valid'] = False
-                        valid_payment['reasons'].append('Invalid currency')
-
-                else:
-                    valid_payment['valid'] = False
-                    valid_payment['reasons'].append('Product not found')
-
-
-
-                latest_payment = latest_payments.get((payment['user_id'], payment['product_id']))
-                
-                # This condition will be False when the order date of the latest payment (latest_payment['order_datetime'])
-                # is outside the range defined by subtracting the tolerance from the current payment's order date (payment['order_datetime'].date() - tolerance) 
-                # and adding the tolerance to it (payment['order_datetime'].date() + tolerance).
-                
-                # In other words, if the order date of the latest payment is earlier than payment['order_datetime'].date() - tolerance 
-                # or later than payment['order_datetime'].date() + tolerance, the condition will evaluate to False, indicating a mismatch 
-                # in the order dates.
-
-                # This condition is used to determine if the order dates of the current payment and the latest payment are close enough within 
-                # the specified tolerance. If they are within that range, the condition evaluates to True, indicating that the check is successful. 
-                # Otherwise, it evaluates to False, indicating a mismatch in the order dates.
-                
-                if latest_payment:
-                    tolerance = timedelta(days=1)
-                    if (payment['order_datetime'].date() - tolerance <= latest_payment['order_datetime'].date() <= payment['order_datetime'].date() + tolerance):
-                        pass
-                    else:
-                        valid_payment['valid'] = False
-                        valid_payment['reasons'].append('Order date mismatch')
-                        
-                if product:
-                    if product['product_plan'] == 'Yearly':
-                        tolerance = timedelta(days=15)
-                        if latest_payment:
-                            expiry_date = payment['expiration_datetime'].date()
-                            expected_expiry = payment['order_datetime'].date() + timedelta(days=380) - tolerance
-
-                            if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=380) + tolerance):
-                                pass
-                            else:
-                                valid_payment['valid'] = False
-                                valid_payment['reasons'].append('Yearly expiration date mismatch')
-
-                    if product['product_plan'] == 'Half Yearly':
-                        if latest_payment:
-                            tolerance = timedelta(days=10)
-                            expiry_date = payment['expiration_datetime'].date()
-                            expected_expiry = payment['order_datetime'].date() + timedelta(days=180) - tolerance
-
-                            if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=180) + tolerance):
-                                pass
-                            else:
-                                valid_payment['valid'] = False
-                                valid_payment['reasons'].append('Half Yearly expiration date mismatch')
-
-                    if product['product_plan'] == 'Quarterly':
-                        if latest_payment:
-                            tolerance = timedelta(days=7)
-                            expiry_date = payment['expiration_datetime'].date()
-                            expected_expiry = payment['order_datetime'].date() + timedelta(days=90) - tolerance
-
-                            if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=90) + tolerance):
-                                pass
-                            else:
-                                valid_payment['valid'] = False
-                                valid_payment['reasons'].append('Quarterly expiration date mismatch')
-
-                    if product['product_plan'] == 'Monthly':
-                        if latest_payment:
-                            tolerance = timedelta(days=5)
-                            expiry_date = payment['expiration_datetime'].date()
-                            expected_expiry = payment['order_datetime'].date() + timedelta(days=30) - tolerance
-
-                            if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=30) + tolerance):
-                                pass
-                            else:
-                                valid_payment['valid'] = False
-                                valid_payment['reasons'].append('Monthly expiration date mismatch')
-
-            except ObjectDoesNotExist:
-                pass
-
-            valid_payments.append(valid_payment)            
-        
-        def json_serializable(obj):
-                if isinstance(obj, datetime):
-                    return obj.isoformat()  # Convert datetime to ISO 8601 format
-                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
-
-        users = list(payments.values('user__email'))
-        products = list(payments.values('product__product_name'))
-        payment_list = list(payments.values())                          
-        for i in range(len(payment_list)):
-            try:
-                payment_list[i]['user_id'] = users[i]['user__email']
-                payment_list[i]['product_id'] = products[i]['product__product_name']
-                payment_list[i]['is_valid_payment'] = valid_payments[i]
-            except Exception as e:
-                pass
-      
-            
-        payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
-        payment_objects = json.loads(payment_json)
-        
-        paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-        return paginator.get_paginated_response(paginated_queryset) 
        
 #Optimized
 #shows no of payments on each date
@@ -1040,8 +868,9 @@ class SearchPayments(APIView):
     
 
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product):
-    payments = Main_Payment.objects.exclude(product__product_name__in=["test", "Test Course", "Test"]).exclude(
-        amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
+    payments = Main_Payment.objects.exclude(product__product_name__in=["test", "Test Course", "Test"])
+    # .exclude(
+    #     amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
     statuses = ["0", False, 0]
     payments = payments.exclude(source='UBL_DD', status__in=statuses)
     payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD','Stripe'])
@@ -1112,6 +941,213 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                      'id': payment['id']} for payment in payments_data]
         # print(payments)
         return payments, True
+
+
+
+
+
+class PaymentValidation(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        q = self.request.GET.get('q', None) or None
+        source = self.request.GET.get('source', None) or None
+        export = self.request.GET.get('export', None) or None   
+        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(product__product_name="test").exclude(
+        amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
+        if source:
+            payments = payments.filter(source=source)
+        if q:
+            payments = payments.filter(user__email__icontains=q)
+            # payments = payments.filter(Q(user__email__iexact=q) | Q(amount__iexact=q))     
+        valid_payments = []
+        # print(payments)
+        product_ids = set(payments.values_list('product', flat=True))
+        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan')
+        # print(products)
+        # source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).order_by('-order_datetime').prefetch_related('user', 'product').values()
+        source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).order_by('-order_datetime').prefetch_related('user')
+        latest_payments = {}
+        ##Removes duplicates from source_payments and only adds the latest payment into the latest payment dict
+        for payment in source_payments:
+            key = (payment.user_id, payment.product)
+            if key not in latest_payments:
+                latest_payments[key] = payment               
+        for payment in payments:
+            valid_payment = {
+                'valid': True,
+                'reasons': []
+            }
+            # try:
+            # print("in try")
+            # print("payment.product",payment.product)
+            product_ids = payment.product.values_list('id', flat=True)
+            product = next(filter(lambda p: p['id'] == product_ids, products), None)
+            # print("product",product)
+            if product:
+                if payment['currency'] == 'PKR':
+                    product_amount_without_zeros = str(product['amount_pkr']).rstrip('0').rstrip('.')
+                    if product_amount_without_zeros == payment['amount']:
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Product and Payment Amount mismatch')
+                elif payment['currency'] == 'USD':
+                    product_amount_without_zeros = str(product['amount_usd']).rstrip('0').rstrip('.')
+                    if product_amount_without_zeros == payment['amount']:
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Product and Payment Amount mismatch')
+
+                else:
+                    valid_payment['valid'] = False
+                    valid_payment['reasons'].append('Invalid currency')
+
+            else:
+                valid_payment['valid'] = False
+                valid_payment['reasons'].append('Product not found')
+
+
+
+            latest_payment = latest_payments.get((payment.user_id, payment.product))
+            
+            # This condition will be False when the order date of the latest payment (latest_payment['order_datetime'])
+            # is outside the range defined by subtracting the tolerance from the current payment's order date (payment['order_datetime'].date() - tolerance) 
+            # and adding the tolerance to it (payment['order_datetime'].date() + tolerance).
+            
+            # In other words, if the order date of the latest payment is earlier than payment['order_datetime'].date() - tolerance 
+            # or later than payment['order_datetime'].date() + tolerance, the condition will evaluate to False, indicating a mismatch 
+            # in the order dates.
+
+            # This condition is used to determine if the order dates of the current payment and the latest payment are close enough within 
+            # the specified tolerance. If they are within that range, the condition evaluates to True, indicating that the check is successful. 
+            # Otherwise, it evaluates to False, indicating a mismatch in the order dates.
+            
+            if latest_payment:
+                tolerance = timedelta(days=1)
+                if (payment['order_datetime'].date() - tolerance <= latest_payment['order_datetime'].date() <= payment['order_datetime'].date() + tolerance):
+                    pass
+                else:
+                    valid_payment['valid'] = False
+                    valid_payment['reasons'].append('Order date mismatch')
+                    
+            if product:
+                if product['product_plan'] == 'Yearly':
+                    tolerance = timedelta(days=15)
+                    if latest_payment:
+                        expiry_date = payment['expiration_datetime'].date()
+                        expected_expiry = payment['order_datetime'].date() + timedelta(days=380) - tolerance
+
+                        if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=380) + tolerance):
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Yearly expiration date mismatch')
+
+                if product['product_plan'] == 'Half Yearly':
+                    if latest_payment:
+                        tolerance = timedelta(days=10)
+                        expiry_date = payment['expiration_datetime'].date()
+                        expected_expiry = payment['order_datetime'].date() + timedelta(days=180) - tolerance
+
+                        if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=180) + tolerance):
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Half Yearly expiration date mismatch')
+
+                if product['product_plan'] == 'Quarterly':
+                    if latest_payment:
+                        tolerance = timedelta(days=7)
+                        expiry_date = payment['expiration_datetime'].date()
+                        expected_expiry = payment['order_datetime'].date() + timedelta(days=90) - tolerance
+
+                        if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=90) + tolerance):
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Quarterly expiration date mismatch')
+
+                if product['product_plan'] == 'Monthly':
+                        if latest_payment:
+                            tolerance = timedelta(days=5)
+                            expiry_date = payment['expiration_datetime'].date()
+                            expected_expiry = payment['order_datetime'].date() + timedelta(days=30) - tolerance
+
+                            if expected_expiry <= expiry_date <= (latest_payment['order_datetime'].date() + timedelta(days=30) + tolerance):
+                                pass
+                            else:
+                                valid_payment['valid'] = False
+                                valid_payment['reasons'].append('Monthly expiration date mismatch')
+
+            # except ObjectDoesNotExist:
+            #     pass
+
+            valid_payments.append(valid_payment)                   
+        def json_serializable(obj):
+                if isinstance(obj, datetime):
+                    return obj.isoformat()  # Convert datetime to ISO 8601 format
+                raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+        users = list(payments.values('user__email'))
+        products = list(payments.values('product__product_name'))
+        payment_list = list(payments.values())                          
+        for i in range(len(payment_list)):
+            try:
+                payment_list[i]['user_id'] = users[i]['user__email']
+                payment_list[i]['product_id'] = products[i]['product__product_name']
+                payment_list[i]['is_valid_payment'] = valid_payments[i]
+            except Exception as e:
+                pass        
+        payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+        payment_objects = json.loads(payment_json)     
+        paginator = MyPagination()
+        paginated_queryset = paginator.paginate_queryset(payment_objects, request)
+        return paginator.get_paginated_response(paginated_queryset)
+
+
+
+class PaymentValidationNew(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        q = self.request.GET.get('q', None) or None
+        source = self.request.GET.get('source', None) or None
+        export = self.request.GET.get('export', None) or None  
+
+        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(
+            product__product_name__in=["test", "Test Course", "Test"]
+        ).exclude(
+            amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]
+        ).only(
+            'user__email', 'product__product_name', 'amount', 'currency', 'order_datetime', 'expiration_datetime'
+        )
+
+        valid_payments = []
+        # print(payments)
+        product_ids = set(payments.values_list('product', flat=True))
+        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan')
+        # print(products)
+
+        source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).order_by('-order_datetime').prefetch_related('user')
+        latest_payments = {}
+        return Response("ukjhvidfj")
+    
+
+        ##Removes duplicates from source_payments and only adds the latest payment into the latest payment dict
+        for payment in source_payments:
+            for product in payment.product.all():
+                print(product.product_name)
+                key = (payment.user_id, product.product_name)
+                if key not in latest_payments:
+                    latest_payments[key] = payment
+
+        return Response("ukjhvidfj")
+
+
+
+
+
+
+
 
 
 
