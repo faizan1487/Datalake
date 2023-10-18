@@ -248,7 +248,7 @@ class MainPaymentAPIView(APIView):
 
 
 #class SearchAlnafiPayment 
-#product issue and response time fixed,export not fixed
+#product issue and response time fixed,
 #bug in filtering with email product duplicates
 class RenewalPayments(APIView):
     permission_classes = [IsAuthenticated]
@@ -347,9 +347,10 @@ class RenewalPayments(APIView):
                 pass
         
         if export == 'true':
+            removed_duplicates = self.remove_duplicate_payments(payment_list)
             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-            df = pd.DataFrame(payment_list).to_csv(index=False)
+            df = pd.DataFrame(removed_duplicates).to_csv(index=False)
             s3 = upload_csv_to_s3(df, file_name)
             data = {'file_link': file_path, 'export': 'true'}
             return Response(data)
@@ -402,7 +403,7 @@ class RenewalPayments(APIView):
         
         return payment_list
 
-#product issue and response time fixed,export not fixed
+#product issue and response time fixed
 class ActivePayments(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -522,9 +523,10 @@ class ActivePayments(APIView):
             
             
             if export == 'true':
+                removed_duplicates = self.remove_duplicate_payments(payment_list)
                 file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
                 file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                df = pd.DataFrame(payment_list).to_csv(index=False)
+                df = pd.DataFrame(removed_duplicates).to_csv(index=False)
                 s3 = upload_csv_to_s3(df, file_name)
                 data = {'file_link': file_path, 'export': 'true'}
                 return Response(data)
@@ -533,10 +535,10 @@ class ActivePayments(APIView):
                 payment_objects = json.loads(payment_json)
                 
                 paginator = MyPagination()
-                paginated_queryset = paginator.paginate_queryset(payment_objects, request)
-                removed_duplicates = self.remove_duplicate_payments(paginated_queryset)
+                removed_duplicates = self.remove_duplicate_payments(payment_objects)
+                paginated_queryset = paginator.paginate_queryset(removed_duplicates, request)
                 if request.user.is_admin:
-                    return paginator.get_paginated_response(removed_duplicates)  
+                    return paginator.get_paginated_response(paginated_queryset)  
                 else:
                     return Response("no data")  
         else:
