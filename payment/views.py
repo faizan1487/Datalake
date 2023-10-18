@@ -868,7 +868,8 @@ class SearchPayments(APIView):
     
 
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product):
-    payments = Main_Payment.objects.exclude(product__product_name__in=["test", "Test Course", "Test"])
+    payments = Main_Payment.objects.all()
+    # exclude(product__product_name__in=["test", "Test Course", "Test"])
     # .exclude(
     #     amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
     statuses = ["0", False, 0]
