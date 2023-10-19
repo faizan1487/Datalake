@@ -86,10 +86,12 @@ admin.site.register(User, UserModelAdmin)
 
 
 class NavbarLinkAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('name', 'path')
+    list_display = ('name', 'path', 'group_display')
 
-admin.site.register(NavbarLink,NavbarLinkAdmin)
+    def group_display(self, obj):
+        return ', '.join([group.name for group in obj.group.all()])
 
+admin.site.register(NavbarLink, NavbarLinkAdmin)
 
 # For New Al-Nafi Main Site User Model:
 class NewAlNafiUserAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.ModelAdmin):
