@@ -1394,7 +1394,7 @@ class PaymentValidationNew(APIView):
                         expiry_date = payment.expiration_datetime.date()
                         expected_expiry = payment.order_datetime.date() + timedelta(days=180) - tolerance
 
-                        if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=180) + tolerance):
+                        if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=180) + tolerance):
                             pass
                         else:
                             valid_payment['valid'] = False
