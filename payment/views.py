@@ -1386,43 +1386,45 @@ class PaymentValidationNew(APIView):
                         valid_payment['valid'] = False
                         valid_payment['reasons'].append('Yearly expiration date mismatch')
 
-            if product['product_plan'] == 'Half Yearly':
-                if source_payment:
-                    tolerance = timedelta(days=10)
-                    expiry_date = payment.expiration_datetime.date()
-                    expected_expiry = payment.order_datetime.date() + timedelta(days=180) - tolerance
+            if payment.expiration_datetime:
 
-                    if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=180) + tolerance):
-                        pass
-                    else:
-                        valid_payment['valid'] = False
-                        valid_payment['reasons'].append('Half Yearly expiration date mismatch')
+                if product['product_plan'] == 'Half Yearly':
+                    if source_payment:
+                        tolerance = timedelta(days=10)
+                        expiry_date = payment.expiration_datetime.date()
+                        expected_expiry = payment.order_datetime.date() + timedelta(days=180) - tolerance
 
-            if product['product_plan'] == 'Quarterly':
-                if source_payment:
-                    tolerance = timedelta(days=7)
-                    expiry_date = payment.expiration_datetime.date()
-                    expected_expiry = payment.order_datetime.date() + timedelta(days=90) - tolerance
+                        if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=180) + tolerance):
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Half Yearly expiration date mismatch')
 
-                    if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=90) + tolerance):
-                        pass
-                    else:
-                        valid_payment['valid'] = False
-                        valid_payment['reasons'].append('Quarterly expiration date mismatch')
+                if product['product_plan'] == 'Quarterly':
+                    if source_payment:
+                        tolerance = timedelta(days=7)
+                        expiry_date = payment.expiration_datetime.date()
+                        expected_expiry = payment.order_datetime.date() + timedelta(days=90) - tolerance
 
-            if product['product_plan'] == 'Monthly':
-                if source_payment:
-                    tolerance = timedelta(days=5)
-                    expiry_date = payment.expiration_datetime.date()
-                    expected_expiry = payment.order_datetime.date() + timedelta(days=30) - tolerance
+                        if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=90) + tolerance):
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Quarterly expiration date mismatch')
 
-                    if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=30) + tolerance):
-                        pass
-                    else:
-                        valid_payment['valid'] = False
-                        valid_payment['reasons'].append('Monthly expiration date mismatch')
+                if product['product_plan'] == 'Monthly':
+                    if source_payment:
+                        tolerance = timedelta(days=5)
+                        expiry_date = payment.expiration_datetime.date()
+                        expected_expiry = payment.order_datetime.date() + timedelta(days=30) - tolerance
 
-            if product['product_plan'] == '4 Months':
+                        if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=30) + tolerance):
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Monthly expiration date mismatch')
+
+                if product['product_plan'] == '4 Months':
                     if source_payment:
                         tolerance = timedelta(days=8)
                         expiry_date = payment.expiration_datetime.date()
@@ -1435,6 +1437,10 @@ class PaymentValidationNew(APIView):
                         else:
                             valid_payment['valid'] = False
                             valid_payment['reasons'].append('4 month plan expiration date mismatch')
+
+            else:
+                valid_payment['valid'] = False
+                valid_payment['reasons'].append('Expiration date does not exist')
 
             return valid_payment
 
