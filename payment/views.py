@@ -1374,20 +1374,20 @@ class PaymentValidationNew(APIView):
 
     def check_product_details(self,product,source_payment,payment,valid_payment):
         if product:
-            if product['product_plan'] == 'Yearly':
-                tolerance = timedelta(days=15)
-                if source_payment:
-                    expiry_date = payment.expiration_datetime.date()
-                    expected_expiry = payment.order_datetime.date() + timedelta(days=380) - tolerance
-
-                    if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=380) + tolerance):
-                        pass
-                    else:
-                        valid_payment['valid'] = False
-                        valid_payment['reasons'].append('Yearly expiration date mismatch')
-
             if payment.expiration_datetime:
+                if product['product_plan'] == 'Yearly':
+                    tolerance = timedelta(days=15)
+                    if source_payment:
+                        expiry_date = payment.expiration_datetime.date()
+                        expected_expiry = payment.order_datetime.date() + timedelta(days=380) - tolerance
 
+                        if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=380) + tolerance):
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('Yearly expiration date mismatch')
+
+                
                 if product['product_plan'] == 'Half Yearly':
                     if source_payment:
                         tolerance = timedelta(days=10)
