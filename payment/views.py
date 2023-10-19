@@ -1225,7 +1225,7 @@ class PaymentValidation(APIView):
 
 
 class PaymentValidationNew(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -1235,21 +1235,37 @@ class PaymentValidationNew(APIView):
             product__product_name__in=["test", "Test Course", "Test"]
         ).exclude(
             amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]
-        ).only(
-            'user__email', 'product__product_name', 'amount', 'currency', 'order_datetime', 'expiration_datetime'
         )
 
+        if source:
+            payments = payments.filter(source=source)
+        if q:
+            payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))
+
+
+        payment_cycle_descriptions = {
+            'Monthly': 'Monthly',
+            'Yearly': 'Yearly',
+            'Half Yearly': 'Half-Yearly',
+            'Quarterly': 'Quarterly'
+            # Add more plan-value pairs as needed
+        }
+        payments = payments.annotate(
+            payment_cycle=Case(
+                *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
+                default=Value('Unknown Plan'),
+                output_field=CharField()
+            )
+        )
+
+
         valid_payments = []
-        # print(payments)
-        product_ids = set(payments.values_list('product', flat=True))
-        # print("product_ids",product_ids)
-        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan')
-        # print(products)
+        product_ids = list(payments.values_list('product', flat=True))
+        products = Main_Product.objects.filter(id__in=product_ids).values('id', 'amount_pkr','amount_usd', 'product_plan','product_name')
 
         source_payments = Main_Payment.objects.filter(source__in=['Easypaisa','UBL_IPG','Stripe']).order_by('-order_datetime').prefetch_related('user')
         latest_payments = {}
-
-
+        
         for payment in payments:
             # try:
             valid_payment = {
@@ -1261,21 +1277,19 @@ class PaymentValidationNew(APIView):
 
             if source_payment:                                                                                                                    
                 tolerance = timedelta(days=1)
-                # print("payment['order_datetime']",payment.order_datetime)
-                # print("source_payment[0]['order_datetime']",source_payment[0]['order_datetime'])
                 if (payment.order_datetime.date() - tolerance <= source_payment[0].order_datetime.date() <= payment.order_datetime.date() + tolerance):
                     pass
                 else:
                     valid_payment['valid'] = False
                     valid_payment['reasons'].append('Order date mismatch')
 
-                # print("sourcep ayment",source_payment[0].alnafi_payment_id)
                 product_ids = payment.product.values_list('id', flat=True)
                 total_product_amount_pkr = 0
                 total_product_amount_usd = 0
-                if product_ids.count():
+                if product_ids:
                     for product_id in product_ids:
                         product = next(filter(lambda p: p['id'] == product_id, products), None)
+                        product_details = self.check_product_details(product,source_payment,payment,valid_payment)
                         if payment.currency == 'PKR':
                             total_product_amount_pkr += product['amount_pkr']
                         elif payment.currency == 'USD':
@@ -1307,23 +1321,122 @@ class PaymentValidationNew(APIView):
                 else:
                     valid_payment['valid'] = False
                     valid_payment['reasons'].append('Product not found')
-
-                valid_payments.append(valid_payment)
-
-        # print(valid_payments)
-                        
+            else:
+                valid_payment['valid'] = False
+                valid_payment['reasons'].append("Source payment doesn't exist against this alnafi payment")
 
 
-
+            valid_payments.append(valid_payment)
+        
+        users = list(payments.values('user__email'))
+        products = list(payments.values('product__product_name'))
+        payment_list = list(payments.values())  
+        for i in range(len(payment_list)):
+            payment_list[i]['user_id'] = users[i]['user__email']
+            payment_list[i]['product_id'] = products[i]['product__product_name']
+            payment_list[i]['is_valid_payment'] = valid_payments[i]
             
 
+        duplicates_removed_payment_list = []
+        
+        for i in range(len(payment_list)):
+            print()
+            payment_id = payment_list[i]['id']
+            payment_found = False
 
-            # except Exception as e:
-            #     print(e)
-            #     pass
+            for existing_payment in duplicates_removed_payment_list:
+                if existing_payment['id'] == payment_id:
+                    # If payment with the same id exists in the list, append the product name
+                    existing_payment['product_names'].append(payment_list[i]['product_id'])
+                    payment_found = True
+                    break
 
-        return Response("ukjhvidfj")
+            if not payment_found:
+                # If payment is not found in the list, create a new entry
+                payment_data = {
+                    'id': payment_list[i]['id'],
+                    'user_id': payment_list[i]['user_id'],
+                    'phone': payment_list[i]['candidate_phone'],
+                    'source': payment_list[i]['source'],
+                    'amount': payment_list[i]['amount'],
+                    'product_names': [payment_list[i]['product_id']],
+                    'plan': payment_list[i]['payment_cycle'],
+                    'alnafi_payment_id': payment_list[i]['alnafi_payment_id'],
+                    'card_mask': payment_list[i]['card_mask'],
+                    'order_datetime': payment_list[i]['order_datetime'].isoformat(),
+                    'is_valid_payment': payment_list[i]['is_valid_payment']
+                }
+                duplicates_removed_payment_list.append(payment_data)
 
+        return Response(duplicates_removed_payment_list)
+
+
+
+    def check_product_details(self,product,source_payment,payment,valid_payment):
+        if product:
+            if product['product_plan'] == 'Yearly':
+                tolerance = timedelta(days=15)
+                if source_payment:
+                    expiry_date = payment.expiration_datetime.date()
+                    expected_expiry = payment.order_datetime.date() + timedelta(days=380) - tolerance
+
+                    if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=380) + tolerance):
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Yearly expiration date mismatch')
+
+            if product['product_plan'] == 'Half Yearly':
+                if source_payment:
+                    tolerance = timedelta(days=10)
+                    expiry_date = payment.expiration_datetime.date()
+                    expected_expiry = payment.order_datetime.date() + timedelta(days=180) - tolerance
+
+                    if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=180) + tolerance):
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Half Yearly expiration date mismatch')
+
+            if product['product_plan'] == 'Quarterly':
+                if source_payment:
+                    tolerance = timedelta(days=7)
+                    expiry_date = payment.expiration_datetime.date()
+                    expected_expiry = payment.order_datetime.date() + timedelta(days=90) - tolerance
+
+                    if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=90) + tolerance):
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Quarterly expiration date mismatch')
+
+            if product['product_plan'] == 'Monthly':
+                if source_payment:
+                    tolerance = timedelta(days=5)
+                    expiry_date = payment.expiration_datetime.date()
+                    expected_expiry = payment.order_datetime.date() + timedelta(days=30) - tolerance
+
+                    if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=30) + tolerance):
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Monthly expiration date mismatch')
+
+            if product['product_plan'] == '4 Months':
+                    if source_payment:
+                        tolerance = timedelta(days=8)
+                        expiry_date = payment.expiration_datetime.date()
+                        expected_expiry = payment.order_datetime.date() + timedelta(days=120) - tolerance
+                        # print(expected_expiry)
+                        # print(expiry_date)
+                        # print(source_payment[0].order_datetime.date() + timedelta(days=120) + tolerance)
+                        if expected_expiry <= expiry_date <= (source_payment[0].order_datetime.date() + timedelta(days=120) + tolerance):
+                            pass
+                        else:
+                            valid_payment['valid'] = False
+                            valid_payment['reasons'].append('4 month plan expiration date mismatch')
+
+            return valid_payment
 
 
 #OLD payment validation
