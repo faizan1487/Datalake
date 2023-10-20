@@ -1211,15 +1211,35 @@ class PaymentValidationNew(APIView):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
 
+        page = request.GET.get('page', 1)
+        page_size = 10  # Number of payments per page
+
+        # Calculate the start and end indices for slicing
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+
 
         # Fetch payments and source_payments efficiently
+        # payments = Main_Payment.objects.filter(
+        #     source__in=['Al-Nafi', 'NEW ALNAFI']
+        # ).exclude(
+        #     product__product_name__in=["test", "Test Course", "Test"]
+        # ).exclude(
+        #     amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]
+        # ).select_related('user').prefetch_related('product')
+
+
+        # Query payments with slicing to get only 10 payments for the current page
         payments = Main_Payment.objects.filter(
             source__in=['Al-Nafi', 'NEW ALNAFI']
         ).exclude(
             product__product_name__in=["test", "Test Course", "Test"]
         ).exclude(
             amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]
-        ).select_related('user').prefetch_related('product')
+        ).select_related('user').prefetch_related('product')[start_index:end_index]
+
+
+
 
         if source:
             payments = payments.filter(source=source)
@@ -1261,21 +1281,13 @@ class PaymentValidationNew(APIView):
 
             if source_payment:
                 tolerance = timedelta(days=1)
-                # print("payment.order_datetime",payment.order_datetime)
-                # print("source_payment.order_datetime",source_payment.order_datetime)
                 if payment.order_datetime and source_payment.order_datetime:
                     if (payment.order_datetime.date() - tolerance <= source_payment.order_datetime.date() <= payment.order_datetime.date() + tolerance):
-                        # print("order date correct")
-                        # print(payment.alnafi_payment_id)
                         pass
                     else:
-                        # print("order date incorrect")
-                        # print(payment.alnafi_payment_id)
                         valid_payment['valid'] = False
                         valid_payment['reasons'].append('Order date mismatch')
                 else:
-                    # print("order date missing")
-                    # print(payment.alnafi_payment_id)
                     valid_payment['valid'] = False
                     valid_payment['reasons'].append('Order date missing')
 
@@ -1285,14 +1297,9 @@ class PaymentValidationNew(APIView):
                     product_names.append(product.product_name)
                     product_details = self.check_product_details(product,source_payment,payment,valid_payment)
 
-                # print(product_names)
                 if payment.currency == 'PKR':
                     total_product_amount_pkr = sum(product.amount_pkr for product in payment.product.all())
                     total_product_amount_pkr = int(total_product_amount_pkr)
-                    # print("total_product_amount_pkr",total_product_amount_pkr)
-                    # print("payment.amount", payment.amount)
-                    # print("int(float(payment.amount))",int(float(payment.amount)))
-                    # print(payment.alnafi_payment_id)
                     if total_product_amount_pkr == int(float(payment.amount)):
                         pass
                     else:
@@ -1318,7 +1325,6 @@ class PaymentValidationNew(APIView):
             payment_list.append(payment)
 
         # Process the data to remove duplicates
-
         duplicates_removed_payment_list = []
         seen_payment_ids = set()
 
@@ -1363,10 +1369,6 @@ class PaymentValidationNew(APIView):
                     if source_payment:
                         expiry_date = payment.expiration_datetime.date()
                         expected_expiry = payment.order_datetime.date() + timedelta(days=380) - tolerance
-                        # print("product.product_plan",product.product_plan)
-                        # print("expiry date",expiry_date)
-                        # print("expected_expiry",expected_expiry)
-                        # print("source_payment.order_datetime",source_payment.order_datetime)
                         if source_payment.order_datetime:
                             if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=380) + tolerance):
                                 pass
@@ -1379,11 +1381,6 @@ class PaymentValidationNew(APIView):
                         tolerance = timedelta(days=10)
                         expiry_date = payment.expiration_datetime.date()
                         expected_expiry = payment.order_datetime.date() + timedelta(days=180) - tolerance
-
-                        # print("product.product_plan",product.product_plan)
-                        # print("expiry date",expiry_date)
-                        # print("expected_expiry",expected_expiry)
-
                         if source_payment.order_datetime:
                             if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=180) + tolerance):
                                 pass
@@ -1395,12 +1392,7 @@ class PaymentValidationNew(APIView):
                     if source_payment:
                         tolerance = timedelta(days=7)
                         expiry_date = payment.expiration_datetime.date()
-                        expected_expiry = payment.order_datetime.date() + timedelta(days=90) - tolerance
-
-                        # print("product.product_plan",product.product_plan)
-                        # print("expiry date",expiry_date)
-                        # print("expected_expiry",expected_expiry)
-                        
+                        expected_expiry = payment.order_datetime.date() + timedelta(days=90) - tolerance                        
                         if source_payment.order_datetime:
                             if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=90) + tolerance):
                                 pass
@@ -1414,12 +1406,7 @@ class PaymentValidationNew(APIView):
                         expiry_date = payment.expiration_datetime.date()
                         expected_expiry = payment.order_datetime.date() + timedelta(days=30) - tolerance
 
-                        # print("product.product_plan",product.product_plan)
-                        # print("expiry date",expiry_date)
-                        # print("expected_expiry",expected_expiry)
-
                         if source_payment.order_datetime:
-                            # print("source order datetime exists",source_payment.order_datetime.date() + timedelta(days=30) + tolerance)
                             if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=30) + tolerance):
                                 pass
                             else:
@@ -1431,11 +1418,6 @@ class PaymentValidationNew(APIView):
                         tolerance = timedelta(days=8)
                         expiry_date = payment.expiration_datetime.date()
                         expected_expiry = payment.order_datetime.date() + timedelta(days=120) - tolerance
-
-
-                        # print("product.product_plan",product.product_plan)
-                        # print("expiry date",expiry_date)
-                        # print("expected_expiry",expected_expiry)
 
                         if source_payment.order_datetime:
                             if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=120) + tolerance):
