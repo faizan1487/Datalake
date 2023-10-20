@@ -808,8 +808,9 @@ class SearchPayments(APIView):
 
     def process_payments(self, payments, export, product):
         payment_list = []
-        
+        # print(payments)
         for payment in payments:
+            # print(payment)
             payment_id = payment['id']
             payment_found = False
 
@@ -817,7 +818,11 @@ class SearchPayments(APIView):
                 if existing_payment['id'] == payment_id:
                     # If payment with the same id exists in the list, append the product name
                     if product:
-                        if product == payment['product']:
+                        # print("found")
+                        payment_product = self.clean_product_name(payment['product'])
+                        # print(payment['product'])
+                        # payment_product = payment['product']
+                        if product == payment_product:
                             existing_payment['product_names'].append(payment['product'])
                             existing_payment['plans'].append(payment['plan'])
                     else:
@@ -827,9 +832,13 @@ class SearchPayments(APIView):
                     break
 
             if not payment_found:
+                # print("not found")
                 # If payment is not found in the list, create a new entry
                 if product:
-                    if product == payment['product']:
+                    # print(payment['product'])
+                    payment_product = payment['product']
+                    # payment_product = self.clean_product_name(payment['product'])
+                    if product == payment_product:
                         payment_data = {
                             'id': payment['id'],
                             'user_id': payment['user'],
@@ -879,8 +888,19 @@ class SearchPayments(APIView):
             'payments': payment_list
         }
 
+    def clean_product_name(self,product_name):
+    # List of terms to remove
+        remove_terms = ["Half Yearly", "Yearly", "Quarterly", "Monthly", "4 Months"]
 
-#Bug when filtering payments with plan
+        # Remove terms from the end of the product name
+        for term in remove_terms:
+            if product_name.endswith(term):
+                product_name = product_name[:-len(term)].strip()
+
+        return product_name
+    
+
+
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
     # payments = Main_Payment.objects.all()
     payments = Main_Payment.objects.exclude(
@@ -891,13 +911,15 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         'user__email', 'user__phone', 'product__product_name', 'source', 'amount',
         'order_datetime', 'id', 'alnafi_payment_id', 'card_mask','source_payment_id'
     )
-
+    
     statuses = ["0", False, 0]
     payments = payments.exclude(source='UBL_DD', status__in=statuses)
     payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD','Stripe'])
 
     if q:
         payments = payments.filter(user__email__icontains=q)
+
+    # print(payments)
 
     if status:
         payments = payments.filter(status=status)
@@ -921,13 +943,32 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
     payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
 
+
     if product:
         keywords = product.split()
+        # print(keywords)
         query = Q()
         for keyword in keywords:
-            query &= Q(product__product_name__icontains=keyword)
-        payments = payments.filter(query)
+            query |= Q(product__product_name__icontains=keyword)
 
+        # Filter the payments based on the product names that match the keywords
+        filtered_payments = payments.filter(query)
+
+        # Remove duplicate product names from the filtered queryset
+        unique_products = filtered_payments.values_list('product__product_name', flat=True).distinct()
+
+        # Create a new queryset by filtering based on the unique product names
+        payments = payments.filter(product__product_name__in=unique_products)
+
+    # print(payments)
+
+
+    # Debug information
+    # print("Product to filter by:", product)
+    # for payment in payments:
+    #     print("Cleaned Product name in payment:", payment['product__product_name'])
+
+    # print(payments)
     page_size = 10  # Number of payments per page
 
     # Calculate the start and end indices for slicing
