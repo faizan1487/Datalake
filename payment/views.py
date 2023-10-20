@@ -1211,23 +1211,12 @@ class PaymentValidationNew(APIView):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
 
-        page = int(request.GET.get('page', 1))
+        page = int(self.request.GET.get('page', 1))
         page_size = 10  # Number of payments per page
 
         # Calculate the start and end indices for slicing
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
-
-
-        # Fetch payments and source_payments efficiently
-        # payments = Main_Payment.objects.filter(
-        #     source__in=['Al-Nafi', 'NEW ALNAFI']
-        # ).exclude(
-        #     product__product_name__in=["test", "Test Course", "Test"]
-        # ).exclude(
-        #     amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]
-        # ).select_related('user').prefetch_related('product')
-
 
         # Query payments with slicing to get only 10 payments for the current page
         payments = Main_Payment.objects.filter(
@@ -1236,16 +1225,16 @@ class PaymentValidationNew(APIView):
             product__product_name__in=["test", "Test Course", "Test"]
         ).exclude(
             amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]
-        ).select_related('user').prefetch_related('product')[start_index:end_index]
-
-
-
+        ).select_related('user').prefetch_related('product')
 
         if source:
             payments = payments.filter(source=source)
         if q:
             payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))
 
+        total_count = payments.count()  # Calculate the total count of payments
+
+        payments = payments[start_index:end_index]
 
         payment_cycle_descriptions = {
             'Monthly': 'Monthly',
@@ -1355,10 +1344,14 @@ class PaymentValidationNew(APIView):
                 duplicates_removed_payment_list.append(payment_data)
                 seen_payment_ids.add(payment_id)
 
-        paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(duplicates_removed_payment_list, request)
-        return paginator.get_paginated_response(paginated_queryset)
+        # Calculate the number of pages
+        num_pages = (total_count + page_size - 1) // page_size
 
+        return Response({
+            'count': total_count,
+            'num_pages': num_pages,
+            'results': duplicates_removed_payment_list,
+        })
 
 
     def check_product_details(self, product, source_payment, payment, valid_payment):
