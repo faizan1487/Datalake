@@ -1211,7 +1211,7 @@ class PaymentValidationNew(APIView):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
 
-        page = request.GET.get('page', 1)
+        page = request.GET.get(int('page'), 1)
         page_size = 10  # Number of payments per page
 
         # Calculate the start and end indices for slicing
