@@ -1206,7 +1206,7 @@ class PaymentValidation(APIView):
 
 #NEW
 class PaymentValidationNew(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -1313,7 +1313,8 @@ class PaymentValidationNew(APIView):
                 valid_payment['reasons'].append("Source payment doesn't exist against this alnafi payment")
 
             valid_payments.append(valid_payment)
-            users.append(payment.user.email)
+            if payment.user:
+                users.append(payment.user.email)
             payment_list.append(payment)
 
         # Process the data to remove duplicates
@@ -1326,7 +1327,8 @@ class PaymentValidationNew(APIView):
 
             if payment_id not in seen_payment_ids:
                 # If payment with the same id is not seen before, add it to the list
-                user_email = payment.user.email
+                if payment.user:
+                    user_email = payment.user.email
                 product_names = [product.product_name for product in payment.product.all()]
                 product_plans = [product.product_plan for product in payment.product.all()]
                 payment_data = {
