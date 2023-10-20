@@ -131,7 +131,7 @@ def usersignal(instance,source,sender):
 
 #############################################################
 @receiver(post_save, sender=Moc_Leads)
-def handle_lead_post_request(sender, instance, created, **kwargs):
+def handle_lead_post_request_lead_sale_doctype(sender, instance, created, **kwargs):
     # return
     source=instance.source
     Moc_Leads = mocLeadsSignal(instance,source)   
@@ -176,6 +176,7 @@ def mocdoctypeLeadsSignal(instance,source):
             "cv_link": instance.cv_link or None,
             "interest": instance.interest or None,
             "qualification": instance.qualification or None,
+            "created_at": instance.created_at or None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]&filters=[["moclead","email","=","{instance.email}"]]'
@@ -304,6 +305,7 @@ def mocLeadsSignal(instance,source):
             "cv_link": instance.cv_link or None,
             "interest": instance.interest or None,
             "qualification": instance.qualification or None,
+            "date_joined": instance.created_at or None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     # print(data)
