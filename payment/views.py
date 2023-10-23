@@ -825,7 +825,7 @@ class SearchPayments(APIView):
             
             paginated_queryset = self.paginate_response(request,payments)
             # print(paginated_queryset)
-            response = {"total_payments_pkr": payments['total_payments_pkr'],"total_payments_usd":payments['total_payments_pkr'],'count': payments['count'],"payments":paginated_queryset}
+            response = {"total_payments_pkr": payments['total_payments_pkr'],"total_payments_usd":payments['total_payments_usd'],'count': payments['count'],"payments":paginated_queryset}
             # print(response)
             # return self.paginate_response(request,payments)
             return Response(response)
@@ -934,6 +934,8 @@ class SearchPayments(APIView):
         sources = ['ubl_dd', 'al-nafi', 'easypaisa', 'ubl_ipg']
         total_payments_in_pkr = sum(float(p['amount']) for p in payment_list if p['source'].lower() in sources)
         total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
+
+
 
         if export == 'true':
             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
