@@ -22,7 +22,7 @@ urlpatterns = [
     path("searchalnafipayment/", RenewalPayments.as_view(), name='search-alnafi-payments'),
     path("searchactivepayment/", ActivePayments.as_view(), name='search-active-payments'),
     # path("paymentvalidation/", PaymentValidation.as_view(), name='payment-validation'),
-    path("paymentvalidationnew/", PaymentValidationNew.as_view(), name='payment-validation'),
+    path("paymentvalidation/", PaymentValidationNew.as_view(), name='payment-validation'),
 
     path("nofpayments/", NoOfPayments.as_view(), name='no-of-payments'),
     path("totalpayments/", TotalNoOfPayments.as_view(), name='totla-payments'),
