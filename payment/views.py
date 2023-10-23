@@ -357,6 +357,7 @@ class RenewalPayments(APIView):
                 if existing_payment['id'] == payment_id:
                     # If payment with the same id exists in the list, append the product name
                     existing_payment['product_names'].append(payment['product_id'])
+                    existing_payment['plan'].append(payment['payment_cycle'])
                     payment_found = True
                     break
 
@@ -371,7 +372,7 @@ class RenewalPayments(APIView):
                     'source': payment['source'],
                     'amount': payment['amount'],
                     'product_names': [payment['product_id']],
-                    'plan': payment['payment_cycle'],
+                    'plan': [payment['payment_cycle']],
                     'alnafi_payment_id': payment['alnafi_payment_id'],
                     'card_mask': payment['card_mask'],
                     'order_datetime': payment['order_datetime'],
@@ -1094,7 +1095,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 #NEW
 class PaymentValidationNew(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
