@@ -774,6 +774,8 @@ class RenewalNoOfPayments(APIView):
         response_data = renewal_no_of_payments(payments)
         return Response(response_data)
         
+
+#PRODUCTION
 #response time 6 seconds in prod
 #bug in plan payment filter, when implement plan filter payment gets duplicated
 #issue in product filter when trying to optimize api further than 6 seconds and ,export not fixed
@@ -795,9 +797,9 @@ class SearchPayments(APIView):
         payments, success= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page)
         # if success:
         #     total_count = payments['total_count']
-        #     print("before process payments func",len(payments['payments']))
+        #     # print("before process payments func",len(payments['payments']))
         #     payments = self.process_payments(payments['payments'], export,product)
-        #     print("after process payment",len(payments['payments']))
+        #     # print("after process payment",len(payments['payments']))
         #     if export == 'true':
         #         return Response(payments)
             
@@ -814,7 +816,7 @@ class SearchPayments(APIView):
         
 
         if success:
-            payments = self.process_payments(payments, export)
+            payments = self.process_payments(payments, export,product)
             if export == 'true':
                 return Response(payments)
             
@@ -824,7 +826,7 @@ class SearchPayments(APIView):
             return Response(payments)
 
 
-    def process_payments(self, payments, export):
+    def process_payments(self, payments, export,product):
         payment_list = []
         # print(payments)
         for payment in payments:
@@ -835,20 +837,20 @@ class SearchPayments(APIView):
             for existing_payment in payment_list:
                 if existing_payment['id'] == payment_id:
                     # If payment with the same id exists in the list, append the product name
-                    # if product:
-                    #     # print("found")
-                    #     payment_product = self.clean_product_name(payment['product'])
-                    #     print(payment['product'])
-                    #     print(payment_product)
-                    #     # payment_product = payment['product']
-                    #     if product == payment_product:
-                    #         existing_payment['product_names'].append(payment['product'])
-                    #         existing_payment['plans'].append(payment['plan'])
-                    # else:
-                    existing_payment['product_names'].append(payment['product'])
-                    existing_payment['plans'].append(payment['plan'])
-                    payment_found = True
-                    break
+                    if product:
+                        # print("found")
+                        payment_product = self.clean_product_name(payment['product'])
+                        # print("payment['product']",payment['product'])
+                        # print("payment_product",payment_product)
+                        # payment_product = payment['product']
+                        if product == payment_product:
+                            existing_payment['product_names'].append(payment['product'])
+                            existing_payment['plans'].append(payment['plan'])
+                    else:
+                        existing_payment['product_names'].append(payment['product'])
+                        existing_payment['plans'].append(payment['plan'])
+                        payment_found = True
+                        break
 
             if not payment_found:
                 # print("not found")
@@ -954,15 +956,15 @@ class SearchPayments(APIView):
 #         end_date = last_payment['order_datetime'].date() if last_payment else None
 
 #     payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
-
-
-    
+#     print(product)
 
 #     if product:
 #         keywords = product.split()
+#         print(keywords)
 #         query = Q()
 #         for keyword in keywords:
 #             query &= Q(product__product_name__icontains=keyword)
+#         print("query",query)
 #         payments = payments.filter(query)
 
 #     # print(payments.count())
