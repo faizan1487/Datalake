@@ -1181,7 +1181,7 @@ class SearchPayments(APIView):
 
 
 
-#NEW
+# #NEW
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
     payments = Main_Payment.objects.exclude(
         product__product_name__in=["test", "Test Course", "Test"]).exclude(
@@ -1288,7 +1288,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
 
-#PRODUCTIOn
+#PRODUCTION
 class PaymentValidationNew(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
