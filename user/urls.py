@@ -2,13 +2,12 @@ from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,UsersDelete,Navbar,AlnafiUser,AllEmployees,
                     GetUser,GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser,UploadMocLeads,getUsser,
-                    NewAlnafiUser, Renewal_Leads)
+                    NewAlnafiUser)
 from django.http import HttpResponse
 
 urlpatterns = [
     path("", lambda req: HttpResponse(status=200)),
     path('upload-moc-leads/',UploadMocLeads.as_view()),
-    path('renewal/', Renewal_Leads.as_view()),
     
     #below api ths is for moc leads
     path('getusers/',getUsser.as_view(), name='get-users'),

@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 import requests
-from .models import AlNafi_Payment,New_Alnafi_Payments
+from .models import AlNafi_Payment,New_Alnafi_Payments,Renewal
 from rest_framework.response import Response
 from requests.exceptions import RequestException
 from user.models import Main_User
@@ -49,6 +49,12 @@ def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args
 def alnafi_payment_signal_sales(sender, instance: AlNafi_Payment, *args, **kwargs):
     print("alnafi signal running for sales")
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
+
+
+@receiver(pre_save, sender=Renewal)
+def support_renewal_leads_signal(sender, instance: Renewal, *args, **kwargs):
+    print("renewal leads signal running for support")
+    Thread(target=support_renewal_leads, args=(instance,)).start()
 
 
 def send_payment_support_module(instance,model_name, **kwargs):
@@ -313,6 +319,46 @@ def alnafi_payment_support_data(instance,payment_user):
     }
     # print(customer_data)
     return customer_data
+
+
+
+import math
+
+def support_renewal_leads(instance):
+    crm_endpoint = 'https://crm.alnafi.com/api/resource/Renewal Leads'
+
+    api_key, api_secret = round_robin_support()
+
+    headers = {
+        'Authorization': f'token {api_key}:{api_secret}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    data = {
+        "first_name": instance.first_name or None,
+        "last_name": instance.last_name or None,
+        "user_id": instance.user_id or None,
+        "phone": instance.phone if instance.phone else None,
+        "country": instance.country or "Unknown",
+        "address": instance.address or None,
+        "date_joined": instance.date_joined or None,
+        "payment_date": instance.payment_date or None,
+        "expiration_date": instance.expiration_date or None,
+        "product_name": instance.product_name or None,
+    }
+
+    try:
+        response = requests.post(crm_endpoint, headers=headers, json=data)
+    except:
+        print(data)
+
+    # if response.status_code != 200:
+    #     print(data)
+        # print(f"Failed to upload data for: {instance.user_id}")
+        # print(response.status_code)
+        # print(response.text)
+
 
 
 

@@ -710,9 +710,6 @@ class AllEmployees(APIView):
         return paginator.get_paginated_response(paginated_queryset)
     
 
-
-
-
 class getUsser(APIView):
     def get(self,request):
         user = Moc_Leads.objects.all()
@@ -721,43 +718,3 @@ class getUsser(APIView):
             us.save()
         return Response(status=200)
     
-class Renewal_Leads(APIView):
-    # Set your CRM API credentials and endpoint
-    def get(self, request):
-        api_key = '351b6479c5a4a16'
-        api_secret = 'e459db7e2d30b34'
-        crm_endpoint = 'https://crm.alnafi.com/api/resource/Renewal Leads'
-
-        headers = {
-            'Authorization': f'token {api_key}:{api_secret}',
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
-
-        with open('/home/uzair/Downloads/Al-Baseer-Backend/user/Old Renewal Leads For Sameer - Expired.csv', 'r') as csv_file:
-            csv_reader = csv.DictReader(csv_file)
-            for row in csv_reader:
-                data = {
-                    "first_name": row.get("first_name") or None,
-                    "last_name": row.get("last_name") or None,
-                    "user_id": row.get("email") or None,
-                    "phone": row.get("phone") if "phone" in row else None,
-                    "country": row.get("country") or "Unknown",
-                    "address": row.get("address") or None,
-                    "date_joined": row.get("date_joined") or None,
-                    "payment_date": row.get("payment_date") or None,
-                    "expiration_date": row.get("expiration_date") or None,
-                    "product_name": row.get("name") or None,
-                }
-
-                response = requests.post(crm_endpoint, headers=headers, json=data)
-
-                if response.status_code == 200:
-                    lead_data = response.json()
-                    erp_lead_id = lead_data['data']['name']
-                    if erp_lead_id:
-                        print(f"Lead created successfully with ID: {erp_lead_id}")
-                else:
-                    print(f"Failed to upload data for: {row.get('email')}")
-                    print(response.status_code)
-                    print(response.text)

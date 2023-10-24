@@ -1,7 +1,7 @@
 from math import prod
 from sre_constants import SUCCESS
 from rest_framework import status
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal
 from products.models import Main_Product
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
                          UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
@@ -24,7 +24,9 @@ from django.db.models.functions import Upper
 from threading import Thread
 from collections import defaultdict, OrderedDict
 from django.db.models import Q, F, Value, Case, When, CharField
-
+import csv
+import requests
+from secrets_api.algorithem import round_robin_support
 
 
 class MyPagination(PageNumberPagination):
@@ -1400,6 +1402,46 @@ class PaymentValidationNew(APIView):
                 valid_payment['reasons'].append('Expiration date does not exist')
 
             return valid_payment
+
+
+
+
+class Renewal_Leads(APIView):
+    def get(self,request):
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Old Renewal Leads For Sameer - Expired.csv')
+        lst = []
+        for index, row in data.iterrows():
+            first_name = row['first_name']
+            last_name = row['last_name']
+            user_id = row['email']
+            phone = row['phone']
+            country = row['country']
+            address = row['address']
+            date_joined = row['date_joined']
+            payment_date = row['payment_date']
+            expiration_date = row['expiration_date']
+            product_name = row['name']
+            
+            try:
+                renewal = Renewal.objects.create(
+                    first_name=first_name,
+                    last_name=last_name,
+                    user_id=user_id,
+                    phone=phone,
+                    country=country,
+                    address=address,
+                    date_joined=date_joined,
+                    payment_date=payment_date,
+                    expiration_date=expiration_date,
+                    product_name=product_name
+                )
+            except Exception as e:
+                print(e)
+                lst.append(row['email'])
+
+        data_Frame = pd.DataFrame(lst)
+        data_Frame.to_csv("error.csv")
+        return Response("DONE")
 
 
 

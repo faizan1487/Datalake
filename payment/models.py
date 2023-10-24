@@ -257,5 +257,10 @@ class Renewal(models.Model):
     payment_date = models.CharField(max_length=100, null=True, blank=True)
     expiration_date = models.CharField(max_length=100, null=True, blank=True)
     product_name = models.CharField(max_length=100, null=True, blank=True)
+
     def __str__(self):
-        return self.first_name
+        return f"{self.user_id}"
+    
+    # class Meta:
+    #     managed = True
+    #     verbose_name = "Renewal Leads"
