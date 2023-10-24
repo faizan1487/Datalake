@@ -69,3 +69,5 @@ class RenewalAdmin(admin.ModelAdmin):
     list_display = ('first_name', 'last_name', 'user_id', 'phone', 'country', 'address', 'date_joined', 'payment_date', 'expiration_date', 'product_name')
     list_filter = ('country', 'date_joined', 'payment_date', 'expiration_date')
     search_fields = ('first_name', 'last_name', 'user_id', 'phone', 'product_name')
+
+admin.site.register(Renewal, RenewalAdmin)
