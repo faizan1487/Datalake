@@ -245,3 +245,17 @@ class New_Alnafi_Payments(models.Model):
 
     def _str_(self):
         return self.orderId or '-'
+
+class Renewal(models.Model):
+    first_name = models.CharField(max_length=100, blank=True, null= True)
+    last_name = models.CharField(max_length=100, blank=True, null= True)
+    user_id = models.CharField(max_length=100, blank=True, null= True)
+    phone = models.CharField(max_length=100, blank=True, null= True)
+    country = models.CharField(max_length=100, blank=True, null= True)
+    address = models.CharField(max_length=100, blank=True, null=True)
+    date_joined = models.CharField(max_length=100, null=True, blank=True)
+    payment_date = models.CharField(max_length=100, null=True, blank=True)
+    expiration_date = models.CharField(max_length=100, null=True, blank=True)
+    product_name = models.CharField(max_length=100, null=True, blank=True)
+    def __str__(self):
+        return self.first_name

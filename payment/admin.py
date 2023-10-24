@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment,New_Alnafi_Payments
+from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment,New_Alnafi_Payments, Renewal
 from import_export.admin import ImportExportModelAdmin, ExportActionModelAdmin
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
@@ -65,4 +65,7 @@ class New_Alnafi_PaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ('orderId', 'product_names', 'customer_email', 'username', 'card_number', 'account_number', 'pk_invoice_number', 'us_invoice_number', 'depositor_name', 'coupon_id', 'transaction_id')
     list_filter = ('created_at', 'expiration_date', 'payment_date', 'status', 'payment_method_name', 'payment_method_currency', 'payment_method_source_name', 'country', 'send_invoice', 'is_manual', 'webhook_called')
 
-admin.site.register(New_Alnafi_Payments,New_Alnafi_PaymentsAdmin)     
+class RenewalAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'user_id', 'phone', 'country', 'address', 'date_joined', 'payment_date', 'expiration_date', 'product_name')
+    list_filter = ('country', 'date_joined', 'payment_date', 'expiration_date')
+    search_fields = ('first_name', 'last_name', 'user_id', 'phone', 'product_name')
