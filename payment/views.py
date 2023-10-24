@@ -995,7 +995,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
 
-#NEW
+# NEW
 # class SearchPayments(APIView):
 #     permission_classes = [IsAuthenticated]   
 #     # Define the sources list here
@@ -1012,14 +1012,13 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 #         page = int(self.request.GET.get('page', 1))
 
 #         payments= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page)
+#         if export == 'true':
+#             return Response(payments)
 #         # print(payments['payments'])
 #         if payments['success']:
 #             total_count = payments['total_count']
 #             payments = self.process_payments(payments['payments'], export,product)
 #             # print(payments['payments'])
-#             if export == 'true':
-#                 return Response(payments)
-            
 #             # Calculate the number of pages
 #             num_pages = (total_count + 10 - 1) // 10
 #             return Response({
@@ -1049,7 +1048,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 #                         # print("existing_payment['product_names']",existing_payment['product_names'])
 #                         payment_product = self.clean_product_name(existing_payment['product_names'])
 #                         # print("payment_product",payment_product)
-
 #                         if self.are_product_names_equal(product, payment_product):
 #                             # print("product equals in existing_payment")
 #                             existing_payment['product_names'].append(payment['product'])
@@ -1109,13 +1107,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 #         total_payments_in_pkr = sum(float(p['amount']) for p in payment_list if p['source'].lower() in sources)
 #         total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
 
-#         if export == 'true':
-#             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-#             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-#             df = pd.DataFrame(payment_list).to_csv(index=False)
-#             s3 = upload_csv_to_s3(df, file_name)
-#             data = {'file_link': file_path, 'export': 'true'}
-#             return data
 
 #         return {
 #             'total_payments_pkr': total_payments_in_pkr,
@@ -1181,7 +1172,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
 
-# #NEW
+#NEW
 # def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
 #     payments = Main_Payment.objects.exclude(
 #         product__product_name__in=["test", "Test Course", "Test"]).exclude(
@@ -1261,6 +1252,81 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 #     total_count = payments.count()  # Calculate the total count of payments
 #     # payment_list = payment_list[start_index:end_index]
+
+
+#     if export == 'true':
+#         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
+#                                          'order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id')
+#         payments = [{'user': payment['user__email'],'user_phone': payment['user__phone'], 'product': payment['product__product_name'],
+#                      'plan': payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'],
+#                      'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
+#                      'id': payment['id'],'source_payment_id':payment['source_payment_id']} for payment in payments_data]
+#         payment_list = []
+#         for payment in payments:
+#             payment_id = payment['id']
+#             payment_found = False
+
+#             for existing_payment in payment_list:
+#                 if existing_payment['id'] == payment_id:
+#                     if product:
+#                         payment_product = clean_product_name(existing_payment['product_names'])
+#                         if are_product_names_equal(product, payment_product):
+#                             existing_payment['product_names'].append(payment['product'])
+#                             existing_payment['plans'].append(payment['plan'])
+#                             payment_found = True
+#                             break
+#                     else:
+#                         existing_payment['product_names'].append(payment['product'])
+#                         existing_payment['plans'].append(payment['plan'])
+#                         payment_found = True
+#                         break
+
+#             if not payment_found:
+#                 if product:
+#                     payment_product = clean_product_name(payment['product'])
+#                     if are_product_names_equal(product, payment_product):
+#                         payment_data = {
+#                             'id': payment['id'],
+#                             'user_id': payment['user'],
+#                             'phone': payment['user_phone'],
+#                             'source': payment['source'],
+#                             'amount': payment['amount'],
+#                             'product_names': [payment['product']],
+#                             'plans': [payment['plan']],
+#                             'alnafi_payment_id': payment['alnafi_payment_id'],
+#                             'source_payment_id': payment['source_payment_id'],
+#                             'card_mask': payment['card_mask'],
+#                             'order_datetime': payment['order_datetime'].isoformat(),
+#                         }
+
+#                         payment_list.append(payment_data)
+#                 else:
+#                     payment_data = {
+#                         'id': payment['id'],
+#                         'user_id': payment['user'],
+#                         'phone': payment['user_phone'],
+#                         'source': payment['source'],
+#                         'amount': payment['amount'],
+#                         'product_names': [payment['product']],
+#                         'plans': [payment['plan']],
+#                         'alnafi_payment_id': payment['alnafi_payment_id'],
+#                         'source_payment_id': payment['source_payment_id'],
+#                         'card_mask': payment['card_mask'],
+#                         'order_datetime': payment['order_datetime'].isoformat(),
+#                     }
+#                     payment_list.append(payment_data)
+
+
+
+#         file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+#         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+#         df = pd.DataFrame(payment_list).to_csv(index=False)
+#         s3 = upload_csv_to_s3(df, file_name)
+#         data = {'file_link': file_path, 'export': 'true'}
+#         return data
+
+
+
 #     payments = payments[start_index:end_index]
 
 #     if not payments:
@@ -1280,11 +1346,64 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 #                      'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
 #                      'id': payment['id'],'source_payment_id':payment['source_payment_id']} for payment in payments_data]
         
-
-
 #         response_data = {"payments":payments,"total_count":total_count,"success":True}
 #         return response_data
 #         # return payments, True
+
+
+
+
+
+def clean_product_name(product_name):
+        # print("in clean product name func")
+        # List of terms to remove
+        remove_terms = ["Half Yearly", "Yearly", "Quarterly", "Monthly", "4 Months","Annual"]
+        remove_words = ["in"]
+
+        # Remove terms from the end of the product name
+        # print("product_name",type(product_name))
+        if type(product_name) == list:
+            # print("product_name[0]",product_name[0])
+            for term in remove_terms:
+                if product_name[0].endswith(term):
+                    # print("ends with term")
+                    product_name = product_name[0][:-len(term)].strip()
+                    # print("product_name",product_name)
+            # Split the string into words, filter out unwanted words, and join them back
+            product_name_parts = product_name.split()
+            product_name_parts = [word for word in product_name_parts if word not in remove_words]
+            product_name = ' '.join(product_name_parts)
+
+            # print("product_name",product_name)
+            # print("word removed")
+        else:
+            # print("in else")
+            # print("product_name",product_name)
+            for term in remove_terms:
+                if product_name.endswith(term):
+                    # print("ends with term")
+                    product_name = product_name[:-len(term)].strip()
+                    # print("product_name",product_name)
+
+            # Remove specific words from the product name
+            for word in remove_words:
+                product_name = product_name.replace(word, "").strip()
+
+        # print("product_name",product_name)
+        # print("exiting clean product name func")
+        return product_name.lower().replace(" ", "")
+        # return product_name
+
+
+def are_product_names_equal(self,product, payment_product):
+        product = self.clean_product_name(product)
+        payment_product = self.clean_product_name(payment_product)
+        
+        # print("cleaned_name1",product)
+        # print("cleaned_name2",payment_product)
+        return product == payment_product
+
+
 
 
 
