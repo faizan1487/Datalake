@@ -796,7 +796,8 @@ class SearchPayments(APIView):
         page = int(self.request.GET.get('page', 1))
 
         payments, success= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page)
-        # if success:
+        # payments= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page)
+        # if payments['success']:
         #     total_count = payments['total_count']
         #     # print("before process payments func",len(payments['payments']))
         #     payments = self.process_payments(payments['payments'], export,product)
@@ -817,17 +818,11 @@ class SearchPayments(APIView):
         
 
         if success:
-            payments = self.process_payments(payments, export,product)
-            # print(payments['total_payments_pkr'])
-            
+            payments = self.process_payments(payments, export,product)            
             if export == 'true':
                 return Response(payments)
-            
             paginated_queryset = self.paginate_response(request,payments)
-            # print(paginated_queryset)
             response = {"total_payments_pkr": payments['total_payments_pkr'],"total_payments_usd":payments['total_payments_usd'],'count': payments['count'],"payments":paginated_queryset}
-            # print(response)
-            # return self.paginate_response(request,payments)
             return Response(response)
         else:
             payments = []
@@ -1087,6 +1082,103 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         return payments, True
 
     
+#NEW
+# def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
+#     payments = Main_Payment.objects.exclude(
+#         product__product_name__in=["test", "Test Course", "Test"]).exclude(
+#         amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
+#     statuses = ["0", False, 0]
+#     payments = payments.exclude(source='UBL_DD', status__in=statuses)
+#     payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD','Stripe'])
+
+#     if status:
+#         payments = payments.filter(status=status)
+
+#     if source:
+#         payments = payments.filter(source=source)
+
+#     if origin:
+#         if origin == 'local':
+#             payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD'])
+#         else:
+#             payments = payments.filter(source='Stripe')
+
+#     if not start_date:
+#         first_payment = payments.exclude(order_datetime=None).last()
+#         start_date = first_payment.order_datetime.date() if first_payment else None
+
+#     if not end_date:
+#         last_payment = payments.exclude(order_datetime=None).first()
+#         end_date = last_payment.order_datetime.date() if last_payment else None
+
+#     payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
+
+#     if q:
+#         payments = payments.filter(user__email__icontains=q)
+
+#     # print(payments.count())
+#     # print(payments)
+
+#     if product:
+#         keywords = product.split()
+#         query = Q()
+#         for keyword in keywords:
+#             query &= Q(product__product_name__icontains=keyword)
+#         payments = payments.filter(query)
+#         payments = payments.distinct()
+
+
+#     print(payments.count())
+#     print(payments)
+#     if plan:
+#         payments = payments.filter(product__product_plan=plan)
+#         payments = payments.distinct()
+
+#     print(payments.count())
+#     print(payments.values())
+
+#     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
+#     payment_cycle_descriptions = {
+#         'Monthly': 'Monthly',
+#         'Yearly': 'Yearly',
+#         'Half Yearly': 'Half-Yearly',
+#         'Quarterly': 'Quarterly'
+#         # Add more plan-value pairs as needed
+#     }
+
+#     payments = payments.annotate(
+#         payment_cycle=Case(
+#             *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
+#             default=Value('Unknown Plan'),
+#             output_field=CharField()
+#         )
+#     )
+
+#     page_size = 10  # Number of payments per page
+
+#     # Calculate the start and end indices for slicing
+#     start_index = (page - 1) * page_size
+#     end_index = start_index + page_size
+
+#     total_count = payments.count()  # Calculate the total count of payments
+#     payments = payments[start_index:end_index]
+
+#     if not payments:
+#         payments = {"payments": payments, "success": 'False',"total_count":total_count}
+#         return payments
+#     else:
+#         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
+#                                          'order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id')
+#         payments = [{'user': payment['user__email'],'user_phone': payment['user__phone'], 'product': payment['product__product_name'],
+#                      'plan': payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'],
+#                      'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
+#                      'id': payment['id'],'source_payment_id':payment['source_payment_id']} for payment in payments_data]
+        
+#         response_data = {"payments":payments,"total_count":total_count,"success":True}
+#         return response_data
+#         # return payments, True
+
+
 
 #NEW
 class PaymentValidationNew(APIView):
