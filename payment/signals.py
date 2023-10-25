@@ -14,6 +14,7 @@ import environ
 from secrets_api.algorithem import round_robin_support
 from threading import Thread
 from threading import Timer
+import math
 
 env = environ.Env()
 env.read_env()
@@ -322,8 +323,6 @@ def alnafi_payment_support_data(instance,payment_user):
 
 
 
-import math
-
 def support_renewal_leads(instance):
     crm_endpoint = 'https://crm.alnafi.com/api/resource/Renewal Leads'
 
@@ -335,6 +334,17 @@ def support_renewal_leads(instance):
         "Accept": "application/json",
     }
 
+
+    def format_date(date):
+        if isinstance(date, str):
+            try:
+                # Attempt to parse the date string
+                date = datetime.strptime(date, "%Y-%m-%d %H:%M:%S.%f %z")
+            except ValueError:
+                date = None  # Handle invalid date string
+        return date.isoformat() if date else None
+
+
     data = {
         "first_name": instance.first_name or None,
         "last_name": instance.last_name or None,
@@ -342,22 +352,23 @@ def support_renewal_leads(instance):
         "phone": instance.phone if instance.phone else None,
         "country": instance.country or "Unknown",
         "address": instance.address or None,
-        "date_joined": instance.date_joined or None,
-        "payment_date": instance.payment_date or None,
-        "expiration_date": instance.expiration_date or None,
+        "date_joined": format_date(instance.date_joined),
+        "payment_date": format_date(instance.payment_date),
+        "expiration_date": instance.expiration_date if instance.expiration_date else None,
         "product_name": instance.product_name or None,
+        "status": instance.status or None,
     }
 
-    try:
-        response = requests.post(crm_endpoint, headers=headers, json=data)
-    except:
-        print(data)
-
-    # if response.status_code != 200:
+    # try:
+    response = requests.post(crm_endpoint, headers=headers, json=data)
+    # except:
     #     print(data)
-        # print(f"Failed to upload data for: {instance.user_id}")
-        # print(response.status_code)
-        # print(response.text)
+
+    if response.status_code != 200:
+        print(data)
+        print(f"Failed to upload data for: {instance.user_id}")
+        print(response.status_code)
+        print(response.text)
 
 
 
