@@ -13,18 +13,13 @@ api_secret = env("FRAPPE_API_SECRET")
 
 @receiver(post_save, sender=Newsletter)
 def send_lead_post_request(sender, instance, created, **kwargs):
-    # return
-    source='Newsletter'
+    source='Academy Newsletter'
     newsletter = usersignal(instance,source)        
 
 
 def usersignal(instance,source):
-    # post_save.disconnect(send_alnafi_lead_post_request, sender=sender)
-    # post_save.disconnect(send_lead_post_request, sender=Newsletter)
-    # if instance.is_processing:
-    #     return
-    user_api_key, user_secret_key = round_robin()
-    # print(user_api_key,"===",api_secret)
+    user_api_key = '2a1d467717681df'
+    user_secret_key = '39faa082ac5f258'
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
@@ -50,16 +45,15 @@ def usersignal(instance,source):
             "source": source
             # Add other fields from the Main_User model to the data dictionary as needed
         }
-    print(data)
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     response = requests.get(url, headers=headers)
     lead_data = response.json()
-    print(response.status_code)
+    # print(response.status_code)
 
     if response.status_code == 403:
         return
     # print(lead_data['data'])
-    print(lead_data)
+    # print(lead_data)
     if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
     else:
@@ -67,27 +61,26 @@ def usersignal(instance,source):
     # print(already_existed)
     if already_existed:
         response = requests.put(url, headers=headers, json=data)
-        print(response.status_code)
-        print(response.json())
+        # print(response.status_code)
+        # print(response.json())
         instance.erp_lead_id = lead_data['data'][0]['name']
-        print("lead updated")
+        # print("lead updated")
         instance.save(update_fields=['erp_lead_id'])
     else:
-        print("in else")
+        # print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
-        print(response.status_code)
-        print(response.json())
+        # print(response.status_code)
+        # print(response.json())
         # response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']
             if erp_lead_id:
-                print("lead id exists")
+                # print("lead id exists")
                 instance.erp_lead_id = erp_lead_id
-
                 # instance.save(update_fields=['erp_lead_id'])
-                print("Lead created successfully!")
+                # print("Lead created successfully!")
     return
     # post_save.connect(send_lead_post_request, sender=Newsletter)

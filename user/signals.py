@@ -39,21 +39,14 @@ def send_alnafi_new_request(sender, instance, created, *args, **kwargs):
 
 
 def usersignal(instance,source,sender):
-    # post_save.disconnect(send_alnafi_lead_post_request, sender=AlNafi_User)
-    # post_save.disconnect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
-    # post_save.disconnect(send_psw_lead_post_request, sender=PSWFormRecords)
-
-    # try:
-        # if DEBUG:
-        #     api_key = '2768f34bb4bb7f7'
-        #     api_secret = '21754cee8dc0f42'
-        #     url = f'http://3.142.247.16/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
-        # else:
+    if source == 'Academy Signup':
+        user_api_key = '2a1d467717681df'
+        user_secret_key = '39faa082ac5f258'
+    else:
+        user_api_key, user_secret_key = round_robin()
 
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
-    # url = f'http://18.190.1.109/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     
-    user_api_key, user_secret_key = round_robin()
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
