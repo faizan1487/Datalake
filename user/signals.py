@@ -183,7 +183,7 @@ def mocdoctypeLeadsSignal(instance,source):
             "cv_link": instance.cv_link or None,
             "interest": instance.interest or None,
             "qualification": instance.qualification or None,
-            "created_at": instance.created_at or None,
+            "created_at": instance.created_at.isoformat() or None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]&filters=[["moclead","email","=","{instance.email}"]]'
@@ -301,6 +301,11 @@ def mocLeadsSignal(instance,source):
             if code == country_code:
                 country_name = name
                 break
+
+    if hasattr(instance, 'created_at'):
+        date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        date_joined_str = None      
     data = {
             "first_name": instance.full_name or None,
             "last_name": None,
@@ -312,11 +317,10 @@ def mocLeadsSignal(instance,source):
             "cv_link": instance.cv_link or None,
             "interest": instance.interest or None,
             "qualification": instance.qualification or None,
-            "date_joined": instance.created_at or None,
+            "date_joined": str(date_joined_str) if date_joined_str else None
             # Add other fields from the Main_User model to the data dictionary as needed
         }
-    # print(data)
-    # print(instance.email)
+   
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     # url_moc = f'https://crm.alnafi.com/api/resource/MOC?fields=["name","email"]&filters=[["MOC","email","=","{instance.email}"]]'
     # response_moc = requests.get(url_moc, headers=headers_moc)
@@ -387,7 +391,7 @@ def mocLeadsSignal(instance,source):
         instance.erp_lead_id = lead_data['data'][0]['name']
         print("lead updated")
     else:
-        print("in else")
+        # print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
         # print(response.status_code)
@@ -404,7 +408,7 @@ def mocLeadsSignal(instance,source):
         else:
             print(data)
             print(response.status_code)
-            print(response.json())
+            print(response.text)
 
 
 def newsignupsignal(instance,source,sender):
