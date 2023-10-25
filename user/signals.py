@@ -14,7 +14,7 @@ DEBUG = env('DEBUG',cast=bool)
 @receiver(post_save, sender=AlNafi_User)
 def send_alnafi_lead_post_request(sender, instance, **kwargs):
     # print("signal running")
-    source='Alnafi'
+    source='Academy Signup'
     alnafi_user = usersignal(instance,source,sender)    
 
 @receiver(post_save, sender=IslamicAcademy_User)
@@ -83,7 +83,11 @@ def usersignal(instance,source,sender):
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     # print(lead_data)
-    already_existed = len(lead_data["data"]) > 0
+    print(lead_data)
+    if 'data' not in lead_data:
+        already_existed = False
+    else:
+        already_existed = len(lead_data["data"]) > 0
 
     if already_existed:
         print("already exixts")
