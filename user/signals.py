@@ -7,6 +7,10 @@ from newsletter.signals import send_lead_post_request
 import environ
 from secrets_api.algorithem import round_robin
 from albaseer.settings import DEBUG
+from datetime import datetime
+
+
+
 env = environ.Env()
 env.read_env()
 DEBUG = env('DEBUG',cast=bool)
@@ -63,20 +67,37 @@ def usersignal(instance,source,sender):
                 country_name = name
                 break
 
+    # Convert 'assigned_date' to the desired format
+    try:
+        assigned_date = datetime.fromisoformat(instance.assigned_date)
+        assigned_date_str = assigned_date.strftime('%Y-%m-%d %H:%M:%S')
+    except ValueError:
+        assigned_date_str = None  
+
+    # Assuming instance.created_at is a datetime object
+    if hasattr(instance, 'created_at'):
+        date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        date_joined_str = None
+
     data = {
-            "first_name": instance.first_name or None,
-            "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
-            "email_id": instance.email or None,
-            "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
-            "country": country_name,
-            "source": source
-            # Add other fields from the Main_User model to the data dictionary as needed
-        }
-    print(data)
+        "first_name": instance.first_name or None,
+        "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
+        "email_id": instance.email or None,
+        "mobile_no": str(instance.phone) if hasattr(instance, 'phone') else None,
+        "country": country_name,
+        "source": source,
+        "form": instance.form or None,
+        "assigned_date": assigned_date_str,  # Convert to ISO 8601 string
+        "date_joined": date_joined_str,  # Convert to ISO 8601 string
+        # Add other fields from the Main_User model to the data dictionary as needed
+    }
+    # print(data)
+
+    # print(data)
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     # print(lead_data)
-    print(lead_data)
     if 'data' not in lead_data:
         already_existed = False
     else:
@@ -87,31 +108,23 @@ def usersignal(instance,source,sender):
         pass
         # print("already exists")
         # lead_id = lead_data['data'][0]['name']
-        # # if DEBUG:
-        # #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
-        # # else:
         # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
-        # # url = f'http://18.190.1.109/api/api/resource/Lead/{lead_id}'
         # # print(data)
         # response = requests.put(url, headers=headers, json=data)
         # instance.erp_lead_id = lead_data['data'][0]['name']
-
         # # pass
         # print("lead updated")
         # instance.save(update_fields=['erp_lead_id'])
         # break
     else:
-        # if DEBUG:
-        #     url = 'http://3.142.247.16/api/resource/Lead'
-        # else:
         url = 'https://crm.alnafi.com/api/resource/Lead'
-        # url = 'http://18.190.1.109/api/resource/Lead'
-        # print(headers)
         lead_data = response.json()
         # print(lead_data)
         response = requests.post(url, headers=headers, json=data)
-        print("response.status_code",response.text)
-        print("response.status_code",response.status_code)
+
+        if response.status_code != 200:
+            print("response.status_code",response.text)
+            print("response.status_code",response.status_code)
         if response.status_code == 200:
             lead_data = response.json()
             # print(lead_data)
@@ -121,10 +134,7 @@ def usersignal(instance,source,sender):
                 instance.erp_lead_id = erp_lead_id
                 # instance.save(update_fields=['erp_lead_id'])
                 # print("Lead created successfully!")
-    # except:
-    # post_save.connect(send_islamic_lead_post_request, sender=IslamicAcademy_User)
-    # post_save.connect(send_psw_lead_post_request, sender=PSWFormRecords)
-    # post_save.connect(send_alnafi_lead_post_request, sender=AlNafi_User)
+   
 
 #############################################################
 @receiver(post_save, sender=Moc_Leads)

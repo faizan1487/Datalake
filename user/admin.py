@@ -25,8 +25,8 @@ admin.site.register(Marketing_PKR_Form, Marketing_PKR_Admin)
 
 # For MainSite Users:
 class AlnafiUserAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.ModelAdmin):
-    list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'phone', 'created_at', 'address', 'country', 'language', 'verification_code', 'isAffiliate', 'how_did_you_hear_about_us', 'affiliate_code', 'isMentor')
-    search_fields = ('id', 'username', 'email', 'phone')
+    list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'phone', 'created_at','form', 'address', 'country', 'language', 'verification_code', 'isAffiliate', 'how_did_you_hear_about_us', 'affiliate_code', 'isMentor')
+    search_fields = ('id', 'username', 'email', 'phone','form')
     list_filter = ('created_at', 'isAffiliate', 'isMentor', 'language', 'country')
 
 admin.site.register(AlNafi_User, AlnafiUserAdmin)
