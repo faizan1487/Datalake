@@ -912,10 +912,10 @@ class SearchPayments(APIView):
 #and when i try to optimize the api further, a bug arises in product filter and then i'm unable to filter payments by product
 #Production
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page,request,phone):
-    payments = Main_Payment.objects.all().distinct()
-    # exclude(product__product_name__in=["test", "Test Course", "Test"])
-    # .exclude(
-    #     amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
+    # payments = Main_Payment.objects.all().distinct()
+    payments = Main_Payment.objects.all().exclude(
+        product__product_name__in=["test", "Test Course", "Test"]).exclude(
+        amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]).distinct()
     statuses = ["0", False, 0]
     payments = payments.exclude(source='UBL_DD', status__in=statuses)
     payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD','Stripe'])
@@ -943,18 +943,12 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
     payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
 
     if q:
-        # if request.user.is_admin:
         payments = payments.filter(user__email__icontains=q)
-        # else:
-        #     payments = payments.filter(user__email__iexact=q)
     if phone:
         phone = phone.strip()
         if phone.startswith("92"):
             phone = "+" + phone
-        # if request.user.is_admin:
         payments = payments.filter(user__phone__icontains=phone)
-        # else:
-        #     payments = payments.filter(user__phone__iexact=phone)
 
     if product:
         keywords = product.split()
