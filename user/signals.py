@@ -135,13 +135,13 @@ def usersignal(instance,source,sender):
 @receiver(post_save, sender=Moc_Leads)
 def handle_lead_post_request_lead_sale_doctype(sender, instance, created, **kwargs):
     # return
-    source=instance.source
+    source=instance.login_source
     Moc_Leads = mocLead_Signalto_sale_doctype(instance,source)   
 
 @receiver(post_save, sender=Moc_Leads)
 def handle_lead_post_request_moc_doctype(sender, instance, created, **kwargs):
     # return
-    source=instance.source
+    source=instance.login_source
     Moc_Leads = moc_doctype_Leads_Signal(instance,source)
 
 
@@ -263,7 +263,6 @@ def mocLead_Signalto_sale_doctype(instance,source):
         "Accept": "application/json",
     }
 
-
     country_code = getattr(instance, 'country', "Unknown")
     country_name = None
 
@@ -278,12 +277,12 @@ def mocLead_Signalto_sale_doctype(instance,source):
     else:
         date_joined_str = None      
     data = {
-            "first_name": instance.full_name or None,
-            "last_name": None,
+            "first_name": instance.first_name or None,
+            "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
             "email_id": instance.email or None,
             "mobile_no": str(instance.phone) if hasattr(instance, 'phone') else None,
             "country": country_name,
-            "source":instance.source or None,
+            "source":instance.login_source or None,
             "form":instance.form or None,
             "cv_link": instance.cv_link or None,
             "interest": instance.interest or None,

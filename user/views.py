@@ -55,7 +55,7 @@ class UploadMocLeads(APIView):
             phone = row['phone']
             form = row['form']
             country = row['country']
-            source = row['source']
+            login_source = row['source']
             # cv_link = row['cv']
             # created_at = row['created_at']
             # Convert 'created_at' to the desired format
@@ -86,7 +86,7 @@ class UploadMocLeads(APIView):
                     'email': email,
                     'form': form,
                     'country': country,
-                    'login_source': source,
+                    'login_source': login_source,
                     'created_at': created_at,
                     # 'cv_link': cv_link
                 })
@@ -98,7 +98,7 @@ class UploadMocLeads(APIView):
                     moc.phone = phone
                     moc.form = form
                     moc.country = country
-                    moc.login_source = source
+                    moc.login_source = login_source
                     moc.created_at = created_at
                     # moc.cv_link = cv_link
                     moc.save()
@@ -458,9 +458,10 @@ class GetUsers(APIView):
         source = self.request.GET.get('source', None) or None
         export = self.request.GET.get('export', None) or None
         product = self.request.GET.get('product', None) or None
+        phone = self.request.GET.get('phone', None)
         url = request.build_absolute_uri()
 
-        users = search_users(q,start_date,req_end_date,is_converted,source)
+        users = search_users(q,start_date,req_end_date,is_converted,source,request,phone)
         if users:
             if export =='true':
                 for i in range(len(users['converted_users'])):

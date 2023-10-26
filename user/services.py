@@ -65,7 +65,7 @@ def paying_users_details(query_time, is_converted):
     response = {"converted_users":converted_users, "converted": converted, "products":all_paid_users_products}
     return response
 
-def search_users(q, start_date, req_end_date, is_converted,source):
+def search_users(q, start_date, req_end_date, is_converted,source,request,phone):
     users = Main_User.objects.values(
         "id", "email", "username", "first_name", "last_name", "source", "internal_source",
         "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
@@ -104,14 +104,30 @@ def search_users(q, start_date, req_end_date, is_converted,source):
                 new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
                 end_date = new_date_obj
 
-
+        print(request.user)
         if req_end_date:
             end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
             end_date = end_date + timedelta(days=1)
+
         if q:
             users = users.filter(
                 Q(email__icontains=q) | Q(username__icontains=q) | Q(first_name__icontains=q)| Q(id__icontains=q))   
-        
+            
+        if q:
+            if request.user.is_admin:
+                users = users.filter(email__icontains=q)
+            else:
+                users = users.filter(email__iexact=q)
+
+        if phone:
+            phone = phone.strip()
+            if phone.startswith("92"):
+                phone = "+" + phone
+            if request.user.is_admin:
+                users = users.filter(phone__icontains=phone)
+            else:
+                users = users.filter(phone__iexact=phone)
+
         users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
         users = paying_users_details(users, is_converted)
     return users 

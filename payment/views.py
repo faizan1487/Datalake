@@ -941,21 +941,20 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         end_date = last_payment.order_datetime.date() if last_payment else None
 
     payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
+
     if q:
-        if request.user.is_admin:
-            payments = payments.filter(user__email__icontains=q)
-        else:
-            payments = payments.filter(user__email__iexact=q)
+        # if request.user.is_admin:
+        payments = payments.filter(user__email__icontains=q)
+        # else:
+        #     payments = payments.filter(user__email__iexact=q)
     if phone:
         phone = phone.strip()
         if phone.startswith("92"):
             phone = "+" + phone
-        if request.user.is_admin:
-            payments = payments.filter(user__phone__icontains=phone)
-        else:
-            # print("not admin")
-            payments = payments.filter(user__phone__iexact=phone)
-    # print("payments",payments)
+        # if request.user.is_admin:
+        payments = payments.filter(user__phone__icontains=phone)
+        # else:
+        #     payments = payments.filter(user__phone__iexact=phone)
 
     if product:
         keywords = product.split()
@@ -1185,6 +1184,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
 #NEW
+#bug, only 3 payments showing up instead of 10 
 # def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
 #     payments = Main_Payment.objects.exclude(
 #         product__product_name__in=["test", "Test Course", "Test"]).exclude(
@@ -1256,7 +1256,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 #         )
 #     )
 
-#     page_size = 20  # Number of payments per page
+#     page_size = 10  # Number of payments per page
 
 #     # Calculate the start and end indices for slicing
 #     start_index = (page - 1) * page_size
