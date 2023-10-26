@@ -124,7 +124,7 @@ class o_level_leads_alnafi_model(APIView):
             email = row['email']
             phone = row['phone']
             form = row['form']
-            source = row['source']
+            login_source = row['source']
             country = row['country']
             # created_at = row['created_at']
             # Convert 'created_at' to the desired format
@@ -142,7 +142,7 @@ class o_level_leads_alnafi_model(APIView):
                     'phone': phone,
                     'email': email,
                     'form': form,
-                    'login_source':source,
+                    'login_source':login_source,
                     'country': country,
                     'created_at': created_at,
                     'assigned_date':formatted_date
@@ -154,7 +154,7 @@ class o_level_leads_alnafi_model(APIView):
                     user.email = email
                     user.phone = phone
                     user.form = form
-                    user.login_source = source
+                    user.login_source = login_source
                     user.country = country
                     user.created_at = created_at
                     user.assigned_date = formatted_date

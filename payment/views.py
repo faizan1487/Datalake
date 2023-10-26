@@ -798,8 +798,9 @@ class SearchPayments(APIView):
         product = self.request.GET.get('product', None)
         status = self.request.GET.get('status', None)
         page = int(self.request.GET.get('page', 1))
+        phone = self.request.GET.get('phone', None)
 
-        payments, success= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page)
+        payments, success= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page,request,phone)
         if success:
             payments = self.process_payments(payments, export,product)            
             if export == 'true':
@@ -910,7 +911,7 @@ class SearchPayments(APIView):
 #bug in plan filter, when i implement plan filter payments related to that plan show up even if the product filter is implemented
 #and when i try to optimize the api further, a bug arises in product filter and then i'm unable to filter payments by product
 #Production
-def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
+def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page,request,phone):
     payments = Main_Payment.objects.all().distinct()
     # exclude(product__product_name__in=["test", "Test Course", "Test"])
     # .exclude(
@@ -940,10 +941,21 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         end_date = last_payment.order_datetime.date() if last_payment else None
 
     payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
-
     if q:
-        payments = payments.filter(user__email__icontains=q)
-
+        if request.user.is_admin:
+            payments = payments.filter(user__email__icontains=q)
+        else:
+            payments = payments.filter(user__email__iexact=q)
+    if phone:
+        phone = phone.strip()
+        if phone.startswith("92"):
+            phone = "+" + phone
+        if request.user.is_admin:
+            payments = payments.filter(user__phone__icontains=phone)
+        else:
+            # print("not admin")
+            payments = payments.filter(user__phone__iexact=phone)
+    # print("payments",payments)
 
     if product:
         keywords = product.split()
