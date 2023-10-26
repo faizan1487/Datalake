@@ -162,12 +162,12 @@ class Marketing_PKR_Form(models.Model):
 
 
 class Moc_Leads(models.Model):
-    full_name = models.CharField(max_length=255, null=True, blank=True)
+    first_name = models.CharField(max_length=255, null=True, blank=True)
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=255, null=True, blank=True)
     form = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
-    source = models.CharField(max_length=255, null=True, blank=True)
+    login_source = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     qualification = models.CharField(max_length=255, null=True, blank=True)
     interest = models.CharField(max_length=255, null=True, blank=True)
