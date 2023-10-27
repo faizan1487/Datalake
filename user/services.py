@@ -249,12 +249,12 @@ def active_paying_users_details(query_time, is_converted):
             plans = list(payments.values('product__product_plan'))
             payment_list = list(payments)
             for i in range(len(payment_list)):
-            #     try:
-                payment_list[i]['user_id'] = user.email
-                payment_list[i]['product_id'] = products[i]['product__product_name']
-                payment_list[i]['plan'] = plans[i]['product__product_plan']
-                # except Exception as e:
-                #     print(e)
+                try:
+                    payment_list[i]['user_id'] = user.email
+                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                    payment_list[i]['plan'] = plans[i]['product__product_plan']
+                except Exception as e:
+                    print(e)
             # print(payment_list)
             user_dict['product'] = payment_list[0]['product_id']
             user_dict['plan'] = payment_list[0]['plan']
