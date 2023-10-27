@@ -76,7 +76,9 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
         if source == 'Academy':
             users = users.filter(source='Al-Nafi', internal_source='Academy', academy_demo_access=True)
         elif source == 'Al-Nafi':
-            users = users.filter(source='Al-Nafi', internal_source='Al-Nafi', academy_demo_access=False)
+            # print("source isalnafi")
+            users = users.filter(Q(source='Al-Nafi') & ~Q(internal_source='Al-Nafi') & Q(academy_demo_access=False))
+            # users = users.filter(source='Al-Nafi', internal_source!='Al-Nafi', academy_demo_access=False)
         else:
             users = users.filter(source=source)
 
