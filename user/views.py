@@ -459,9 +459,10 @@ class GetUsers(APIView):
         export = self.request.GET.get('export', None) or None
         product = self.request.GET.get('product', None) or None
         phone = self.request.GET.get('phone', None)
+        academy_demo_access = self.request.GET.get('academy_demo_access', None)
         url = request.build_absolute_uri()
 
-        users = search_users(q,start_date,req_end_date,is_converted,source,request,phone)
+        users = search_users(q,start_date,req_end_date,is_converted,source,request,phone,academy_demo_access)
         if users:
             if export =='true':
                 for i in range(len(users['converted_users'])):
@@ -523,9 +524,10 @@ class GetUser(APIView):
         url = request.build_absolute_uri()
         # print("id",id)
         user = Main_User.objects.filter(id=user_id)
-        # print("user",user)
+        print("user",user)
         try:
             payments = user[0].user_payments.all().values()
+            print(payments)
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
             # latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
             # latest_payment = payments.order_by('-order_datetime')

@@ -41,7 +41,7 @@ def paying_users_details(query_time, is_converted):
     converted = []
     all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
     all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
-    all_paid_users = query_time.filter(id__in=all_paid_users_ids).values("id","username","email", "first_name", "last_name","source","phone","address","country","created_at")    
+    all_paid_users = query_time.filter(id__in=all_paid_users_ids).values("id","username","email", "first_name", "last_name","source","phone","address","country","created_at","academy_demo_access")    
     
     all_unpaid_users = query_time.exclude(id__in=all_paid_users_ids)
     if is_converted =='true':
@@ -65,15 +65,23 @@ def paying_users_details(query_time, is_converted):
     response = {"converted_users":converted_users, "converted": converted, "products":all_paid_users_products}
     return response
 
-def search_users(q, start_date, req_end_date, is_converted,source,request,phone):
+def search_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access):
     users = Main_User.objects.values(
         "id", "email", "username", "first_name", "last_name", "source", "internal_source",
         "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
         "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer",
-        "role", "erp_lead_id"
+        "role", "erp_lead_id","academy_demo_access"
     )
     if source:
-        users = users.filter(source=source)
+        if source == 'Academy':
+            users = users.filter(source='Al-Nafi', internal_source='Academy', academy_demo_access=True)
+        elif source == 'Al-Nafi':
+            users = users.filter(source='Al-Nafi', internal_source='Al-Nafi', academy_demo_access=False)
+        else:
+            users = users.filter(source=source)
+
+    if academy_demo_access:
+        users = users.filter(academy_demo_access=academy_demo_access)
     
 
     # if users:
@@ -104,7 +112,7 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone)
                 new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
                 end_date = new_date_obj
 
-        print(request.user)
+        # print(request.user)
         if req_end_date:
             end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
             end_date = end_date + timedelta(days=1)

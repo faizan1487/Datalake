@@ -6,7 +6,7 @@ from .views import (SearchPayments, GetStripePayments,GetUBLIPGPayments, AlnafiP
 from payment.webhooks import enrollment_created_webhook
 
 urlpatterns = [
-    path('renewal/', Renewal_Leads.as_view(), name='renewal-leads'),
+    path('upload-renewal-leads/', Renewal_Leads.as_view(), name='renewal-leads'),
     path("enrollmentwebhook/", enrollment_created_webhook),
 
     # path("deletepayment/", PaymentDelete.as_view(), name='payment-dalete'),

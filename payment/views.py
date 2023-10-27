@@ -482,7 +482,6 @@ class ActivePayments(APIView):
             # Calculate the start and end indices for slicing
             start_index = (page - 1) * page_size
             end_index = start_index + page_size
-
             total_count = payments.count()  # Calculate the total count of payments
             payments = payments[start_index:end_index]
          
@@ -545,6 +544,7 @@ class ActivePayments(APIView):
             removed_duplicates = self.remove_duplicate_payments(payment_objects)
             num_pages = (total_count + page_size - 1) // page_size
 
+            # print(removed_duplicates)
             if request.user.is_admin:
                 return Response({
                     'count': total_count,
@@ -1062,11 +1062,11 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 #             for existing_payment in payment_list:
 #                 if existing_payment['id'] == payment_id:
-#                     print("payment found")
+#                     # print("payment found")
 #                     if product:
 #                         payment_product = self.clean_product_name(existing_payment['product_names'])
-#                         print("payment_product",payment_product)
-#                         print(product)
+#                         # print("payment_product",payment_product)
+#                         # print(product)
 #                         if self.are_product_names_equal(product, payment_product):
 #                             print("products match")
 #                             if plan:
@@ -1094,8 +1094,8 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 #                 if product:
 #                     # print("in if product exists")
 #                     payment_product = self.clean_product_name(payment['product'])
-#                     # print("payment_product",payment_product)
-#                     # print(product)
+#                     print("payment_product",payment_product)
+#                     print(product)
 #                     if self.are_product_names_equal(product, payment_product):
 #                         print("products match in payment not found")
 #                         if plan:
