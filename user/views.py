@@ -515,7 +515,7 @@ class GetUsers(APIView):
             return Response(response_data)
 
 class GetUser(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id):
         user_id = id
         # email = self.request.GET.get('email', None) or None
