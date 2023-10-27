@@ -86,12 +86,7 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
         users = users.filter(academy_demo_access=academy_demo_access)
     
 
-    # if users:
-    #     if not start_date:
-    #         first_user = users.exclude(created_at=None).last()
-    #         date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-    #         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")     
-    #         start_date = new_date_obj
+    
     
     if users:
         if not start_date:
@@ -101,12 +96,7 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
                 new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
                 start_date = new_date_obj
 
-        # if not req_end_date:
-        #     last_user = users.exclude(created_at=None).first()
-        #     date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-        #     new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")      
-        #     end_date = new_date_obj
-
+       
         if not req_end_date:
             last_user = users.exclude(created_at=None).first()
             if last_user and last_user['created_at']:
@@ -142,6 +132,165 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
         users = paying_users_details(users, is_converted)
     return users 
 
+
+def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
+    users = Main_User.objects.all()
+    if source:
+        if source == 'Academy':
+            users = users.filter(source='Al-Nafi', internal_source='Academy', academy_demo_access=True)
+        elif source == 'Al-Nafi':
+            # print("source isalnafi")
+            users = users.filter(Q(source='Al-Nafi') & ~Q(internal_source='Al-Nafi') & Q(academy_demo_access=False))
+            # users = users.filter(source='Al-Nafi', internal_source!='Al-Nafi', academy_demo_access=False)
+        else:
+            users = users.filter(source=source)
+
+    if academy_demo_access:
+        users = users.filter(academy_demo_access=academy_demo_access)
+       
+    if users:
+        if not start_date:
+            first_user = users.exclude(created_at=None).last()
+            if first_user and first_user.created_at:
+                date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f")
+                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                start_date = new_date_obj
+       
+        if not req_end_date:
+            last_user = users.exclude(created_at=None).first()
+            if last_user and last_user.created_at:
+                date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f")
+                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                end_date = new_date_obj
+
+        if req_end_date:
+            end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+            
+        if q:
+            if request.user.is_admin:
+                users = users.filter(email__iexact=q)
+            else:
+                users = users.filter(email__iexact=q)
+
+        if phone:
+            phone = phone.strip()
+            if phone.startswith("92"):
+                phone = "+" + phone
+            if request.user.is_admin:
+                users = users.filter(phone__icontains=phone)
+            else:
+                users = users.filter(phone__iexact=phone)
+
+        users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
+
+
+        page_size = 10  # Number of payments per page
+
+        # Calculate the start and end indices for slicing
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+
+
+        paying_users = active_paying_users_details(users, is_converted)
+        users = paying_users[start_index:end_index]
+        users = {"converted_users":users}
+    return users
+
+
+def active_paying_users_details(query_time, is_converted):
+    user_list = []
+    for user in query_time:
+        payments = user.user_payments.all().values()
+        payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+        # print(payments[0])
+
+        user_dict = {
+            'academy_demo_access': user.academy_demo_access,
+            'address': user.address,
+            'affiliate_code': user.affiliate_code,
+            'blocked': user.blocked,
+            'country': user.country,
+            'created_at': user.created_at,
+            'date_joined': user.date_joined,
+            'easypaisa_number': user.easypaisa_number,
+            'email': user.email,
+            'erp_lead_id': user.erp_lead_id,
+            'facebook_user_id': user.facebook_user_id,
+            'first_name': user.first_name,
+            'google_user_id': user.google_user_id,
+            'how_did_you_hear_about_us': user.how_did_you_hear_about_us,
+            'id': user.id,
+            'internal_source': user.internal_source,
+            'isAffiliate': user.isAffiliate,
+            'isMentor': user.isMentor,
+            'is_active': user.is_active,
+            'is_paying_customer': user.is_paying_customer,
+            'is_staff': user.is_staff,
+            'is_superuser': user.is_superuser,
+            'language': user.language,
+            'last_name': user.last_name,
+            'meta_data': user.meta_data,
+            'modified_at': user.modified_at
+        }
+
+        # if latest_payment.date() > date.today():
+        user_dict['is_paying_customer'] = True
+
+        # def json_serializable(obj):
+        #     if isinstance(obj, datetime):
+        #         return obj.isoformat()  # Convert datetime to ISO 8601 format
+        #     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+        products = list(payments.values('product__product_name'))
+        plans = list(payments.values('product__product_plan'))
+        payment_list = list(payments)
+        for i in range(len(payment_list)):
+        #     try:
+            payment_list[i]['user_id'] = user.email
+            payment_list[i]['product_id'] = products[i]['product__product_name']
+            payment_list[i]['plan'] = plans[i]['product__product_plan']
+            # except Exception as e:
+            #     print(e)
+        # print(payment_list)
+        user_dict['product'] = payment_list[0]['product_id']
+        user_dict['plan'] = payment_list[0]['plan']
+        user_dict['expiry_datet'] = payment_list[0]['expiration_datetime']
+
+        user_list.append(user_dict)
+
+    
+    return user_list
+
+
+def active_payments(user):
+    # print(user)
+    payments = user[0].user_payments.all().values()
+    # print(payments)
+    payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+    # latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
+    # latest_payment = payments.order_by('-order_datetime')
+    # print(latest_payment[0])
+    user = dict(user.values()[0])
+
+    # if latest_payment.date() > date.today():
+    user['is_paying_customer'] = True
+
+    def json_serializable(obj):
+        if isinstance(obj, datetime):
+            return obj.isoformat()  # Convert datetime to ISO 8601 format
+        raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+
+    products = list(payments.values('product__product_name'))
+    plans = list(payments.values('product__product_plan'))
+    payment_list = list(payments)
+    for i in range(len(payment_list)):
+        try:
+            payment_list[i]['user_id'] = user['email']
+            payment_list[i]['product_id'] = products[i]['product__product_name']
+            payment_list[i]['plan'] = plans[i]['product__product_plan']
+        except Exception as e:
+            print(e)
 
 
 

@@ -25,8 +25,8 @@ from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink
 from .serializers import (AlnafiUserSerializer,UserRegistrationSerializer,UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,
                           SendPasswordResetEmailSerializer,UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,MainUserCreateSerializer,
                           NewAlnafiUserSerializer)
-from .services import (set_auth_token, checkSameDomain, GroupPermission,
-loginUser,get_tokens_for_user,aware_utcnow,no_users_month,upload_csv_to_s3,search_users,search_employees)
+from .services import (set_auth_token, checkSameDomain, GroupPermission,loginUser,get_tokens_for_user,aware_utcnow,no_users_month,
+                       upload_csv_to_s3,search_users,search_employees,search_active_users)
 from .renderers import UserRenderer
 from itertools import chain
 from functools import reduce
@@ -515,6 +515,56 @@ class GetUsers(APIView):
             }
             return Response(response_data)
 
+
+
+
+#Optimized
+class GetActiveUsers(APIView):
+    # permission_classes = [IsAuthenticated]
+    def get(self, request):
+        page = int(self.request.GET.get('page', 1))
+        q = self.request.GET.get('q', None) or None
+        is_converted = self.request.GET.get('is_converted', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        req_end_date = self.request.GET.get('end_date', None) or None
+        source = self.request.GET.get('source', None) or None
+        export = self.request.GET.get('export', None) or None
+        product = self.request.GET.get('product', None) or None
+        phone = self.request.GET.get('phone', None)
+        academy_demo_access = self.request.GET.get('academy_demo_access', None)
+        url = request.build_absolute_uri()
+
+        users = search_active_users(q,start_date,req_end_date,is_converted,source,request,phone,academy_demo_access,page)
+        if users:
+            if export =='true':
+                try:
+                    file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                    # Build the full path to the media directory
+                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                    df = pd.DataFrame(users['converted_users'])
+                    df_str = df.to_csv(index=False)
+                    s3 = upload_csv_to_s3(df_str,file_name)
+                    data = {'file_link': file_path,'export':'true'}
+                    return Response(data)
+                except Exception as e:
+                    return Response(e)
+            else:
+                paginator = MyPagination()
+                # paginated_queryset = paginator.paginate_queryset(users, request)
+                paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
+                return paginator.get_paginated_response(paginated_queryset)
+        else:
+            response_data = {
+                "count": 0,
+                "next": None,
+                "previous": None,
+                "results": []
+            }
+            return Response(response_data)
+
+
+
+
 class GetUser(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, id):
@@ -524,14 +574,15 @@ class GetUser(APIView):
         url = request.build_absolute_uri()
         # print("id",id)
         user = Main_User.objects.filter(id=user_id)
-        print("user",user)
+        # print("user",user)
         try:
             payments = user[0].user_payments.all().values()
-            print(payments)
+            # print(payments)
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
             # latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
             # latest_payment = payments.order_by('-order_datetime')
             # print(latest_payment[0])
+            print(user)
             user = dict(user.values()[0])
 
             # if latest_payment.date() > date.today():
