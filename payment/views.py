@@ -404,8 +404,6 @@ class ActivePayments(APIView):
         payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(product__product_name="test").select_related('product').values()
         payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
         payments = payments.filter(expiration_datetime__date__gt=date.today())
-        # print(payments.count())
-        # print(payments)
 
         if payments:
             if not start_date:
@@ -449,6 +447,35 @@ class ActivePayments(APIView):
             else:
                 payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
 
+            if export == 'true':
+                for i, data in enumerate(payments):
+                    date_string = payments[i]['expiration_datetime']
+                    if date_string:
+                        payments[i]['is_active'] = date_string.date() >= date.today()
+                    else:
+                        payments[i]['is_active'] = False
+
+                users = list(payments.values('user__email','user__phone'))
+                products = list(payments.values('product__product_name'))
+                payment_list = list(payments.values())    
+
+                for i in range(len(payment_list)):
+                    try:
+                        payment_list[i]['user_id'] = users[i]['user__email']
+                        payment_list[i]['phone'] = users[i]['user__phone']
+                        payment_list[i]['product_id'] = products[i]['product__product_name']
+                        payment_list[i]['is_active'] = payments[i]['is_active']
+                    except Exception as e:
+                        pass
+
+                removed_duplicates = self.remove_duplicate_payments(payment_list)
+                file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                df = pd.DataFrame(removed_duplicates).to_csv(index=False)
+                s3 = upload_csv_to_s3(df, file_name)
+                data = {'file_link': file_path, 'export': 'true'}
+                return Response(data)
+
             page = int(self.request.GET.get('page', 1))
             page_size = 10  # Number of payments per page
 
@@ -460,19 +487,12 @@ class ActivePayments(APIView):
             payments = payments[start_index:end_index]
          
             for i, data in enumerate(payments):
-                # date_string = data['expiration_datetime']
                 date_string = payments[i]['expiration_datetime']
                 if date_string:
                     payments[i]['is_active'] = date_string.date() >= date.today()
                 else:
                     payments[i]['is_active'] = False
 
-            # print(payments)
-
-            def json_serializable(obj):
-                    if isinstance(obj, datetime):
-                        return obj.isoformat()  # Convert datetime to ISO 8601 format
-                    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
                 
             if request.user.is_admin:
                 # print("admin user")
@@ -503,13 +523,11 @@ class ActivePayments(APIView):
                 else:
                     return Response("Please enter email")
             
-            # print("admin user")
             users = list(payments.values('user__email','user__phone'))
             products = list(payments.values('product__product_name'))
             payment_list = list(payments.values())                          
             for i in range(len(payment_list)):
                 try:
-                    # print("payments[i]",payments[i])
                     payment_list[i]['user_id'] = users[i]['user__email']
                     payment_list[i]['phone'] = users[i]['user__phone']
                     payment_list[i]['product_id'] = products[i]['product__product_name']
@@ -517,28 +535,24 @@ class ActivePayments(APIView):
                 except Exception as e:
                     pass
        
-            if export == 'true':
-                removed_duplicates = self.remove_duplicate_payments(payment_list)
-                file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                df = pd.DataFrame(removed_duplicates).to_csv(index=False)
-                s3 = upload_csv_to_s3(df, file_name)
-                data = {'file_link': file_path, 'export': 'true'}
-                return Response(data)
-            else:
-                payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
-                payment_objects = json.loads(payment_json)                
-                removed_duplicates = self.remove_duplicate_payments(payment_objects)
-                num_pages = (total_count + page_size - 1) // page_size
+            def json_serializable(obj):
+                    if isinstance(obj, datetime):
+                        return obj.isoformat()  # Convert datetime to ISO 8601 format
+                    raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-                if request.user.is_admin:
-                    return Response({
-                        'count': total_count,
-                        'num_pages': num_pages,
-                        'results': removed_duplicates,
-                    })
-                else:
-                    return Response("no data")  
+            payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
+            payment_objects = json.loads(payment_json)                
+            removed_duplicates = self.remove_duplicate_payments(payment_objects)
+            num_pages = (total_count + page_size - 1) // page_size
+
+            if request.user.is_admin:
+                return Response({
+                    'count': total_count,
+                    'num_pages': num_pages,
+                    'results': removed_duplicates,
+                })
+            else:
+                return Response("no data")  
         else:
             return Response("No data")
 
