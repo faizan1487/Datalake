@@ -200,65 +200,67 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
 
 def active_paying_users_details(query_time, is_converted):
     user_list = []
-    for user in query_time:
-        payments = user.user_payments.all().values()
-        payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
-        # print(payments[0])
+    all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
+    all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
+    all_paid_users = query_time.filter(id__in=all_paid_users_ids)    
 
-        user_dict = {
-            'academy_demo_access': user.academy_demo_access,
-            'address': user.address,
-            'affiliate_code': user.affiliate_code,
-            'blocked': user.blocked,
-            'country': user.country,
-            'created_at': user.created_at,
-            'date_joined': user.date_joined,
-            'easypaisa_number': user.easypaisa_number,
-            'email': user.email,
-            'erp_lead_id': user.erp_lead_id,
-            'facebook_user_id': user.facebook_user_id,
-            'first_name': user.first_name,
-            'google_user_id': user.google_user_id,
-            'how_did_you_hear_about_us': user.how_did_you_hear_about_us,
-            'id': user.id,
-            'internal_source': user.internal_source,
-            'isAffiliate': user.isAffiliate,
-            'isMentor': user.isMentor,
-            'is_active': user.is_active,
-            'is_paying_customer': user.is_paying_customer,
-            'is_staff': user.is_staff,
-            'is_superuser': user.is_superuser,
-            'language': user.language,
-            'last_name': user.last_name,
-            'meta_data': user.meta_data,
-            'modified_at': user.modified_at
-        }
+    if is_converted =='true':
+        for user in all_paid_users:
+            payments = user.user_payments.all().values()
+            payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+            # print(payments[0])
 
-        # if latest_payment.date() > date.today():
-        user_dict['is_paying_customer'] = True
+            user_dict = {
+                'username': user.username,
+                'phone': user.phone,
+                'academy_demo_access': user.academy_demo_access,
+                'address': user.address,
+                'affiliate_code': user.affiliate_code,
+                'blocked': user.blocked,
+                'country': user.country,
+                'created_at': user.created_at,
+                'date_joined': user.date_joined,
+                'easypaisa_number': user.easypaisa_number,
+                'email': user.email,
+                'erp_lead_id': user.erp_lead_id,
+                'facebook_user_id': user.facebook_user_id,
+                'first_name': user.first_name,
+                'google_user_id': user.google_user_id,
+                'how_did_you_hear_about_us': user.how_did_you_hear_about_us,
+                'id': user.id,
+                'source': user.source,
+                'internal_source': user.internal_source,
+                'isAffiliate': user.isAffiliate,
+                'isMentor': user.isMentor,
+                'is_active': user.is_active,
+                'is_paying_customer': user.is_paying_customer,
+                'is_staff': user.is_staff,
+                'is_superuser': user.is_superuser,
+                'language': user.language,
+                'last_name': user.last_name,
+                'meta_data': user.meta_data,
+                'modified_at': user.modified_at
+            }
 
-        # def json_serializable(obj):
-        #     if isinstance(obj, datetime):
-        #         return obj.isoformat()  # Convert datetime to ISO 8601 format
-        #     raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
+            # if latest_payment.date() > date.today():
+            user_dict['is_paying_customer'] = True
 
-        products = list(payments.values('product__product_name'))
-        plans = list(payments.values('product__product_plan'))
-        payment_list = list(payments)
-        for i in range(len(payment_list)):
-        #     try:
-            payment_list[i]['user_id'] = user.email
-            payment_list[i]['product_id'] = products[i]['product__product_name']
-            payment_list[i]['plan'] = plans[i]['product__product_plan']
-            # except Exception as e:
-            #     print(e)
-        # print(payment_list)
-        user_dict['product'] = payment_list[0]['product_id']
-        user_dict['plan'] = payment_list[0]['plan']
-        user_dict['expiry_datet'] = payment_list[0]['expiration_datetime']
+            products = list(payments.values('product__product_name'))
+            plans = list(payments.values('product__product_plan'))
+            payment_list = list(payments)
+            for i in range(len(payment_list)):
+            #     try:
+                payment_list[i]['user_id'] = user.email
+                payment_list[i]['product_id'] = products[i]['product__product_name']
+                payment_list[i]['plan'] = plans[i]['product__product_plan']
+                # except Exception as e:
+                #     print(e)
+            # print(payment_list)
+            user_dict['product'] = payment_list[0]['product_id']
+            user_dict['plan'] = payment_list[0]['plan']
+            user_dict['expiry_date'] = payment_list[0]['expiration_datetime']
 
-        user_list.append(user_dict)
-
+            user_list.append(user_dict)
     
     return user_list
 
