@@ -135,6 +135,7 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
 
 def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
     users = Main_User.objects.all()
+
     if source:
         if source == 'Academy':
             users = users.filter(source='Al-Nafi', internal_source='Academy', academy_demo_access=True)
@@ -168,10 +169,7 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
             end_date = end_date + timedelta(days=1)
             
         if q:
-            if request.user.is_admin:
-                users = users.filter(email__iexact=q)
-            else:
-                users = users.filter(email__iexact=q)
+            users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
 
         if phone:
             phone = phone.strip()
@@ -182,8 +180,10 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
             else:
                 users = users.filter(phone__iexact=phone)
 
-        users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
+     
+        users = users.filter(Q(created_at__lte=end_date) & Q(created_at__gte=start_date))
 
+        # print("usercount after date filter", users.count())
 
         page_size = 10  # Number of payments per page
 
@@ -191,20 +191,30 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
 
-
+        users = users[start_index:end_index]
+        # print(users)
         paying_users = active_paying_users_details(users, is_converted)
-        users = paying_users[start_index:end_index]
-        users = {"converted_users":users}
+        users = {"converted_users":paying_users}
     return users
 
 
 def active_paying_users_details(query_time, is_converted):
     user_list = []
-    all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
-    all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
-    all_paid_users = query_time.filter(id__in=all_paid_users_ids)    
-
     if is_converted =='true':
+        # all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
+        all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
+        all_paid_users = []
+        # print(all_paid_users_ids)
+        for i in range(len(query_time)):
+            for j in range(len(all_paid_users_ids)):
+                # print("all_paid_users_ids[j]", all_paid_users_ids[j])
+                # print("query_time[i].id",query_time[i].id)
+                if query_time[i].id == all_paid_users_ids[j]:
+                    all_paid_users.append(query_time[i])
+
+        # print("all_paid_users",all_paid_users)
+
+        # all_paid_users = query_time.filter(id__in=all_paid_users_ids)    
         for user in all_paid_users:
             payments = user.user_payments.all().values()
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
@@ -263,6 +273,110 @@ def active_paying_users_details(query_time, is_converted):
             user_list.append(user_dict)
     
     return user_list
+
+
+
+from datetime import datetime, timedelta
+from django.db.models import Q
+from django.utils import timezone  # Import timezone from Django
+
+
+# def search_active_users(q, start_date, req_end_date, is_converted, source, request, phone, academy_demo_access, page):
+#     # Define the base queryset
+#     users = Main_User.objects.all()
+
+#     if source:
+#         if source == 'Academy':
+#             users = users.filter(source='Al-Nafi', internal_source='Academy', academy_demo_access=True)
+#         elif source == 'Al-Nafi':
+#             users = users.filter(Q(source='Al-Nafi') & ~Q(internal_source='Al-Nafi') & Q(academy_demo_access=False))
+#         else:
+#             users = users.filter(source=source)
+
+#     if academy_demo_access:
+#         users = users.filter(academy_demo_access=academy_demo_access)
+
+#     if q:
+#         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
+
+#     if phone:
+#         phone = phone.strip()
+#         if phone.startswith("92"):
+#             phone = "+" + phone
+#         users = users.filter(phone__icontains=phone) if request.user.is_admin else users.filter(phone__iexact=phone)
+
+#     # Calculate the start and end date
+#     if not start_date:
+#         start_date = users.exclude(created_at=None).last().created_at
+#     if not req_end_date:
+#         end_date = users.exclude(created_at=None).first().created_at
+#     if req_end_date:
+#         end_date = datetime.strptime(req_end_date, "%Y-%m-%d") + timedelta(days=1)
+
+#     # Filter by date range
+#     users = users.filter(Q(created_at__lte=end_date) & Q(created_at__gte=start_date))
+
+#     # Pagination
+#     page_size = 10
+#     start_index = (page - 1) * page_size
+#     end_index = start_index + page_size
+
+#     # Fetch active paying users and apply pagination
+#     users = fetch_active_paying_users(users, is_converted, timezone.now())[start_index:end_index]
+
+#     return {"converted_users": users}
+
+# def fetch_active_paying_users(users, is_converted,current_time):
+#     active_paying_users = []
+
+#     if is_converted == 'true':
+#         all_paid_users_ids = Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True)
+#         all_paid_users = users.filter(id__in=all_paid_users_ids)
+
+#         for user in all_paid_users:
+#             latest_payment = user.user_payments.filter(~Q(expiration_datetime=None)).order_by('-order_datetime').first()
+#             if latest_payment and latest_payment.expiration_datetime > current_time:
+#                 user_dict = {
+#                 'username': user.username,
+#                 'phone': user.phone,
+#                 'academy_demo_access': user.academy_demo_access,
+#                 'address': user.address,
+#                 'affiliate_code': user.affiliate_code,
+#                 'blocked': user.blocked,
+#                 'country': user.country,
+#                 'created_at': user.created_at,
+#                 'date_joined': user.date_joined,
+#                 'easypaisa_number': user.easypaisa_number,
+#                 'email': user.email,
+#                 'erp_lead_id': user.erp_lead_id,
+#                 'facebook_user_id': user.facebook_user_id,
+#                 'first_name': user.first_name,
+#                 'google_user_id': user.google_user_id,
+#                 'how_did_you_hear_about_us': user.how_did_you_hear_about_us,
+#                 'id': user.id,
+#                 'source': user.source,
+#                 'internal_source': user.internal_source,
+#                 'isAffiliate': user.isAffiliate,
+#                 'isMentor': user.isMentor,
+#                 'is_active': user.is_active,
+#                 'is_paying_customer': user.is_paying_customer,
+#                 'is_staff': user.is_staff,
+#                 'is_superuser': user.is_superuser,
+#                 'language': user.language,
+#                 'last_name': user.last_name,
+#                 'meta_data': user.meta_data,
+#                 'modified_at': user.modified_at
+#             }
+#                 user_dict['is_paying_customer'] = True
+#                 product = latest_payment.product.first()  # Retrieve the product using 'first()
+#                 if product:
+#                     user_dict['product'] = product.product_name
+#                     user_dict['plan'] = product.product_plan
+#                     user_dict['expiry_date'] = latest_payment.expiration_datetime
+#                     active_paying_users.append(user_dict)
+
+#     return active_paying_users
+
 
 
 def active_payments(user):
