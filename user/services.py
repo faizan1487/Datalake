@@ -17,6 +17,7 @@ from datetime import datetime
 from calendar import monthrange
 from django.db.models import Q
 from rest_framework.response import Response
+from django.db.models import Prefetch
 
 
 env = environ.Env()
@@ -131,18 +132,18 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
     return users 
 
 
+#PRoduction
 def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
     users = Main_User.objects.all()
 
-    if request.user.is_admin:
-        # print("admin user")
-        pass
-    else:
-        if q:
-            users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
-        else:
-            response = {'success':False}
-            return response
+    # if request.user.is_admin:
+    #     pass
+    # else:
+    #     if q:
+    #         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
+    #     else:
+    #         response = {'success':False}
+    #         return response
 
     if source:
         if source == 'Academy':
@@ -191,21 +192,19 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
      
         users = users.filter(Q(created_at__lte=end_date) & Q(created_at__gte=start_date))
 
-        # print("usercount after date filter", users.count())
 
-        page_size = 10  # Number of payments per page
-
+        page_size = 30  # Number of payments per page
         # Calculate the start and end indices for slicing
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
 
         sliced_users = users[start_index:end_index]
-        # print(users)
         paying_users = active_paying_users_details(sliced_users, is_converted)
-        users = {"converted_users":paying_users,'success':True}
+        users = {"converted_users":paying_users['users'], "count":paying_users['count'], 'success':True}
     return users
 
 
+#PRODUCTION
 def active_paying_users_details(query_time,is_converted):
     user_list = []
     if is_converted =='true':
@@ -216,7 +215,8 @@ def active_paying_users_details(query_time,is_converted):
             for j in range(len(all_paid_users_ids)):
                 if query_time[i].id == all_paid_users_ids[j]:
                     all_paid_users.append(query_time[i])
-        
+
+        users_count = len(all_paid_users_ids)
 
         for user in all_paid_users:
             payments = user.user_payments.all().values()
@@ -260,7 +260,6 @@ def active_paying_users_details(query_time,is_converted):
 
                 products = list(payments.values('product__product_name'))
                 plans = list(payments.values('product__product_plan'))
-                # print(payments)
                 payment_list = list(payments)
                 for i in range(len(payment_list)):
                     try:
@@ -276,7 +275,82 @@ def active_paying_users_details(query_time,is_converted):
 
                 user_list.append(user_dict)
     
-    return user_list
+    response = {"users":user_list, "count":users_count}
+    return response
+
+
+#LOCAL
+# def search_active_users(q, start_date, req_end_date, is_converted, source, request, phone, academy_demo_access, page):
+#     users = Main_User.objects.all()
+
+#     if q:
+#         users = users.filter(Q(email__iexact=q))
+
+#     if users:
+#         users = users.prefetch_related('user_payments')
+
+#         page_size = 10  # Number of payments per page
+#         # Calculate the start and end indices for slicing
+#         start_index = (page - 1) * page_size
+#         end_index = start_index + page_size
+
+#         users = users[start_index:end_index]
+#         paying_users = active_paying_users_details(users)
+#         users = {"converted_users": paying_users, 'success': True}
+#     return users
+
+
+#LOCAL
+# def active_paying_users_details(users):
+#     user_list = []
+
+#     for user in users:
+#         payments = user.user_payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+#         if payments:
+#             payment = payments[0]  # Only interested in the first payment
+#             products = payment.product.all()
+#             # print(products)
+#             # print(products)
+#             user_dict = {
+#                 'username': user.username,
+#                 'phone': user.phone,
+#                 'academy_demo_access': user.academy_demo_access,
+#                 'address': user.address,
+#                 'affiliate_code': user.affiliate_code,
+#                 'blocked': user.blocked,
+#                 'country': user.country,
+#                 'created_at': user.created_at,
+#                 'date_joined': user.date_joined,
+#                 'easypaisa_number': user.easypaisa_number,
+#                 'email': user.email,
+#                 'erp_lead_id': user.erp_lead_id,
+#                 'facebook_user_id': user.facebook_user_id,
+#                 'first_name': user.first_name,
+#                 'google_user_id': user.google_user_id,
+#                 'how_did_you_hear_about_us': user.how_did_you_hear_about_us,
+#                 'id': user.id,
+#                 'source': user.source,
+#                 'internal_source': user.internal_source,
+#                 'isAffiliate': user.isAffiliate,
+#                 'isMentor': user.isMentor,
+#                 'is_active': user.is_active,
+#                 'is_paying_customer': user.is_paying_customer,
+#                 'is_staff': user.is_staff,
+#                 'is_superuser': user.is_superuser,
+#                 'language': user.language,
+#                 'last_name': user.last_name,
+#                 'meta_data': user.meta_data,
+#                 'modified_at': user.modified_at,
+#                 'product': products[0].product_name if products else None,  # Assuming Payment has a foreign key to Product
+#                 'plan': products[0].product_plan if products else None, # Assuming Payment has a foreign key to
+#                 'expiry_date': payment.expiration_datetime,
+#             }
+
+#             user_dict['is_paying_customer'] = True
+
+#             user_list.append(user_dict)
+
+#     return user_list
 
 
 

@@ -516,11 +516,9 @@ class GetUsers(APIView):
             return Response(response_data)
 
 
-
-
 #Optimized
 class GetActiveUsers(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         page = int(self.request.GET.get('page', 1))
         q = self.request.GET.get('q', None) or None
@@ -550,10 +548,18 @@ class GetActiveUsers(APIView):
                     except Exception as e:
                         return Response(e)
                 else:
-                    paginator = MyPagination()
-                    # paginated_queryset = paginator.paginate_queryset(users, request)
-                    paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
-                    return paginator.get_paginated_response(paginated_queryset)
+                    num_pages = (users['count'] + 30 - 1) // 30
+
+                    return Response({
+                        'count': users['count'],
+                        'num_pages': num_pages,
+                        'results': users['converted_users'],
+                    })
+
+                    # paginator = MyPagination()
+                    # # paginated_queryset = paginator.paginate_queryset(users, request)
+                    # paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
+                    # return paginator.get_paginated_response(paginated_queryset)
             else:
                 response_data = {
                     "count": 0,
