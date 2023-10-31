@@ -518,7 +518,7 @@ class GetUsers(APIView):
 
 #Optimized
 class GetActiveUsers(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         page = int(self.request.GET.get('page', 1))
         q = self.request.GET.get('q', None) or None

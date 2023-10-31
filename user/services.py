@@ -136,14 +136,14 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
 def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
     users = Main_User.objects.all()
 
-    # if request.user.is_admin:
-    #     pass
-    # else:
-    #     if q:
-    #         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
-    #     else:
-    #         response = {'success':False}
-    #         return response
+    if request.user.is_admin:
+        pass
+    else:
+        if q:
+            users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
+        else:
+            response = {'success':False}
+            return response
 
     if source:
         if source == 'Academy':
@@ -193,7 +193,7 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
         users = users.filter(Q(created_at__lte=end_date) & Q(created_at__gte=start_date))
 
 
-        page_size = 30  # Number of payments per page
+        page_size = 10  # Number of payments per page
         # Calculate the start and end indices for slicing
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
