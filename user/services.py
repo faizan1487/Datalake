@@ -134,15 +134,15 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
 def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
     users = Main_User.objects.all()
 
-    # if request.user.is_admin:
-    #     # print("admin user")
-    #     pass
-    # else:
-    #     if q:
-    #         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
-    #     else:
-    #         response = {'success':False}
-    #         return response
+    if request.user.is_admin:
+        # print("admin user")
+        pass
+    else:
+        if q:
+            users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
+        else:
+            response = {'success':False}
+            return response
 
     if source:
         if source == 'Academy':
