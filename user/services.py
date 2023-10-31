@@ -134,6 +134,16 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
 def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
     users = Main_User.objects.all()
 
+    # if request.user.is_admin:
+    #     # print("admin user")
+    #     pass
+    # else:
+    #     if q:
+    #         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
+    #     else:
+    #         response = {'success':False}
+    #         return response
+
     if source:
         if source == 'Academy':
             users = users.filter(source='Al-Nafi', internal_source='Academy', academy_demo_access=True)
@@ -189,80 +199,87 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
         start_index = (page - 1) * page_size
         end_index = start_index + page_size
 
-        users = users[start_index:end_index]
+        sliced_users = users[start_index:end_index]
         # print(users)
-        paying_users = active_paying_users_details(users, is_converted)
-        users = {"converted_users":paying_users}
+        paying_users = active_paying_users_details(sliced_users, users, is_converted)
+        users = {"converted_users":paying_users['paying_users'], "users_count": paying_users['users_count'],'success':True}
     return users
 
 
-def active_paying_users_details(query_time, is_converted):
+def active_paying_users_details(query_time, users, is_converted):
     user_list = []
     if is_converted =='true':
         # all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
         all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
-        all_paid_users = []
-        for i in range(len(query_time)):
+        # all_paid_users = []
+        users_count = 0
+        for i in range(len(users)):
             for j in range(len(all_paid_users_ids)):
-                if query_time[i].id == all_paid_users_ids[j]:
-                    all_paid_users.append(query_time[i])
+                if users[i].id == all_paid_users_ids[j]:
+                    # all_paid_users.append(users[i])
+                    users_count +=1
 
-        for user in all_paid_users:
+        print(users_count)
+
+        for user in query_time:
             payments = user.user_payments.all().values()
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+            if payments:
+                # print(user)
+                user_dict = {
+                    'username': user.username,
+                    'phone': user.phone,
+                    'academy_demo_access': user.academy_demo_access,
+                    'address': user.address,
+                    'affiliate_code': user.affiliate_code,
+                    'blocked': user.blocked,
+                    'country': user.country,
+                    'created_at': user.created_at,
+                    'date_joined': user.date_joined,
+                    'easypaisa_number': user.easypaisa_number,
+                    'email': user.email,
+                    'erp_lead_id': user.erp_lead_id,
+                    'facebook_user_id': user.facebook_user_id,
+                    'first_name': user.first_name,
+                    'google_user_id': user.google_user_id,
+                    'how_did_you_hear_about_us': user.how_did_you_hear_about_us,
+                    'id': user.id,
+                    'source': user.source,
+                    'internal_source': user.internal_source,
+                    'isAffiliate': user.isAffiliate,
+                    'isMentor': user.isMentor,
+                    'is_active': user.is_active,
+                    'is_paying_customer': user.is_paying_customer,
+                    'is_staff': user.is_staff,
+                    'is_superuser': user.is_superuser,
+                    'language': user.language,
+                    'last_name': user.last_name,
+                    'meta_data': user.meta_data,
+                    'modified_at': user.modified_at
+                }
 
-            user_dict = {
-                'username': user.username,
-                'phone': user.phone,
-                'academy_demo_access': user.academy_demo_access,
-                'address': user.address,
-                'affiliate_code': user.affiliate_code,
-                'blocked': user.blocked,
-                'country': user.country,
-                'created_at': user.created_at,
-                'date_joined': user.date_joined,
-                'easypaisa_number': user.easypaisa_number,
-                'email': user.email,
-                'erp_lead_id': user.erp_lead_id,
-                'facebook_user_id': user.facebook_user_id,
-                'first_name': user.first_name,
-                'google_user_id': user.google_user_id,
-                'how_did_you_hear_about_us': user.how_did_you_hear_about_us,
-                'id': user.id,
-                'source': user.source,
-                'internal_source': user.internal_source,
-                'isAffiliate': user.isAffiliate,
-                'isMentor': user.isMentor,
-                'is_active': user.is_active,
-                'is_paying_customer': user.is_paying_customer,
-                'is_staff': user.is_staff,
-                'is_superuser': user.is_superuser,
-                'language': user.language,
-                'last_name': user.last_name,
-                'meta_data': user.meta_data,
-                'modified_at': user.modified_at
-            }
+                # if latest_payment.date() > date.today():
+                user_dict['is_paying_customer'] = True
 
-            # if latest_payment.date() > date.today():
-            user_dict['is_paying_customer'] = True
+                products = list(payments.values('product__product_name'))
+                plans = list(payments.values('product__product_plan'))
+                # print(payments)
+                payment_list = list(payments)
+                for i in range(len(payment_list)):
+                    try:
+                        payment_list[i]['user_id'] = user.email
+                        payment_list[i]['product_id'] = products[i]['product__product_name']
+                        payment_list[i]['plan'] = plans[i]['product__product_plan']
+                    except Exception as e:
+                        print(e)
+                # print(payment_list)
+                user_dict['product'] = payment_list[0]['product_id']
+                user_dict['plan'] = payment_list[0]['plan']
+                user_dict['expiry_date'] = payment_list[0]['expiration_datetime']
 
-            products = list(payments.values('product__product_name'))
-            plans = list(payments.values('product__product_plan'))
-            payment_list = list(payments)
-            for i in range(len(payment_list)):
-                try:
-                    payment_list[i]['user_id'] = user.email
-                    payment_list[i]['product_id'] = products[i]['product__product_name']
-                    payment_list[i]['plan'] = plans[i]['product__product_plan']
-                except Exception as e:
-                    print(e)
-            user_dict['product'] = payment_list[0]['product_id']
-            user_dict['plan'] = payment_list[0]['plan']
-            user_dict['expiry_date'] = payment_list[0]['expiration_datetime']
-
-            user_list.append(user_dict)
-    
-    return user_list
+                user_list.append(user_dict)
+    response = {"users_count": users_count,"paying_users":user_list}
+    return response
 
 
 def active_payments(user):
