@@ -550,16 +550,10 @@ class GetActiveUsers(APIView):
                     except Exception as e:
                         return Response(e)
                 else:
-                    num_pages = (users['users_count'] + 50 - 1) // 50
-                    return Response({
-                        'count': users['users_count'],
-                        'num_pages': num_pages,
-                        'results': users['converted_users'],
-                    })
-                    # paginator = MyPagination()
-                    # # paginated_queryset = paginator.paginate_queryset(users, request)
-                    # paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
-                    # return paginator.get_paginated_response(paginated_queryset)
+                    paginator = MyPagination()
+                    # paginated_queryset = paginator.paginate_queryset(users, request)
+                    paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
+                    return paginator.get_paginated_response(paginated_queryset)
             else:
                 response_data = {
                     "count": 0,

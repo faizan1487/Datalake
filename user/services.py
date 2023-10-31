@@ -201,27 +201,24 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
 
         sliced_users = users[start_index:end_index]
         # print(users)
-        paying_users = active_paying_users_details(sliced_users, users, is_converted)
-        users = {"converted_users":paying_users['paying_users'], "users_count": paying_users['users_count'],'success':True}
+        paying_users = active_paying_users_details(sliced_users, is_converted)
+        users = {"converted_users":paying_users,'success':True}
     return users
 
 
-def active_paying_users_details(query_time, users, is_converted):
+def active_paying_users_details(query_time,is_converted):
     user_list = []
     if is_converted =='true':
         # all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
         all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
-        # all_paid_users = []
-        users_count = 0
-        for i in range(len(users)):
+        all_paid_users = []
+        for i in range(len(query_time)):
             for j in range(len(all_paid_users_ids)):
-                if users[i].id == all_paid_users_ids[j]:
-                    # all_paid_users.append(users[i])
-                    users_count +=1
+                if query_time[i].id == all_paid_users_ids[j]:
+                    all_paid_users.append(query_time[i])
+        
 
-        print(users_count)
-
-        for user in query_time:
+        for user in all_paid_users:
             payments = user.user_payments.all().values()
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
             if payments:
@@ -278,8 +275,10 @@ def active_paying_users_details(query_time, users, is_converted):
                 user_dict['expiry_date'] = payment_list[0]['expiration_datetime']
 
                 user_list.append(user_dict)
-    response = {"users_count": users_count,"paying_users":user_list}
-    return response
+    
+    return user_list
+
+
 
 
 def active_payments(user):
