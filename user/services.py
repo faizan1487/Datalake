@@ -41,8 +41,9 @@ def upload_csv_to_s3(df,file_name):
 def paying_users_details(query_time, is_converted):
     converted_users = []
     converted = []
-    all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
-    all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
+    sources = ['Al-Nafi','NEW ALNAFI']
+    all_paid_users_products = list(Main_Payment.objects.filter(source__in=sources).values("user__email", "product__product_name"))
+    all_paid_users_ids = list(Main_Payment.objects.filter(source__in=sources).values_list("user__id", flat=True))
     all_paid_users = query_time.filter(id__in=all_paid_users_ids).values("id","username","email", "first_name", "last_name","source","phone","address","country","created_at","academy_demo_access","internal_source")    
     
     all_unpaid_users = query_time.exclude(id__in=all_paid_users_ids)
