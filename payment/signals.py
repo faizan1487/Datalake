@@ -361,6 +361,8 @@ def support_renewal_leads(instance):
 
     # try:
     response = requests.post(crm_endpoint, headers=headers, json=data)
+    # print(response.status_code)
+    # print(response.text)
     # except:
     #     print(data)
 

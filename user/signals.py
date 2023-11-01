@@ -145,7 +145,7 @@ def handle_lead_post_request_moc_doctype(sender, instance, created, **kwargs):
     Moc_Leads = moc_doctype_Leads_Signal(instance,source)
 
 
-# @receiver(post_save, sender=AlNafi_User)
+@receiver(post_save, sender=AlNafi_User)
 def alnafi_lead_to_moc_doctype(sender, instance, **kwargs):
     # print("alnafi lead to moc signal running")
     # source='Academy Signup'
@@ -153,7 +153,7 @@ def alnafi_lead_to_moc_doctype(sender, instance, **kwargs):
     alnafi_user = moc_doctype_Leads_Signal(instance,source)    
 
 def moc_doctype_Leads_Signal(instance,source):
-    # print("mocdoctype signa;")
+    print("mocdoctype signa;")
     # api_key = env("FRAPPE_API_KEY")
     api_key = '351b6479c5a4a16'
     api_secret = 'e459db7e2d30b34'
@@ -254,7 +254,7 @@ def moc_doctype_Leads_Signal(instance,source):
 
 
 def mocLead_Signalto_sale_doctype(instance,source):
-    # print("sale doctype signa;")
+    print("sale doctype signa;")
     user_api_key, user_secret_key = round_robin()
 
     headers = {

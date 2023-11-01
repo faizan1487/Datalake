@@ -1,5 +1,6 @@
 from django.middleware import csrf
 from django.shortcuts import render
+from numpy import source
 from .models import AlNafi_User, IslamicAcademy_User, Main_User, User
 from django.db.models import Q
 from django.conf import settings
@@ -136,14 +137,17 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
 def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
     users = Main_User.objects.all()
 
-    if request.user.is_admin:
-        pass
-    else:
-        if q:
-            users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
-        else:
-            response = {'success':False}
-            return response
+    # if request.user.is_admin:
+    if q:
+        users = users.filter(email__iexact=q)
+    # else:
+    #     if q:
+    #         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
+    #     else:
+    #         response = {'success':False}
+    #         return response
+    
+    print("users after q", users)
 
     if source:
         if source == 'Academy':
@@ -177,8 +181,8 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
             end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
             end_date = end_date + timedelta(days=1)
             
-        if q:
-            users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
+        # if q:
+            # users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
 
         if phone:
             phone = phone.strip()
@@ -191,6 +195,8 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
 
      
         users = users.filter(Q(created_at__lte=end_date) & Q(created_at__gte=start_date))
+
+        print("users after date filter",users)
 
 
         page_size = 10  # Number of payments per page
@@ -209,18 +215,25 @@ def active_paying_users_details(query_time,is_converted):
     user_list = []
     if is_converted =='true':
         # all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
-        all_paid_users_ids = list(Main_Payment.objects.filter(source='Al-Nafi').values_list("user__id", flat=True))
+        sources = ['Al-Nafi','NEW ALNAFI']
+        all_paid_users_ids = list(Main_Payment.objects.filter(source__in=sources).values_list("user__id", flat=True))
+        # print("all_paid_users_ids",all_paid_users_ids)
         all_paid_users = []
         for i in range(len(query_time)):
             for j in range(len(all_paid_users_ids)):
                 if query_time[i].id == all_paid_users_ids[j]:
+                    print("all_paid_users_ids[j]",all_paid_users_ids[j])
+                    print("query_time[i].id",query_time[i].id)
                     all_paid_users.append(query_time[i])
+        print("all_paid_users",all_paid_users)
 
         users_count = len(all_paid_users_ids)
 
         for user in all_paid_users:
             payments = user.user_payments.all().values()
+            print("payments",payments)
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+            print("user payments",payments)
             if payments:
                 # print(user)
                 user_dict = {
@@ -262,12 +275,12 @@ def active_paying_users_details(query_time,is_converted):
                 plans = list(payments.values('product__product_plan'))
                 payment_list = list(payments)
                 for i in range(len(payment_list)):
-                    try:
-                        payment_list[i]['user_id'] = user.email
-                        payment_list[i]['product_id'] = products[i]['product__product_name']
-                        payment_list[i]['plan'] = plans[i]['product__product_plan']
-                    except Exception as e:
-                        print(e)
+                    # try:
+                    payment_list[i]['user_id'] = user.email
+                    payment_list[i]['product_id'] = products[i]['product__product_name']
+                    payment_list[i]['plan'] = plans[i]['product__product_plan']
+                    # except Exception as e:
+                    #     print(e)
                 # print(payment_list)
                 user_dict['product'] = payment_list[0]['product_id']
                 user_dict['plan'] = payment_list[0]['plan']
@@ -275,6 +288,7 @@ def active_paying_users_details(query_time,is_converted):
 
                 user_list.append(user_dict)
     
+    print("user list", user_list)
     response = {"users":user_list, "count":users_count}
     return response
 

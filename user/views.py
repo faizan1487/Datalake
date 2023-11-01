@@ -130,8 +130,12 @@ class o_level_leads_alnafi_model(APIView):
             # Convert 'created_at' to the desired format
             created_at_str = row['created_at']
             assigned_date = row['assigned_date']
-            parsed_date = datetime.strptime(assigned_date, "%d-%b-%Y")
-            formatted_date = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
+            assigned_date_datetime = datetime.strptime(assigned_date, '%d-%b-%y')
+            assigned_date = assigned_date_datetime.strftime('%Y-%m-%d')
+
+            print("assigned_date)",assigned_date)
+            # parsed_date = datetime.strptime(assigned_date, "%d-%b-%Y")
+            # formatted_date = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
             # Assuming the original format is "%m/%d/%Y %H:%M:%S"
             # You can adjust the format string as needed
             # created_at = pd.to_datetime(created_at_str, format="%m/%d/%Y %H:%M:%S")
@@ -145,7 +149,7 @@ class o_level_leads_alnafi_model(APIView):
                     'login_source':login_source,
                     'country': country,
                     'created_at': created_at,
-                    'assigned_date':formatted_date
+                    'assigned_date':assigned_date
                 })
 
                 # If the object was not created (i.e., it already existed), update its attributes
@@ -157,7 +161,7 @@ class o_level_leads_alnafi_model(APIView):
                     user.login_source = login_source
                     user.country = country
                     user.created_at = created_at
-                    user.assigned_date = formatted_date
+                    user.assigned_date = assigned_date
                     user.save()
 
             except Exception as e:
@@ -173,7 +177,7 @@ class o_level_leads_alnafi_model(APIView):
 
 class renewal_leads_upload_crm(APIView):
     def post(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/Renewal Leads - Al Baseer to CRM - Expired.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
         lst = []
 
         for index, row in data.iterrows():
@@ -533,6 +537,7 @@ class GetActiveUsers(APIView):
         url = request.build_absolute_uri()
 
         users = search_active_users(q,start_date,req_end_date,is_converted,source,request,phone,academy_demo_access,page)
+        print("users",users)
         if users['success'] == True:
             if users:
                 if export =='true':
