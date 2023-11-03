@@ -43,7 +43,7 @@ class NewAlnafiPayment(APIView):
         data = request.data
         # print(data)
         order_id = data.get('orderId')
-        # print(payment_id)
+        # print(order_id)
 
         try:
             instance = New_Alnafi_Payments.objects.filter(orderId=order_id)

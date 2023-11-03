@@ -172,7 +172,7 @@ def change_lead_status_sales_module(instance, **kwargs):
             # break
         else:
             pass
-    except RequestException as e:
+    except Exception as e:
         pass
         # print("in except")
         # print('Error occurred while making the request:', str(e))

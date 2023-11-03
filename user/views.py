@@ -175,49 +175,6 @@ class o_level_leads_alnafi_model(APIView):
         return Response("Leads created")
 
 
-class renewal_leads_upload_crm(APIView):
-    def post(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
-        lst = []
-
-        for index, row in data.iterrows():
-            full_name = row['name']
-            email = row['email']
-            phone = row['phone']
-            date_joined_str = row['date_joined']
-            product_name = row['product_name']
-            payment_date = row['payment_date']
-            expiration_date = row['expiry_date']
-            status = row['status']
-            # Convert 'created_at' to the desired format
-            parsed_date = datetime.strptime(expiration_date, "%d-%b-%Y")
-            formatted_date = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
-
-            # created_at = pd.to_datetime(created_at_str, format="%m/%d/%Y %H:%M:%S")
-            date_joined = pd.to_datetime(date_joined_str, format="%Y/%m/%d %H:%M:%S")
-            try:
-                data = {
-                    'first_name': full_name,
-                    'user_id': email,
-                    'phone': phone,
-                    'date_joined': date_joined,
-                    'payment_date':payment_date,
-                    'expiration_date': expiration_date,
-                    'product_name': product_name,
-                    'status': status,
-                }
-            except Exception as e:
-                print(e)
-                lst.append(row['email'])
-
-        data_Frame = pd.DataFrame(lst)
-        data_Frame.to_csv("error.csv")
-
-
-        return Response("Leads created")
-
-
-
 # Create your views here.
 class MyPagination(PageNumberPagination):
     page_size = 10
