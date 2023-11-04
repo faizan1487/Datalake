@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
-from .models import Alnafi_Product
+from .models import Alnafi_Product, Main_Product
 from .serializers import AlNafiMainSiteProductSerializer
 from rest_framework import status
 from rest_framework.response import Response
@@ -27,7 +27,7 @@ class AlnafiProduct(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
     def get(self,request):
-        queryset = Alnafi_Product.objects.exclude(name__in=['test','test10']).values_list('name', flat=True)
+        queryset = Main_Product.objects.exclude(product_name__in=['test','test10']).values_list('product_name', flat=True)
         words_to_remove = ['Wnglish','01_2_7','01_2_4','01_2_6','Brazil','(Italy)',' in english','Bengali','Mandarin',' in','yearly','Annual in english','Half Yearly in english','Quarterly in english','Quarterly','half','Half', 'Monthly', 'Yearly', 'HalfYearly','Annual',' halfyearly','QUARTERLY','annual','Quaterly','TEST','English','english','Urdu','Italian','French','Chinese','Spanish','Arabic','Malay','Indonesian','Hindi','Bangla','Portuguese','Swahili','Russian','Japanese','Persian','Filipino','Turkish','Marathi','Javanese','German','Vietnamese']
         to_not_remove = ['Arabic for Urdu Speakers']
         # return Response(queryset)
