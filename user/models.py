@@ -169,6 +169,7 @@ class Moc_Leads(models.Model):
     country = models.CharField(max_length=100, null=True, blank=True)
     login_source = models.CharField(max_length=255, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    assigned_at = models.DateTimeField(auto_now=True)
     qualification = models.CharField(max_length=255, null=True, blank=True)
     interest = models.CharField(max_length=255, null=True, blank=True)
     cv_link = models.CharField(max_length=255, null=True, blank=True)
