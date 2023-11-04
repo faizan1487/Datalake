@@ -142,7 +142,7 @@ def handle_lead_post_request_lead_sale_doctype(sender, instance, created, **kwar
 def handle_lead_post_request_moc_doctype(sender, instance, created, **kwargs):
     # return
     source=instance.login_source
-    Moc_Leads = moc_doctype_Leads_Signal(instance,source)
+    Moc_Leads = mocLead_Signalto_moc_doctype(instance,source)
 
 
 @receiver(post_save, sender=AlNafi_User)
@@ -150,10 +150,10 @@ def alnafi_lead_to_moc_doctype(sender, instance, **kwargs):
     # print("alnafi lead to moc signal running")
     # source='Academy Signup'
     source = instance.login_source
-    alnafi_user = moc_doctype_Leads_Signal(instance,source)    
+    alnafi_user = mocLead_Signalto_moc_doctype(instance,source)    
 
-def moc_doctype_Leads_Signal(instance,source):
-    print("mocdoctype signa;")
+def mocLead_Signalto_moc_doctype(instance,source):
+    # print("mocdoctype signa;")
     # api_key = env("FRAPPE_API_KEY")
     api_key = '351b6479c5a4a16'
     api_secret = 'e459db7e2d30b34'
@@ -198,7 +198,6 @@ def moc_doctype_Leads_Signal(instance,source):
     # print(response.status_code)
     # print(response.text)
     lead_data = response.json()
-    # print(response.status_code)
     # print(lead_data['data'])
     # print(lead_data)
     if response.status_code == 403:
@@ -235,16 +234,14 @@ def moc_doctype_Leads_Signal(instance,source):
         post_url = 'https://crm.alnafi.com/api/resource/moclead'
         response = requests.post(post_url, headers=headers, json=data)
         # print(response.status_code)
-        # print(response.json())
+        # print(response.text)
         # response.raise_for_status()
         # print("response.status_code",response.status_code)
         if response.status_code == 200:
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']
-            if erp_lead_id:
-                # print("lead id exists")
-                # instance.erp_lead_id = erp_lead_id
-                print("Lead created successfully!")
+            # if erp_lead_id:
+            #     print("Lead created successfully!")
         else:
             pass
             # print(data)
@@ -254,7 +251,7 @@ def moc_doctype_Leads_Signal(instance,source):
 
 
 def mocLead_Signalto_sale_doctype(instance,source):
-    print("sale doctype signa;")
+    # print("sale doctype signa;")
     user_api_key, user_secret_key = round_robin()
 
     headers = {

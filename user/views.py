@@ -110,8 +110,7 @@ class UploadMocLeads(APIView):
         data_Frame = pd.DataFrame(lst)
         data_Frame.to_csv("error.csv")
 
-
-        return Response({{"msg":"done"}})
+        return Response({"msg":"done"})
 
 
 class o_level_leads_alnafi_model(APIView):
@@ -494,22 +493,22 @@ class GetActiveUsers(APIView):
         url = request.build_absolute_uri()
 
         users = search_active_users(q,start_date,req_end_date,is_converted,source,request,phone,academy_demo_access,page)
-        print("users",users)
+        # print("users",users)
         if users['success'] == True:
-            if users:
-                if export =='true':
-                    try:
-                        file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                        # Build the full path to the media directory
-                        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                        df = pd.DataFrame(users['converted_users'])
-                        df_str = df.to_csv(index=False)
-                        s3 = upload_csv_to_s3(df_str,file_name)
-                        data = {'file_link': file_path,'export':'true'}
-                        return Response(data)
-                    except Exception as e:
-                        return Response(e)
-                else:
+            if export =='true':
+                try:
+                    file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                    # Build the full path to the media directory
+                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                    df = pd.DataFrame(users['converted_users'])
+                    df_str = df.to_csv(index=False)
+                    s3 = upload_csv_to_s3(df_str,file_name)
+                    data = {'file_link': file_path,'export':'true'}
+                    return Response(data)
+                except Exception as e:
+                    return Response(e)
+            else:
+                if q:
                     num_pages = (users['count'] + 30 - 1) // 30
 
                     return Response({
@@ -517,21 +516,20 @@ class GetActiveUsers(APIView):
                         'num_pages': num_pages,
                         'results': users['converted_users'],
                     })
+                else:
+                    return Response({
+                        'count': 0,
+                        'num_pages': 0,
+                        'results': users['converted_users'],
+                    })
 
-                    # paginator = MyPagination()
-                    # # paginated_queryset = paginator.paginate_queryset(users, request)
-                    # paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
-                    # return paginator.get_paginated_response(paginated_queryset)
-            else:
-                response_data = {
-                    "count": 0,
-                    "next": None,
-                    "previous": None,
-                    "results": []
-                }
-                return Response(response_data)
         else:
-            return Response("Please enter email")
+            return Response({
+                'count': 0,
+                'num_pages': 0,
+                'results': users['converted_users'],
+                })
+            # return Response("Please enter email")
 
 
 

@@ -253,8 +253,10 @@ class RenewalPayments(APIView):
         end_index = start_index + page_size
 
        
-        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(product__product_name="test").select_related('product').values()
-        payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
+        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(
+            user__email__endswith="yopmail.com"
+            ).select_related(
+                'product').values()
 
         if q:
             payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
@@ -401,8 +403,7 @@ class ActivePayments(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
 
-        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(product__product_name="test").select_related('product').values()
-        payments = payments.exclude(amount__in=[1,0.01,1.0,2.0,3.0,4.0,5.0,5.0,6.0,7.0,8.0,9.0,10.0])
+        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(user__email__endswith="yopmail.com").select_related('product').values()
         payments = payments.filter(expiration_datetime__date__gt=date.today())
 
         if payments:
@@ -790,7 +791,7 @@ class RenewalNoOfPayments(APIView):
     def get(self, request):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
-        payments = Main_Payment.objects.exclude(product__product_name="test").exclude(amount=1).filter(source='Al-Nafi')
+        payments = Main_Payment.objects.exclude(user__email__endswith="yopmail.com").filter(source='Al-Nafi')
         response_data = renewal_no_of_payments(payments)
         return Response(response_data)
         
@@ -929,10 +930,6 @@ class SearchPayments(APIView):
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page,request,phone):
     # payments = Main_Payment.objects.all().distinct()
     payments = Main_Payment.objects.all().exclude(
-        product__product_name__in=["test", "Test Course", "Test"]
-        ).exclude(
-            amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]
-        ).exclude(
             user__email__endswith="yopmail.com").distinct()
 
     statuses = ["0", False, 0]
@@ -1474,10 +1471,8 @@ class PaymentValidationNew(APIView):
         payments = Main_Payment.objects.filter(
             source__in=['Al-Nafi', 'NEW ALNAFI']
         ).exclude(
-            product__product_name__in=["test", "Test Course", "Test"]
-        ).exclude(
-            amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1]
-        ).select_related('user').prefetch_related('product')
+            user__email__endswith="yopmail.com"
+            ).select_related('user').prefetch_related('product')
 
         if source:
             payments = payments.filter(source=source)

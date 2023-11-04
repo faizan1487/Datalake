@@ -12,7 +12,6 @@ urlpatterns = [
     
     #below api ths is for moc leads
     path('getusers/',getUsser.as_view(), name='get-users'),
-    path('getactiveusers/',GetActiveUsers.as_view(), name='get-active-users'),
 
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
     path('newalnafiuser/', NewAlnafiUser.as_view(), name='new-alnafi-user'), #for new mainsite users
@@ -24,6 +23,7 @@ urlpatterns = [
     path('moc_leads_upload/', Moc_leads_upload.as_view(), name='moc-leads-upload'),
 
     path('users/', GetUsers.as_view(), name='user-list'),
+    path('getactiveusers/',GetActiveUsers.as_view(), name='get-active-users'),
     path('userdetails/<int:id>/', GetUser.as_view(), name='user-details'),
     path('nofusers/', GetNoOfUsersMonth.as_view(), name='no-of-users'),
     

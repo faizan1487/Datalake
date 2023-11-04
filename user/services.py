@@ -69,7 +69,7 @@ def paying_users_details(query_time, is_converted):
     return response
 
 def search_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access):
-    users = Main_User.objects.values(
+    users = Main_User.objects.exclude(email__endswith="yopmail.com").values(
         "id", "email", "username", "first_name", "last_name", "source", "internal_source",
         "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
         "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer",
@@ -136,11 +136,14 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
 
 #PRoduction
 def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
-    users = Main_User.objects.all()
+    users = Main_User.objects.exclude(email__endswith="yopmail.com")
+    # print(users)
+    # exclude(user__email__endswith="yopmail.com")
 
     # if request.user.is_admin:
     if q:
         users = users.filter(email__iexact=q)
+
     # else:
     #     if q:
     #         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
@@ -148,7 +151,7 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
     #         response = {'success':False}
     #         return response
     
-    print("users after q", users)
+    # print("users after q", users)
 
     if source:
         if source == 'Academy':
@@ -197,7 +200,7 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
      
         users = users.filter(Q(created_at__lte=end_date) & Q(created_at__gte=start_date))
 
-        print("users after date filter",users)
+        # print("users after date filter",users)
 
 
         page_size = 10  # Number of payments per page
@@ -208,7 +211,10 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
         sliced_users = users[start_index:end_index]
         paying_users = active_paying_users_details(sliced_users, is_converted)
         users = {"converted_users":paying_users['users'], "count":paying_users['count'], 'success':True}
-    return users
+        return users
+    else:
+        users = {"converted_users": users, "count": 0, 'success':False}
+        return users
 
 
 #PRODUCTION
@@ -223,18 +229,19 @@ def active_paying_users_details(query_time,is_converted):
         for i in range(len(query_time)):
             for j in range(len(all_paid_users_ids)):
                 if query_time[i].id == all_paid_users_ids[j]:
-                    print("all_paid_users_ids[j]",all_paid_users_ids[j])
-                    print("query_time[i].id",query_time[i].id)
+                    # print("all_paid_users_ids[j]",all_paid_users_ids[j])
+                    # print("query_time[i].id",query_time[i].id)
                     all_paid_users.append(query_time[i])
-        print("all_paid_users",all_paid_users)
+        # print("all_paid_users",all_paid_users)
 
         users_count = len(all_paid_users_ids)
+        # print(users_count)
 
         for user in all_paid_users:
             payments = user.user_payments.all().values()
-            print("payments",payments)
+            # print("payments",payments)
             payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
-            print("user payments",payments)
+            # print("user payments",payments)
             if payments:
                 # print(user)
                 user_dict = {
@@ -289,7 +296,7 @@ def active_paying_users_details(query_time,is_converted):
 
                 user_list.append(user_dict)
     
-    print("user list", user_list)
+    # print("user list", user_list)
     response = {"users":user_list, "count":users_count}
     return response
 
