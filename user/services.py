@@ -383,7 +383,7 @@ def active_payments(user):
     # print(user)
     payments = user[0].user_payments.all().values()
     # print(payments)
-    payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+    payments = payments.order_by('-order_datetime')
     # latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
     # latest_payment = payments.order_by('-order_datetime')
     # print(latest_payment[0])

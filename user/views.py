@@ -46,7 +46,7 @@ import pandas as pd
 
 class UploadMocLeads(APIView):
     def post(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Podcast leads.csv')
         lst = []
 
         for index, row in data.iterrows():
@@ -56,14 +56,11 @@ class UploadMocLeads(APIView):
             form = row['form']
             country = row['country']
             login_source = row['source']
-            # cv_link = row['cv']
-            # created_at = row['created_at']
-            # Convert 'created_at' to the desired format
-            created_at_str = row['created_at']
+            created_at_str = row['created_at']            
 
             # Assuming the original format is "%m/%d/%Y %H:%M:%S"
             # You can adjust the format string as needed
-            created_at = pd.to_datetime(created_at_str, format="%Y/%m/%d %H:%M:%S")
+            created_at = pd.to_datetime(created_at_str, format="%d/%m/%Y %H:%M:%S")
             # try:
             #     print(email)
             #     moc = Moc_Leads.objects.create(
@@ -88,7 +85,6 @@ class UploadMocLeads(APIView):
                     'country': country,
                     'login_source': login_source,
                     'created_at': created_at,
-                    # 'cv_link': cv_link
                 })
 
                 # If the object was not created (i.e., it already existed), update its attributes
@@ -100,7 +96,6 @@ class UploadMocLeads(APIView):
                     moc.country = country
                     moc.login_source = login_source
                     moc.created_at = created_at
-                    # moc.cv_link = cv_link
                     moc.save()
 
             except Exception as e:
@@ -547,11 +542,11 @@ class GetUser(APIView):
         try:
             payments = user[0].user_payments.all().values()
             # print(payments)
-            payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+            payments = payments.order_by('-order_datetime')
             # latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
             # latest_payment = payments.order_by('-order_datetime')
             # print(latest_payment[0])
-            print(user)
+            # print(user)
             user = dict(user.values()[0])
 
             # if latest_payment.date() > date.today():
