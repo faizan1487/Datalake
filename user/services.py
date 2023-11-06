@@ -232,9 +232,8 @@ def active_paying_users_details(query_time,is_converted):
         for i in range(len(query_time)):
             for j in range(len(all_paid_users_ids)):
                 if query_time[i].id == all_paid_users_ids[j]:
-                    # print("all_paid_users_ids[j]",all_paid_users_ids[j])
-                    # print("query_time[i].id",query_time[i].id)
-                    all_paid_users.append(query_time[i])
+                    if query_time[i] not in all_paid_users:
+                        all_paid_users.append(query_time[i])
         # print("all_paid_users",all_paid_users)
 
         users_count = len(all_paid_users_ids)
@@ -245,7 +244,6 @@ def active_paying_users_details(query_time,is_converted):
             # print("payments",payments)
             # payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
             payments = payments.order_by('-order_datetime')
-            # print("user payments",payments)
             if payments:
                 # print(user)
                 user_dict = {
