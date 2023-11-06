@@ -240,7 +240,8 @@ def active_paying_users_details(query_time,is_converted):
         for user in all_paid_users:
             payments = user.user_payments.all().values()
             # print("payments",payments)
-            payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+            # payments = payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
+            payments = payments.order_by('-order_datetime')
             # print("user payments",payments)
             if payments:
                 # print(user)
@@ -602,4 +603,3 @@ class GroupPermission(BasePermission):
 
 #     response = {"converted_users": users, "converted": converted_dict, "products": converted_users['products']}
 #     return response
-
