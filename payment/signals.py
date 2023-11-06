@@ -51,6 +51,17 @@ def alnafi_payment_signal_sales(sender, instance: AlNafi_Payment, *args, **kwarg
     print("alnafi signal running for sales")
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
 
+@receiver(pre_save, sender=AlNafi_Payment)
+def alnafi_payment_signal_renewal_leads(sender, instance: AlNafi_Payment, *args, **kwargs):
+    print("alnafi signal running for sales")
+    Thread(target=change_lead_status_renewal_module, args=(instance,)).start()
+
+@receiver(pre_save, sender=New_Alnafi_Payments)
+def new_alnafi_payment_renewal_leads(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+    print("new alnafi signal running for sales")
+    Thread(target=change_lead_status_renewal_module, args=(instance,)).start()
+
+
 
 @receiver(pre_save, sender=Renewal)
 def support_renewal_leads_signal(sender, instance: Renewal, *args, **kwargs):
@@ -372,10 +383,6 @@ def support_renewal_leads(instance):
         print(response.status_code)
         print(response.text)
 
-
-
-
-
 def get_USD_rate():
     usd_details = cache.get("usd_details")
     if usd_details:
@@ -391,3 +398,42 @@ def get_USD_rate():
     cache.set("usd_details", json.dumps(usd_details), 60*120)
     # print("usd_details",usd_details)
     return usd_details
+
+def change_lead_status_renewal_module(instance):
+    url = f'https://crm.alnafi.com/api/resource/Renewal Leads?fields=["name","user_id"]&filters=[["Renewal Leads","user_id","=","{instance.customer_email}"]]'
+    api_key, api_secret = round_robin_support()
+  
+    headers = {
+        'Authorization': f'token {api_key}:{api_secret}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    try:
+    # print("in try")
+        response = requests.get(url, headers=headers)
+        # response.raise_for_status()
+        data = response.json()
+        already_existed = len(data["data"]) > 0
+
+        # print(response.status_code)
+        # print(data['data'])
+        if already_existed:
+            converted_date = datetime.now().date()
+            lead_id = data['data'][0]['name']
+            url = f'https://crm.alnafi.com/api/resource/Renewal Leads/{lead_id}'
+            # print(customer_data)
+            lead_data = {
+                "status": "Converted",
+                "converted_date": converted_date.isoformat()
+            }
+            # print(lead_data)
+            response = requests.put(url, headers=headers, json=lead_data)
+            # print(response)
+            # print(response.text)
+            instance.customer_email = data['data'][0]['user_id']
+            # print("lead updated")
+            # break
+        else:
+            pass
+    except Exception as e:
+        pass
