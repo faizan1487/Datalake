@@ -144,6 +144,8 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
     if q:
         users = users.filter(email__iexact=q)
 
+    # print(users)
+
     # else:
     #     if q:
     #         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
@@ -223,7 +225,8 @@ def active_paying_users_details(query_time,is_converted):
     if is_converted =='true':
         # all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
         sources = ['Al-Nafi','NEW ALNAFI']
-        all_paid_users_ids = list(Main_Payment.objects.filter(source__in=sources).values_list("user__id", flat=True))
+        # all_paid_users_ids = list(Main_Payment.objects.filter(source__in=sources).values_list("user__id", flat=True))
+        all_paid_users_ids = list(Main_Payment.objects.all().values_list("user__id", flat=True))
         # print("all_paid_users_ids",all_paid_users_ids)
         all_paid_users = []
         for i in range(len(query_time)):
