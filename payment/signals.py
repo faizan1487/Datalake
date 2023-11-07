@@ -28,7 +28,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    print("new alnafi signal running")
+    # print("new alnafi signal running")
     model_name = 'new_alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
     # data = send_payment_support_module(instance,model_name)
@@ -36,38 +36,38 @@ def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *ar
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwargs):
-    print("alnafi signal running")
+    # print("alnafi signal running")
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    print("new alnafi signal running for sales")
+    # print("new alnafi signal running for sales")
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
     # data = send_payment_support_module(instance,model_name)
 
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_sales(sender, instance: AlNafi_Payment, *args, **kwargs):
-    print("alnafi signal running for sales")
+    # print("alnafi signal running for sales")
     Thread(target=change_lead_status_sales_module, args=(instance,)).start()
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_renewal_leads(sender, instance: AlNafi_Payment, *args, **kwargs):
-    print("alnafi signal running for sales")
+    # print("alnafi signal running for sales")
     Thread(target=change_lead_status_renewal_module, args=(instance,)).start()
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_renewal_leads(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    print("new alnafi signal running for sales")
+    # print("new alnafi signal running for sales")
     Thread(target=change_lead_status_renewal_module, args=(instance,)).start()
 
 
 
 @receiver(pre_save, sender=Renewal)
 def support_renewal_leads_signal(sender, instance: Renewal, *args, **kwargs):
-    print("renewal leads signal running for support")
+    # print("renewal leads signal running for support")
     Thread(target=support_renewal_leads, args=(instance,)).start()
 
 
@@ -195,7 +195,7 @@ def change_lead_status_sales_module(instance, **kwargs):
 
 
 def new_alnafi_payment_support_data(instance,payment_user):
-    print("in New Alnafi Payment fubc")
+    # print("in New Alnafi Payment fubc")
     # print(payment_user)
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
@@ -392,7 +392,11 @@ def support_renewal_leads(instance):
 
 
 def change_lead_status_renewal_module(instance):
-    url = f'https://crm.alnafi.com/api/resource/Renewal Leads?fields=["name","user_id"]&filters=[["Renewal Leads","user_id","=","{instance.customer_email}"],["Renewal Leads","product_name","=","{instance.product_name[0]}"]]'
+    if hasattr(instance, 'product_name'):
+        product_name = instance.product_name[0]
+    elif hasattr(instance, 'product_names'):
+        product_name = instance.product_names[0]
+    url = f'https://crm.alnafi.com/api/resource/Renewal Leads?fields=["name","user_id"]&filters=[["Renewal Leads","user_id","=","{instance.customer_email}"],["Renewal Leads","product_name","=","{product_name}"]]'
     # print(instance.product_name[0])
     api_key = '4e7074f890507cb'
     api_secret = 'c954faf5ff73d31'
@@ -417,10 +421,16 @@ def change_lead_status_renewal_module(instance):
             lead_id = data['data'][0]['name']
             url = f'https://crm.alnafi.com/api/resource/Renewal Leads/{lead_id}'
             # print(customer_data)
+
+            if hasattr(instance, 'expiration_datetime'):
+                expiration_date = instance.expiration_datetime.isoformat()
+            elif hasattr(instance, 'expiration_date'):
+                expiration_date = instance.expiration_date.isoformat()
+
             lead_data = {
                 "status": "Converted",
                 "converted_date": converted_date.isoformat(),
-                "expiration_date": instance.expiration_datetime.isoformat()
+                "expiration_date": expiration_date
 
             }
             # print(lead_data)
