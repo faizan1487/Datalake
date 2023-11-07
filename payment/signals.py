@@ -15,6 +15,8 @@ from secrets_api.algorithem import round_robin_support
 from threading import Thread
 from threading import Timer
 import math
+import csv
+
 
 env = environ.Env()
 env.read_env()
@@ -70,7 +72,7 @@ def support_renewal_leads_signal(sender, instance: Renewal, *args, **kwargs):
 
 
 def send_payment_support_module(instance,model_name, **kwargs):
-    print("signal FUNCTION running")
+    # print("signal FUNCTION running")
     # print("model_name", model_name)
     url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
     api_key, api_secret = round_robin_support()
@@ -81,7 +83,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
         "Accept": "application/json",
     }
     try:
-        print("in try")
+        # print("in try")
         response = requests.get(url, headers=headers)
         # response.raise_for_status()
         data = response.json()
@@ -117,16 +119,16 @@ def send_payment_support_module(instance,model_name, **kwargs):
         else:
             # customer_data = alnafi_payment_support_data(instance,payment_user)
             if model_name == 'alnafi':
-                print("in if")
+                # print("in if")
                 customer_data = alnafi_payment_support_data(instance,payment_user)
             else:
-                print("in else")
+                # print("in else")
                 customer_data = new_alnafi_payment_support_data(instance, payment_user)
 
             customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
             response = requests.post(customer_url, headers=headers, json=customer_data)
-            print(response)
-            print(response.text)
+            # print(response)
+            # print(response.text)
             if response.status_code == 200:
                 lead_data = response.json()
                 # print(lead_data)
@@ -136,11 +138,11 @@ def send_payment_support_module(instance,model_name, **kwargs):
                     instance.customer_email = customer_email
                     # print("Lead created successfully!")
     except RequestException as e:
-        # pass
-        print("in except")
-        print('Error occurred while making the request:', str(e))
-        print('Error:', response.status_code)
-        print('Error:', response.text) 
+        pass
+        # print("in except")
+        # print('Error occurred while making the request:', str(e))
+        # print('Error:', response.status_code)
+        # print('Error:', response.text) 
 
 
 
@@ -150,7 +152,7 @@ def change_lead_status_sales_module(instance, **kwargs):
     # url = 'https://crm.alnafi.com/api/resource/Lead?limit_start=0&limit_page_length=23023&fields=["*"]'
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.customer_email}"]]'
     api_key, api_secret = round_robin_support()
-  
+
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",
@@ -382,6 +384,58 @@ def support_renewal_leads(instance):
         print(f"Failed to upload data for: {instance.user_id}")
         print(response.status_code)
         print(response.text)
+    else:
+        print("lead created successfully")
+
+
+
+
+
+def change_lead_status_renewal_module(instance):
+    url = f'https://crm.alnafi.com/api/resource/Renewal Leads?fields=["name","user_id"]&filters=[["Renewal Leads","user_id","=","{instance.customer_email}"],["Renewal Leads","product_name","=","{instance.product_name[0]}"]]'
+    # print(instance.product_name[0])
+    api_key = '4e7074f890507cb'
+    api_secret = 'c954faf5ff73d31'
+
+    headers = {
+        'Authorization': f'token {api_key}:{api_secret}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    try:
+    # print("in try")
+        response = requests.get(url, headers=headers)
+        # response.raise_for_status()
+        data = response.json()
+        already_existed = len(data["data"]) > 0
+
+        # print(response.status_code)
+        # print(data['data'])
+        # exit()
+        if already_existed:
+            converted_date = datetime.now().date()
+            lead_id = data['data'][0]['name']
+            url = f'https://crm.alnafi.com/api/resource/Renewal Leads/{lead_id}'
+            # print(customer_data)
+            lead_data = {
+                "status": "Converted",
+                "converted_date": converted_date.isoformat(),
+                "expiration_date": instance.expiration_datetime.isoformat()
+
+            }
+            # print(lead_data)
+            response = requests.put(url, headers=headers, json=lead_data)
+            # print(response)
+            # print(response.text)
+            # print("lead updated")
+        else:
+            pass
+    except Exception as e:
+        pass
+
+
+
+
 
 def get_USD_rate():
     usd_details = cache.get("usd_details")
@@ -398,42 +452,3 @@ def get_USD_rate():
     cache.set("usd_details", json.dumps(usd_details), 60*120)
     # print("usd_details",usd_details)
     return usd_details
-
-def change_lead_status_renewal_module(instance):
-    url = f'https://crm.alnafi.com/api/resource/Renewal Leads?fields=["name","user_id"]&filters=[["Renewal Leads","user_id","=","{instance.customer_email}"]]'
-    api_key, api_secret = round_robin_support()
-  
-    headers = {
-        'Authorization': f'token {api_key}:{api_secret}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
-    try:
-    # print("in try")
-        response = requests.get(url, headers=headers)
-        # response.raise_for_status()
-        data = response.json()
-        already_existed = len(data["data"]) > 0
-
-        # print(response.status_code)
-        # print(data['data'])
-        if already_existed:
-            converted_date = datetime.now().date()
-            lead_id = data['data'][0]['name']
-            url = f'https://crm.alnafi.com/api/resource/Renewal Leads/{lead_id}'
-            # print(customer_data)
-            lead_data = {
-                "status": "Converted",
-                "converted_date": converted_date.isoformat()
-            }
-            # print(lead_data)
-            response = requests.put(url, headers=headers, json=lead_data)
-            # print(response)
-            # print(response.text)
-            instance.customer_email = data['data'][0]['user_id']
-            # print("lead updated")
-            # break
-        else:
-            pass
-    except Exception as e:
-        pass
