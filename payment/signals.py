@@ -1,7 +1,11 @@
+import string
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 import requests
-from .models import AlNafi_Payment,New_Alnafi_Payments,Renewal
+from payment.views import AlnafiPayment
+
+from products.models import Alnafi_Product
+from .models import AlNafi_Payment, Main_Payment,New_Alnafi_Payments,Renewal
 from rest_framework.response import Response
 from requests.exceptions import RequestException
 from user.models import Main_User
@@ -44,14 +48,16 @@ def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwa
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running for sales")
-    Thread(target=change_lead_status_sales_module, args=(instance,)).start()
+    model = 'NewAlnafi'
+    Thread(target=change_lead_status_sales_module, args=(instance,model,)).start()
     # data = send_payment_support_module(instance,model_name)
 
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_sales(sender, instance: AlNafi_Payment, *args, **kwargs):
     # print("alnafi signal running for sales")
-    Thread(target=change_lead_status_sales_module, args=(instance,)).start()
+    model = 'Alnafi'
+    Thread(target=change_lead_status_sales_module, args=(instance,model,)).start()
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_renewal_leads(sender, instance: AlNafi_Payment, *args, **kwargs):
@@ -146,20 +152,26 @@ def send_payment_support_module(instance,model_name, **kwargs):
 
 
 
-def change_lead_status_sales_module(instance, **kwargs):
-    # print("change_lead_status_sales signal running")
-    # print("model_name", model_name)
-    # url = 'https://crm.alnafi.com/api/resource/Lead?limit_start=0&limit_page_length=23023&fields=["*"]'
+def change_lead_status_sales_module(instance,model, **kwargs):
+    print("change_lead_status_sales signal running")
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.customer_email}"]]'
-    api_key, api_secret = round_robin_support()
 
-    headers = {
-        'Authorization': f'token {api_key}:{api_secret}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
-    try:
-        # print("in try")
+    if model == 'Alnafi':
+        payments_matching_criteria = AlNafi_Payment.objects.filter(product_name=instance.product_name, customer_email=instance.customer_email)
+    elif model == 'Newalnafi':
+        payments_matching_criteria = New_Alnafi_Payments.objects.filter(product_name=instance.product_name, customer_email=instance.customer_email)
+
+    if not payments_matching_criteria:
+        # print("inside if")
+        api_key, api_secret = round_robin_support()
+
+        headers = {
+            'Authorization': f'token {api_key}:{api_secret}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        # try:
+            # print("in try")
         response = requests.get(url, headers=headers)
         # response.raise_for_status()
         data = response.json()
@@ -185,12 +197,12 @@ def change_lead_status_sales_module(instance, **kwargs):
             # break
         else:
             pass
-    except Exception as e:
-        pass
-        # print("in except")
-        # print('Error occurred while making the request:', str(e))
-        # print('Error:', response.status_code)
-        # print('Error:', response.text)     
+        # except Exception as e:
+        #     pass
+            # print("in except")
+            # print('Error occurred while making the request:', str(e))
+            # print('Error:', response.status_code)
+            # print('Error:', response.text)     
 
 
 
@@ -393,9 +405,16 @@ def support_renewal_leads(instance):
 
 def change_lead_status_renewal_module(instance):
     if hasattr(instance, 'product_name'):
-        product_name = instance.product_name[0]
+        product_name = instance.product_name
+        if isinstance(product_name, list):
+            product_name = instance.product_name[0]
+            
     elif hasattr(instance, 'product_names'):
-        product_name = instance.product_names[0]
+        product_name = instance.product_names
+        if isinstance(product_name, list):
+            product_name = instance.product_names[0]
+
+    # print(product_name)
     url = f'https://crm.alnafi.com/api/resource/Renewal Leads?fields=["name","user_id"]&filters=[["Renewal Leads","user_id","=","{instance.customer_email}"],["Renewal Leads","product_name","=","{product_name}"]]'
     # print(instance.product_name[0])
     api_key = '4e7074f890507cb'
@@ -422,10 +441,14 @@ def change_lead_status_renewal_module(instance):
             url = f'https://crm.alnafi.com/api/resource/Renewal Leads/{lead_id}'
             # print(customer_data)
 
-            if hasattr(instance, 'expiration_datetime'):
+            if hasattr(instance, 'expiration_datetime') and instance.expiration_datetime is not None:
                 expiration_date = instance.expiration_datetime.isoformat()
-            elif hasattr(instance, 'expiration_date'):
+            elif hasattr(instance, 'expiration_date') and instance.expiration_date is not None:
                 expiration_date = instance.expiration_date.isoformat()
+            else:
+                # Handle the case where neither attribute is present or is None
+                expiration_date = ""  # You can set a default value or raise an exception if needed
+
 
             lead_data = {
                 "status": "Converted",
@@ -441,7 +464,11 @@ def change_lead_status_renewal_module(instance):
         else:
             pass
     except Exception as e:
-        pass
+        # pass
+        print(e)
+        print(response)
+        print(response.text)
+    
 
 
 

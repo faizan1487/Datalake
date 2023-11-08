@@ -6,20 +6,24 @@ from requests.exceptions import RequestException
 from user.constants import COUNTRY_CODES
 import environ
 from secrets_api.algorithem import round_robin
+
 env = environ.Env()
 env.read_env()
-api_key = env("FRAPPE_API_KEY")
-api_secret = env("FRAPPE_API_SECRET")
 
 @receiver(post_save, sender=Newsletter)
 def send_lead_post_request(sender, instance, created, **kwargs):
-    source='Academy Newsletter'
+    source= instance.source
     newsletter = usersignal(instance,source)        
 
 
 def usersignal(instance,source):
-    user_api_key = '2a1d467717681df'
-    user_secret_key = '39faa082ac5f258'
+    if instance.source == 'Academy':
+        user_api_key = '2a1d467717681df'
+        user_secret_key = '39faa082ac5f258'
+    else:
+        user_api_key, user_secret_key = round_robin()
+
+
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
