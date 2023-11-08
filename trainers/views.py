@@ -115,7 +115,7 @@ class TrainersData(APIView):
             #1 query from here
             #Replace userid and productid with user email and product name
             product_payments = product.product_payments.values('alnafi_payment_id','user_id',
-                                                                'product_id','amount','currency',
+                                                                'product','amount','currency',
                                                                 'order_datetime','source',
                                                                 'expiration_datetime','created_datetime')
 
@@ -145,7 +145,7 @@ class TrainersData(APIView):
             #2 queries from here
             users = list(product_payments.values('user__first_name','user__last_name','user__email','user__phone','product__product_name'))
             payment_list = list(product_payments.values('alnafi_payment_id','user_id','source',
-                                                                'product_id','amount','currency',
+                                                                'product','amount','currency',
                                                                 'order_datetime',
                                                                 'expiration_datetime','created_datetime'))
             #no effect on query
