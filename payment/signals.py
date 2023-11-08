@@ -162,7 +162,7 @@ def change_lead_status_sales_module(instance,model, **kwargs):
 
     if model == 'Alnafi':
         payments_matching_criteria = AlNafi_Payment.objects.filter(product_name=instance.product_name, customer_email=instance.customer_email)
-    elif model == 'Newalnafi':
+    elif model == 'NewAlnafi':
         payments_matching_criteria = New_Alnafi_Payments.objects.filter(product_name=instance.product_name, customer_email=instance.customer_email)
 
     print("payments_matching_criteria",payments_matching_criteria)
