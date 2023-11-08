@@ -164,6 +164,7 @@ def change_lead_status_sales_module(instance,model, **kwargs):
     elif model == 'Newalnafi':
         payments_matching_criteria = New_Alnafi_Payments.objects.filter(product_name=instance.product_name, customer_email=instance.customer_email)
 
+    print("payments_matching_criteria",payments_matching_criteria)
     if not payments_matching_criteria:
         # print("inside if")
         api_key, api_secret = round_robin_support()
@@ -180,8 +181,8 @@ def change_lead_status_sales_module(instance,model, **kwargs):
         data = response.json()
         already_existed = len(data["data"]) > 0
 
-        # print(response.status_code)
-        # print(data['data'])
+        print(response.status_code)
+        print(data['data'])
         if already_existed:
             converted_date = datetime.now().date()
             lead_id = data['data'][0]['name']
@@ -193,8 +194,8 @@ def change_lead_status_sales_module(instance,model, **kwargs):
             }
             # print(lead_data)
             response = requests.put(url, headers=headers, json=lead_data)
-            # print(response)
-            # print(response.text)
+            print(response)
+            print(response.text)
             instance.customer_email = data['data'][0]['email_id']
             # print("lead updated")
             # break
