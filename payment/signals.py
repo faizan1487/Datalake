@@ -157,6 +157,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
 
 def change_lead_status_sales_module(instance,model, **kwargs):
     print("change_lead_status_sales signal running")
+    print("instance.customer_email",instance.customer_email)
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.customer_email}"]]'
 
     if model == 'Alnafi':
@@ -167,7 +168,9 @@ def change_lead_status_sales_module(instance,model, **kwargs):
     print("payments_matching_criteria",payments_matching_criteria)
     if not payments_matching_criteria:
         # print("inside if")
-        api_key, api_secret = round_robin_support()
+        # api_key, api_secret = round_robin_support()
+        api_key = '4e7074f890507cb'
+        api_secret = 'c954faf5ff73d31'
 
         headers = {
             'Authorization': f'token {api_key}:{api_secret}',
