@@ -459,7 +459,7 @@ def change_lead_status_renewal_module(instance):
 
             lead_data = {
                 "status": "Converted",
-                "converted_date": converted_date.isoformat(),
+                # "converted_date": converted_date.isoformat(),
                 "expiration_date": expiration_date
 
             }
