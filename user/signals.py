@@ -8,6 +8,7 @@ import environ
 from secrets_api.algorithem import round_robin
 from albaseer.settings import DEBUG
 from datetime import datetime
+import csv
 
 
 
@@ -70,15 +71,7 @@ def usersignal(instance,source,sender):
                 country_name = name
                 break
 
-    # Convert 'assigned_date' to the desired format
-    if isinstance(instance.assigned_date, datetime):
-        assigned_date_str = instance.assigned_date.strftime('%Y-%m-%d %H:%M:%S')
-    else:
-        try:
-            assigned_date = datetime.fromisoformat(instance.assigned_date)
-            assigned_date_str = assigned_date.strftime('%Y-%m-%d %H:%M:%S')
-        except (ValueError, TypeError):
-            assigned_date_str = None
+
 
     # Assuming instance.created_at is a datetime object
     if hasattr(instance, 'created_at'):
@@ -94,7 +87,6 @@ def usersignal(instance,source,sender):
         "country": country_name,
         "source": source,
         "form": instance.form or None,
-        "assigned_date": assigned_date_str,  # Convert to ISO 8601 string
         "date_joined": date_joined_str,  # Convert to ISO 8601 string
         # Add other fields from the Main_User model to the data dictionary as needed
     }
@@ -153,7 +145,7 @@ def alnafi_lead_to_moc_doctype(sender, instance, **kwargs):
     alnafi_user = mocLead_Signalto_moc_doctype(instance,source)    
 
 def mocLead_Signalto_moc_doctype(instance,source):
-    # print("mocdoctype signa;")
+    print("mocdoctype signa;")
     # api_key = env("FRAPPE_API_KEY")
     api_key = '351b6479c5a4a16'
     api_secret = 'e459db7e2d30b34'
@@ -165,15 +157,18 @@ def mocLead_Signalto_moc_doctype(instance,source):
     }
 
     country_code = getattr(instance, 'country', "Unknown")
-    country_name = None
-    if len(country_code) <= 2:
-        if country_code:
-            for name, code in COUNTRY_CODES.items():
-                if code == country_code:
-                    country_name = name
-                    break
+    if country_code:
+        country_name = None
+        if len(country_code) <= 2:
+            if country_code:
+                for name, code in COUNTRY_CODES.items():
+                    if code == country_code:
+                        country_name = name
+                        break
+        else:
+            country_name = country_code
     else:
-        country_name = country_code
+        country_name = "Unknown"
     data = {
             "name1": instance.first_name or None,
             "first_name": instance.first_name or None,
@@ -209,7 +204,7 @@ def mocLead_Signalto_moc_doctype(instance,source):
     else:
         already_existed = False
 
-
+    failed_leads = []
     # print(lead_data)
     already_existed = len(lead_data["data"]) > 0
     if already_existed:
@@ -230,28 +225,29 @@ def mocLead_Signalto_moc_doctype(instance,source):
         #     instance.erp_lead_id = lead_data['data'][0]['name']
         #     print("lead updated")
     else:
-        # print("in else")
-        post_url = 'https://crm.alnafi.com/api/resource/moclead'
-        response = requests.post(post_url, headers=headers, json=data)
-        # print(response.status_code)
-        # print(response.text)
-        # response.raise_for_status()
-        # print("response.status_code",response.status_code)
-        if response.status_code == 200:
-            lead_data = response.json()
-            erp_lead_id = lead_data['data']['name']
-            # if erp_lead_id:
-            #     print("Lead created successfully!")
-        else:
-            pass
-            # print(data)
-            # print(response.status_code)
-            # print(response.text)
-            # print(response.json())
+        try:
+            post_url = 'https://crm.alnafi.com/api/resource/moclead'
+            response = requests.post(post_url, headers=headers, json=data)
+            if response.status_code == 200:
+                print("Lead created successfully!")
+
+        except Exception as e:
+            print("Error posting lead data:", str(e))
+            failed_leads.append(data)
+    
+
+    if failed_leads:
+        with open('failed_moc_doctype_leads.csv', 'w', newline='') as csvfile:
+            fieldnames = failed_leads[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for lead in failed_leads:
+                writer.writerow(lead)
+       
 
 
 def mocLead_Signalto_sale_doctype(instance,source):
-    # print("sale doctype signa;")
+    print("sale doctype signa;")
     user_api_key, user_secret_key = round_robin()
 
     headers = {
@@ -273,6 +269,8 @@ def mocLead_Signalto_sale_doctype(instance,source):
         date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
     else:
         date_joined_str = None      
+    
+    
     data = {
             "first_name": instance.first_name or None,
             "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
@@ -285,32 +283,23 @@ def mocLead_Signalto_sale_doctype(instance,source):
             "interest": instance.interest or None,
             "qualification": instance.qualification or None,
             "date_joined": str(date_joined_str) if date_joined_str else None
-            # Add other fields from the Main_User model to the data dictionary as needed
         }
    
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
-    # url_moc = f'https://crm.alnafi.com/api/resource/MOC?fields=["name","email"]&filters=[["MOC","email","=","{instance.email}"]]'
-    # response_moc = requests.get(url_moc, headers=headers_moc)
     response = requests.get(url, headers=headers)
 
-    # moc_data = response_moc.json()
     lead_data = response.json()
-    # print(response.status_code)
-    # print(lead_data['data'])
-    # print(lead_data)
+    
     if response.status_code == 403:
         return
-    # print(lead_data['data'])
-    # print(lead_data)
+    
     if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
     else:
         already_existed = False
 
-
-   
     already_existed = len(lead_data["data"]) > 0
-    # print(already_existed)
+    
     if already_existed:
         #on update add demo and enrollment
         # pass
@@ -359,25 +348,30 @@ def mocLead_Signalto_sale_doctype(instance,source):
         instance.erp_lead_id = lead_data['data'][0]['name']
         # print("lead updated")
     else:
-        # print("in else")
-        post_url = 'https://crm.alnafi.com/api/resource/Lead'
-        response = requests.post(post_url, headers=headers, json=data)
-        # print(response.status_code)
-        # print(response.json())
-        # response.raise_for_status()
-        # print("response.status_code",response.status_code)
-        if response.status_code == 200:
-            lead_data = response.json()
-            erp_lead_id = lead_data['data']['name']
-            if erp_lead_id:
-                # print("lead id exists")
-                instance.erp_lead_id = erp_lead_id
-                # print("Lead created successfully!")
-        else:
-            pass
+        try:
+            failed_leads = []
+            post_url = 'https://crm.alnafi.com/api/resource/Lead'
+            response = requests.post(post_url, headers=headers, json=data)
+            if response.status_code == 200:
+                lead_data = response.json()
+                erp_lead_id = lead_data['data']['name']
+                if erp_lead_id:
+                    instance.erp_lead_id = erp_lead_id
+                    print("Lead created successfully!")
+        except Exception as e:
+            print("Error posting lead data:", str(e))
+            failed_leads.append(data)
             # print(data)
             # print(response.status_code)
             # print(response.text)
+    
+    if failed_leads:
+        with open('failed_sales_doctype_leads.csv', 'w', newline='') as csvfile:
+            fieldnames = failed_leads[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for lead in failed_leads:
+                writer.writerow(lead)
 
 
 def newsignupsignal(instance,source,sender):
