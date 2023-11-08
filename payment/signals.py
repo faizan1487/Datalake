@@ -78,7 +78,7 @@ def support_renewal_leads_signal(sender, instance: Renewal, *args, **kwargs):
 
 
 def send_payment_support_module(instance,model_name, **kwargs):
-    # print("signal FUNCTION running")
+    print("send_payment_support_module")
     # print("model_name", model_name)
     url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
     api_key, api_secret = round_robin_support()
@@ -143,6 +143,9 @@ def send_payment_support_module(instance,model_name, **kwargs):
                     # print("lead id exists")
                     instance.customer_email = customer_email
                     # print("Lead created successfully!")
+            else:
+                print(response.status_code)
+                print(response.text)
     except RequestException as e:
         pass
         # print("in except")
