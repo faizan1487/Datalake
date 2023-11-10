@@ -41,7 +41,7 @@ from collections import defaultdict
 
 
 class GetThinkificUser(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id):
         user_id = id
         user = Thinkific_User.objects.filter(id=user_id)
