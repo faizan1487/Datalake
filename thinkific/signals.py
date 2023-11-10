@@ -14,7 +14,7 @@ api_secret = env("FRAPPE_API_SECRET")
 
 DEBUG = env('DEBUG',cast=bool)
 
-@receiver(post_save, sender=Thinkific_Users_Enrollments)
+# @receiver(post_save, sender=Thinkific_Users_Enrollments)
 def send_lead_post_request(sender, instance, **kwargs):
     # return
     print("signal running")
@@ -26,8 +26,6 @@ def usersignal(instance,source):
     # post_save.disconnect(send_lead_post_request, sender=Thinkific_Users_Enrollments)
     # if instance.is_processing:
     #     return
-
-    
     try:
         if instance.course_name.lower().startswith("demo"):
             user = instance.user_id

@@ -7,7 +7,7 @@ class ThinkificUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     search_fields = ('id', 'email', 'first_name', 'last_name')
     
 class ThinkificUserEnrollmentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['id', 'email','course_id','course_name']
+    list_display = ['id', 'email','course_id','course_name','percentage_completed','user_id']
     search_fields = ('id', 'email', 'course_name')
     
 

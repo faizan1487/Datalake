@@ -1,3 +1,4 @@
+from pickletools import decimalnl_long
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
@@ -8,6 +9,11 @@ from rest_framework.renderers import JSONRenderer
 from rest_framework.decorators import api_view
 from rest_framework.decorators import renderer_classes
 from user.models import AlNafi_User
+from .models import Thinkific_Users_Enrollments
+from rest_framework.response import Response
+from rest_framework.status import HTTP_200_OK
+from django.core.exceptions import ObjectDoesNotExist
+from django.http import JsonResponse
 
 @csrf_exempt
 @api_view(['POST'])
@@ -46,16 +52,20 @@ def formatdate(datestr):
     return new_substring
 
 
+
+#disable stage webhook from thinkific then production webhook will work
 @csrf_exempt
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
 def enrollment_created_webhook(request):
+    print("enrollemnt created webhook")
     if(request.method != "POST"):
         return HttpResponse(status=400)
     
     data = request.body
     data_string = data.decode('utf-8')
     json_data = json.loads(data_string)
+    print(json_data)
     payload_data = json_data['payload']
     created_at = payload_data['created_at']
     if created_at == None:
@@ -117,3 +127,54 @@ def enrollment_created_webhook(request):
     except Exception as e:
         print(e)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def progress_created_webhook(request):
+    print("progress webhook")
+    if(request.method != "POST"):
+        return HttpResponse(status=400)
+    
+    
+    try:
+        data = request.body
+        data_string = data.decode('utf-8')
+        json_data = json.loads(data_string)
+        print(json_data)
+        
+        email = json_data.get('payload', {}).get('user', {}).get('email')
+        course_id = json_data.get('payload', {}).get('course', {}).get('id')
+        percentage = json_data.get('payload', {}).get('percentage_completed')
+        percentage = float(percentage)
+        percentage = percentage * 100
+
+        print("email",email)
+        print("course_id",course_id)
+        print("percentage",percentage)
+        print("percentage type", type(percentage))
+        
+        if not email or not course_id or percentage is None:
+            return JsonResponse({'error': 'Invalid or missing data'}, status=400)
+        
+        try:
+            enrollment = Thinkific_Users_Enrollments.objects.get(email=email, course_id=course_id)
+            if percentage > enrollment.percentage_completed:
+                enrollment.percentage_completed = percentage
+                enrollment.save()
+            return JsonResponse({'message': 'Enrollment updated successfully'}, status=200)
+        except ObjectDoesNotExist:
+            # Handle the case where the enrollment doesn't exist
+            return JsonResponse({'error': 'Enrollment not found'}, status=404)
+            
+    except json.JSONDecodeError:
+        # Handle JSON decoding error
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        # Handle other unexpected exceptions
+        return JsonResponse({'error': 'An error occurred'}, status=500)
