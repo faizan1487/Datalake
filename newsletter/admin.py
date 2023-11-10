@@ -9,7 +9,7 @@ from rangefilter.filters import DateTimeRangeFilter
 class NewsletterAdmin(ImportExportModelAdmin, admin.ModelAdmin):
     list_display = ('first_name', 'phone', 'email', 'created_at','source')
     list_filter = (('created_at',DateTimeRangeFilter),)
-    search_fields = ('first', 'phone', 'email','source')
+    search_fields = ('first_name', 'phone', 'email','source')
     list_per_page = 500
 
 admin.site.register(Newsletter, NewsletterAdmin)
