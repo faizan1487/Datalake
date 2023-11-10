@@ -51,7 +51,7 @@ class Subscribers(APIView):
 
 
 class CreateNewsletter(APIView):
-    def get(self, request):
+    def post(self, request):
         data = request.data
         # print(data)
         email = data.get("email")
