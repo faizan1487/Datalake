@@ -17,14 +17,15 @@ def send_lead_post_request(sender, instance, created, **kwargs):
 
 
 def usersignal(instance,source):
-    if instance.source == 'Academy':
+    print("instance.source",instance.source)
+    if instance.source == 'Academy Newsletter':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
         user_api_key, user_secret_key = round_robin()
 
 
-
+    
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         "Content-Type": "application/json",
@@ -74,10 +75,7 @@ def usersignal(instance,source):
         # print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
-        # print(response.status_code)
-        # print(response.json())
-        # response.raise_for_status()
-        # print("response.status_code",response.status_code)
+        
         if response.status_code == 200:
             lead_data = response.json()
             erp_lead_id = lead_data['data']['name']
@@ -86,5 +84,8 @@ def usersignal(instance,source):
                 instance.erp_lead_id = erp_lead_id
                 # instance.save(update_fields=['erp_lead_id'])
                 # print("Lead created successfully!")
+        else:
+            print(response.status_code)
+            print(response.json())
     return
     # post_save.connect(send_lead_post_request, sender=Newsletter)
