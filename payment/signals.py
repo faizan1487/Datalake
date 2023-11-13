@@ -18,6 +18,7 @@ import environ
 from secrets_api.algorithem import round_robin_support
 from threading import Thread
 from threading import Timer
+from datetime import datetime
 import math
 import csv
 
@@ -389,6 +390,7 @@ def support_renewal_leads(instance):
         "expiration_date": instance.expiration_date if instance.expiration_date else None,
         "product_name": instance.product_name or None,
         "status": instance.status or None,
+        "assigned_date": datetime.now().date().isoformat()
     }
 
     # try:
