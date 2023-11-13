@@ -151,7 +151,9 @@ def renewal_no_of_payments(payments):
 
 
 
-def get_USD_rate():
+def get_USD_rate(currency,amount):
+    # print(currency)
+    # print(amount)
     # usd_details = cache.get("usd_details")
     # if usd_details:
         # print(usd_details)
@@ -161,7 +163,7 @@ def get_USD_rate():
     url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/USD"
     response = requests.get(url).json()
     # print(response)
-    usd_details["PKR"] = response["conversion_rates"]["PKR"]
+    usd_details[currency] = response["conversion_rates"][currency.upper()]
     usd_details["USD"] = response["conversion_rates"]["USD"]
 
     # cache.set("usd_details", json.dumps(usd_details), 60*120)

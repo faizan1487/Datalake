@@ -1,3 +1,4 @@
+from locale import currency
 from math import prod
 from sre_constants import SUCCESS
 from rest_framework import status
@@ -210,24 +211,6 @@ class GetStripePayments(APIView):
             payment.save()
 
 
-class MainPaymentAPIView(APIView):
-    def post(self, request):
-        file = request.FILES['file']
-        df = pd.read_csv(file)
-        # print(int(df.to_dict('records')[0]['product']))
-        
-        # Replace non-finite values with NaN
-        df['product'] = pd.to_numeric(df['product'], errors='coerce')
-        
-        # Convert NaN values to None (null) instead of a default value
-        df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
-        
-        # print(df['product'])
-        serializer = MainPaymentSerializer(data=df.to_dict('records'), many=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status= 400)
 
 #NEW
 #product issue and response time fixed
@@ -855,6 +838,7 @@ class SearchPayments(APIView):
                     'source_payment_id': payment['source_payment_id'],
                     'card_mask': payment['card_mask'],
                     'order_datetime': payment['order_datetime'].isoformat(),
+                    'currency': payment['currency'],
                 }
 
                 payment_list.append(payment_data)
@@ -862,8 +846,17 @@ class SearchPayments(APIView):
 
         sources = ['ubl_dd', 'al-nafi', 'easypaisa', 'ubl_ipg']
         total_payments_in_pkr = sum(float(p['amount']) for p in payment_list if p['source'].lower() in sources)
-        total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
+        # total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
 
+        total_payments_in_usd = 0
+        for p in payment_list:
+            if p['source'].lower() not in sources:
+                if p['currency'].lower() != 'usd':
+                    currency_rate = get_USD_rate(p['currency'],p['amount'])
+                    converted_amount = float(p['amount']) / currency_rate[p['currency']]
+                    total_payments_in_usd += converted_amount
+                else:
+                    total_payments_in_usd += float(p['amount'])
 
 
         if export == 'true':
@@ -960,6 +953,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
     if q:
         payments = payments.filter(user__email__icontains=q)
+
         
     if phone:
         phone = phone.strip()
@@ -1005,14 +999,38 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
     else:
         # print(payments.values())
         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
-                                         'order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id')
+                                         'order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id','currency')
         # print(payments_data)
         payments = [{'user': payment['user__email'],'user_phone': payment['user__phone'], 'product': payment['product__product_name'],
                      'plan': payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'],
                      'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
-                     'id': payment['id'],'source_payment_id':payment['source_payment_id']} for payment in payments_data]
+                     'id': payment['id'],'source_payment_id':payment['source_payment_id'],'currency':payment['currency']} for payment in payments_data]
         # print(payments)
         return payments, True
+
+
+
+
+class MainPaymentAPIView(APIView):
+    def post(self, request):
+        file = request.FILES['file']
+        df = pd.read_csv(file)
+        # print(int(df.to_dict('records')[0]['product']))
+        
+        # Replace non-finite values with NaN
+        df['product'] = pd.to_numeric(df['product'], errors='coerce')
+        
+        # Convert NaN values to None (null) instead of a default value
+        df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
+        
+        # print(df['product'])
+        serializer = MainPaymentSerializer(data=df.to_dict('records'), many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status= 400)
+
+
 
 
 
@@ -1544,6 +1562,15 @@ class PaymentValidationNew(APIView):
 
                 if payment.currency == 'USD':
                     total_product_amount_usd = sum(product.amount_usd for product in payment.product.all())
+                    total_product_amount_usd = int(total_product_amount_usd)
+                    if total_product_amount_usd == int(float(payment.amount)):
+                        pass
+                    else:
+                        valid_payment['valid'] = False
+                        valid_payment['reasons'].append('Product and Payment Amount mismatch usd')
+                
+                if payment.currency == 'sar':
+                    total_product_amount_sar = sum(product.amount_usd for product in payment.product.all())
                     total_product_amount_usd = int(total_product_amount_usd)
                     if total_product_amount_usd == int(float(payment.amount)):
                         pass
