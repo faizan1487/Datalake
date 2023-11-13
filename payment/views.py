@@ -851,7 +851,9 @@ class SearchPayments(APIView):
         total_payments_in_usd = 0
         for p in payment_list:
             if p['source'].lower() not in sources:
-                if p['currency'].lower() != 'usd':
+                if p['currency'].lower() == 'pkr':
+                    pass
+                elif p['currency'].lower() != 'usd':
                     currency_rate = get_USD_rate(p['currency'],p['amount'])
                     converted_amount = float(p['amount']) / currency_rate[p['currency']]
                     total_payments_in_usd += converted_amount
