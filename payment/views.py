@@ -1,6 +1,7 @@
 from locale import currency
 from math import prod
 from sre_constants import SUCCESS
+from tracemalloc import start
 from rest_framework import status
 
 import payment
@@ -886,7 +887,6 @@ class SearchPayments(APIView):
         cleaned_name1 = self.clean_product_name(product_name1)
         cleaned_name2 = self.clean_product_name(product_name2)
         
-
         return cleaned_name1 == cleaned_name2
     
     def clean_product_name(self,product_name):
@@ -922,14 +922,106 @@ class SearchPayments(APIView):
 #bug in plan filter, when i implement plan filter payments related to that plan show up even if the product filter is implemented
 #and when i try to optimize the api further, a bug arises in product filter and then i'm unable to filter payments by product
 #Production
-def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page,request,phone):
-    # payments = Main_Payment.objects.all().distinct()
-    payments = Main_Payment.objects.all().exclude(
-            user__email__endswith="yopmail.com").distinct()
+# def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page,request,phone):
+#     # payments = Main_Payment.objects.all().distinct()
+#     payments = Main_Payment.objects.all().exclude(
+#             user__email__endswith="yopmail.com").distinct()
 
-    statuses = ["0", False, 0]
-    payments = payments.exclude(source='UBL_DD', status__in=statuses)
-    payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD','Stripe'])
+#     statuses = ["0", False, 0]
+#     payments = payments.exclude(source='UBL_DD', status__in=statuses)
+#     payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD','Stripe'])
+
+#     if status:
+#         payments = payments.filter(status=status)
+
+#     if source:
+#         payments = payments.filter(source=source)
+
+#     if origin:
+#         if origin == 'local':
+#             payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD'])
+#         else:
+#             payments = payments.filter(source='Stripe')
+
+#     if not start_date:
+#         first_payment = payments.exclude(order_datetime=None).last()
+#         start_date = first_payment.order_datetime.date() if first_payment else None
+
+#     if not end_date:
+#         last_payment = payments.exclude(order_datetime=None).first()
+#         end_date = last_payment.order_datetime.date() if last_payment else None
+
+#     payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
+
+#     if q:
+#         payments = payments.filter(user__email__icontains=q)
+
+        
+#     if phone:
+#         phone = phone.strip()
+#         if phone.startswith("92"):
+#             phone = "+" + phone
+#         payments = payments.filter(user__phone__icontains=phone)
+
+#     if product:
+#         keywords = product.split()
+#         query = Q()
+#         for keyword in keywords:
+#             query &= Q(product__product_name__icontains=keyword)
+#         payments = payments.filter(query)
+
+#     # print(payments.count())
+#     # print(payments)
+#     if plan:
+#         payments = payments.filter(product__product_plan=plan)
+
+#     # print(payments.count())
+#     # print(payments)
+
+#     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
+#     payment_cycle_descriptions = {
+#         'Monthly': 'Monthly',
+#         'Yearly': 'Yearly',
+#         'Half Yearly': 'Half-Yearly',
+#         'Quarterly': 'Quarterly'
+#         # Add more plan-value pairs as needed
+#     }
+
+#     payments = payments.annotate(
+#         payment_cycle=Case(
+#             *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
+#             default=Value('Unknown Plan'),
+#             output_field=CharField()
+#         )
+#     )
+
+#     if not payments:
+#         # payments = {"payments": payments, "success": 'False'}
+#         return payments, False
+#     else:
+#         # print(payments.values())
+#         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
+#                                          'order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id','currency')
+#         # print(payments_data)
+#         payments = [{'user': payment['user__email'],'user_phone': payment['user__phone'], 'product': payment['product__product_name'],
+#                      'plan': payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'],
+#                      'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
+#                      'id': payment['id'],'source_payment_id':payment['source_payment_id'],'currency':payment['currency']} for payment in payments_data]
+#         # print(payments)
+#         return payments, True
+
+
+
+from django.db.models import F
+
+def search_payment(export, q, start_date, end_date, plan, source, origin, status, product, page, request, phone):
+    payments = Main_Payment.objects.exclude(
+        user__email__endswith="yopmail.com"
+    ).exclude(
+        source='UBL_DD', status__in=["0", False, 0]
+    ).filter(
+        source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']
+    )
 
     if status:
         payments = payments.filter(status=status)
@@ -938,25 +1030,19 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         payments = payments.filter(source=source)
 
     if origin:
-        if origin == 'local':
-            payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD'])
-        else:
-            payments = payments.filter(source='Stripe')
+        source_filter = ['Easypaisa', 'UBL_IPG', 'UBL_DD'] if origin == 'local' else ['Stripe']
+        payments = payments.filter(source__in=source_filter)
 
     if not start_date:
-        first_payment = payments.exclude(order_datetime=None).last()
-        start_date = first_payment.order_datetime.date() if first_payment else None
+        start_date = payments.exclude(order_datetime=None).last().order_datetime.date()
 
     if not end_date:
-        last_payment = payments.exclude(order_datetime=None).first()
-        end_date = last_payment.order_datetime.date() if last_payment else None
+        end_date = payments.exclude(order_datetime=None).first().order_datetime.date()
 
-    payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
-
+    payments = payments.filter(order_datetime__range=(start_date, end_date))
     if q:
         payments = payments.filter(user__email__icontains=q)
 
-        
     if phone:
         phone = phone.strip()
         if phone.startswith("92"):
@@ -970,15 +1056,9 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
             query &= Q(product__product_name__icontains=keyword)
         payments = payments.filter(query)
 
-    # print(payments.count())
-    # print(payments)
     if plan:
         payments = payments.filter(product__product_plan=plan)
 
-    # print(payments.count())
-    # print(payments)
-
-    payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
     payment_cycle_descriptions = {
         'Monthly': 'Monthly',
         'Yearly': 'Yearly',
@@ -996,19 +1076,23 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
     )
 
     if not payments:
-        # payments = {"payments": payments, "success": 'False'}
         return payments, False
     else:
-        # print(payments.values())
         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
-                                         'order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id','currency')
-        # print(payments_data)
-        payments = [{'user': payment['user__email'],'user_phone': payment['user__phone'], 'product': payment['product__product_name'],
-                     'plan': payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'],
-                     'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
-                     'id': payment['id'],'source_payment_id':payment['source_payment_id'],'currency':payment['currency']} for payment in payments_data]
-        # print(payments)
+                                         'order_datetime', 'id', 'payment_cycle', 'alnafi_payment_id', 'card_mask',
+                                         'source_payment_id', 'currency')
+
+        payments = [{'user': payment['user__email'], 'user_phone': payment['user__phone'],
+                     'product': payment['product__product_name'], 'plan': payment['payment_cycle'],
+                     'source': payment['source'], 'amount': payment['amount'],
+                     'alnafi_payment_id': payment['alnafi_payment_id'],
+                     'order_datetime': payment['order_datetime'], 'card_mask': payment['card_mask'],
+                     'id': payment['id'], 'source_payment_id': payment['source_payment_id'],
+                     'currency': payment['currency']} for payment in payments_data]
+
         return payments, True
+
+
 
 
 
