@@ -35,6 +35,40 @@ class AlNafi_User(models.Model):
         managed = True
         verbose_name = "Al-Nafi User"
 
+#For New Al-Nafi Main Site Users Table:
+class New_AlNafi_User(models.Model):
+    username = models.CharField(max_length=200,null=True,blank=True)
+    email = models.CharField(max_length=255, unique=True)
+    student_email = models.CharField(max_length=255, null=True, blank=True)
+    student_email_status = models.CharField(max_length=50, null=True, blank=True)
+    verified = models.BooleanField(default=False)
+    blocked = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    phone = models.CharField(max_length=20, null=True, blank=True)
+    meta_data = models.JSONField(null=True, blank=True)
+    facebook_user_id = models.CharField(null=True, blank=True, max_length=50)
+    google_user_id = models.CharField(null=True, blank=True, max_length=50)
+    provider = models.CharField(null=True, blank=True, max_length=50)
+    affiliate_code = models.CharField(max_length=30, null=True, blank=True)
+    source = models.CharField(max_length=30, null=True, blank=True,default='alnafi.edu.pk')
+    easypaisa_number = models.CharField(max_length=15, null=True, blank=True)
+    is_superuser = models.BooleanField(default=False)
+    last_name = models.CharField(max_length=200,null=True,blank=True)
+    first_name = models.CharField(max_length=200,null=True,blank=True)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+
+
+    def _str_(self):
+        return f"{self.email or self.username}"
+    
+    class Meta:
+        managed = True
+        verbose_name = "New Al-Nafi User"
+
+
+
 
 #For Islamic Academy User/Customer:
 class IslamicAcademy_User(models.Model):
@@ -174,6 +208,7 @@ class Moc_Leads(models.Model):
     interest = models.CharField(max_length=255, null=True, blank=True)
     cv_link = models.CharField(max_length=255, null=True, blank=True)
     erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
+    advert = models.CharField(max_length=255,blank=True, null=True)
 
     def __str__(self):
         return f"{self.email}"
@@ -270,36 +305,4 @@ class NavbarLink(models.Model):
 
     def __str__(self):
         return self.name
-    
 
-#For New Al-Nafi Main Site Users Table:
-class New_AlNafi_User(models.Model):
-    username = models.CharField(max_length=200,null=True,blank=True)
-    email = models.CharField(max_length=255, unique=True)
-    student_email = models.CharField(max_length=255, null=True, blank=True)
-    student_email_status = models.CharField(max_length=50, null=True, blank=True)
-    verified = models.BooleanField(default=False)
-    blocked = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-    phone = models.CharField(max_length=20, null=True, blank=True)
-    meta_data = models.JSONField(null=True, blank=True)
-    facebook_user_id = models.CharField(null=True, blank=True, max_length=50)
-    google_user_id = models.CharField(null=True, blank=True, max_length=50)
-    provider = models.CharField(null=True, blank=True, max_length=50)
-    affiliate_code = models.CharField(max_length=30, null=True, blank=True)
-    source = models.CharField(max_length=30, null=True, blank=True,default='alnafi.edu.pk')
-    easypaisa_number = models.CharField(max_length=15, null=True, blank=True)
-    is_superuser = models.BooleanField(default=False)
-    last_name = models.CharField(max_length=200,null=True,blank=True)
-    first_name = models.CharField(max_length=200,null=True,blank=True)
-    is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
-    date_joined = models.DateTimeField(auto_now_add=True, null=True, blank=True)
-
-
-    def _str_(self):
-        return f"{self.email or self.username}"
-    
-    class Meta:
-        managed = True
-        verbose_name = "New Al-Nafi User"

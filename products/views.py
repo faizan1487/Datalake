@@ -8,8 +8,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 
 
-permission_classes = [IsAuthenticated]
 class AlnafiProduct(APIView):
+    permission_classes = [IsAuthenticated]
     def post(self, request):
         data = request.data
         product_id = data.get('id')

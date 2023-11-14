@@ -126,49 +126,49 @@ class CreateAffiliateUser(APIView):
             report = generate_csv(agents_list)
             print(report)
             return Response(report)
-            Header = []
-            for i in agents_list:
-                agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
-                for data_dict in agent_leads:
-                    if data_dict:
-                        Header.extend(['agent_name'])
-                        Header.extend(data_dict.keys())
-                        break
-            if Header:
-                pass
-            else:
-                Header = ['agent_name','first_name', 'last_name','email','contact','address','country','created_at']
+            # Header = []
+            # for i in agents_list:
+            #     agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
+            #     for data_dict in agent_leads:
+            #         if data_dict:
+            #             Header.extend(['agent_name'])
+            #             Header.extend(data_dict.keys())
+            #             break
+            # if Header:
+            #     pass
+            # else:
+            #     Header = ['agent_name','first_name', 'last_name','email','contact','address','country','created_at']
 
-            # Create an empty DataFrame with the specified columns
-            # df = pd.DataFrame(columns=Header)
+            # # Create an empty DataFrame with the specified columns
+            # # df = pd.DataFrame(columns=Header)
             
-            # Create a list to hold the DataFrames
-            dfs = []
+            # # Create a list to hold the DataFrames
+            # dfs = []
 
-            for i in agents_list:
-                agent_name = i.get('agent_name', "")
-                agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
-                for data_dict in agent_leads:
-                    if data_dict:
-                        data_dict["agent_name"] = agent_name
-                        # data_dict["product_name"] = product_name
-                        dfs.append(pd.DataFrame([data_dict]))
-                        # df = pd.concat([df, pd.DataFrame([data_dict])], ignore_index=True)
-                        # df = df.append(data_dict, ignore_index=True)
+            # for i in agents_list:
+            #     agent_name = i.get('agent_name', "")
+            #     agent_leads = i.get('agent_leads', [])  # Use an empty list as the default value if key is not present
+            #     for data_dict in agent_leads:
+            #         if data_dict:
+            #             data_dict["agent_name"] = agent_name
+            #             # data_dict["product_name"] = product_name
+            #             dfs.append(pd.DataFrame([data_dict]))
+            #             # df = pd.concat([df, pd.DataFrame([data_dict])], ignore_index=True)
+            #             # df = df.append(data_dict, ignore_index=True)
             
-            # Concatenate all DataFrames in the list
-            # df = pd.concat(dfs, ignore_index=True)
-            if dfs:
-                df = pd.concat(dfs, ignore_index=True)
-            else:
-                df = pd.DataFrame()
+            # # Concatenate all DataFrames in the list
+            # # df = pd.concat(dfs, ignore_index=True)
+            # if dfs:
+            #     df = pd.concat(dfs, ignore_index=True)
+            # else:
+            #     df = pd.DataFrame()
             
-            file_name = f"AFFILIATE_DATA_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-            df = df.to_csv(index=False)
-            s3 = upload_csv_to_s3(df,file_name)
-            data = {'file_link': file_path,'export':'true'}
-            return Response(data)
+            # file_name = f"AFFILIATE_DATA_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            # file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            # df = df.to_csv(index=False)
+            # s3 = upload_csv_to_s3(df,file_name)
+            # data = {'file_link': file_path,'export':'true'}
+            # return Response(data)
 
 
         # Convert datetime objects to strings using a custom JSON encoder
@@ -409,8 +409,6 @@ class GetAffiliateData(APIView):
             'affiliate_commission'
         )
 
-
-        
 
         if product:
             # affiliateuser = affiliateuser.filter(product=product)
@@ -671,6 +669,22 @@ class CreateCommission(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
 
+
+
+class AffiliateProducts(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self,request):
+        email = request.GET.get('email').strip()
+        # products = Commission.objects.filter(product=product).values('product')
+        products = Commission.objects.filter(affiliate__email=email).values('product')
+        products_list = []
+        for i in products:
+            products_list.append(i['product'])
+        return Response(products_list)
+
+
+
+
 class UserDelete(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -678,6 +692,8 @@ class UserDelete(APIView):
         objs.delete()
         return Response('deleted')
     
+
+
 
 class UpdateAffiliateUser(APIView):
     def get(self, request):
@@ -695,17 +711,3 @@ class UpdateAffiliateUser(APIView):
         for user in users:
             # print(user)
             user.save()
-
-
-
-class AffiliateProducts(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self,request):
-        email = request.GET.get('email').strip()
-        # products = Commission.objects.filter(product=product).values('product')
-        products = Commission.objects.filter(affiliate__email=email).values('product')
-        products_list = []
-        for i in products:
-            products_list.append(i['product'])
-        return Response(products_list)
-

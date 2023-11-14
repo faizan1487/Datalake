@@ -388,11 +388,6 @@ class AgentsReport(APIView):
         response_dict["data"]["agent_name"] = filtered_data[0]['available_name']
         return Response(response_dict)
 
-class AgentsList(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        data = get_agents()
-        return Response(data)
 
 class InboxesReport(APIView):
     permission_classes = [IsAuthenticated]
@@ -527,6 +522,33 @@ class InboxesReport(APIView):
         return Response(response_dict)
 
 
+class AgentsList(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        data = get_agents()
+        return Response(data)
+
+
+class InboxesList(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        headers = {
+        'api_access_token': api_access_token,
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        }
+        url = 'https://chat.alnafi.com/api/v1/accounts/3/inboxes'
+        response = requests.get(url, headers=headers)
+        data = response.json()
+        response_list = []
+
+        for i in data['payload']:
+            response_list.append({'id': i['id'], 'name': i['name']})  
+           
+        
+        return Response(response_list)
+
+
 
 class ConversationsList(APIView):
     permission_classes = [IsAuthenticated]
@@ -598,26 +620,9 @@ class ConversationsList(APIView):
                 thread.join()
 
         return Response(data)
+    
 
 
 
-class InboxesList(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        headers = {
-        'api_access_token': api_access_token,
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-        }
-        url = 'https://chat.alnafi.com/api/v1/accounts/3/inboxes'
-        response = requests.get(url, headers=headers)
-        data = response.json()
-        response_list = []
-
-        for i in data['payload']:
-            response_list.append({'id': i['id'], 'name': i['name']})  
-           
-        
-        return Response(response_list)
 
 

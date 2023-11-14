@@ -14,7 +14,6 @@ from .serializers import AlnafiUserSerializer, IslamicAcademyUserSerializer, Mai
 import threading
 import boto3
 import environ
-from datetime import datetime
 from calendar import monthrange
 from django.db.models import Q
 from rest_framework.response import Response

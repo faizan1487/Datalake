@@ -17,7 +17,7 @@ env.read_env()
 DEBUG = env('DEBUG',cast=bool)
 
 @receiver(post_save, sender=AlNafi_User)
-def send_alnafi_lead_post_request(sender, instance, **kwargs):
+def alnafi_lead_to_erp(sender, instance, **kwargs):
     print("alnafi user signal running")
     # source='Academy Signup'
     source = instance.login_source
@@ -33,14 +33,14 @@ def send_islamic_lead_post_request(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=PSWFormRecords)
-def send_psw_lead_post_request(sender, instance, **kwargs):
+def psw_lead_to_erp(sender, instance, **kwargs):
 
     # print("psw user signal")
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
 
 @receiver(post_save, sender=New_AlNafi_User)
-def send_alnafi_new_request(sender, instance, created, *args, **kwargs):
+def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
     source='NewAlnafiSignup'
     psw_form_user = newsignupsignal(instance,source,sender)
 
@@ -126,13 +126,13 @@ def usersignal(instance,source,sender):
 
 #############################################################
 @receiver(post_save, sender=Moc_Leads)
-def handle_lead_post_request_lead_sale_doctype(sender, instance, created, **kwargs):
+def post_request_sale_doctype(sender, instance, created, **kwargs):
     # return
     source=instance.login_source
     Moc_Leads = mocLead_Signalto_sale_doctype(instance,source)   
 
 @receiver(post_save, sender=Moc_Leads)
-def handle_lead_post_request_moc_doctype(sender, instance, created, **kwargs):
+def post_request_moc_doctype(sender, instance, created, **kwargs):
     # return
     source=instance.login_source
     Moc_Leads = mocLead_Signalto_moc_doctype(instance,source)
@@ -238,17 +238,21 @@ def mocLead_Signalto_moc_doctype(instance,source):
     
 
     if failed_leads:
-        with open('failed_moc_doctype_leads.csv', 'w', newline='') as csvfile:
+        with open('failed_moc_doctype_leads.csv', 'a', newline='') as csvfile:
             fieldnames = failed_leads[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
+
+            # Check if the file is empty, and write header only if it's a new file
+            if csvfile.tell() == 0:
+                writer.writeheader()
+
             for lead in failed_leads:
                 writer.writerow(lead)
        
 
 
 def mocLead_Signalto_sale_doctype(instance,source):
-    print("sale doctype signa;")
+    # print("sale doctype signa;")
     user_api_key, user_secret_key = round_robin()
 
     headers = {
@@ -257,21 +261,28 @@ def mocLead_Signalto_sale_doctype(instance,source):
         "Accept": "application/json",
     }
 
-    country_code = getattr(instance, 'country', "Unknown")
-    country_name = None
 
+    country_code = getattr(instance, 'country', "Unknown")
     if country_code:
-        for name, code in COUNTRY_CODES.items():
-            if code == country_code:
-                country_name = name
-                break
+        country_name = None
+        if len(country_code) <= 2:
+            if country_code:
+                for name, code in COUNTRY_CODES.items():
+                    if code == country_code:
+                        country_name = name
+                        break
+        else:
+            country_name = country_code
+    else:
+        country_name = "Unknown"
+
 
     if hasattr(instance, 'created_at'):
         date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
     else:
         date_joined_str = None      
-    
-    
+        
+
     data = {
             "first_name": instance.first_name or None,
             "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
@@ -283,16 +294,19 @@ def mocLead_Signalto_sale_doctype(instance,source):
             "cv_link": instance.cv_link or None,
             "interest": instance.interest or None,
             "qualification": instance.qualification or None,
-            "date_joined": str(date_joined_str) if date_joined_str else None
+            "date_joined": str(date_joined_str) if date_joined_str else None,
+            "advert_detail": instance.advert or None,
         }
    
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     response = requests.get(url, headers=headers)
 
     lead_data = response.json()
+
+    # print(response.status_code)
     
-    if response.status_code == 403:
-        return
+    # if response.status_code == 403:
+    #     return
     
     if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
@@ -301,7 +315,9 @@ def mocLead_Signalto_sale_doctype(instance,source):
 
     already_existed = len(lead_data["data"]) > 0
     
+    failed_leads = []
     if already_existed:
+        # print ("already_exists")
         #on update add demo and enrollment
         # pass
         # print("already exixts")
@@ -342,35 +358,44 @@ def mocLead_Signalto_sale_doctype(instance,source):
         # print(data)
         response = requests.put(url, headers=headers, json=data)
         if response.status_code != 200:
-            pass
+            failed_leads.append(data)
             # print(data)
             # print(response.status_code)
             # print(response.json())
         instance.erp_lead_id = lead_data['data'][0]['name']
         # print("lead updated")
     else:
+        # print("in else")
         try:
-            failed_leads = []
             post_url = 'https://crm.alnafi.com/api/resource/Lead'
             response = requests.post(post_url, headers=headers, json=data)
+            # print(response.status_code)
             if response.status_code == 200:
                 lead_data = response.json()
                 erp_lead_id = lead_data['data']['name']
                 if erp_lead_id:
                     instance.erp_lead_id = erp_lead_id
                     print("Lead created successfully!")
+            else:
+                failed_leads.append(data)
         except Exception as e:
             print("Error posting lead data:", str(e))
-            failed_leads.append(data)
+            # print(data)
             # print(data)
             # print(response.status_code)
             # print(response.text)
+
+    # print("failed_leads",failed_leads)
     
     if failed_leads:
-        with open('failed_sales_doctype_leads.csv', 'w', newline='') as csvfile:
+        with open('failed_sale_doctype_leads.csv', 'a', newline='') as csvfile:
             fieldnames = failed_leads[0].keys()
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
+
+            # Check if the file is empty, and write header only if it's a new file
+            if csvfile.tell() == 0:
+                writer.writeheader()
+
             for lead in failed_leads:
                 writer.writerow(lead)
 

@@ -4,38 +4,30 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.decorators import api_view, permission_classes
 from django.contrib.auth import logout
 from rest_framework import status
-from payment.models import Main_Payment
-from rest_framework_simplejwt.tokens import RefreshToken,AccessToken
-from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.tokens import AccessToken
 import jwt
 from jwt.exceptions import ExpiredSignatureError
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
-from django.db.models import Q
-from django.contrib.auth.models import AnonymousUser, Group
 from django.contrib.auth import authenticate
 import os
 import pandas as pd
-from datetime import datetime, timedelta, date
+from datetime import datetime
 
-from .models import AlNafi_User, IslamicAcademy_User, Main_User,User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User
+from .models import AlNafi_User, IslamicAcademy_User, Main_User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User
 from .serializers import (AlnafiUserSerializer,UserRegistrationSerializer,UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,
                           SendPasswordResetEmailSerializer,UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,MainUserCreateSerializer,
                           NewAlnafiUserSerializer)
-from .services import (set_auth_token, checkSameDomain, GroupPermission,loginUser,get_tokens_for_user,aware_utcnow,no_users_month,
+from .services import (set_auth_token, checkSameDomain,loginUser,aware_utcnow,no_users_month,
                        upload_csv_to_s3,search_users,search_employees,search_active_users)
 from .renderers import UserRenderer
-from itertools import chain
 from functools import reduce
-import numpy as np
 import json
-import environ
 from django.http import HttpResponse
 from user.constants import COUNTRY_CODES
-import requests
 import csv
 from rest_framework.parsers import MultiPartParser, FormParser
 from django.views.decorators.csrf import csrf_exempt
@@ -46,7 +38,7 @@ import pandas as pd
 
 class UploadMocLeads(APIView):
     def post(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Podcast leads.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
         lst = []
 
         for index, row in data.iterrows():
@@ -56,11 +48,13 @@ class UploadMocLeads(APIView):
             form = row['form']
             country = row['country']
             login_source = row['source']
-            created_at_str = row['created_at']            
+            created_at_str = row['created_at']    
+            advert = row['advert']      
 
             # Assuming the original format is "%m/%d/%Y %H:%M:%S"
             # You can adjust the format string as needed
-            created_at = pd.to_datetime(created_at_str, format="%d/%m/%Y %H:%M:%S")
+            # created_at = pd.to_datetime(created_at_str, format="%d/%m/%Y %H:%M:%S")
+            created_at = pd.to_datetime(created_at_str, format="%Y/%m/%d %H:%M:%S")
             # try:
             #     print(email)
             #     moc = Moc_Leads.objects.create(
@@ -85,6 +79,7 @@ class UploadMocLeads(APIView):
                     'country': country,
                     'login_source': login_source,
                     'created_at': created_at,
+                    'advert': advert,
                 })
 
                 # If the object was not created (i.e., it already existed), update its attributes
@@ -96,6 +91,7 @@ class UploadMocLeads(APIView):
                     moc.country = country
                     moc.login_source = login_source
                     moc.created_at = created_at
+                    moc.advert = advert
                     moc.save()
 
             except Exception as e:
@@ -285,38 +281,9 @@ class Marketing_Pkr_Form(APIView):
         except Exception as e:
             return Response({"message":"Something went wrong"})
 
-class MainUserAPIView(APIView):
-    permission_classes = [IsAuthenticated]
-    def post(self, request):
-        file = request.FILES['file']
-        df = pd.read_csv(file)
-        # print(int(df.to_dict('records')[0]['product']))
-
-        # Replace non-finite values with NaN
-        # df['product'] = pd.to_numeric(df['product'], errors='coerce')
-
-        # Convert NaN values to None (null) instead of a default value
-        # df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
-
-        serializer = MainUserCreateSerializer(data=df.to_dict('records'), many=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status= 400)
-
-
-class UsersDelete(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        objs = AlNafi_User.objects.all()
-        objs.delete()
-        return Response('deleted')
 
 #Signal for mainsite user
 class AlnafiUser(APIView):
-    # def get(self, request):
-    #     Thread(target=self.get_thread, args=(request,)).start()
-    #     return HttpResponse("working")
     # permission_classes = [IsAuthenticated]
     def get(self, request):
         email_string = self.request.GET.get('emails', None) or None
@@ -341,15 +308,15 @@ class AlnafiUser(APIView):
     
     def post(self, request):
         data = request.data
-        print(data)
+        # print(data)
         email = data.get("email")
         try:
             instance = AlNafi_User.objects.filter(email=email)
-            print("in update")
+            # print("in update")
             serializer = AlnafiUserSerializer(instance.first(), data=data)
         except Exception as e:
-            print(e)
-            print("in post")
+            # print(e)
+            # print("in post")
             serializer = AlnafiUserSerializer(data=data)
 
         if serializer.is_valid():
@@ -358,47 +325,33 @@ class AlnafiUser(APIView):
 
         # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
 
 #Signal for newsite user
 class NewAlnafiUser(APIView): 
     def post(self, request):
         data = request.data
-        print(data)
+        # print(data)
         email = data.get("email")
         try:
             instance = New_AlNafi_User.objects.filter(email=email)
-            print("in update")
+            # print("in update")
             serializer = NewAlnafiUserSerializer(instance.first(), data=data)
         except Exception as e:
-            print(e)
-            print("in post")
+            # print(e)
+            # print("in post")
             serializer = NewAlnafiUserSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-        print(serializer.errors)
+        # print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class IslamicUser(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        Thread(target=self.get_thread, args=(request,)).start()
-        return HttpResponse("working")
-
-    def get_thread(self, request):
-        email_string = self.request.GET.get('emails', None) or None
-        if email_string:
-            emails = email_string.split(',')
-            users = IslamicAcademy_User.objects.filter(email__in=emails)
-        else:
-            users = IslamicAcademy_User.objects.all()
-
-        for user in users:
-            # print(user)
-            user.save()
 
 #Optimized
 class GetUsers(APIView):
@@ -619,57 +572,8 @@ class GetNoOfUsersMonth(APIView):
         return Response(response_data)
 
 
-class Moc_leads_upload(APIView):
-    parser_classes = (MultiPartParser, FormParser)
-    permission_classes = [IsAuthenticated]
-    def post(self, request, *args, **kwargs):
-        csv_file = request.FILES['file']
-        decoded_file = csv_file.read().decode('utf-8')
-        csv_data = csv.reader(decoded_file.splitlines(), delimiter=',')
-
-        for row in csv_data:
-            _, created = Moc_Leads.objects.update_or_create(
-                email=row[3],
-                defaults={
-                    "username": row[0],
-                    "first_name": row[1],
-                    "last_name": row[2],
-                    "phone": row[4],
-                    "address": row[5],
-                    "country": row[6],
-                    "language": row[7],
-                    "verification_code": row[8],
-                    "isAffiliate": row[9].lower() == 'true',
-                    "how_did_you_hear_about_us": row[10],
-                    "affiliate_code": row[11],
-                    "isMentor": row[12].lower() == 'true',
-                    "login_source": row[14],
-                    "erp_lead_id": row[15],
-                }
-            )
-
-        response_dict = {'status': status.HTTP_201_CREATED, 'message': 'leads created'}
-        return Response(response_dict)
 
 
-class UserRegistrationView(APIView):
-    renderer_classes = [UserRenderer]
-    def post(self, request, format=None):
-        serializer = UserRegistrationSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        try:
-            serializer.save()
-        except Exception as _:
-            # print(_)
-            return Response({"Invalid": "user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = serializer.instance
-        response = Response({"message": "User created successfully"})
-        sameDomain = checkSameDomain(request)
-        response = loginUser(request, response, user, sameDomain)
-        response.data["sameDomain"] = sameDomain
-        response.data["user"] = serializer.data
-        return response
 
 class UserLoginView(APIView):
     renderer_classes = [UserRenderer]
@@ -696,6 +600,7 @@ class UserLoginView(APIView):
             return Response({'error': 'Email or Password is not Valid'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
+
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def User_logout(request):
@@ -705,6 +610,18 @@ def User_logout(request):
     logout(request)
 
     return Response('User Logged out successfully')
+
+
+class Navbar(APIView):
+    def get(self,request):
+        user = request.user
+        groups = user.groups.all()
+        tabs = NavbarLink.objects.filter(group__in=groups).distinct()
+        serializer = NavbarSerializer(tabs, many=True)
+        return Response(serializer.data)
+
+
+
 
 class UserProfileView(APIView):
     renderer_classes = [UserRenderer]
@@ -797,15 +714,26 @@ class UserPasswordResetView(APIView):
         return Response({'msg':'Password Reset Successfully'}, status=status.HTTP_200_OK)
 
 
-class Navbar(APIView):
-    def get(self,request):
-        user = request.user
-        groups = user.groups.all()
-        tabs = NavbarLink.objects.filter(group__in=groups).distinct()
-        serializer = NavbarSerializer(tabs, many=True)
-        return Response(serializer.data)
 
 
+class MainUserAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        file = request.FILES['file']
+        df = pd.read_csv(file)
+        # print(int(df.to_dict('records')[0]['product']))
+
+        # Replace non-finite values with NaN
+        # df['product'] = pd.to_numeric(df['product'], errors='coerce')
+
+        # Convert NaN values to None (null) instead of a default value
+        # df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
+
+        serializer = MainUserCreateSerializer(data=df.to_dict('records'), many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status= 400)
 
 
 class AllEmployees(APIView):
@@ -817,10 +745,10 @@ class AllEmployees(APIView):
         url = request.build_absolute_uri()
 
 
-        employees = cache.get(url)
+        # employees = cache.get(url)
         if employees is None:
             employees = search_employees(q)
-            cache.set(url, employees)
+            # cache.set(url, employees)
 
         paginator = MyPagination()
         paginated_queryset = paginator.paginate_queryset(employees, request)
@@ -835,6 +763,85 @@ class getUsser(APIView):
             us.save()
         return Response(status=200)
     
+
+class UsersDelete(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        objs = AlNafi_User.objects.all()
+        objs.delete()
+        return Response('deleted')
+    
+
+class IslamicUser(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        Thread(target=self.get_thread, args=(request,)).start()
+        return HttpResponse("working")
+
+    def get_thread(self, request):
+        email_string = self.request.GET.get('emails', None) or None
+        if email_string:
+            emails = email_string.split(',')
+            users = IslamicAcademy_User.objects.filter(email__in=emails)
+        else:
+            users = IslamicAcademy_User.objects.all()
+
+        for user in users:
+            # print(user)
+            user.save()
+
+
+class Moc_leads_upload(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+    permission_classes = [IsAuthenticated]
+    def post(self, request, *args, **kwargs):
+        csv_file = request.FILES['file']
+        decoded_file = csv_file.read().decode('utf-8')
+        csv_data = csv.reader(decoded_file.splitlines(), delimiter=',')
+
+        for row in csv_data:
+            _, created = Moc_Leads.objects.update_or_create(
+                email=row[3],
+                defaults={
+                    "username": row[0],
+                    "first_name": row[1],
+                    "last_name": row[2],
+                    "phone": row[4],
+                    "address": row[5],
+                    "country": row[6],
+                    "language": row[7],
+                    "verification_code": row[8],
+                    "isAffiliate": row[9].lower() == 'true',
+                    "how_did_you_hear_about_us": row[10],
+                    "affiliate_code": row[11],
+                    "isMentor": row[12].lower() == 'true',
+                    "login_source": row[14],
+                    "erp_lead_id": row[15],
+                }
+            )
+
+        response_dict = {'status': status.HTTP_201_CREATED, 'message': 'leads created'}
+        return Response(response_dict)
+
+
+class UserRegistrationView(APIView):
+    renderer_classes = [UserRenderer]
+    def post(self, request, format=None):
+        serializer = UserRegistrationSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            serializer.save()
+        except Exception as _:
+            # print(_)
+            return Response({"Invalid": "user with this username already exists."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = serializer.instance
+        response = Response({"message": "User created successfully"})
+        sameDomain = checkSameDomain(request)
+        response = loginUser(request, response, user, sameDomain)
+        response.data["sameDomain"] = sameDomain
+        response.data["user"] = serializer.data
+        return response
 
 
 # import os
