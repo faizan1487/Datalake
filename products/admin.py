@@ -32,13 +32,13 @@ admin.site.register(IslamicAcademy_Product, IslamicAcademyProductAdmin)
 
 # FOR MAIN PRODUCTS COMBINE PRODUCT ALL TABLE IN ONE:
 class MainProductAdmin(ImportExportModelAdmin, ExportActionMixin, admin.ModelAdmin):
-    list_display = ("id", "source", "product_name", "product_slug", "created_at", "modified_at", "product_type", "product_plan", "amount_pkr", 
+    list_display = ("id", "source", "product_name", "bundle_ids","product_slug", "created_at", "modified_at", "product_type", "product_plan", "amount_pkr", 
                     "amount_usd", "amount_gbp", "old_amount_pkr", "old_amount_usd", "legacy_fee_pkr", "legacy_fee_usd",
                     "legacy_available", "qarz_product", "qarz_fee_pkr", "qarz_fee_usd", "lms_id", "product_language", 
                     "has_legacy_version", "is_certificate_product", "allow_coupon", "courses", "image", 
-                    "bundle_ids", "status", "description", "stock_status","duration","discount_applied_pkr","discount_applied_usd")
+                     "status", "description", "stock_status","duration","discount_applied_pkr","discount_applied_usd")
     
-    search_fields = ("product_name", "product_slug")
+    search_fields = ("product_name", "product_slug",'bundle_ids')
     list_filter = ("created_at", "source", "product_type", "product_plan",
                    "product_language", "allow_coupon", "amount_pkr", "amount_usd")
 
@@ -62,7 +62,7 @@ admin.site.register(Course, CourseAdmin)
 
 # For Al-Nafi New Main Site:
 class NewAlnafiProductAdmin(ImportExportModelAdmin, ExportActionMixin, admin.ModelAdmin):
-    list_display = ('product_name', 'slug', 'product_plan', 'product_type', 'amount_pkr', 'amount_usd', 'duration', 'discount_applied_pkr', 'discount_applied_usd', 'price_gbp', 'alnafi_product_id', 'product_language', 'is_certificate_product', 'bundle_ids', "created_at")
+    list_display = ('product_name', 'bundle_ids','slug', 'product_plan', 'product_type', 'amount_pkr', 'amount_usd', 'duration', 'discount_applied_pkr', 'discount_applied_usd', 'price_gbp', 'alnafi_product_id', 'product_language', 'is_certificate_product', "created_at")
     search_fields = ('slug', 'product_plan', 'product_type', 'alnafi_product_id', 'product_name', 'product_language', 'is_certificate_product', 'bundle_ids')
     list_filter = ('product_type', 'product_plan', 'product_language', 'is_certificate_product', 'created_at', 'amount_pkr', 'amount_usd')
 

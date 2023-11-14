@@ -117,19 +117,20 @@ class GetThinkificUser(APIView):
             # print("enrollments",enrollments)
 
             # Extract courses from both querysets
-            courses_queryset1 = courses[0]['courses_details']
-            courses_queryset2 = [item['course_name'] for item in enrollments]
+            # print("courses",courses)
+            courses_queryset = courses[0]['courses_details']
+            enrollments_queryset = [item['course_name'] for item in enrollments]
 
             # Create a dictionary to store courses based on product_name
             courses_dict = {}
 
             # Iterate through the courses in the first queryset
-            for course in courses_queryset1:
+            for course in courses_queryset:
                 course_name = course['course_name']
                 product_name = courses[0]['product_name']
                 
                 # Check if the course is also present in the second queryset
-                if course_name in courses_queryset2:
+                if course_name in enrollments_queryset:
                     # If the product_name is not already a key in the dictionary, add it
                     if product_name not in courses_dict:
                         courses_dict[product_name] = []
@@ -137,7 +138,7 @@ class GetThinkificUser(APIView):
                     courses_dict[product_name].append(course_name)
 
             # Iterate through the courses in the second queryset
-            for course_name in courses_queryset2:
+            for course_name in enrollments_queryset:
                 if any(course_name in courses_list for courses_list in courses_dict.values()):
                     pass
                 else:
