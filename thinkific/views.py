@@ -10,8 +10,9 @@ import requests
 import json
 from payment.models import Main_Payment
 from user.models import Main_User
-from decimal import Decimal
-from collections import defaultdict
+from datetime import datetime, timedelta
+from django.db.models import Q
+
 
 # Create your views here.
 class MyPagination(PageNumberPagination):
@@ -30,18 +31,58 @@ class DeleteEnroll(APIView):
     
 class GetThinkificUsers(APIView):
     # permission_classes = [IsAuthenticated]
-    def get(self, request):
-        queryset = Thinkific_User.objects.all()
+    def get(self, request): 
+        q = self.request.GET.get('q', None) or None
+        start_date = self.request.GET.get('start_date', None) or None
+        req_end_date = self.request.GET.get('end_date', None) or None
+        course_name = self.request.GET.get('course_name', None) or None
+
+
+
+        users = Thinkific_User.objects.all().order_by('-created_at')
+
+        if q:
+            users = users.filter(
+                Q(email__icontains=q) | Q(first_name__icontains=q)| Q(id__icontains=q))
+
+        if not start_date:
+            first_user = users.exclude(created_at=None).last()
+            if first_user and first_user.created_at:
+                date_time_obj = first_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f")
+                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                start_date = new_date_obj
+                start_date = start_date.date()
+
+       
+        if not req_end_date:
+            last_user = users.exclude(created_at=None).first()
+            if last_user and last_user.created_at:
+                date_time_obj = last_user.created_at.strftime("%Y-%m-%d %H:%M:%S.%f")
+                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                end_date = new_date_obj
+                end_date = end_date.date()
+                end_date = end_date + timedelta(days=1)
+
+        if req_end_date:
+            end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
+            end_date = end_date + timedelta(days=1)
+
+        users = users.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
+
+        if course_name:
+            users = users.filter(user_enrollments__course_name=course_name).distinct()
+
+        users = users.values("id","first_name","last_name","full_name","created_at","email","phone","user_enrollments__course_name")
+
         paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(queryset, request)
-        thinkific_user_serializer = ThinkificUserSerializer(paginated_queryset, many=True)
-        return paginator.get_paginated_response(thinkific_user_serializer.data)
-        
+        paginated_queryset = paginator.paginate_queryset(users, request)
+        return paginator.get_paginated_response(paginated_queryset)
+
 
 
 
 class GetThinkificUser(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id):
         user_id = id
         user = Thinkific_User.objects.filter(id=user_id)

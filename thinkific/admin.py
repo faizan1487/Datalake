@@ -3,7 +3,7 @@ from .models import Thinkific_User, Thinkific_Users_Enrollments
 from import_export.admin import ImportExportModelAdmin
 
 class ThinkificUserAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ['id', 'email', 'full_name','company','roles']
+    list_display = ['id', 'email', 'full_name','company','created_at']
     search_fields = ('id', 'email', 'first_name', 'last_name')
     
 class ThinkificUserEnrollmentAdmin(ImportExportModelAdmin, admin.ModelAdmin):
