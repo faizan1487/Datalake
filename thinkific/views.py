@@ -30,7 +30,7 @@ class DeleteEnroll(APIView):
         return Response("data deleted")   
     
 class GetThinkificUsers(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request): 
         q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -192,22 +192,24 @@ class GetThinkificUser(APIView):
 def get_courses_name_from_bundle_id(bundle_id):
 
     def get_courses(bundle_id, page=1):
-        # headers={
-        #     "X-Auth-API-Key": '0af37f50be358db530e91f3033ca7b1d',
-        #     "X-Auth-Subdomain": "alnafi",
-        #     "Content-Type": "application/json"
-        #     }
-
         headers={
-            "X-Auth-API-Key": '372ad45a3882e5f7dda23cd75d79556c',
-            "X-Auth-Subdomain": "alnafidev",
+            "X-Auth-API-Key": '0af37f50be358db530e91f3033ca7b1d',
+            "X-Auth-Subdomain": "alnafi",
             "Content-Type": "application/json"
             }
+
+        # headers={
+        #     "X-Auth-API-Key": '372ad45a3882e5f7dda23cd75d79556c',
+        #     "X-Auth-Subdomain": "alnafidev",
+        #     "Content-Type": "application/json"
+        #     }
         
         #production url
         # f"https://api.thinkific.com/api/public/v1/bundles/{bundle_id}/courses?page={page}&limit=200",
+        #stage url
+
         bundle_res = requests.get(
-            f"https://alnafidev.thinkific.com/api/public/v1/bundles/{bundle_id}/courses?page={page}&limit=200",
+            f"https://api.thinkific.com/api/public/v1/bundles/{bundle_id}/courses?page={page}&limit=200",
             headers=headers
         ).json()
         return bundle_res
