@@ -589,7 +589,7 @@ class ActivePayments(APIView):
 class ProductAnalytics(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        query = self.request.GET.get('q', None) or None
+        q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
         origin = self.request.GET.get('origin', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -597,7 +597,7 @@ class ProductAnalytics(APIView):
         export = self.request.GET.get('export', None) or None
         plan = self.request.GET.get('plan', None) or None   
         product = self.request.GET.get('product', None) or None  
-        page = self.request.GET.get('page', None) or None  
+        page = self.request.GET.get('page', 1) or None  
         phone = self.request.GET.get('phone', None) or None  
         status = self.request.GET.get('status', None) or None
         url = request.build_absolute_uri()
@@ -611,9 +611,8 @@ class ProductAnalytics(APIView):
 
 
         order = self.request.GET.get('order')
-        payments, success = search_payment(export, query,start_date, end_date, plan, source, origin, status,product,page,request,phone) 
-        # pri/t(payments)       
-        if success:
+        payments= search_payment(export, q ,start_date, end_date, plan, source, origin, status,product,page)
+        if payments['success']:
             def json_serializable(obj):
                     if isinstance(obj, datetime):
                         return obj.isoformat()  # Convert datetime to ISO 8601 format
@@ -622,22 +621,23 @@ class ProductAnalytics(APIView):
             # count the product with most payments
             product_info = defaultdict(lambda: {'count': 0, 'payment_total': 0.0, 'plan': '','source':''})
             # usd_rate = get_USD_rate()
-            for i in range(len(payments)):
+            for i in payments['payments']:
                 # try:
                     # print(i['payment_cycle'])
                     # payments[i]['user_id'] = users[i]['user__email']
                     # payment[i]['product_id'] = users[i]['product__product_name']
-                payment_amount = payments[i]['amount']
-                product_name = payments[i]['product']
+                payment_amount = i['amount']
+                if i['product']:
+                    product_name = i['product'][0]
                 
                 # print("payments[i]['product']",payments[i]['product'])
                 if product_name and payment_amount:
                     product_info[product_name]['count'] += 1
-                    product_info[product_name]['plan'] = payments[i]['plan']
-                    product_info[product_name]['source'] = payments[i]['source']
-                    product_info[product_name]['order_datetime'] = payments[i]['order_datetime']
+                    product_info[product_name]['plan'] = i['plan']
+                    product_info[product_name]['source'] = i['source']
+                    product_info[product_name]['order_datetime'] = i['order_datetime']
                     sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
-                    if payments[i]['source'].lower() in sources:
+                    if i['source'].lower() in sources:
                         product_info[product_name]['payment_total'] += float(payment_amount)
                     else:
                         product_info[product_name]['payment_total']  += int(float(payment_amount))
@@ -713,7 +713,8 @@ class ProductAnalytics(APIView):
                 
                 total_payments_in_pkr = 0
                 total_payments_in_usd = 0
-                for i in payment_objects:
+                for i in payment_objects['payments']:
+                    print(i)
                     sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                     if i['source'].lower() in sources:
                         total_payments_in_pkr += int(float(i['amount']))
