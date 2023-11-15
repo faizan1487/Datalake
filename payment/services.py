@@ -153,7 +153,7 @@ def renewal_no_of_payments(payments):
 
 
 def get_USD_rate(currency,amount):
-    usd_details_str = cache.get("usd_details")
+    # usd_details_str = cache.get("usd_details")
     # print(currency)
     # print(amount)
     # usd_details = cache.get("usd_details")
@@ -161,18 +161,17 @@ def get_USD_rate(currency,amount):
         # print(usd_details)
         # print("usd_details", usd_details["PKR"])
         # return usd_details_str.loads(usd_details)
-    if not usd_details_str:
-        print("cache empty")
-        usd_details = {}
-        url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/USD"
-        response = requests.get(url).json()
-        # print(response)
-        usd_details[currency] = response["conversion_rates"][currency.upper()]
-        usd_details["USD"] = response["conversion_rates"]["USD"]
+    # if not usd_details_str:
+    usd_details = {}
+    url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/USD"
+    response = requests.get(url).json()
+    # print(response)
+    usd_details[currency] = response["conversion_rates"][currency.upper()]
+    usd_details["USD"] = response["conversion_rates"]["USD"]
 
-        cache.set("usd_details", json.dumps(usd_details), 60 * 60 * 24)  # Cache for 1 day (60 seconds * 60 minutes * 24 hours)
-    else:
-        usd_details = json.loads(usd_details_str)
+    cache.set("usd_details", json.dumps(usd_details), 60 * 60 * 24)  # Cache for 1 day (60 seconds * 60 minutes * 24 hours)
+    # else:
+    #     usd_details = json.loads(usd_details_str)
 
 
     return usd_details
