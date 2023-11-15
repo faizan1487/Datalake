@@ -585,7 +585,7 @@ class ActivePayments(APIView):
 
 
 class ProductAnalytics(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         query = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -595,6 +595,8 @@ class ProductAnalytics(APIView):
         export = self.request.GET.get('export', None) or None
         plan = self.request.GET.get('plan', None) or None   
         product = self.request.GET.get('product', None) or None  
+        page = self.request.GET.get('page', None) or None  
+        phone = self.request.GET.get('phone', None) or None  
         status = self.request.GET.get('status', None) or None
         url = request.build_absolute_uri()
         sort_by_str = request.GET.get('sort_by')
@@ -607,7 +609,7 @@ class ProductAnalytics(APIView):
 
 
         order = self.request.GET.get('order')
-        payments, success = search_payment(export, query,start_date, end_date, plan, source, origin, status,product) 
+        payments, success = search_payment(export, query,start_date, end_date, plan, source, origin, status,product,page,request,phone) 
         # pri/t(payments)       
         if success:
             def json_serializable(obj):
