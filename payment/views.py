@@ -1228,12 +1228,23 @@ class SearchPayments(APIView):
 # NEW
 # bug, only 3 payments showing up instead of 10 
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
+    # payments = Main_Payment.objects.exclude(
+    #     product__product_name__in=["test", "Test Course", "Test"]).exclude(
+    #     amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
+    
+
     payments = Main_Payment.objects.exclude(
-        product__product_name__in=["test", "Test Course", "Test"]).exclude(
-        amount__in=[1, 2, 0, 0.01, 1.0, 2.0, 3.0, 4.0, 5.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 10, 1])
-    statuses = ["0", False, 0]
-    payments = payments.exclude(source='UBL_DD', status__in=statuses)
-    payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD','Stripe'])
+        user__email__endswith="yopmail.com"
+    ).exclude(
+        source='UBL_DD', status__in=["0", False, 0]
+    ).filter(
+        source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']
+    )
+
+
+    # statuses = ["0", False, 0]
+    # payments = payments.exclude(source='UBL_DD', status__in=statuses)
+    # payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD','Stripe'])
 
     if status:
         payments = payments.filter(status=status)
