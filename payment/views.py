@@ -714,7 +714,6 @@ class ProductAnalytics(APIView):
                 total_payments_in_pkr = 0
                 total_payments_in_usd = 0
                 for i in payment_objects['payments']:
-                    print(i)
                     sources = ['ubl_dd','al-nafi','easypaisa','ubl_ipg']
                     if i['source'].lower() in sources:
                         total_payments_in_pkr += int(float(i['amount']))
@@ -785,238 +784,10 @@ class RenewalNoOfPayments(APIView):
         return Response(response_data)
         
 
-#PRODUCTION
-#response time 6 seconds in prod
-#bug in plan payment filter, when implement plan filter payment gets duplicated
-#issue in product filter when trying to optimize api further than 6 seconds and ,export not fixed
-# class SearchPayments(APIView):
-#     # permission_classes = [IsAuthenticated]   
-#     # Define the sources list here
-#     def get(self, request):
-#         query = self.request.GET.get('q', None)
-#         source = self.request.GET.get('source', None)
-#         origin = self.request.GET.get('origin', None)
-#         start_date = self.request.GET.get('start_date', None)
-#         end_date = self.request.GET.get('end_date', None)
-#         export = self.request.GET.get('export', None)
-#         plan = self.request.GET.get('plan', None)
-#         product = self.request.GET.get('product', None)
-#         status = self.request.GET.get('status', None)
-#         page = int(self.request.GET.get('page', 1))
-#         phone = self.request.GET.get('phone', None)
 
-#         payments, success= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page,request,phone)
-#         if success:
-#             payments = self.process_payments(payments, export,product)            
-#             if export == 'true':
-#                 return Response(payments)
-#             paginated_queryset = self.paginate_response(request,payments)
-#             response = {"total_payments_pkr": payments['total_payments_pkr'],"total_payments_usd":payments['total_payments_usd'],'count': payments['count'],"payments":paginated_queryset}
-#             return Response(response)
-#         else:
-#             payments = []
-#             return Response(payments)
-
-#     def process_payments(self, payments, export,product):
-#         payment_list = []
-#         for payment in payments:
-#             payment_id = payment['id']
-
-#             payment_found = False
-
-#             for existing_payment in payment_list:
-#                 if existing_payment['id'] == payment_id:
-#                     existing_payment['product_names'].append(payment['product'])
-#                     existing_payment['plans'].append(payment['plan'])
-#                     payment_found = True
-#                     break
-
-#             if not payment_found:
-#                 payment_data = {
-#                     'id': payment['id'],
-#                     'user_id': payment['user'],
-#                     'phone': payment['user_phone'],
-#                     'source': payment['source'],
-#                     'amount': payment['amount'],
-#                     'product_names': [payment['product']],
-#                     'plans': [payment['plan']],
-#                     'alnafi_payment_id': payment['alnafi_payment_id'],
-#                     'source_payment_id': payment['source_payment_id'],
-#                     'card_mask': payment['card_mask'],
-#                     'order_datetime': payment['order_datetime'].isoformat(),
-#                     'currency': payment['currency'],
-#                 }
-
-#                 payment_list.append(payment_data)
-
-
-#         sources = ['ubl_dd', 'al-nafi', 'easypaisa', 'ubl_ipg']
-#         total_payments_in_pkr = sum(float(p['amount']) for p in payment_list if p['source'].lower() in sources)
-#         # total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
-
-#         total_payments_in_usd = 0
-#         for p in payment_list:
-#             if p['source'].lower() not in sources:
-#                 if p['currency'].lower() == 'pkr':
-#                     pass
-#                 elif p['currency'].lower() != 'usd':
-#                     currency_rate = get_USD_rate(p['currency'],p['amount'])
-#                     converted_amount = float(p['amount']) / currency_rate[p['currency']]
-#                     total_payments_in_usd += converted_amount
-#                 else:
-#                     total_payments_in_usd += float(p['amount'])
-
-
-#         if export == 'true':
-#             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-#             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-#             df = pd.DataFrame(payment_list).to_csv(index=False)
-#             s3 = upload_csv_to_s3(df, file_name)
-#             data = {'file_link': file_path, 'export': 'true'}
-#             return data
-
-
-#         return {
-#             'total_payments_pkr': total_payments_in_pkr,
-#             'total_payments_usd': total_payments_in_usd,
-#             'payments': payment_list,
-#             "count": len(payment_list)
-#         }
-
-#     def paginate_response(self, request, payments):
-#         paginator = MyPagination()
-#         paginated_queryset = paginator.paginate_queryset(payments['payments'], request)
-#         return paginated_queryset
-    
-#     def are_product_names_equal(self,product_name1, product_name2):
-#         cleaned_name1 = self.clean_product_name(product_name1)
-#         cleaned_name2 = self.clean_product_name(product_name2)
-        
-#         return cleaned_name1 == cleaned_name2
-    
-#     def clean_product_name(self,product_name):
-#     # List of terms to remove
-#         remove_terms = ["Half Yearly", "Yearly", "Quarterly", "Monthly", "4 Months"]
-#         remove_words = ["in"]
-
-#         # Remove terms from the end of the product name
-#         if type(product_name) == list:
-#             for term in remove_terms:
-#                 if product_name[0].endswith(term):
-#                     product_name = product_name[0][:-len(term)].strip()
-
-#             # Remove specific words from the product name
-#             for word in remove_words:
-#                 product_name = product_name[0].replace(word, "").strip()
-#         else:
-
-#             for term in remove_terms:
-#                 if product_name.endswith(term):
-#                     product_name = product_name[:-len(term)].strip()
-
-#             # Remove specific words from the product name
-#             for word in remove_words:
-#                 product_name = product_name.replace(word, "").strip()
-
-
-#         return product_name.lower().replace(" ", "")
-
-
-
-#Production
-# def search_payment(export, q, start_date, end_date, plan, source, origin, status, product, page, request, phone):
-#     payments = Main_Payment.objects.exclude(
-#         user__email__endswith="yopmail.com"
-#     ).exclude(
-#         source='UBL_DD', status__in=["0", False, 0]
-#     ).filter(
-#         source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']
-#     )
-
-#     if status:
-#         payments = payments.filter(status=status)
-
-#     if source:
-#         payments = payments.filter(source=source)
-
-#     if origin:
-#         source_filter = ['Easypaisa', 'UBL_IPG', 'UBL_DD'] if origin == 'local' else ['Stripe']
-#         payments = payments.filter(source__in=source_filter)
-
-#     if not start_date:
-#         start_date = payments.exclude(order_datetime=None).last().order_datetime.date()
-
-#     if not end_date:
-#         end_date = payments.exclude(order_datetime=None).first().order_datetime.date()
-
-#     payments = payments.filter(order_datetime__range=(start_date, end_date))
-
-#     print(payments)
-
-#     if q:
-#         payments = payments.filter(user__email__icontains=q)
-
-
-#     print(payments)
-
-#     if phone:
-#         phone = phone.strip()
-#         if phone.startswith("92"):
-#             phone = "+" + phone
-#         payments = payments.filter(user__phone__icontains=phone)
-
-#     if product:
-#         keywords = product.split()
-#         query = Q()
-#         for keyword in keywords:
-#             query &= Q(product__product_name__icontains=keyword)
-#         payments = payments.filter(query)
-
-#     if plan:
-#         payments = payments.filter(product__product_plan=plan)
-
-#     payment_cycle_descriptions = {
-#         'Monthly': 'Monthly',
-#         'Yearly': 'Yearly',
-#         'Half Yearly': 'Half-Yearly',
-#         'Quarterly': 'Quarterly'
-#         # Add more plan-value pairs as needed
-#     }
-
-#     payments = payments.annotate(
-#         payment_cycle=Case(
-#             *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
-#             default=Value('Unknown Plan'),
-#             output_field=CharField()
-#         )
-#     )
-
-#     if not payments:
-#         return payments, False
-#     else:
-#         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
-#                                          'order_datetime', 'id', 'payment_cycle', 'alnafi_payment_id', 'card_mask',
-#                                          'source_payment_id', 'currency')
-
-#         payments = [{'user': payment['user__email'], 'user_phone': payment['user__phone'],
-#                      'product': payment['product__product_name'], 'plan': payment['payment_cycle'],
-#                      'source': payment['source'], 'amount': payment['amount'],
-#                      'alnafi_payment_id': payment['alnafi_payment_id'],
-#                      'order_datetime': payment['order_datetime'], 'card_mask': payment['card_mask'],
-#                      'id': payment['id'], 'source_payment_id': payment['source_payment_id'],
-#                      'currency': payment['currency']} for payment in payments_data]
-
-#         return payments, True
-
-
-
-
-
-
-
-# NEW
+# PRODUCTION
 class SearchPayments(APIView):
-    permission_classes = [IsAuthenticated]   
+    # permission_classes = [IsAuthenticated]   
     # Define the sources list here
     def get(self, request):
         query = self.request.GET.get('q', None)
@@ -1096,9 +867,7 @@ class SearchPayments(APIView):
 
    
 
-
-
-# NEW
+# PRODUCTION
 # bug, only 3 payments showing up instead of 10 
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
     payments = Main_Payment.objects.exclude(
@@ -1296,7 +1065,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
 
-
 def clean_product_name(product_name):
         # print("in clean product name func")
         # List of terms to remove
@@ -1345,41 +1113,6 @@ def are_product_names_equal(self,product, payment_product):
         # print("cleaned_name1",product)
         # print("cleaned_name2",payment_product)
         return product == payment_product
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class MainPaymentAPIView(APIView):
-    def post(self, request):
-        file = request.FILES['file']
-        df = pd.read_csv(file)
-        # print(int(df.to_dict('records')[0]['product']))
-        
-        # Replace non-finite values with NaN
-        df['product'] = pd.to_numeric(df['product'], errors='coerce')
-        
-        # Convert NaN values to None (null) instead of a default value
-        df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
-        
-        # print(df['product'])
-        serializer = MainPaymentSerializer(data=df.to_dict('records'), many=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=201)
-        return Response(serializer.errors, status= 400)
-
 
 
 
@@ -1650,6 +1383,254 @@ class Renewal_Leads(APIView):
         return Response("DONE")
 
 
+
+
+class MainPaymentAPIView(APIView):
+    def post(self, request):
+        file = request.FILES['file']
+        df = pd.read_csv(file)
+        # print(int(df.to_dict('records')[0]['product']))
+        
+        # Replace non-finite values with NaN
+        df['product'] = pd.to_numeric(df['product'], errors='coerce')
+        
+        # Convert NaN values to None (null) instead of a default value
+        df['product'] = np.where(pd.isnull(df['product']), None, df['product'])
+        
+        # print(df['product'])
+        serializer = MainPaymentSerializer(data=df.to_dict('records'), many=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=201)
+        return Response(serializer.errors, status= 400)
+
+
+
+
+
+#OLD
+#response time 6 seconds in prod
+#bug in plan payment filter, when implement plan filter payment gets duplicated
+#issue in product filter when trying to optimize api further than 6 seconds and ,export not fixed
+# class SearchPayments(APIView):
+#     # permission_classes = [IsAuthenticated]   
+#     # Define the sources list here
+#     def get(self, request):
+#         query = self.request.GET.get('q', None)
+#         source = self.request.GET.get('source', None)
+#         origin = self.request.GET.get('origin', None)
+#         start_date = self.request.GET.get('start_date', None)
+#         end_date = self.request.GET.get('end_date', None)
+#         export = self.request.GET.get('export', None)
+#         plan = self.request.GET.get('plan', None)
+#         product = self.request.GET.get('product', None)
+#         status = self.request.GET.get('status', None)
+#         page = int(self.request.GET.get('page', 1))
+#         phone = self.request.GET.get('phone', None)
+
+#         payments, success= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page,request,phone)
+#         if success:
+#             payments = self.process_payments(payments, export,product)            
+#             if export == 'true':
+#                 return Response(payments)
+#             paginated_queryset = self.paginate_response(request,payments)
+#             response = {"total_payments_pkr": payments['total_payments_pkr'],"total_payments_usd":payments['total_payments_usd'],'count': payments['count'],"payments":paginated_queryset}
+#             return Response(response)
+#         else:
+#             payments = []
+#             return Response(payments)
+
+#     def process_payments(self, payments, export,product):
+#         payment_list = []
+#         for payment in payments:
+#             payment_id = payment['id']
+
+#             payment_found = False
+
+#             for existing_payment in payment_list:
+#                 if existing_payment['id'] == payment_id:
+#                     existing_payment['product_names'].append(payment['product'])
+#                     existing_payment['plans'].append(payment['plan'])
+#                     payment_found = True
+#                     break
+
+#             if not payment_found:
+#                 payment_data = {
+#                     'id': payment['id'],
+#                     'user_id': payment['user'],
+#                     'phone': payment['user_phone'],
+#                     'source': payment['source'],
+#                     'amount': payment['amount'],
+#                     'product_names': [payment['product']],
+#                     'plans': [payment['plan']],
+#                     'alnafi_payment_id': payment['alnafi_payment_id'],
+#                     'source_payment_id': payment['source_payment_id'],
+#                     'card_mask': payment['card_mask'],
+#                     'order_datetime': payment['order_datetime'].isoformat(),
+#                     'currency': payment['currency'],
+#                 }
+
+#                 payment_list.append(payment_data)
+
+
+#         sources = ['ubl_dd', 'al-nafi', 'easypaisa', 'ubl_ipg']
+#         total_payments_in_pkr = sum(float(p['amount']) for p in payment_list if p['source'].lower() in sources)
+#         # total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
+
+#         total_payments_in_usd = 0
+#         for p in payment_list:
+#             if p['source'].lower() not in sources:
+#                 if p['currency'].lower() == 'pkr':
+#                     pass
+#                 elif p['currency'].lower() != 'usd':
+#                     currency_rate = get_USD_rate(p['currency'],p['amount'])
+#                     converted_amount = float(p['amount']) / currency_rate[p['currency']]
+#                     total_payments_in_usd += converted_amount
+#                 else:
+#                     total_payments_in_usd += float(p['amount'])
+
+
+#         if export == 'true':
+#             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+#             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+#             df = pd.DataFrame(payment_list).to_csv(index=False)
+#             s3 = upload_csv_to_s3(df, file_name)
+#             data = {'file_link': file_path, 'export': 'true'}
+#             return data
+
+
+#         return {
+#             'total_payments_pkr': total_payments_in_pkr,
+#             'total_payments_usd': total_payments_in_usd,
+#             'payments': payment_list,
+#             "count": len(payment_list)
+#         }
+
+#     def paginate_response(self, request, payments):
+#         paginator = MyPagination()
+#         paginated_queryset = paginator.paginate_queryset(payments['payments'], request)
+#         return paginated_queryset
+    
+#     def are_product_names_equal(self,product_name1, product_name2):
+#         cleaned_name1 = self.clean_product_name(product_name1)
+#         cleaned_name2 = self.clean_product_name(product_name2)
+        
+#         return cleaned_name1 == cleaned_name2
+    
+#     def clean_product_name(self,product_name):
+#     # List of terms to remove
+#         remove_terms = ["Half Yearly", "Yearly", "Quarterly", "Monthly", "4 Months"]
+#         remove_words = ["in"]
+
+#         # Remove terms from the end of the product name
+#         if type(product_name) == list:
+#             for term in remove_terms:
+#                 if product_name[0].endswith(term):
+#                     product_name = product_name[0][:-len(term)].strip()
+
+#             # Remove specific words from the product name
+#             for word in remove_words:
+#                 product_name = product_name[0].replace(word, "").strip()
+#         else:
+
+#             for term in remove_terms:
+#                 if product_name.endswith(term):
+#                     product_name = product_name[:-len(term)].strip()
+
+#             # Remove specific words from the product name
+#             for word in remove_words:
+#                 product_name = product_name.replace(word, "").strip()
+
+
+#         return product_name.lower().replace(" ", "")
+
+
+
+
+#OLD
+# def search_payment(export, q, start_date, end_date, plan, source, origin, status, product, page, request, phone):
+#     payments = Main_Payment.objects.exclude(
+#         user__email__endswith="yopmail.com"
+#     ).exclude(
+#         source='UBL_DD', status__in=["0", False, 0]
+#     ).filter(
+#         source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']
+#     )
+
+#     if status:
+#         payments = payments.filter(status=status)
+
+#     if source:
+#         payments = payments.filter(source=source)
+
+#     if origin:
+#         source_filter = ['Easypaisa', 'UBL_IPG', 'UBL_DD'] if origin == 'local' else ['Stripe']
+#         payments = payments.filter(source__in=source_filter)
+
+#     if not start_date:
+#         start_date = payments.exclude(order_datetime=None).last().order_datetime.date()
+
+#     if not end_date:
+#         end_date = payments.exclude(order_datetime=None).first().order_datetime.date()
+
+#     payments = payments.filter(order_datetime__range=(start_date, end_date))
+
+#     print(payments)
+
+#     if q:
+#         payments = payments.filter(user__email__icontains=q)
+
+
+#     print(payments)
+
+#     if phone:
+#         phone = phone.strip()
+#         if phone.startswith("92"):
+#             phone = "+" + phone
+#         payments = payments.filter(user__phone__icontains=phone)
+
+#     if product:
+#         keywords = product.split()
+#         query = Q()
+#         for keyword in keywords:
+#             query &= Q(product__product_name__icontains=keyword)
+#         payments = payments.filter(query)
+
+#     if plan:
+#         payments = payments.filter(product__product_plan=plan)
+
+#     payment_cycle_descriptions = {
+#         'Monthly': 'Monthly',
+#         'Yearly': 'Yearly',
+#         'Half Yearly': 'Half-Yearly',
+#         'Quarterly': 'Quarterly'
+#         # Add more plan-value pairs as needed
+#     }
+
+#     payments = payments.annotate(
+#         payment_cycle=Case(
+#             *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
+#             default=Value('Unknown Plan'),
+#             output_field=CharField()
+#         )
+#     )
+
+#     if not payments:
+#         return payments, False
+#     else:
+#         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
+#                                          'order_datetime', 'id', 'payment_cycle', 'alnafi_payment_id', 'card_mask',
+#                                          'source_payment_id', 'currency')
+
+#         payments = [{'user': payment['user__email'], 'user_phone': payment['user__phone'],
+#                      'product': payment['product__product_name'], 'plan': payment['payment_cycle'],
+#                      'source': payment['source'], 'amount': payment['amount'],
+#                      'alnafi_payment_id': payment['alnafi_payment_id'],
+#                      'order_datetime': payment['order_datetime'], 'card_mask': payment['card_mask'],
+#                      'id': payment['id'], 'source_payment_id': payment['source_payment_id'],
+#                      'currency': payment['currency']} for payment in payments_data]
+
+#         return payments, True
 
 
 
