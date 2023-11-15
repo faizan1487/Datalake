@@ -1039,7 +1039,7 @@ class SearchPayments(APIView):
                 'num_pages': num_pages,
                 'total_payments_pkr': payments['total_payments_pkr'],
                 'total_payments_usd': payments['total_payments_usd'],
-                'results': payments['payments'],
+                'payments': payments['payments'],
             })
         else:
             payments = []
