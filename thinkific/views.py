@@ -33,7 +33,7 @@ class DeleteEnroll(APIView):
         return Response("data deleted")   
     
 class GetThinkificUsers(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request): 
         q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -98,7 +98,7 @@ class GetThinkificUsers(APIView):
 
 
 class GetThinkificUser(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request, id):
         user_id = id
         user = Thinkific_User.objects.filter(id=user_id)
