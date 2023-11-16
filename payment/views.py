@@ -17,11 +17,8 @@ from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, timedelta, date
 from django.db.models import Q
 from django.http import HttpResponse
-from django.conf import settings
 import os
-import pandas as pd
 from django.core.cache import cache
-from user.services import upload_csv_to_s3
 import numpy as np
 import json
 from django.db.models.functions import Upper
@@ -34,6 +31,9 @@ from secrets_api.algorithem import round_robin_support
 from django.db.models import F
 from django.core.cache import cache
 
+import pandas as pd
+from django.conf import settings
+from user.services import upload_csv_to_s3
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -584,9 +584,6 @@ class ActivePayments(APIView):
                 payment_list.append(payment_data)
         
         return payment_list
-
-
-
 
 
        

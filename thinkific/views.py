@@ -12,7 +12,10 @@ from payment.models import Main_Payment
 from user.models import Main_User
 from datetime import datetime, timedelta
 from django.db.models import Q
-
+import pandas as pd
+from django.conf import settings
+from user.services import upload_csv_to_s3
+import os
 
 # Create your views here.
 class MyPagination(PageNumberPagination):
@@ -36,6 +39,7 @@ class GetThinkificUsers(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         req_end_date = self.request.GET.get('end_date', None) or None
         course_name = self.request.GET.get('course_name', None) or None
+        export = self.request.GET.get('export', None) or None
 
 
 
@@ -44,7 +48,10 @@ class GetThinkificUsers(APIView):
         # print(q)
         if q:
             users = users.filter(email__icontains=q)
-            
+
+        if course_name:
+            users = users.filter(user_enrollments__course_name=course_name).distinct()
+
         # print(users)
 
         if not start_date:
@@ -71,14 +78,21 @@ class GetThinkificUsers(APIView):
 
         users = users.filter(Q(created_at__gte = start_date) & Q(created_at__lte = end_date))
 
-        if course_name:
-            users = users.filter(user_enrollments__course_name=course_name).distinct()
 
         users = users.values("id","first_name","last_name","full_name","created_at","email","phone","user_enrollments__course_name")
 
-        paginator = MyPagination()
-        paginated_queryset = paginator.paginate_queryset(users, request)
-        return paginator.get_paginated_response(paginated_queryset)
+
+        if export == 'true':
+            file_name = f"Thinkific_Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            df = pd.DataFrame(users).to_csv(index=False)
+            s3 = upload_csv_to_s3(df, file_name)
+            data = {'file_link': file_path, 'export': 'true'}
+            return Response(data)
+        else:    
+            paginator = MyPagination()
+            paginated_queryset = paginator.paginate_queryset(users, request)
+            return paginator.get_paginated_response(paginated_queryset)
 
 
 
