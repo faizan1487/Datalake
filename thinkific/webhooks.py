@@ -178,3 +178,42 @@ def progress_created_webhook(request):
     except Exception as e:
         # Handle other unexpected exceptions
         return JsonResponse({'error': 'An error occurred'}, status=500)
+    
+
+    
+@csrf_exempt
+@api_view(['POST'])
+@renderer_classes([JSONRenderer])
+def enrollment_completed_webhook(request):
+    print("enrollment completion webhook")
+    if request.method != "POST":
+        return HttpResponse(status=400)
+    
+    try:
+        data = json.loads(request.body.decode('utf-8'))  # Parsing JSON directly
+        # print(data)
+
+        payload = data.get('payload', {})
+        user_data = payload.get('user', {})
+        course_data = payload.get('course', {})
+
+        email = user_data.get('email')
+        course_id = course_data.get('id')
+
+        if not email or course_id is None:
+            return JsonResponse({'error': 'Invalid or missing data'}, status=400)
+
+        try:
+            enrollment = Thinkific_Users_Enrollments.objects.get(email=email, course_id=course_id)
+            enrollment.status = 'Completed'
+            enrollment.save()
+            return JsonResponse({'message': 'Completed'}, status=200)
+        except Thinkific_Users_Enrollments.DoesNotExist:
+            return JsonResponse({'error': 'Enrollment not found'}, status=404)
+        except Exception as e:
+            return JsonResponse({'error': 'An error occurred: ' + str(e)}, status=500)
+
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': 'An error occurred: ' + str(e)}, status=500)

@@ -49,7 +49,8 @@ class Thinkific_Users_Enrollments(models.Model):
     email = models.EmailField(max_length=255, null=True, blank=True)
     course_id = models.IntegerField(null=True, blank=True)
     course_name = models.CharField(max_length=255, null=True, blank=True)
-    
+    status = models.CharField(max_length=200, default='In Progress')
+
     def __str__(self):
         return f"{self.email}"
     class Meta:
