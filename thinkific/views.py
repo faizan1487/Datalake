@@ -91,12 +91,7 @@ class GetThinkificUser(APIView):
 
         # print(user)
         # print("user[0].email",user[0].email)
-        #extract main_user of this user
-        # main_user = Main_User.objects.filter(email = user[0].email)
-        # print("main_user",main_user)
-        #extract payments of this user
 
-        # print("main_user[0].id",main_user[0].id)
         payments = Main_Payment.objects.filter(user__email=user[0].email)
 
         # print(payments)
