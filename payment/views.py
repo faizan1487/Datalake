@@ -1347,9 +1347,6 @@ def search_payment_for_product_analytics(export, q, start_date, end_date, plan, 
     ).filter(
         source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']
     )
-
-    if source:
-        payments = payments.filter(source=source)
    
     if not start_date:
         first_payment = payments.exclude(order_datetime=None).last()
