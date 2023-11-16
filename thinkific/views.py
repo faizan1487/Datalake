@@ -40,10 +40,12 @@ class GetThinkificUsers(APIView):
 
 
         users = Thinkific_User.objects.all().order_by('-created_at')
-
+        # print(users)
+        # print(q)
         if q:
-            users = users.filter(
-                Q(email__icontains=q) | Q(first_name__icontains=q)| Q(id__icontains=q))
+            users = users.filter(email__icontains=q)
+            
+        # print(users)
 
         if not start_date:
             first_user = users.exclude(created_at=None).last()
@@ -87,11 +89,17 @@ class GetThinkificUser(APIView):
         user_id = id
         user = Thinkific_User.objects.filter(id=user_id)
 
+        # print(user)
+        # print("user[0].email",user[0].email)
         #extract main_user of this user
-        main_user = Main_User.objects.filter(email = user[0].email)
+        # main_user = Main_User.objects.filter(email = user[0].email)
         # print("main_user",main_user)
         #extract payments of this user
-        payments = Main_Payment.objects.filter(user=main_user[0].id)
+
+        # print("main_user[0].id",main_user[0].id)
+        payments = Main_Payment.objects.filter(user__email=user[0].email)
+
+        # print(payments)
         if payments:
             # print("payments",payments)
             #extract prodcuts from those payments
@@ -215,7 +223,7 @@ def get_courses_name_from_bundle_id(bundle_id):
         return bundle_res
     # print("bundle_id",bundle_id)
     bundle_res = get_courses(bundle_id)
-    print("bundle_res",bundle_res)
+    # print("bundle_res",bundle_res)
     # current_page = bundle_res.get("meta").get("pagination").get("current_page")
     total_pages = bundle_res.get("meta").get("pagination").get("total_pages")
     total_items = bundle_res.get("meta").get("pagination").get("total_items")

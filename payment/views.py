@@ -32,7 +32,7 @@ import csv
 import requests
 from secrets_api.algorithem import round_robin_support
 from django.db.models import F
-
+from django.core.cache import cache
 
 
 class MyPagination(PageNumberPagination):
@@ -787,7 +787,7 @@ class RenewalNoOfPayments(APIView):
 
 # PRODUCTION
 class SearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]   
+    permission_classes = [IsAuthenticated]   
     # Define the sources list here
     def get(self, request):
         query = self.request.GET.get('q', None)
@@ -961,53 +961,24 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
             for existing_payment in payment_list:
                 if existing_payment['id'] == payment_id:
-                    if product:
-                        payment_product = clean_product_name(existing_payment['product_names'])
-                        if are_product_names_equal(product, payment_product):
-                            existing_payment['product_names'].append(payment['product'])
-                            existing_payment['plans'].append(payment['plan'])
-                            payment_found = True
-                            break
-                    else:
-                        existing_payment['product_names'].append(payment['product'])
-                        existing_payment['plans'].append(payment['plan'])
-                        payment_found = True
-                        break
+                    payment_found = True
+                    break
 
             if not payment_found:
-                if product:
-                    payment_product = clean_product_name(payment['product'])
-                    if are_product_names_equal(product, payment_product):
-                        payment_data = {
-                            'id': payment['id'],
-                            'user_id': payment['user'],
-                            'phone': payment['user_phone'],
-                            'source': payment['source'],
-                            'amount': payment['amount'],
-                            'product_names': [payment['product']],
-                            'plans': [payment['plan']],
-                            'alnafi_payment_id': payment['alnafi_payment_id'],
-                            'source_payment_id': payment['source_payment_id'],
-                            'card_mask': payment['card_mask'],
-                            'order_datetime': payment['order_datetime'].isoformat(),
-                        }
-
-                        payment_list.append(payment_data)
-                else:
-                    payment_data = {
-                        'id': payment['id'],
-                        'user_id': payment['user'],
-                        'phone': payment['user_phone'],
-                        'source': payment['source'],
-                        'amount': payment['amount'],
-                        'product_names': [payment['product']],
-                        'plans': [payment['plan']],
-                        'alnafi_payment_id': payment['alnafi_payment_id'],
-                        'source_payment_id': payment['source_payment_id'],
-                        'card_mask': payment['card_mask'],
-                        'order_datetime': payment['order_datetime'].isoformat(),
-                    }
-                    payment_list.append(payment_data)
+                payment_data = {
+                    'id': payment['id'],
+                    'user_id': payment['user'],
+                    'phone': payment['user_phone'],
+                    'source': payment['source'],
+                    'amount': payment['amount'],
+                    'product_names': [payment['product']],
+                    'plans': [payment['plan']],
+                    'alnafi_payment_id': payment['alnafi_payment_id'],
+                    'source_payment_id': payment['source_payment_id'],
+                    'card_mask': payment['card_mask'],
+                    'order_datetime': payment['order_datetime'].isoformat(),
+                }
+                payment_list.append(payment_data)
 
 
 
@@ -1038,7 +1009,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
     payments = payments[start_index:end_index]
 
     if not payments:
-        payments = {"payments": payments, "success": 'False',"total_count":total_count}
+        payments = {"payments": payments, "success": False,"total_count":total_count}
         return payments
     else:        
         payments = [
@@ -1065,54 +1036,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
 
-def clean_product_name(product_name):
-        # print("in clean product name func")
-        # List of terms to remove
-        remove_terms = ["Half Yearly", "Yearly", "Quarterly", "Monthly", "4 Months","Annual"]
-        remove_words = ["in"]
 
-        # Remove terms from the end of the product name
-        # print("product_name",type(product_name))
-        if type(product_name) == list:
-            # print("product_name[0]",product_name[0])
-            for term in remove_terms:
-                if product_name[0].endswith(term):
-                    # print("ends with term")
-                    product_name = product_name[0][:-len(term)].strip()
-                    # print("product_name",product_name)
-            # Split the string into words, filter out unwanted words, and join them back
-            product_name_parts = product_name.split()
-            product_name_parts = [word for word in product_name_parts if word not in remove_words]
-            product_name = ' '.join(product_name_parts)
-
-            # print("product_name",product_name)
-            # print("word removed")
-        else:
-            # print("in else")
-            # print("product_name",product_name)
-            for term in remove_terms:
-                if product_name.endswith(term):
-                    # print("ends with term")
-                    product_name = product_name[:-len(term)].strip()
-                    # print("product_name",product_name)
-
-            # Remove specific words from the product name
-            for word in remove_words:
-                product_name = product_name.replace(word, "").strip()
-
-        # print("product_name",product_name)
-        # print("exiting clean product name func")
-        return product_name.lower().replace(" ", "")
-        # return product_name
-
-
-def are_product_names_equal(self,product, payment_product):
-        product = self.clean_product_name(product)
-        payment_product = self.clean_product_name(payment_product)
-        
-        # print("cleaned_name1",product)
-        # print("cleaned_name2",payment_product)
-        return product == payment_product
 
 
 
@@ -1639,3 +1563,59 @@ class MainPaymentAPIView(APIView):
 #         objs = UBL_Manual_Payment.objects.all()
 #         objs.delete()
 #         return Response('deleted')
+
+
+
+
+
+
+
+
+# def clean_product_name(product_name):
+#         # print("in clean product name func")
+#         # List of terms to remove
+#         remove_terms = ["Half Yearly", "Yearly", "Quarterly", "Monthly", "4 Months","Annual"]
+#         remove_words = ["in"]
+
+#         # Remove terms from the end of the product name
+#         # print("product_name",type(product_name))
+#         if type(product_name) == list:
+#             # print("product_name[0]",product_name[0])
+#             for term in remove_terms:
+#                 if product_name[0].endswith(term):
+#                     # print("ends with term")
+#                     product_name = product_name[0][:-len(term)].strip()
+#                     # print("product_name",product_name)
+#             # Split the string into words, filter out unwanted words, and join them back
+#             product_name_parts = product_name.split()
+#             product_name_parts = [word for word in product_name_parts if word not in remove_words]
+#             product_name = ' '.join(product_name_parts)
+
+#             # print("product_name",product_name)
+#             # print("word removed")
+#         else:
+#             # print("in else")
+#             # print("product_name",product_name)
+#             for term in remove_terms:
+#                 if product_name.endswith(term):
+#                     # print("ends with term")
+#                     product_name = product_name[:-len(term)].strip()
+#                     # print("product_name",product_name)
+
+#             # Remove specific words from the product name
+#             for word in remove_words:
+#                 product_name = product_name.replace(word, "").strip()
+
+#         # print("product_name",product_name)
+#         # print("exiting clean product name func")
+#         return product_name.lower().replace(" ", "")
+#         # return product_name
+
+
+# def are_product_names_equal(self,product, payment_product):
+#         product = self.clean_product_name(product)
+#         payment_product = self.clean_product_name(payment_product)
+        
+#         # print("cleaned_name1",product)
+#         # print("cleaned_name2",payment_product)
+#         return product == payment_product
