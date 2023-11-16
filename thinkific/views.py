@@ -30,7 +30,7 @@ class DeleteEnroll(APIView):
         return Response("data deleted")   
     
 class GetThinkificUsers(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request): 
         q = self.request.GET.get('q', None) or None
         start_date = self.request.GET.get('start_date', None) or None
@@ -84,7 +84,7 @@ class GetThinkificUsers(APIView):
 
 
 class GetThinkificUser(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request, id):
         user_id = id
         user = Thinkific_User.objects.filter(id=user_id)
@@ -112,7 +112,6 @@ class GetThinkificUser(APIView):
             
 
             # print("courses",courses)
-
             #then calculate the total progress of the bunble from individual courses
             #then send those individual courses and total progress of bundle in api response
             enrollments = user[0].user_enrollments.all().values()
@@ -187,8 +186,64 @@ class GetThinkificUser(APIView):
                     category_dict['average_percentage'] = sum(course['percentage'] for course in category_dict['courses']) / len(category_dict['courses'])
 
             return Response(organized_data)
-        
-        return Response([])
+
+        else:
+            enrollments = user[0].user_enrollments.all().values()
+
+            enrollments_queryset = [item['course_name'] for item in enrollments]
+
+            # Create a dictionary to store courses based on product_name
+            courses_dict = {}
+
+            # Iterate through the courses in the second queryset
+            for course_name in enrollments_queryset:
+                if any(course_name in courses_list for courses_list in courses_dict.values()):
+                    pass
+                else:
+                    # If not, add it to the dictionary with a default key (e.g., 'No Product Name')
+                    if 'Independant Course' not in courses_dict:
+                        courses_dict['Independant Course'] = []
+                    courses_dict['Independant Course'].append(course_name)
+
+        # Create a dictionary to store extracted information
+            result_dict = {}
+
+            # Extract and save percentage completed for each course
+            for key, courses_list in courses_dict.items():
+                for course_name in courses_list:
+                    matching_courses = [entry for entry in enrollments if entry['course_name'] == course_name]
+                    for matching_course in matching_courses:
+                        result_key = f"{key} - {course_name}"
+                        result_value = matching_course['percentage_completed']
+                    
+                        result_dict[result_key] = result_value
+
+        # Create a list to store dictionaries representing categories
+            organized_data = []
+
+            for key, value in result_dict.items():
+                # Extract the category (e.g., 'CAT Half yearly' or 'Independant Course')
+                category = key.split(' - ')[0]
+
+                # Check if the category is already in the list
+                category_dict = next((d for d in organized_data if d['bundle'] == category), None)
+
+                # If the category is not in the list, add it
+                if not category_dict:
+                    category_dict = {'bundle': category, 'courses': [], 'average_percentage': 0}
+                    organized_data.append(category_dict)
+
+                # Append the course and percentage to the corresponding category in the list
+                category_dict['courses'].append({'course': key, 'percentage': value})
+
+            # Calculate the average percentage for each category
+            for category_dict in organized_data:
+                if category_dict['courses']:
+                    category_dict['average_percentage'] = sum(course['percentage'] for course in category_dict['courses']) / len(category_dict['courses'])
+
+            return Response(organized_data)
+
+        # return Response([])
        
 
 #From Bundle_id to courses names:
