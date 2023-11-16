@@ -478,23 +478,3 @@ def change_lead_status_renewal_module(instance):
         print(response)
         print(response.text)
     
-
-
-
-
-
-def get_USD_rate():
-    usd_details = cache.get("usd_details")
-    if usd_details:
-        # print(usd_details)
-        # print("usd_details", usd_details["PKR"])
-        return json.loads(usd_details)
-    usd_details = {}
-    url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/USD"
-    response = requests.get(url).json()
-    usd_details["PKR"] = response["conversion_rates"]["PKR"]
-    usd_details["USD"] = response["conversion_rates"]["USD"]
-
-    cache.set("usd_details", json.dumps(usd_details), 60*120)
-    # print("usd_details",usd_details)
-    return usd_details
