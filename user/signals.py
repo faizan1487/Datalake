@@ -42,7 +42,7 @@ def psw_lead_to_erp(sender, instance, **kwargs):
 @receiver(post_save, sender=New_AlNafi_User)
 def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
     source='NewAlnafiSignup'
-    psw_form_user = newsignupsignal(instance,source,sender)
+    new_alnafi_user = newsignupsignal(instance,source,sender)
 
 
 def usersignal(instance,source,sender):
@@ -420,13 +420,19 @@ def newsignupsignal(instance,source,sender):
                 country_name = name
                 break
 
+    if hasattr(instance, 'created_at'):
+        date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
+    else:
+        date_joined_str = None      
+
     data = {
             "first_name": instance.first_name or None,
             "last_name": None,
             "email_id": instance.email or None,
             "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
             "country": country_name,
-            "source": source
+            "source": source,
+            "date_joined": str(date_joined_str) if date_joined_str else None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     
