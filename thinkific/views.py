@@ -16,6 +16,8 @@ import pandas as pd
 from django.conf import settings
 from user.services import upload_csv_to_s3
 import os
+from rest_framework import status
+
 
 # Create your views here.
 class MyPagination(PageNumberPagination):
@@ -325,7 +327,15 @@ class GetUserEnrollments(APIView):
         paginated_queryset = paginator.paginate_queryset(queryset, request)
         user_enrollemnt_serializer = ThinkificUserEnrollmentSerializer(paginated_queryset, many=True)
         return paginator.get_paginated_response(user_enrollemnt_serializer.data)    
-    
+
+
+
+
+
+
+
+
+
 class ThinkificUsers(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -349,3 +359,83 @@ class ThinkificUsers(APIView):
         # print(len(json_data['items']))
         # limit=1000
         return Response(json_data)
+    
+
+
+
+
+class SaveThinkificUsers(APIView):
+   def post(self,request):
+        data = request.data
+        for i in range(len(data['full_name'])):
+            full_name = data['full_name'][i]
+            email = data['email'][i]
+            id = data['id'][i]
+            first_name = data['first_name'][i]
+            last_name = data['last_name'][i]
+            created_at = data['created_at'][i]
+            phone = data['phone'][i]
+            company = data['company'][i]
+            roles = data['roles'][i]
+            avatar_url = data['avatar_url'][i]
+            bio = data['bio'][i]
+            headline = data['headline'][i]
+            affiliate_code = data['affiliate_code'][i]
+            external_source = data['external_source'][i]
+            affiliate_commission = data['affiliate_commission'][i]
+            affiliate_commission_type = data['affiliate_commission_type'][i]
+            affiliate_payout_email = data['affiliate_payout_email'][i]
+            administered_course_ids = data['administered_course_ids'][i]
+            custom_profile_fields = data['custom_profile_fields'][i]
+            
+
+            user, created = Thinkific_User.objects.get_or_create(email=email, defaults={
+                'first_name': first_name,
+                'last_name': last_name,
+                'phone': phone,
+                'email': email,
+                'id': id,
+                'company':company,
+                'roles': roles,
+                'created_at': created_at,
+                'avatar_url':avatar_url,
+                'bio':bio,
+                'headline':headline,
+                'affiliate_code':affiliate_code,
+                'external_source':external_source,
+                'affiliate_commission':affiliate_commission,
+                'affiliate_commission_type':affiliate_commission_type,
+                'affiliate_payout_email':affiliate_payout_email,
+                'administered_course_ids':administered_course_ids,
+                'custom_profile_fields':custom_profile_fields,
+            })
+
+            # If the object was not created (i.e., it already existed), update its attributes
+            if not created:
+                user.first_name = first_name
+                user.last_name = last_name
+                user.full_name = full_name
+                user.created_at = created_at
+                user.phone = phone
+                user.email = email
+                user.id = id
+                user.company = company
+                user.roles = roles
+                user.headline = headline
+                user.affiliate_code = affiliate_code
+                user.bio = bio
+                user.external_source = external_source
+                user.affiliate_commission = affiliate_commission
+                user.affiliate_commission_type = affiliate_commission_type
+                user.affiliate_payout_email = affiliate_payout_email
+                user.administered_course_ids = administered_course_ids
+                user.custom_profile_fields = custom_profile_fields
+                user.avatar_url = avatar_url
+                user.save()
+
+
+        return Response("done")
+
+
+
+           
