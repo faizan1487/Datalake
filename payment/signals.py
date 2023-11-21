@@ -221,7 +221,6 @@ def new_alnafi_payment_support_data(instance,payment_user):
     # print(payment_user)
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
-    full_name = f'{first_name} {last_name}'.strip()
 
     # print("payment_user",payment_user)
     # print("payment_user[0].erp_lead_id",payment_user[0].erp_lead_id)
@@ -278,7 +277,6 @@ def new_alnafi_payment_support_data(instance,payment_user):
 
     # print(instance.product_names)
     customer_data = {
-        "full_name": full_name or None,
         "first_name": first_name or None,
         "last_name": last_name or None,
         "contact_no": payment_user[0].phone or None,
@@ -300,7 +298,6 @@ def new_alnafi_payment_support_data(instance,payment_user):
 def alnafi_payment_support_data(instance,payment_user):
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
-    full_name = f'{first_name} {last_name}'.strip()
 
     country_code = payment_user[0].country or None
     country_name = None
@@ -352,7 +349,6 @@ def alnafi_payment_support_data(instance,payment_user):
         product_name = instance.product_name
 
     customer_data = {
-        "full_name": full_name or None,
         "first_name": first_name or None,
         "last_name": last_name or None,
         "contact_no": payment_user[0].phone or None,
