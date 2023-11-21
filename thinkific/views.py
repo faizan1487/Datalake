@@ -392,6 +392,7 @@ class SaveThinkificUsers(APIView):
             user, created = Thinkific_User.objects.get_or_create(email=email, defaults={
                 'first_name': first_name,
                 'last_name': last_name,
+                'full_name':full_name,
                 'phone': phone,
                 'email': email,
                 'id': id,
