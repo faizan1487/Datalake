@@ -15,7 +15,7 @@ class MyPagination(PageNumberPagination):
     max_page_size = 100  
 
 
-permission_classes = [IsAuthenticated]
+# permission_classes = [IsAuthenticated]
 class StreamUsers(APIView):
     # permission_classes = [IsAuthenticated]
     # permission_classes = [GroupPermission]
@@ -46,7 +46,7 @@ class StreamUsers(APIView):
         return paginator.get_paginated_response(paginated_queryset)
 
 
-permission_classes = [IsAuthenticated]
+# permission_classes = [IsAuthenticated]
 class UpdateStreamUser(APIView):
     def get(self, request):
         Thread(target=self.get_thread, args=(request,)).start()

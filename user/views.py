@@ -38,10 +38,13 @@ import pandas as pd
 
 class UploadMocLeads(APIView):
     def post(self,request):
+        # Read the CSV file into a DataFrame
         data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
         lst = []
 
+        # Iterate over rows in the DataFrame
         for index, row in data.iterrows():
+            # Extracting data from the row
             full_name = row['full_name']
             email = row['email']
             phone = row['phone']
@@ -71,6 +74,7 @@ class UploadMocLeads(APIView):
             #     print(e)
             #     lst.append(row['email'])
             try:
+                # Try to get or create an Moc_Leads object based on the email
                 moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
                     'first_name': full_name,
                     'phone': phone,
@@ -95,9 +99,11 @@ class UploadMocLeads(APIView):
                     moc.save()
 
             except Exception as e:
+                # If an error occurs, add the email to the list for further analysis
                 print(e)
                 lst.append(row['email'])
 
+        # Create a DataFrame from the list of emails with errors
         data_Frame = pd.DataFrame(lst)
         data_Frame.to_csv("error.csv")
 
@@ -356,8 +362,6 @@ class NewAlnafiUser(APIView):
 #Optimized
 class GetUsers(APIView):
     permission_classes = [IsAuthenticated]
-    # permission_classes = [GroupPermission]
-    # required_groups = ['Support', 'Admin','MOC']
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         is_converted = self.request.GET.get('is_converted', None) or None

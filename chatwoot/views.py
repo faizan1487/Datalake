@@ -221,6 +221,8 @@ class ConversationsReport(APIView):
                 response_dict = week_month_convos(url,headers, params)
 
          
+
+        # print(params)
         # Make a summary API request to get overall data
         url = 'https://chat.alnafi.com/api/v2/accounts/3/reports/summary'
         response = requests.get(url, headers=headers, params=params)
