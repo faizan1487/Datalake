@@ -132,6 +132,8 @@ def send_payment_support_module(instance,model_name, **kwargs):
                 # print("in else")
                 customer_data = new_alnafi_payment_support_data(instance, payment_user)
 
+
+            # print(customer_data)
             customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
             response = requests.post(customer_url, headers=headers, json=customer_data)
             # print(response)
@@ -157,8 +159,8 @@ def send_payment_support_module(instance,model_name, **kwargs):
 
 
 def change_lead_status_sales_module(instance,model, **kwargs):
-    print("change_lead_status_sales signal running")
-    print("instance.customer_email",instance.customer_email)
+    # print("change_lead_status_sales signal running")
+    # print("instance.customer_email",instance.customer_email)
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.customer_email}"]]'
 
     if model == 'Alnafi':
@@ -166,7 +168,7 @@ def change_lead_status_sales_module(instance,model, **kwargs):
     elif model == 'NewAlnafi':
         payments_matching_criteria = New_Alnafi_Payments.objects.filter(product_names=instance.product_names, customer_email=instance.customer_email)
 
-    print("payments_matching_criteria",payments_matching_criteria)
+    # print("payments_matching_criteria",payments_matching_criteria)
     if not payments_matching_criteria:
         # print("inside if")
         # api_key, api_secret = round_robin_support()
@@ -185,8 +187,8 @@ def change_lead_status_sales_module(instance,model, **kwargs):
         data = response.json()
         already_existed = len(data["data"]) > 0
 
-        print(response.status_code)
-        print(data['data'])
+        # print(response.status_code)
+        # print(data['data'])
         if already_existed:
             converted_date = datetime.now().date()
             lead_id = data['data'][0]['name']
@@ -198,8 +200,8 @@ def change_lead_status_sales_module(instance,model, **kwargs):
             }
             # print(lead_data)
             response = requests.put(url, headers=headers, json=lead_data)
-            print(response)
-            print(response.text)
+            # print(response)
+            # print(response.text)
             instance.customer_email = data['data'][0]['email_id']
             # print("lead updated")
             # break
@@ -247,8 +249,13 @@ def new_alnafi_payment_support_data(instance,payment_user):
 
         # Format it in the expected format
         formatted_order_datetime_str = order_datetime.strftime('%Y-%m-%d %H:%M:%S')
+
+        formatted_order_datetime = datetime.strptime(formatted_order_datetime_str, "%Y-%m-%d %H:%M:%S")
+
+        formatted_order_date = formatted_order_datetime.strftime('%Y-%m-%d')
     else:
-        formatted_order_datetime_str = None
+        formatted_order_date = None
+
 
     if instance.expiration_date:
         expire_datetime_str = str(instance.expiration_date)
@@ -272,6 +279,8 @@ def new_alnafi_payment_support_data(instance,payment_user):
     # print(instance.product_names)
     customer_data = {
         "full_name": full_name or None,
+        "first_name": first_name or None,
+        "last_name": last_name or None,
         "contact_no": payment_user[0].phone or None,
         "customer_email": payment_user[0].email or None,
         "country": country_name,
@@ -279,7 +288,7 @@ def new_alnafi_payment_support_data(instance,payment_user):
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
         "payment_source": instance.payment_method_source_name.capitalize() if instance.payment_method_source_name else None,
-        "payment_date": formatted_order_datetime_str,
+        "payment": formatted_order_date,
         "expiration_date": formatted_expire_datetime_str,
         "expiration_status": 'Active',
     }
@@ -293,8 +302,6 @@ def alnafi_payment_support_data(instance,payment_user):
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
     full_name = f'{first_name} {last_name}'.strip()
 
-    # print("payment_user",payment_user)
-    # print("payment_user[0].erp_lead_id",payment_user[0].erp_lead_id)
     country_code = payment_user[0].country or None
     country_name = None
 
@@ -318,8 +325,14 @@ def alnafi_payment_support_data(instance,payment_user):
 
         # Format it in the expected format
         formatted_order_datetime_str = order_datetime.strftime('%Y-%m-%d %H:%M:%S')
+        # Convert the string to a datetime object
+        formatted_order_datetime = datetime.strptime(formatted_order_datetime_str, "%Y-%m-%d %H:%M:%S")
+
+        formatted_order_date = formatted_order_datetime.strftime('%Y-%m-%d')
+        # Now, you can access the date attribute
+        # formatted_order_date = formatted_order_date.date()
     else:
-        formatted_order_datetime_str = None
+        formatted_order_date = None
 
     if instance.expiration_datetime:
         expire_datetime_str = str(instance.expiration_datetime)
@@ -340,6 +353,8 @@ def alnafi_payment_support_data(instance,payment_user):
 
     customer_data = {
         "full_name": full_name or None,
+        "first_name": first_name or None,
+        "last_name": last_name or None,
         "contact_no": payment_user[0].phone or None,
         "customer_email": payment_user[0].email or None,
         "country": country_name,
@@ -347,7 +362,7 @@ def alnafi_payment_support_data(instance,payment_user):
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
         "payment_source": instance.source.capitalize() if instance.source else None,
-        "payment_date": formatted_order_datetime_str,
+        "payment": formatted_order_date,
         "expiration_date": formatted_expire_datetime_str,
         "expiration_status": 'Active',
     }
