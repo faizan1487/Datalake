@@ -1,7 +1,8 @@
 from django.urls import path
 from thinkific.webhooks import user_created_webhook,enrollment_created_webhook,progress_created_webhook, enrollment_completed_webhook
-from .views import DeleteEnroll,GetThinkificUsers,GetUserEnrollments,ThinkificUsers, GetThinkificUser,SaveThinkificUsers
+from .views import DeleteEnroll,GetThinkificUsers,GetUserEnrollments,ThinkificUsers, GetThinkificUser,SaveThinkificUsers, SaveEnrollments
 urlpatterns = [
+    path("saveenrollements/", SaveEnrollments.as_view()),
     path("enrollmentcompletewehbook/", enrollment_completed_webhook),
     path("usercreatedwebhook/", user_created_webhook),
     path("enrollmentcreatedwebhook/",enrollment_created_webhook),
