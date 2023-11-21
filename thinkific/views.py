@@ -441,6 +441,8 @@ class SaveEnrollments(APIView):
     def post(self, request): 
         data = request.data
         for i in range(len(data['first_name'])):
+            user_id = data['user_id'][i]
+            user_instance = Thinkific_User.objects.get(id=user_id)
             user_data = {
                 'id': data['id'][i],
                 'created_at': data['created_at'][i],
@@ -451,7 +453,7 @@ class SaveEnrollments(APIView):
                 'started_at': data['started_at'][i],
                 'activated_at': data['activated_at'][i],
                 'updated_at': data['updated_at'][i],
-                'user_id': data['user_id'][i],
+                'user_id': user_instance,
                 'first_name': data['first_name'][i],
                 'last_name': data['last_name'][i],
                 'email': data['email'][i],
@@ -459,27 +461,25 @@ class SaveEnrollments(APIView):
                 'course_name': data['course_name'][i],
                 'status': data['status'][i]
             }
-            user_id = user_data.pop('user_id') 
-            user_instance, user_created = Thinkific_User.objects.get_or_create(id=user_id)
-            enrollment, created = Thinkific_Users_Enrollments.objects.get_or_create(user_id=user_instance, defaults=user_data)
+            enrollment, created = Thinkific_Users_Enrollments.objects.get_or_create(user_id=user_instance, course_name=data['course_name'][i], defaults=user_data)
 
-        if not created:
-            enrollment.first_name = user_data['first_name']
-            enrollment.last_name = user_data['last_name']
-            enrollment.full_name = user_data['full_name']
-            enrollment.created_at = user_data['created_at']
-            enrollment.email = user_data['email']
-            enrollment.id = user_data['id']
-            enrollment.expiry_date = user_data['expiry_date']
-            enrollment.percentage_completed = user_data['percentage_completed']
-            enrollment.completed_at = user_data['completed_at']
-            enrollment.free_trial = user_data['free_trial']
-            enrollment.started_at = user_data['started_at']
-            enrollment.activated_at = user_data['activated_at']
-            enrollment.updated_at = user_data['updated_at']
-            enrollment.course_id = user_data['course_id']
-            enrollment.course_name = user_data['course_name']
-            enrollment.status = user_data['status']
-            enrollment.save()
+
+            if not created:
+                enrollment.first_name = user_data['first_name']
+                enrollment.last_name = user_data['last_name']
+                enrollment.created_at = user_data['created_at']
+                enrollment.email = user_data['email']
+                enrollment.id = user_data['id']
+                enrollment.expiry_date = user_data['expiry_date']
+                enrollment.percentage_completed = user_data['percentage_completed']
+                enrollment.completed_at = user_data['completed_at']
+                enrollment.free_trial = user_data['free_trial']
+                enrollment.started_at = user_data['started_at']
+                enrollment.activated_at = user_data['activated_at']
+                enrollment.updated_at = user_data['updated_at']
+                enrollment.course_id = user_data['course_id']
+                enrollment.course_name = user_data['course_name']
+                enrollment.status = user_data['status']
+                enrollment.save()
 
         return Response("done")
