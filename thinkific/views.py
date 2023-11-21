@@ -367,7 +367,7 @@ class ThinkificUsers(APIView):
 class SaveThinkificUsers(APIView):
    def post(self,request):
         data = request.data
-        for i in range(len(data['full_name'])):
+        for i in range(100):
             full_name = data['full_name'][i]
             email = data['email'][i]
             id = data['id'][i]
