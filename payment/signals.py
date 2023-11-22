@@ -275,6 +275,8 @@ def new_alnafi_payment_support_data(instance,payment_user):
         product_name = instance.product_names
 
 
+
+
     # print(instance.product_names)
     customer_data = {
         "first_name": first_name or None,
@@ -285,7 +287,9 @@ def new_alnafi_payment_support_data(instance,payment_user):
         "product_name": product_name,
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
-        "payment_source": instance.payment_method_source_name.capitalize() if instance.payment_method_source_name else None,
+        "amount": instance.amount or None,
+        "currency": instance.payment_method_currency or None,
+        "payment_source": instance.payment_method_source_name.upper() if instance.payment_method_source_name == 'ubl' else instance.payment_method_source_name.capitalize() if instance.payment_method_source_name else None,
         "payment": formatted_order_date,
         "expiration_date": formatted_expire_datetime_str,
         "expiration_status": 'Active',
@@ -357,12 +361,11 @@ def alnafi_payment_support_data(instance,payment_user):
         "product_name": product_name,
         "price_pkr": instance.amount_pkr or None,
         "price_usd": instance.amount_usd or None,
-        "payment_source": instance.source.capitalize() if instance.source else None,
+        "payment_source": instance.source.upper() if instance.source == 'ubl' or 'UBL' or 'Ubl' else instance.source.capitalize() if instance.source else None,
         "payment": formatted_order_date,
         "expiration_date": formatted_expire_datetime_str,
         "expiration_status": 'Active',
     }
-    # print(customer_data)
     return customer_data
 
 
