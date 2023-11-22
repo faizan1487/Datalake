@@ -47,7 +47,7 @@ def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
 
 def usersignal(instance,source,sender):
     # print("instance.form",instance.form)
-    if source == 'Academy Signup' or instance.form == 'O Level Academy Form':
+    if source == 'Academy' or instance.form == 'O Level Academy Form':
         # print("inside if")
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
@@ -79,6 +79,7 @@ def usersignal(instance,source,sender):
     else:
         date_joined_str = None
 
+
     data = {
         "first_name": instance.first_name or None,
         "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
@@ -87,7 +88,7 @@ def usersignal(instance,source,sender):
         "country": country_name,
         "source": source,
         "form": instance.form or None,
-        "date_joined": date_joined_str,  # Convert to ISO 8601 string
+        "date": date_joined_str,  # Convert to ISO 8601 string
         # Add other fields from the Main_User model to the data dictionary as needed
     }
 
@@ -99,7 +100,7 @@ def usersignal(instance,source,sender):
         already_existed = len(lead_data["data"]) > 0
 
     if already_existed:
-        print("already exists")
+        # print("already exists")
         pass
         # lead_id = lead_data['data'][0]['name']
         # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
@@ -401,9 +402,16 @@ def mocLead_Signalto_sale_doctype(instance,source):
 
 
 def newsignupsignal(instance,source,sender):
+    # print("new sign up signal")
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
-    
-    user_api_key, user_secret_key = round_robin()
+
+
+    if source == 'Academy Signup':
+        # print("inside if")
+        user_api_key = '2a1d467717681df'
+        user_secret_key = '39faa082ac5f258'
+    else:
+        user_api_key, user_secret_key = round_robin()
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
@@ -423,7 +431,8 @@ def newsignupsignal(instance,source,sender):
     if hasattr(instance, 'created_at'):
         date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
     else:
-        date_joined_str = None      
+        date_joined_str = None
+
 
     data = {
             "first_name": instance.first_name or None,
@@ -432,35 +441,37 @@ def newsignupsignal(instance,source,sender):
             "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
             "country": country_name,
             "source": source,
-            "date_joined": str(date_joined_str) if date_joined_str else None,
+            "date": str(date_joined_str) if date_joined_str else None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
     
-    response = requests.get(url, headers=headers)
-    lead_data = response.json()
-    if 'data' in lead_data:
-        already_existed = len(lead_data["data"]) > 0
-    else:
-        already_existed = False
-    if already_existed:
-        lead_id = lead_data['data'][0]['name']
+    url = 'https://crm.alnafi.com/api/resource/Lead'
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code != 200:
+        pass
+        # lead_data = response.json()
+        # print(lead_data)
+        # erp_lead_id = lead_data['data']['name']
+        # if erp_lead_id:
+        #     instance.erp_lead_id = erp_lead_id
+    
+    # response = requests.get(url, headers=headers)
+    # lead_data = response.json()
+    # if 'data' in lead_data:
+    #     already_existed = len(lead_data["data"]) > 0
+    # else:
+    #     already_existed = False
+    # if already_existed:
+    #     pass
+        # lead_id = lead_data['data'][0]['name']
         # if DEBUG:
         #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
         # else:
-        url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+        # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
         # print(data)
-        response = requests.put(url, headers=headers, json=data)
-        instance.erp_lead_id = lead_data['data'][0]['name']
-    else:
+        # response = requests.put(url, headers=headers, json=data)
+        # instance.erp_lead_id = lead_data['data'][0]['name']
+    # else:
         # if DEBUG:
         #     url = 'http://3.142.247.16/api/resource/Lead'
         # else:
-        url = 'https://crm.alnafi.com/api/resource/Lead'
-        # url = 'http://18.190.1.109/api/resource/Lead'
-        lead_data = response.json()
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            lead_data = response.json()
-            erp_lead_id = lead_data['data']['name']
-            if erp_lead_id:
-                instance.erp_lead_id = erp_lead_id
