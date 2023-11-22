@@ -19,7 +19,7 @@ def send_lead_post_request(sender, instance, created, **kwargs):
 
 
 def usersignal(instance,source):
-    print("instance.source",instance.source)
+    # print("instance.source",instance.source)
     if instance.source == 'Academy Newsletter':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
@@ -83,7 +83,7 @@ def usersignal(instance,source):
             # instance.save(update_fields=['erp_lead_id'])
             # print("Lead created successfully!")
     else:
-        pass
-        # print(response.status_code)
-        # print(response.json())
+        # pass
+        print(response.status_code)
+        print(response.json())
     # post_save.connect(send_lead_post_request, sender=Newsletter)

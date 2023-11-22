@@ -588,7 +588,8 @@ class ConversationsList(APIView):
             )
             my_model_instance.save()
         except Exception as e:
-            print(e)
+            pass
+            # print(e)
 
     permission_classes = [IsAuthenticated]
     def get(self, request):

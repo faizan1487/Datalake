@@ -124,7 +124,7 @@ class CreateAffiliateUser(APIView):
         if export == 'true':
             #For CSV WORKING:
             report = generate_csv(agents_list)
-            print(report)
+            # print(report)
             return Response(report)
             # Header = []
             # for i in agents_list:
@@ -206,7 +206,7 @@ def generate_csv(agents_list):
     # Save the CSV data to a local file
     csv_filename = "leads_and_commissions.csv" 
     csv_filepath = os.path.join(settings.MEDIA_ROOT, csv_filename) 
-    print(csv_filepath)
+    # print(csv_filepath)
 
     with open(csv_filename, 'w', newline='') as csv_file:
         writer = csv.writer(csv_file)
@@ -232,7 +232,7 @@ def generate_csv(agents_list):
         ExpiresIn=3600  # URL valid for 1 hour (3600 seconds)
     )
 
-    print(presigned_url)
+    # print(presigned_url)
     return Response(presigned_url)
 
 

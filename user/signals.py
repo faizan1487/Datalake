@@ -18,7 +18,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 @receiver(post_save, sender=AlNafi_User)
 def alnafi_lead_to_erp(sender, instance, **kwargs):
-    print("alnafi user signal running")
+    # print("alnafi user signal running")
     # source='Academy Signup'
     source = instance.login_source
     alnafi_user = usersignal(instance,source,sender)
@@ -41,11 +41,12 @@ def psw_lead_to_erp(sender, instance, **kwargs):
 
 @receiver(post_save, sender=New_AlNafi_User)
 def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
-    source='NewAlnafiSignup'
-    new_alnafi_user = newsignupsignal(instance,source,sender)
+    # source='NewAlnafiSignup'
+    new_alnafi_user = newsignupsignal(instance,sender)
 
 
 def usersignal(instance,source,sender):
+    # print("user signal running")
     # print("instance.form",instance.form)
     if source == 'Academy' or instance.form == 'O Level Academy Form':
         # print("inside if")
@@ -401,7 +402,8 @@ def mocLead_Signalto_sale_doctype(instance,source):
                 writer.writerow(lead)
 
 
-def newsignupsignal(instance,source,sender):
+def newsignupsignal(instance,sender):
+    source = instance.source
     # print("new sign up signal")
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
 

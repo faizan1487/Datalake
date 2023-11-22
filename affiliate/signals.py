@@ -61,7 +61,7 @@ def usersignal(instance,source):
     if response.status_code == 403:
         return
     # print(lead_data['data'])
-    print(lead_data)
+    # print(lead_data)
     if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
     else:

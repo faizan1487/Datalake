@@ -63,7 +63,7 @@ def usersignal(instance,source):
     if response.status_code == 403:
         return
     # print(lead_data['data'])
-    print(lead_data)
+    # print(lead_data)
     if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
     else:
@@ -75,7 +75,7 @@ def usersignal(instance,source):
         # print("lead updated")
         # instance.save(update_fields=['erp_lead_id'])
     else:
-        print("in else")
+        # print("in else")
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
         # print("response.status_code",response.status_code)
