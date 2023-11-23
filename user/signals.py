@@ -41,14 +41,13 @@ def psw_lead_to_erp(sender, instance, **kwargs):
 
 @receiver(post_save, sender=New_AlNafi_User)
 def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
-    # source='NewAlnafiSignup'
     new_alnafi_user = newsignupsignal(instance,sender)
 
 
 def usersignal(instance,source,sender):
     # print("user signal running")
     # print("instance.form",instance.form)
-    if source == 'Academy' or instance.form == 'O Level Academy Form':
+    if source == 'Academy' or 'Academy Signup' or instance.form == 'O Level Academy Form':
         # print("inside if")
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
@@ -408,7 +407,7 @@ def newsignupsignal(instance,sender):
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
 
 
-    if source == 'Academy Signup':
+    if source == 'Academy Signup' or 'Academy':
         # print("inside if")
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'

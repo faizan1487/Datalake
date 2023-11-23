@@ -43,6 +43,7 @@ class AlNafi_Payment(models.Model):
 class New_Alnafi_Payments(models.Model):
     orderId = models.CharField(max_length=255)
     amount = models.IntegerField(null=True, blank=True)
+    converted_checkout_amount = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
@@ -232,6 +233,7 @@ class Main_Payment(models.Model):
     candidate_phone = models.CharField(max_length=45, null=True, blank=True)
     bin_bank_name = models.CharField(max_length=50, null=True,blank=True)
     error_reason = models.CharField(max_length=200, null=True,blank=True)
+    country = models.CharField(max_length=255, blank=True, null=True)
 
     class Meta:
         managed = True
