@@ -84,10 +84,18 @@ def send_payment_support_module(instance,model_name, **kwargs):
         product_name = instance.product_name
     else:
         product_name = instance.product_names
-
+    
     url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["customer_email","product_name"]&filters=[["Suppport","customer_email","=","{instance.customer_email}"],["Suppport","product_name","=","{product_name}"]]'
     api_key, api_secret = round_robin_support()
-  
+
+    user_api_key = '4e7074f890507cb'
+    user_secret_key = 'c954faf5ff73d31'
+    admin_headers = {
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",
@@ -95,14 +103,13 @@ def send_payment_support_module(instance,model_name, **kwargs):
     }
     try:
         # print("in try")
-        response = requests.get(url, headers=headers)
+        response = requests.get(url, headers=admin_headers)
         data = response.json()
         payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
         already_existed = len(data["data"]) > 0
     
         if already_existed:
             pass
-            # print("already exists")
         else:
             # customer_data = alnafi_payment_support_data(instance,payment_user)
             if model_name == 'alnafi':
