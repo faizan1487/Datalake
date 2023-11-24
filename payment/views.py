@@ -1,15 +1,12 @@
-from locale import currency
-from math import prod
+
 from sre_constants import SUCCESS
 from tracemalloc import start
 from rest_framework import status
 
-import payment
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal
-from products.models import Main_Product
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
                          UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
-from .services import (json_to_csv, renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate)
+from .services import (renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -24,16 +21,14 @@ import json
 from django.db.models.functions import Upper
 from threading import Thread
 from collections import defaultdict, OrderedDict
-from django.db.models import Q, F, Value, Case, When, CharField
-import csv
-import requests
-from secrets_api.algorithem import round_robin_support
-from django.db.models import F
-from django.core.cache import cache
-
+from django.db.models import Q, Value, Case, When, CharField
 import pandas as pd
 from django.conf import settings
 from user.services import upload_csv_to_s3
+import requests
+from user.constants import COUNTRY_CODES
+from secrets_api.algorithem import round_robin_support
+
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -791,17 +786,25 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
     if export == 'true':
-        payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
-                                         'order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id')
-        payments = [{'user': payment['user__email'],'user_phone': payment['user__phone'], 'product': payment['product__product_name'],
-                     'plan': payment['payment_cycle'],'source': payment['source'],'amount': payment['amount'],
-                     'alnafi_payment_id':payment['alnafi_payment_id'], 'order_datetime': payment['order_datetime'],'card_mask': payment['card_mask'], 
-                     'id': payment['id'],'source_payment_id':payment['source_payment_id']} for payment in payments_data]
+        payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount','currency','order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id')
+        
+        payments = [{'user': payment['user__email'],
+                     'user_phone': payment['user__phone'], 
+                     'product': payment['product__product_name'],
+                     'plan': payment['payment_cycle'],
+                     'source': payment['source'],
+                     'amount': payment['amount'],
+                     'alnafi_payment_id':payment['alnafi_payment_id'], 
+                     'order_datetime': payment['order_datetime'],
+                     'card_mask': payment['card_mask'], 
+                     'id': payment['id'],
+                     'currency': payment['currency'],
+                     'source_payment_id':payment['source_payment_id']} for payment in payments_data]
         payment_list = []
         for payment in payments:
             payment_id = payment['id']
             payment_found = False
-
+            
             for existing_payment in payment_list:
                 if existing_payment['id'] == payment_id:
                     payment_found = True
@@ -814,6 +817,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                     'phone': payment['user_phone'],
                     'source': payment['source'],
                     'amount': payment['amount'],
+                    'currency': payment['currency'],
                     'product_names': [payment['product']],
                     'plans': [payment['plan']],
                     'alnafi_payment_id': payment['alnafi_payment_id'],
@@ -834,18 +838,24 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
     sources = ['ubl_dd', 'al-nafi', 'easypaisa', 'ubl_ipg']
-
     total_payments_in_usd = 0
     for p in payments:
+        amount = p.amount
+        # country_name = p.user.country
+        # if country_name:
+        #     amount, tax = add_tax_stripe_according_to_the_country_code(amount,country_name.upper())
         if p.source.lower() not in sources:
             if p.currency.lower() == 'pkr':
                 pass
-            elif p.currency.lower() != 'usd':
-                currency_rate = get_USD_rate(p.currency,p.amount)
-                converted_amount = float(p.amount) / currency_rate[p.currency]
-                total_payments_in_usd += converted_amount
+                # elif p.currency.lower() != 'usd':
+                    # currency_rate = get_USD_rate(p.currency,amount)
+                    # print("type amount",type(int(amount)))
+                    # converted_amount = int(amount) / currency_rate[p.currency]
+                    # total_payments_in_usd += converted_amount
             else:
-                total_payments_in_usd += float(p.amount)
+                total_payments_in_usd += int(amount)
+
+    
 
     total_payments_in_pkr = sum(float(p.amount) for p in payments if p.source.lower() in sources)
 
@@ -878,9 +888,29 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
 
+def add_tax_stripe_according_to_the_country_code(amount,country_code):
+    tax_url = f'{settings.CRM_COUNTRY_TAX_API}{country_code}'
+    headers = {
+    'Authorization': 'Bearer 1f9d7bce259800a704f81c37216b05555be1efa1fcec244a1f0f16622c5542e2fe713afc648301d3840a7a07e243c07928c9e9697267ca6c76a42791b628e9fbb94d0aec3da55db3d6d710a3f4108bf0a206c9407d1c51994465e3e63faaaedcb8aeb46b0d2e42dd430e658bda904b94cd31562b2592a42baebf52be94f4bb71'
+    }
+    r = requests.get(tax_url,headers=headers)
+    try:
+        response_data = r.json()['data'][0]
+        if 'attributes' in response_data:
+            tax = response_data['attributes']['tax']
+        else:
+            tax = 13
 
+        tax_amount = amount * tax /100
+        tax_rate = tax/100
+        final_checkout_amount = amount + tax_amount
+        return final_checkout_amount,tax_rate
+    except Exception as e:
+        tax = 0.13
+        tax_amount = float(amount) * tax
 
-
+        final_checkout_amount = float(amount) + tax_amount
+        return final_checkout_amount,tax
 
 
 
@@ -932,7 +962,7 @@ class PaymentValidationNew(APIView):
 
 
         source_payments = Main_Payment.objects.filter(
-            source__in=['Easypaisa', 'UBL_IPG', 'Stripe']
+            source__in=['Easypaisa', 'UBL_IPG', 'Stripe','UBL_DD']
         ).order_by('-order_datetime').select_related('user')
 
         valid_payments = []
@@ -945,7 +975,19 @@ class PaymentValidationNew(APIView):
                 'valid': True,
                 'reasons': [],
             }
+
+            # print("payment source",payment.source)
+
             source_payment = source_payments.filter(alnafi_payment_id=payment.alnafi_payment_id).first()
+            if not source_payment:
+                source_payment = source_payments.filter(source_payment_id=payment.alnafi_payment_id).first()
+            
+            if not source_payment:
+                source_payment = source_payments.filter(source='Stripe', user__email=payment.user.email).first()
+
+            # print(source_payment)
+
+
 
             if source_payment:
                 tolerance = timedelta(days=1)
@@ -966,15 +1008,27 @@ class PaymentValidationNew(APIView):
                     product_details = self.check_product_details(product,source_payment,payment,valid_payment)
 
                 if payment.currency == 'PKR':
-                    total_product_amount_pkr = sum(product.amount_pkr for product in payment.product.all())
+                    total_product_amount_pkr = 0
+
+                    for product in payment.product.all():  
+                        if payment.source == product.source:
+                            total_product_amount_pkr += product.amount_pkr
+
                     total_product_amount_pkr = int(total_product_amount_pkr)
+
                     if total_product_amount_pkr == int(float(payment.amount)):
+                        # print("payment matched")
                         pass
                     else:
+                        # print(product)
+                        # print("total_product_amount_pkr",total_product_amount_pkr)
+                        # print("int(float(payment.amount))",int(float(payment.amount)))
+                        # print("in else")
                         valid_payment['valid'] = False
                         valid_payment['reasons'].append('Product and Payment Amount mismatch pkr')
 
-                if payment.currency == 'USD':
+                else:
+                    # print("in usd")
                     total_product_amount_usd = sum(product.amount_usd for product in payment.product.all())
                     total_product_amount_usd = int(total_product_amount_usd)
                     if total_product_amount_usd == int(float(payment.amount)):
@@ -983,51 +1037,52 @@ class PaymentValidationNew(APIView):
                         valid_payment['valid'] = False
                         valid_payment['reasons'].append('Product and Payment Amount mismatch usd')
                 
-                if payment.currency == 'sar':
-                    total_product_amount_sar = sum(product.amount_usd for product in payment.product.all())
-                    total_product_amount_usd = int(total_product_amount_usd)
-                    if total_product_amount_usd == int(float(payment.amount)):
-                        pass
-                    else:
-                        valid_payment['valid'] = False
-                        valid_payment['reasons'].append('Product and Payment Amount mismatch usd')
 
             else:
+                # print("source payment doesnt exist")
+                # print("payment.alnafi_payment_id",payment.alnafi_payment_id)
+                # print("payment.source_payment_id",payment.source_payment_id)
+                # print(payment.product.all())
                 valid_payment['valid'] = False
                 valid_payment['reasons'].append("Source payment doesn't exist against this alnafi payment")
 
+            # print(valid_payment)
             valid_payments.append(valid_payment)
             if payment.user:
+                # print("payment user exists")
                 users.append(payment.user.email)
             payment_list.append(payment)
 
+        # print(payment_list)
         # Process the data to remove duplicates
         duplicates_removed_payment_list = []
         seen_payment_ids = set()
 
-        for payment in payment_list:
-            payment_id = payment.id
+        for i in range(len(payment_list)):
+            payment_id = payment_list[i].id
 
             if payment_id not in seen_payment_ids:
                 # If payment with the same id is not seen before, add it to the list
-                if payment.user:
-                    user_email = payment.user.email
-                product_names = [product.product_name for product in payment.product.all()]
-                product_plans = [product.product_plan for product in payment.product.all()]
+                product_names = [product.product_name for product in payment_list[i].product.all()]
+                product_plans = [product.product_plan for product in payment_list[i].product.all()]
+            
                 payment_data = {
                     'id': payment_id,
-                    'user_id': user_email,
-                    'phone': payment.candidate_phone,
-                    'source': payment.source,
-                    'amount': payment.amount,
-                    'currency': payment.currency,
+                    'phone': payment_list[i].candidate_phone,
+                    'source': payment_list[i].source,
+                    'amount': payment_list[i].amount,
+                    'currency': payment_list[i].currency,
                     'product_names': product_names,
                     'plan': product_plans,
-                    'alnafi_payment_id': payment.alnafi_payment_id,
-                    'card_mask': payment.card_mask,
-                    'order_datetime': payment.order_datetime.isoformat(),
-                    'is_valid_payment': valid_payments[0]  # Replace with the appropriate index
+                    'alnafi_payment_id': payment_list[i].alnafi_payment_id,
+                    'card_mask': payment_list[i].card_mask,
+                    'order_datetime': payment_list[i].order_datetime.isoformat(),
+                    'is_valid_payment': valid_payments[i]  # Replace with the appropriate index
                 }
+
+                if payment_list[i].user:
+                    user_email = payment_list[i].user.email
+                    payment_data['user_id'] = user_email
 
                 duplicates_removed_payment_list.append(payment_data)
                 seen_payment_ids.add(payment_id)
@@ -1035,6 +1090,7 @@ class PaymentValidationNew(APIView):
         # Calculate the number of pages
         num_pages = (total_count + page_size - 1) // page_size
 
+        # print(duplicates_removed_payment_list)
         return Response({
             'count': total_count,
             'num_pages': num_pages,
@@ -1083,14 +1139,23 @@ class PaymentValidationNew(APIView):
 
                 if product.product_plan == 'Monthly':
                     if source_payment:
-                        tolerance = timedelta(days=5)
+                        tolerance = timedelta(days=7)
                         expiry_date = payment.expiration_datetime.date()
+                        # print("payment.order_datetime.date()",payment.order_datetime.date())
                         expected_expiry = payment.order_datetime.date() + timedelta(days=30) - tolerance
+                        # print("expiry_date",expiry_date)
+                        # print("expected_expiry",expected_expiry)
+                        # print("source_payment.order_datetime.date() + timedelta(days=30) + tolerance",source_payment.order_datetime.date() + timedelta(days=30) + tolerance)
 
                         if source_payment.order_datetime:
                             if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=30) + tolerance):
                                 pass
                             else:
+                                # print(source_payment)
+                                # print(source_payment.source_payment_id)
+                                # print(source_payment.alnafi_payment_id)
+                                # print("source_payment.order_datetime",source_payment.order_datetime)
+                                # print(f"{expected_expiry} <= {expiry_date} <= {source_payment.order_datetime.date() + timedelta(days=30) + tolerance}")
                                 valid_payment['valid'] = False
                                 valid_payment['reasons'].append('Monthly expiration date mismatch')
 
@@ -1170,10 +1235,6 @@ class MainPaymentAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status= 400)
-
-
-
-
 
 
 
@@ -1447,7 +1508,120 @@ def search_payment_for_product_analytics(export, q, start_date, end_date, plan, 
 
 
 
+import csv
+import requests
+from django.http import JsonResponse
 
+class LeadDataAPIView(APIView):
+    def get(self, request):
+        url = 'https://crm.alnafi.com/api/resource/Suppport'
+
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Checkout-2023-11-23.csv')
+
+        for index, row in data.iterrows():
+            api_key, api_secret = round_robin_support()
+            headers = {
+                'Authorization': f'token {api_key}:{api_secret}',
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+            payment_date = datetime.strptime(row.get('payment_date'), '%Y-%m-%d %H:%M:%S').date()
+            expiration_date = datetime.strptime(row.get('expiration_date'), '%Y-%m-%d %H:%M:%S').date()
+
+            # Check if the data already exists
+            filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
+            check_response = requests.get(filter_url, headers=headers)
+
+            if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
+                print(f"Data for {row.get('customer_email')} already exists!")
+                continue
+            else:
+                print('row.get("customer_email")',row.get("customer_email"))
+                url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["customer_email", "=", "{row.get("customer_email")}"]]'
+
+                user_api_key = '4e7074f890507cb'
+                user_secret_key = 'c954faf5ff73d31'
+
+                admin_headers = {
+                    'Authorization': f'token {user_api_key}:{user_secret_key}',
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                }
+
+                data = requests.get(url, headers=admin_headers)
+                if data.status_code == 200 and len(data.json().get('data')) > 0:
+
+                    data = data.json()
+                    email = data['data'][0]["lead_creator"]
+
+                    agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
+                              "mutahir.hassan@alnafi.edu.pk": ["ee3c9803e0a7aa0","ad8a5dc4bc4f13f"],
+                              "sufyan.arshad@alnafi.edu.pk": ["ae5b7895b8b9ba8","da5406f0c217a40"],
+                              "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
+                              "salman.amjad@alnafi.edu.pk": ["c09e9698c024bd5","02c5e4ff622bb22"],
+                              "ahsan.ali@alnafi.edu.pk": ["b5658b2d5a087d0","a9faaabc26bddc5"],
+                              "mujtaba.jawed@alnafi.edu.pk": ["940ef42feabf766","7a642a5b930eb44"]
+                              }
+                    
+                    if email in agents:
+                        keys_of_zeeshan_mehr = agents[email]
+                        # print(keys_of_zeeshan_mehr[0])
+                        # print(keys_of_zeeshan_mehr[1])
+                    else:
+                        print("Email not found in the agents dictionary.")
+
+                    print("assigning lead to existing agent")
+                    print("agent",email)
+                    data_to_post = {
+                        'price_pkr': row.get('price_pkr'),
+                        'country': row.get('country') or '',
+                        'first_name': row.get('first_name') or '',
+                        'payment': str(payment_date) or '',
+                        'expiration_date': str(expiration_date) or '',
+                        'product_name': row.get('product_name') or '',
+                        'customer_email': row.get('customer_email') or '',
+                        'contact_no': row.get('contact_no') or '',
+                        'expiration_status': row.get('expiration_status') or '',
+                        'payment_source': row.get('payment_source') or '',
+                        'lead_creator': email
+                    }
+
+
+                    headers = {
+                        'Authorization': f'token {keys_of_zeeshan_mehr[0]}:{keys_of_zeeshan_mehr[1]}',
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    }
+
+                    response = requests.post(url, json=data_to_post, headers=headers)
+                    if response.status_code == 200:
+                        print(f"Data for {row.get('first_name')} sent successfully!")
+                    else:
+                        print(f"Failed to send data for {row.get('first_name')}. Status code: {response.status_code}")
+                else:
+                    print("assigning lead to new agent")
+                    # If data doesn't exist, make the POST request
+                    data_to_post = {
+                            'price_pkr': row.get('price_pkr'),
+                            'country': row.get('country') or '',
+                            'first_name': row.get('first_name') or '',
+                            'payment': str(payment_date) or '',
+                            'expiration_date': str(expiration_date) or '',
+                            'product_name': row.get('product_name') or '',
+                            'customer_email': row.get('customer_email') or '',
+                            'contact_no': row.get('contact_no') or '',
+                            'expiration_status': row.get('expiration_status') or '',
+                            'payment_source': row.get('payment_source') or '',
+                    }
+
+                    response = requests.post(url, json=data_to_post, headers=headers)
+                    print(response.status_code)
+                    if response.status_code == 200:
+                        print(f"Data for {row.get('first_name')} sent successfully!")
+                    else:
+                        print(f"Failed to send data for {row.get('first_name')}. Status code: {response.status_code}")
+
+        return JsonResponse({'message': 'Data processing completed'})
 
 
 

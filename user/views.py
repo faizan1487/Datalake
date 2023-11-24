@@ -122,17 +122,12 @@ class o_level_leads_alnafi_model(APIView):
             form = row['form']
             login_source = row['source']
             country = row['country']
-            # created_at = row['created_at']
-            # Convert 'created_at' to the desired format
             created_at_str = row['created_at']
             assigned_date = row['assigned_date']
-            assigned_date_datetime = datetime.strptime(assigned_date, '%d-%b-%y')
-            assigned_date = assigned_date_datetime.strftime('%Y-%m-%d')
 
-            print("assigned_date)",assigned_date)
-            # parsed_date = datetime.strptime(assigned_date, "%d-%b-%Y")
-            # formatted_date = parsed_date.strftime("%Y-%m-%d %H:%M:%S")
-            # Assuming the original format is "%m/%d/%Y %H:%M:%S"
+            assigned_date = datetime.strptime(assigned_date, '%d %b %Y')
+            formatted_date = assigned_date.strftime('%Y-%m-%d')
+
             # You can adjust the format string as needed
             # created_at = pd.to_datetime(created_at_str, format="%m/%d/%Y %H:%M:%S")
             created_at = pd.to_datetime(created_at_str, format="%Y/%m/%d %H:%M:%S")
@@ -145,7 +140,7 @@ class o_level_leads_alnafi_model(APIView):
                     'login_source':login_source,
                     'country': country,
                     'created_at': created_at,
-                    'assigned_date':assigned_date
+                    'assigned_date':formatted_date
                 })
 
                 # If the object was not created (i.e., it already existed), update its attributes

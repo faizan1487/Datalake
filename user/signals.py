@@ -253,7 +253,7 @@ def mocLead_Signalto_moc_doctype(instance,source):
 
 
 def mocLead_Signalto_sale_doctype(instance,source):
-    # print("sale doctype signa;")
+    print("sale doctype signa;")
     user_api_key, user_secret_key = round_robin()
 
     headers = {
