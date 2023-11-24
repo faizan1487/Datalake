@@ -43,7 +43,6 @@ class AlNafi_Payment(models.Model):
 class New_Alnafi_Payments(models.Model):
     orderId = models.CharField(max_length=255)
     amount = models.IntegerField(null=True, blank=True)
-    converted_checkout_amount = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
