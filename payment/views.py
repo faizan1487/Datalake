@@ -1011,8 +1011,7 @@ class PaymentValidationNew(APIView):
                     total_product_amount_pkr = 0
 
                     for product in payment.product.all():  
-                        if payment.source == product.source:
-                            total_product_amount_pkr += product.amount_pkr
+                        total_product_amount_pkr += product.amount_pkr
 
                     total_product_amount_pkr = int(total_product_amount_pkr)
 

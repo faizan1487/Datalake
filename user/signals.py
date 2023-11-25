@@ -385,6 +385,14 @@ def mocLead_Signalto_sale_doctype(instance,source):
             # print(data)
             # print(response.status_code)
             # print(response.text)
+    
+    if failed_leads:
+        with open('failed_sales_doctype_leads.csv', 'w', newline='') as csvfile:
+            fieldnames = failed_leads[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for lead in failed_leads:
+                writer.writerow(lead)
 
     # print("failed_leads",failed_leads)
     

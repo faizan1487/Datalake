@@ -124,8 +124,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
                               "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
                               "salman.amjad@alnafi.edu.pk": ["c09e9698c024bd5","02c5e4ff622bb22"],
                               "ahsan.ali@alnafi.edu.pk": ["b5658b2d5a087d0","a9faaabc26bddc5"],
-                              "mujtaba.jawed@alnafi.edu.pk": ["940ef42feabf766","7a642a5b930eb44"],
-                              "faizan.ahmed@alnafi.edu.pk": ["351b6479c5a4a16",""]
+                              "mujtaba.jawed@alnafi.edu.pk": ["940ef42feabf766","7a642a5b930eb44"]
                               }
                     
                     if email in agents:
@@ -170,6 +169,54 @@ def send_payment_support_module(instance,model_name, **kwargs):
                         pass
                     
     except RequestException as e:
+        # pass
+        print("in except")
+        print('Error occurred while making the request:', str(e))
+        print('Error:', response.status_code)
+        print('Error:', response.text) 
+
+
+
+def change_lead_status_sales_module(instance, **kwargs):
+    # print("change_lead_status_sales signal running")
+    # print("model_name", model_name)
+    # url = 'https://crm.alnafi.com/api/resource/Lead?limit_start=0&limit_page_length=23023&fields=["*"]'
+    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.customer_email}"]]'
+    api_key, api_secret = round_robin_support()
+
+    headers = {
+        'Authorization': f'token {api_key}:{api_secret}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    try:
+        # print("in try")
+        response = requests.get(url, headers=headers)
+        # response.raise_for_status()
+        data = response.json()
+        already_existed = len(data["data"]) > 0
+
+        # print(response.status_code)
+        # print(data['data'])
+        if already_existed:
+            converted_date = datetime.now().date()
+            lead_id = data['data'][0]['name']
+            url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+            # print(customer_data)
+            lead_data = {
+                "status": "Converted",
+                "converted_date": converted_date.isoformat()
+            }
+            # print(lead_data)
+            response = requests.put(url, headers=headers, json=lead_data)
+            # print(response)
+            # print(response.text)
+            instance.customer_email = data['data'][0]['email_id']
+            # print("lead updated")
+            # break
+        else:
+            pass
+    except Exception as e:
         pass
        
 
@@ -367,12 +414,21 @@ def support_renewal_leads(instance):
         "assigned_date": datetime.now().date().isoformat()
     }
 
-    # try:
-    response = requests.post(crm_endpoint, headers=headers, json=data)
-    # print(response.status_code)
-    # print(response.text)
-    # except:
-    #     print(data)
+    failed_leads = []
+
+    try:
+        response = requests.post(crm_endpoint, headers=headers, json=data)
+    except Exception as e:
+        print("Error posting renewal lead data:", str(e))
+        failed_leads.append(data)
+
+    if failed_leads:
+        with open('failed_renewal_leads.csv', 'w', newline='') as csvfile:
+            fieldnames = failed_leads[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for lead in failed_leads:
+                writer.writerow(lead)
 
     if response.status_code != 200:
         print(data)
