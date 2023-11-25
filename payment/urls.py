@@ -2,10 +2,11 @@ from django.urls import path
 from .views import (SearchPayments, GetStripePayments,GetUBLIPGPayments, AlnafiPayment,
                     RenewalPayments,GetEasypaisaPayments,NoOfPayments,RenewalNoOfPayments,
                     PaymentValidationNew,MainPaymentAPIView,UBLManualPayment,TotalNoOfPayments,
-                    ActivePayments,ProductAnalytics, NewAlnafiPayment,Renewal_Leads,LeadDataAPIView)
+                    ActivePayments,ProductAnalytics, NewAlnafiPayment,Renewal_Leads)
 from payment.webhooks import enrollment_created_webhook
 
 urlpatterns = [
+    path('suppport/', LeadDataAPIView.as_view()),
     path('upload-renewal-leads/', Renewal_Leads.as_view(), name='renewal-leads'),
     path("enrollmentwebhook/", enrollment_created_webhook),
 

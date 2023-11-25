@@ -1920,3 +1920,56 @@ class LeadDataAPIView(APIView):
 #         # print("cleaned_name1",product)
 #         # print("cleaned_name2",payment_product)
 #         return product == payment_product
+import csv
+import requests
+from django.http import JsonResponse
+
+class LeadDataAPIView(APIView):
+    def post(self, request):
+        url = 'https://crm.alnafi.com/api/resource/Suppport'
+
+        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/payment/Checkout-2023-11-23.csv')
+        lst = []
+        for index, row in data.iterrows():
+            api_key, api_secret = round_robin_support()
+            headers = {
+            'Authorization': f'token {api_key}:{api_secret}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+            print(api_key)
+            print(api_secret)
+            payment_date = datetime.strptime(row.get('payment_date'), '%Y-%m-%d %H:%M:%S').date()
+            expiration_date = datetime.strptime(row.get('expiration_date'), '%Y-%m-%d %H:%M:%S').date()
+
+            # Check if the data already exists
+            filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
+            check_response = requests.get(filter_url, headers=headers)
+
+            if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
+                print(f"Data for {row.get('customer_email')} already exists!")
+            else:
+                # If data doesn't exist, make the POST request
+                data_to_post = {
+                        'price_pkr': row.get('price_pkr'),
+                        'country': row.get('country') or '',
+                        'first_name': row.get('first_name') or '',
+                        'payment': str(payment_date) or '',
+                        'expiration_date': str(expiration_date) or '',
+                        'product_name': row.get('product_name') or '',
+                        'customer_email': row.get('customer_email') or '',
+                        'contact_no': row.get('contact_no') or '',
+                        'expiration_status': row.get('expiration_status') or '',
+                        'payment_source': row.get('payment_source') or '',
+                }
+
+                response = requests.post(url, json=data_to_post, headers=headers)
+                print(response.status_code)
+                if response.status_code == 200:
+                    print(f"Data for {row.get('first_name')} sent successfully!")
+                else:
+                    print(f"Failed to send data for {row.get('first_name')}. Status code: {response.status_code}")
+
+        return JsonResponse({'message': 'Data processing completed'})
+
+

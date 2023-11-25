@@ -1,7 +1,10 @@
 from threading import Thread
 from django.shortcuts import render
+from django.utils.encoding import smart_bytes
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.core.mail import EmailMultiAlternatives
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.request import Request
 from rest_framework.decorators import api_view, permission_classes
@@ -9,11 +12,14 @@ from django.contrib.auth import logout
 from rest_framework import status
 from rest_framework_simplejwt.tokens import AccessToken
 import jwt
+from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnicodeDecodeError
+from django.utils.html import strip_tags
 from jwt.exceptions import ExpiredSignatureError
 from rest_framework.permissions import IsAuthenticated
 from django.conf import settings
 from django.contrib.auth import authenticate
 import os
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import pandas as pd
 from datetime import datetime
 
@@ -33,7 +39,11 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import time
-from user.models import Moc_Leads
+from user.models import Moc_Leads, User
+from rest_framework import generics
+import environ, requests 
+env = environ.Env()
+env.read_env()
 import pandas as pd
 
 class UploadMocLeads(APIView):
@@ -595,6 +605,7 @@ class UserLoginView(APIView):
             response.data["user"] = user
             return response
         else:
+            return(response.text)
             # return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_401_UNAUTHORIZED)
             return Response({'error': 'Email or Password is not Valid'}, status=status.HTTP_401_UNAUTHORIZED)
 
@@ -694,26 +705,49 @@ class UserChangePasswordView(APIView):
     def post(self, request, format=None):
         serializer = UserChangePasswordSerializer(data=request.data, context={'user':request.user})
         serializer.is_valid(raise_exception=True)
+        # return(Response.text)
         return Response({'msg':'Password Changed Successfully'}, status=status.HTTP_200_OK)
 
-
 class SendPasswordResetEmailView(APIView):
-    renderer_classes = [UserRenderer]
     def post(self, request, format=None):
-        serializer = SendPasswordResetEmailSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        return Response({'msg':'Password Reset link send. Please check your Email'}, status=status.HTTP_200_OK)
+        # try:
+        user = User.objects.get(email=request.data.get("email"))
+        # print(user)
+        uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+        token = PasswordResetTokenGenerator().make_token(user)
 
+        site_domain = 'http://localhost:3000/reset-password/' if settings.DEBUG else env('RESET_PASSWORD_URL')
+        absUrl = site_domain + "?uuid=" + uidb64 + "&token=" + token
+        email_body = f"<h2>Hi {user.name},</h2><p>Please verify your email by clicking the link below, to reset your password. If you haven't requested to change your password you can ignore this email.<p><a href='{absUrl}'>Reset Password</a>"
+        text_content = strip_tags(email_body)
+        # print(uidb64)
+        # print(token)
 
-class UserPasswordResetView(APIView):
-    renderer_classes = [UserRenderer]
-    def post(self, request, uid, token, format=None):
-        serializer = UserPasswordResetSerializer(data=request.data, context={'uid':uid, 'token':token})
-        serializer.is_valid(raise_exception=True)
-        return Response({'msg':'Password Reset Successfully'}, status=status.HTTP_200_OK)
+        # try:
+        msg = EmailMultiAlternatives("Reset Your Password", text_content, env('MAIL_FROM_ADDRESS'), [user.email])
+        msg.attach_alternative(email_body, "text/html")
 
+        msg.send()
+        return Response({'success': "We have sent you a link to reset your password"}, status=status.HTTP_200_OK)
 
+class PasswordCheckTokenAPI(generics.GenericAPIView):
+    def get(self, request, uidb64, token):
+        id = smart_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(id=id)
+        try:
+            sameDomain = checkSameDomain(request)
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response({'error': 'Token is not valid, please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                response = Response({'success': True, "message": "Credential is valid",
+                                    'uidb64': uidb64, 'token': token}, status=status.HTTP_200_OK)
+                response = loginUser(request, response, user,sameDomain)
+                response.data["user"] = user.email
+                return response
 
+        except DjangoUnicodeDecodeError as e:
+            return Response({'error': 'Token is not valid, remove your password'})
+        
 
 class MainUserAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -841,6 +875,16 @@ class UserRegistrationView(APIView):
         response.data["sameDomain"] = sameDomain
         response.data["user"] = serializer.data
         return response
+    
+
+class ForgotPasswordView(APIView):
+    def post(self, request):
+        email = request.data.get('email')
+
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
 
 # import os

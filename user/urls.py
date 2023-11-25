@@ -1,17 +1,17 @@
 from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
-                    UserChangePasswordView,SendPasswordResetEmailView,UserPasswordResetView,User_logout,UsersDelete,Navbar,AlnafiUser,AllEmployees,
+                    UserChangePasswordView,SendPasswordResetEmailView,User_logout,UsersDelete,Navbar,AlnafiUser,AllEmployees,
                     GetUser,GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser,UploadMocLeads,getUsser,
-                    NewAlnafiUser,o_level_leads_alnafi_model,GetActiveUsers)
+                    NewAlnafiUser,o_level_leads_alnafi_model,GetActiveUsers, PasswordCheckTokenAPI)
 from django.http import HttpResponse
 
 urlpatterns = [
     path("", lambda req: HttpResponse(status=200)),
     path('upload-moc-leads/',UploadMocLeads.as_view()),
     path('upload-o-level-leads/',o_level_leads_alnafi_model.as_view()),
-    
     #below api ths is for moc leads
     path('getusers/',getUsser.as_view(), name='get-users'),
+    path('user-password-rest/<uidb64>/<token>', PasswordCheckTokenAPI.as_view()),
 
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
     path('newalnafiuser/', NewAlnafiUser.as_view(), name='new-alnafi-user'), #for new mainsite users
@@ -36,7 +36,6 @@ urlpatterns = [
     path('profile/', UserProfileView.as_view(),name='login'),
     path('changepassword/', UserChangePasswordView.as_view(),name='changepassword'),
     path('send-reset-password-email/', SendPasswordResetEmailView.as_view(),name='send-reset-password-email'),
-    path('reset-password/<uid>/<token>/', UserPasswordResetView.as_view(), name='reset-password'),
     path('newalnafiuser/', NewAlnafiUser.as_view(), name='newalnfiuser'),
     path("navbar/", Navbar.as_view(), name='navbar'),
     # path('users/<int:pk>/', UserDetail.as_view(), name='user-detail'),
