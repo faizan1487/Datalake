@@ -75,9 +75,6 @@ def support_renewal_leads_signal(sender, instance: Renewal, *args, **kwargs):
 
 
 def send_payment_support_module(instance,model_name, **kwargs):
-    # print("model_name", model_name)
-    url = 'https://crm.alnafi.com/api/resource/Suppport?limit_start=0&limit_page_length=5000&fields=["*"]'
-
     if model_name == 'alnafi':     
         if isinstance(instance.product_name, list):
             product_name = ", ".join(instance.product_name)
@@ -89,10 +86,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
         else:
             product_name = instance.product_names
 
-    
     url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["customer_email","product_name"]&filters=[["Suppport","customer_email","=","{instance.customer_email}"],["Suppport","product_name","=","{product_name}"]]'
-    api_key, api_secret = round_robin_support()
-
     user_api_key = '4e7074f890507cb'
     user_secret_key = 'c954faf5ff73d31'
     admin_headers = {
@@ -101,54 +95,83 @@ def send_payment_support_module(instance,model_name, **kwargs):
         "Accept": "application/json",
     }
 
-    headers = {
-        'Authorization': f'token {api_key}:{api_secret}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
     try:
-        # print("in try")
         response = requests.get(url, headers=admin_headers)
         data = response.json()
-        print(data)
         payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
-        already_existed = len(data["data"]) > 0
-    
-        if already_existed:
+        testing_email = payment_user[0].email
+
+        if testing_email.endswith("yopmail.com"):
             pass
         else:
-            # customer_data = alnafi_payment_support_data(instance,payment_user)
-            if model_name == 'alnafi':
-                # print("in if")
-                customer_data = alnafi_payment_support_data(instance,payment_user)
-            else:
-                # print("in else")
-                customer_data = new_alnafi_payment_support_data(instance, payment_user)
-
-
-            # print(customer_data)
-            customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
-            response = requests.post(customer_url, headers=headers, json=customer_data)
-            # print(response)
-            if response.status_code == 200:
-                lead_data = response.json()
-                # print(lead_data)
-                customer_email = lead_data['data']['customer_email']
-                if customer_email:
-                    # print("lead id exists")
-                    instance.customer_email = customer_email
-                    # print("Lead created successfully!")
-            else:
+            already_existed = len(data["data"]) > 0
+        
+            if already_existed:
                 pass
-                # print(response.status_code)
-                # print(response.text)
+            else:
+                url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["Suppport","customer_email","=","{instance.customer_email}"]]'
+
+                response = requests.get(url, headers=admin_headers)
+                data = response.json()
+
+                already_exist = len(data["data"]) > 0
+                if already_exist:
+                    email = data['data'][0]["lead_creator"]
+
+                    agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
+                              "mutahir.hassan@alnafi.edu.pk": ["ee3c9803e0a7aa0","ad8a5dc4bc4f13f"],
+                              "sufyan.arshad@alnafi.edu.pk": ["ae5b7895b8b9ba8","da5406f0c217a40"],
+                              "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
+                              "salman.amjad@alnafi.edu.pk": ["c09e9698c024bd5","02c5e4ff622bb22"],
+                              "ahsan.ali@alnafi.edu.pk": ["b5658b2d5a087d0","a9faaabc26bddc5"],
+                              "mujtaba.jawed@alnafi.edu.pk": ["940ef42feabf766","7a642a5b930eb44"],
+                              "faizan.ahmed@alnafi.edu.pk": ["351b6479c5a4a16",""]
+                              }
+                    
+                    if email in agents:
+                        keys_of_agent = agents[email]
+                    
+
+                        if model_name == 'alnafi':
+                            customer_data = alnafi_payment_support_data(instance,payment_user)
+                        else:
+                            customer_data = new_alnafi_payment_support_data(instance, payment_user)
+
+                        agent_headers = {
+                            'Authorization': f'token {keys_of_agent[0]}:{keys_of_agent[1]}',
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                        }
+                        customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
+                        response = requests.post(customer_url, headers=agent_headers, json=customer_data)
+                        if response.status_code != 200:
+                            lead_data = response.json()
+                        
+                else:
+                    if model_name == 'alnafi':
+                        customer_data = alnafi_payment_support_data(instance,payment_user)
+                    else:
+                        customer_data = new_alnafi_payment_support_data(instance, payment_user)
+
+                    api_key, api_secret = round_robin_support()
+                    headers = {
+                        'Authorization': f'token {api_key}:{api_secret}',
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    }
+                    customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
+                    response = requests.post(customer_url, headers=headers, json=customer_data)
+                    if response.status_code == 200:
+                        lead_data = response.json()
+                        customer_email = lead_data['data']['customer_email']
+                        if customer_email:
+                            instance.customer_email = customer_email
+                    else:
+                        pass
+                    
     except RequestException as e:
         pass
-        # print("in except")
-        # print('Error occurred while making the request:', str(e))
-        # print('Error:', response.status_code)
-        # print('Error:', response.text) 
-
+       
 
 
 

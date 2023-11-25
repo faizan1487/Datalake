@@ -960,7 +960,7 @@ class PaymentValidationNew(APIView):
             )
         )
 
-
+                                
         source_payments = Main_Payment.objects.filter(
             source__in=['Easypaisa', 'UBL_IPG', 'Stripe','UBL_DD']
         ).order_by('-order_datetime').select_related('user')
