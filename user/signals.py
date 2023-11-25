@@ -46,9 +46,7 @@ def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
 
 def usersignal(instance,source,sender):
     # print("user signal running")
-    # print("instance.form",instance.form)
-    if source == 'Academy' or 'Academy Signup' or instance.form == 'O Level Academy Form':
-        # print("inside if")
+    if source == 'Academy' or source == 'Academy Signup' or source == 'alnafi.com' or instance.form == 'O Level Academy Form':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
@@ -415,7 +413,7 @@ def newsignupsignal(instance,sender):
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
 
 
-    if source == 'Academy Signup' or 'Academy':
+    if source == 'Academy' or source == 'Academy Signup' or source == 'alnafi.com':
         # print("inside if")
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
