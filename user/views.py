@@ -42,6 +42,8 @@ import time
 from user.models import Moc_Leads, User
 from rest_framework import generics
 import environ, requests 
+from secrets_api.algorithem import round_robin
+
 env = environ.Env()
 env.read_env()
 import pandas as pd
@@ -118,6 +120,9 @@ class UploadMocLeads(APIView):
         data_Frame.to_csv("error.csv")
 
         return Response({"msg":"done"})
+    
+
+
 
 
 class o_level_leads_alnafi_model(APIView):
@@ -1141,3 +1146,56 @@ class ForgotPasswordView(APIView):
 
 
 
+# class UploadLeads(APIView):
+#     def get(self,request):
+#         # Read the CSV file into a DataFrame
+#         data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/Lead.csv')
+
+#         # Iterate over rows in the DataFrame
+#         for index, row in data.iterrows():
+#             first_name = row['First Name']
+#             email = row['Email']
+#             assigned_date_str = row['Assigned Date']    
+#             source = row['Source']
+#             product = row['Product Names List']
+#             plan = row['Plan']
+#             phone = row['Phone']
+#             country = row['Country']
+
+#             # Assuming the original format is "%m/%d/%Y %H:%M:%S"
+#             # You can adjust the format string as needed
+#             # created_at = pd.to_datetime(created_at_str, format="%d/%m/%Y %H:%M:%S")
+#             created_at = pd.to_datetime(assigned_date_str, format="%Y/%m/%d")
+
+#             data = {
+#                 "email_id": email,
+#                 "first_name": first_name,
+#                 "date": str(created_at),
+#                 "source": source,
+#                 "product_names_list": product,
+#                 "phone": str(phone),
+#             }      
+
+
+#             if pd.isna(data['product_names_list']):
+#                 data['product_names_list'] = None
+
+#             user_api_key, user_secret_key = round_robin()
+
+    
+#             headers = {
+#                 'Authorization': f'token {user_api_key}:{user_secret_key}',
+#                 "Content-Type": "application/json",
+#                 "Accept": "application/json",
+#             }
+
+
+#             url = 'https://crm.alnafi.com/api/resource/Lead'
+#             response = requests.post(url, headers=headers, json=data)   
+#             print(email)
+#             print(response.status_code)
+#             print(response.text)
+
+
+#         return Response({"msg":"done"})
+    

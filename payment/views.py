@@ -969,7 +969,6 @@ class PaymentValidationNew(APIView):
         users = []
         product_names = []
         payment_list = []
-
         for payment in payments:
             valid_payment = {
                 'valid': True,
@@ -982,8 +981,9 @@ class PaymentValidationNew(APIView):
             if not source_payment:
                 source_payment = source_payments.filter(source_payment_id=payment.alnafi_payment_id).first()
             
-            if not source_payment:
-                source_payment = source_payments.filter(source='Stripe', user__email=payment.user.email).first()
+            if payment.user is not None:
+                if not source_payment:
+                    source_payment = source_payments.filter(source='Stripe', user__email=payment.user.email).first()
 
             # print(source_payment)
 

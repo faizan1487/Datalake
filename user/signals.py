@@ -113,13 +113,13 @@ def usersignal(instance,source,sender):
             # pass
             print("response.status_code",response.text)
             print("response.status_code",response.status_code)
-        if response.status_code == 200:
+        if response.status_code != 200:
             lead_data = response.json()
-            # print(lead_data)
-            erp_lead_id = lead_data['data']['name']
-            if erp_lead_id:
-                # print("lead id exists")
-                instance.erp_lead_id = erp_lead_id
+            print(lead_data)
+            # erp_lead_id = lead_data['data']['name']
+            # if erp_lead_id:
+            #     # print("lead id exists")
+            #     instance.erp_lead_id = erp_lead_id
                 # instance.save(update_fields=['erp_lead_id'])
                 # print("Lead created successfully!")
 
