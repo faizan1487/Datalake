@@ -918,6 +918,29 @@ def add_tax_stripe_according_to_the_country_code(amount,country_code):
 #PRODUCTION
 class PaymentValidationNew(APIView):
     permission_classes = [IsAuthenticated]
+    # Your existing post method remains the same
+    def post(self, request):
+        comment_text = request.data.get('comment')
+        print(comment_text)
+
+        try:
+            payment_id = request.data.get('payment_id')
+            print(payment_id)
+            payment = Main_Payment.objects.get(id=payment_id)
+            print(payment)
+            
+            if comment_text is not None: 
+                # If comment text is provided, create a comment
+                payment.comment = comment_text
+                print(payment.comment)
+                payment.save()
+            return Response({'success': True, "msg":"Comment Done"}, status=status.HTTP_201_CREATED)
+
+        except Main_Payment.DoesNotExist:
+            return Response({'msg': 'Payment does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         source = self.request.GET.get('source', None) or None
@@ -1067,6 +1090,7 @@ class PaymentValidationNew(APIView):
             
                 payment_data = {
                     'id': payment_id,
+                    'comment':payment_list[i].comment,
                     'phone': payment_list[i].candidate_phone,
                     'source': payment_list[i].source,
                     'amount': payment_list[i].amount,

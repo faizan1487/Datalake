@@ -233,6 +233,7 @@ class Main_Payment(models.Model):
     bin_bank_name = models.CharField(max_length=50, null=True,blank=True)
     error_reason = models.CharField(max_length=200, null=True,blank=True)
     country = models.CharField(max_length=255, blank=True, null=True)
+    comment = models.CharField(max_length=200, null=True,blank=True)
 
     class Meta:
         managed = True
