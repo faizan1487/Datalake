@@ -699,14 +699,22 @@ class TokenRefreshView(APIView):
         return response
 
 
-class UserChangePasswordView(APIView):
-    renderer_classes = [UserRenderer]
-    permission_classes = [IsAuthenticated]
-    def post(self, request, format=None):
-        serializer = UserChangePasswordSerializer(data=request.data, context={'user':request.user})
-        serializer.is_valid(raise_exception=True)
-        # return(Response.text)
-        return Response({'msg':'Password Changed Successfully'}, status=status.HTTP_200_OK)
+class UserPasswordCheckTokenAPI(generics.GenericAPIView):
+    def get(self, request, uidb64, token):
+        id = smart_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(id=id)
+        try:
+            if not PasswordResetTokenGenerator().check_token(user, token):
+                return Response({'error': 'Token is not valid, please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
+            else:
+                response = Response({'success': True, "message": "Credential is valid",
+                                    'uidb64': uidb64, 'token': token}, status=status.HTTP_200_OK)
+                response = loginUser(request, response, user)
+                response.data["user"] = user.email
+                return response
+
+        except DjangoUnicodeDecodeError as e:
+            return Response({'error': 'Token is not valid, remove your password'})
 
 class SendPasswordResetEmailView(APIView):
     def post(self, request, format=None):
@@ -725,29 +733,35 @@ class SendPasswordResetEmailView(APIView):
             msg = EmailMultiAlternatives("Reset Your Password", text_content, env('MAIL_FROM_ADDRESS'), [user.email])
             msg.attach_alternative(email_body, "text/html")
             msg.send()
+            print(uidb64)
+            print(token)
 
             return Response({'success': "We have sent you a link to reset your password"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
             return Response({'success': False, 'message': "Email not found"}, status=status.HTTP_404_NOT_FOUND)
-
-class PasswordCheckTokenAPI(generics.GenericAPIView):
-    def get(self, request, uidb64, token):
-        id = smart_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.filter(id=id).first()
-        try:
-            sameDomain = checkSameDomain(request)
-            if not PasswordResetTokenGenerator().check_token(user, token):
-                return Response({'error': 'Token is not valid, please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
-            else:
-                response = Response({'success': True, "message": "Credential is valid",
-                                    'uidb64': uidb64, 'token': token}, status=status.HTTP_200_OK)
-                response = loginUser(request, response, user,sameDomain)
-                response.data["user"] = user.email
-                return response
-
-        except DjangoUnicodeDecodeError as e:
-            return Response({'error': 'Token is not valid, remove your password'})
         
+class UserSetNewPasswordAPIView(APIView):
+    def post(self, request):
+        try:
+            id = smart_str(urlsafe_base64_decode(request.data["uuid"]))
+            user = User.objects.get(id=id)
+
+            new_password = request.data.get("password")
+            confirm_password = request.data.get("confirm_password")
+            reset_token = request.data.get("token")
+
+            if new_password != confirm_password:
+                return Response({'error': 'Passwords do not match'}, status=status.HTTP_400_BAD_REQUEST)
+
+            if PasswordResetTokenGenerator().check_token(user, reset_token):
+                user.set_password(new_password)
+                user.save()
+                return Response({'success': True, "message": "Password reset successfully"}, status=status.HTTP_200_OK)
+            else:
+                return Response({'error': 'Token is not valid, remove your password'}, status=status.HTTP_400_BAD_REQUEST)
+        except (DjangoUnicodeDecodeError, User.DoesNotExist) as e:
+            return Response({'error': 'Token or user ID is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class MainUserAPIView(APIView):
     permission_classes = [IsAuthenticated]
