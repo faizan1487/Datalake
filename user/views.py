@@ -703,13 +703,14 @@ class UserPasswordCheckTokenAPI(generics.GenericAPIView):
     def get(self, request, uidb64, token):
         id = smart_str(urlsafe_base64_decode(uidb64))
         user = User.objects.get(id=id)
+        sameDomain = None
         try:
             if not PasswordResetTokenGenerator().check_token(user, token):
                 return Response({'error': 'Token is not valid, please request a new one'}, status=status.HTTP_401_UNAUTHORIZED)
             else:
                 response = Response({'success': True, "message": "Credential is valid",
                                     'uidb64': uidb64, 'token': token}, status=status.HTTP_200_OK)
-                response = loginUser(request, response, user)
+                response = loginUser(request, response, user, sameDomain)
                 response.data["user"] = user.email
                 return response
 

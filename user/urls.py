@@ -11,7 +11,6 @@ urlpatterns = [
     path('upload-o-level-leads/',o_level_leads_alnafi_model.as_view()),
     #below api ths is for moc leads
     path('getusers/',getUsser.as_view(), name='get-users'),
-    path('changepassword/', UserSetNewPasswordAPIView.as_view()),
 
     path('alnafiuser/',AlnafiUser.as_view(), name='alnafi-user'),
     path('newalnafiuser/', NewAlnafiUser.as_view(), name='new-alnafi-user'), #for new mainsite users
@@ -34,8 +33,11 @@ urlpatterns = [
     path('login/', UserLoginView.as_view(),name='login'),
     path('logout/', User_logout,name='logout'),
     path('profile/', UserProfileView.as_view(),name='login'),
-    path('user-password-rest/<uidb64>/<token>/', UserPasswordCheckTokenAPI.as_view(),name='changepassword'),
     path('send-reset-password-email/', SendPasswordResetEmailView.as_view(),name='send-reset-password-email'),
+    
+    path('user-password-rest/<uidb64>/<token>/', UserPasswordCheckTokenAPI.as_view(),name='changepassword'),
+    path('changepassword/', UserSetNewPasswordAPIView.as_view()),
+
     path('newalnafiuser/', NewAlnafiUser.as_view(), name='newalnfiuser'),
     path("navbar/", Navbar.as_view(), name='navbar'),
     # path('users/<int:pk>/', UserDetail.as_view(), name='user-detail'),
