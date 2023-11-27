@@ -710,25 +710,25 @@ class UserChangePasswordView(APIView):
 
 class SendPasswordResetEmailView(APIView):
     def post(self, request, format=None):
-        # try:
-        user = User.objects.get(email=request.data.get("email"))
-        # print(user)
-        uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
-        token = PasswordResetTokenGenerator().make_token(user)
+        try:
+            user = User.objects.get(email=request.data.get("email"))
 
-        site_domain = 'http://localhost:3000/reset-password/' if settings.DEBUG else env('RESET_PASSWORD_URL')
-        absUrl = site_domain + "?uuid=" + uidb64 + "&token=" + token
-        email_body = f"<h2>Hi {user.name},</h2><p>Please verify your email by clicking the link below, to reset your password. If you haven't requested to change your password you can ignore this email.<p><a href='{absUrl}'>Reset Password</a>"
-        text_content = strip_tags(email_body)
-        # print(uidb64)
-        # print(token)
+            uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
+            token = PasswordResetTokenGenerator().make_token(user)
 
-        # try:
-        msg = EmailMultiAlternatives("Reset Your Password", text_content, env('MAIL_FROM_ADDRESS'), [user.email])
-        msg.attach_alternative(email_body, "text/html")
+            site_domain = 'http://localhost:3000/reset-password/' if settings.DEBUG else env('RESET_PASSWORD_URL')
+            absUrl = site_domain + "?uuid=" + uidb64 + "&token=" + token
 
-        msg.send()
-        return Response({'success': "We have sent you a link to reset your password"}, status=status.HTTP_200_OK)
+            email_body = f"<h2>Hi {user.name},</h2><p>Please verify your email by clicking the link below, to reset your password. If you haven't requested to change your password you can ignore this email.<p><a href='{absUrl}'>Reset Password</a>"
+            text_content = strip_tags(email_body)
+
+            msg = EmailMultiAlternatives("Reset Your Password", text_content, env('MAIL_FROM_ADDRESS'), [user.email])
+            msg.attach_alternative(email_body, "text/html")
+            msg.send()
+
+            return Response({'success': "We have sent you a link to reset your password"}, status=status.HTTP_200_OK)
+        except User.DoesNotExist:
+            return Response({'success': False, 'message': "Email not found"}, status=status.HTTP_404_NOT_FOUND)
 
 class PasswordCheckTokenAPI(generics.GenericAPIView):
     def get(self, request, uidb64, token):
