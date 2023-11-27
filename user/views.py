@@ -734,8 +734,6 @@ class SendPasswordResetEmailView(APIView):
             msg = EmailMultiAlternatives("Reset Your Password", text_content, env('MAIL_FROM_ADDRESS'), [user.email])
             msg.attach_alternative(email_body, "text/html")
             msg.send()
-            print(uidb64)
-            print(token)
 
             return Response({'success': "We have sent you a link to reset your password"}, status=status.HTTP_200_OK)
         except User.DoesNotExist:
@@ -746,7 +744,7 @@ class UserSetNewPasswordAPIView(APIView):
         try:
             id = smart_str(urlsafe_base64_decode(request.data["uuid"]))
             user = User.objects.get(id=id)
-
+            
             new_password = request.data.get("password")
             confirm_password = request.data.get("confirm_password")
             reset_token = request.data.get("token")
@@ -757,11 +755,21 @@ class UserSetNewPasswordAPIView(APIView):
             if PasswordResetTokenGenerator().check_token(user, reset_token):
                 user.set_password(new_password)
                 user.save()
-                return Response({'success': True, "message": "Password reset successfully"}, status=status.HTTP_200_OK)
+                
+                serialized_user = UserLoginSerializer(user).data
+                return Response({
+                    'success': True,
+                    'message': 'Password reset successfully',
+                    'user': serialized_user
+                }, status=status.HTTP_200_OK)
             else:
-                return Response({'error': 'Token is not valid, remove your password'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({
+                    'error': 'Token is not valid, remove your password'
+                }, status=status.HTTP_400_BAD_REQUEST)
         except (DjangoUnicodeDecodeError, User.DoesNotExist) as e:
-            return Response({'error': 'Token or user ID is not valid'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'error': 'Token or user ID is not valid'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
 
 class MainUserAPIView(APIView):
