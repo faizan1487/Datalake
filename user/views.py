@@ -711,7 +711,7 @@ class UserChangePasswordView(APIView):
 class SendPasswordResetEmailView(APIView):
     def post(self, request, format=None):
         try:
-            user = User.objects.get(email=request.data.get("email"))
+            user = User.objects.filter(email=request.data.get("email")).first()
 
             uidb64 = urlsafe_base64_encode(smart_bytes(user.id))
             token = PasswordResetTokenGenerator().make_token(user)
@@ -733,7 +733,7 @@ class SendPasswordResetEmailView(APIView):
 class PasswordCheckTokenAPI(generics.GenericAPIView):
     def get(self, request, uidb64, token):
         id = smart_str(urlsafe_base64_decode(uidb64))
-        user = User.objects.get(id=id)
+        user = User.objects.filter(id=id).first()
         try:
             sameDomain = checkSameDomain(request)
             if not PasswordResetTokenGenerator().check_token(user, token):
