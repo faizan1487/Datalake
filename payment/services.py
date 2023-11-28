@@ -158,7 +158,7 @@ def get_USD_rate(currency,amount):
     if not usd_details_str:
         # print("cache empty")
         usd_details = {}
-        url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/USD"
+        url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/USD/"
         response = requests.get(url).json()
         usd_details[currency] = response["conversion_rates"][currency.upper()]
         usd_details["USD"] = response["conversion_rates"]["USD"]

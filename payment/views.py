@@ -28,7 +28,7 @@ from user.services import upload_csv_to_s3
 import requests
 from user.constants import COUNTRY_CODES
 from secrets_api.algorithem import round_robin_support
-
+import math
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -849,8 +849,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                 pass
             elif p.currency.lower() != 'usd':
                 currency_rate = get_USD_rate(p.currency,amount)
-                # print("type amount",type(int(amount)))
-                converted_amount = int(amount) // currency_rate[p.currency]
+                converted_amount = round(int(amount) / currency_rate[p.currency],6)
                 converted_amount = converted_amount - (0.02 * converted_amount)
                 total_payments_in_usd += converted_amount
             else:
@@ -1558,21 +1557,38 @@ class LeadDataAPIView(APIView):
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             }
-            payment_date = datetime.strptime(row.get('payment_date'), '%Y-%m-%d %H:%M:%S').date()
-            expiration_date = datetime.strptime(row.get('expiration_date'), '%Y-%m-%d %H:%M:%S').date()
+            payment_date = datetime.strptime(row['payment_date'], '%Y-%m-%d %H:%M:%S').date()
+            # expiration_date = datetime.strptime(row['expiration_date'], '%Y-%m-%d %H:%M:%S').date()
+            expiration_date = row['expiration_date']
 
-            print("payment date",payment_date)
+            if isinstance(expiration_date, str):
+                expiration_date = datetime.strptime(expiration_date, '%Y-%m-%d %H:%M:%S').date()
+            else:
+                expiration_date = ''
+
+            email = row["email"]
+            product = row["product_name"]
+
+            user_api_key = '4e7074f890507cb'
+            user_secret_key = 'c954faf5ff73d31'
+
+            admin_headers = {
+                'Authorization': f'token {user_api_key}:{user_secret_key}',
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
 
             # Check if the data already exists
-            filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
-            check_response = requests.get(filter_url, headers=headers)
-
+            filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{email}"],["product_name", "=", "{product}"]]'
+            check_response = requests.get(filter_url, headers=admin_headers)
+            # print(check_response.text)
             if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
-                print(f"Data for {row.get('customer_email')} already exists!")
+                email = row["email"]
+                print(f"Data for {email} already exists!")
                 continue
             else:
-                print('row.get("customer_email")',row.get("customer_email"))
-                url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["customer_email", "=", "{row.get("email")}"]]'
+                email = row["email"]
+                url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["customer_email", "=", "{email}"]]'
 
                 user_api_key = '4e7074f890507cb'
                 user_secret_key = 'c954faf5ff73d31'
@@ -1591,7 +1607,6 @@ class LeadDataAPIView(APIView):
 
                     agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
                               "mutahir.hassan@alnafi.edu.pk": ["ee3c9803e0a7aa0","ad8a5dc4bc4f13f"],
-                              "sufyan.arshad@alnafi.edu.pk": ["ae5b7895b8b9ba8","da5406f0c217a40"],
                               "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
                               "salman.amjad@alnafi.edu.pk": ["c09e9698c024bd5","02c5e4ff622bb22"],
                               "ahsan.ali@alnafi.edu.pk": ["b5658b2d5a087d0","a9faaabc26bddc5"],
@@ -1605,23 +1620,41 @@ class LeadDataAPIView(APIView):
                     else:
                         print("Email not found in the agents dictionary.")
 
-                    print("assigning lead to existing agent")
-                    print("agent",email)
+                    # print("assigning lead to existing agent")
+                    # print("agent",email)
+                    phone = row['phone']
                     data_to_post = {
-                        'price_pkr': row.get('amount_pkr'),
-                        'price_usd': row.get('amount_usd'),
-                        'amount': row.get('amount'),
-                        'first_name': row.get('depositor_name') or '',
+                        'price_pkr': row['amount_pkr'],
+                        'price_usd': row['amount_usd'],
+                        'amount': row['amount'],
+                        # 'first_name': row['depositor_name'] or '',
+                        'first_name': str(row['depositor_name']) if pd.notna(row['depositor_name']) else '',
                         'payment': str(payment_date) or '',
                         'expiration_date': str(expiration_date) or '',
-                        'product_name': row.get('product_name') or '',
-                        'customer_email': row.get('email') or '',
-                        'contact_no': row.get('contact_no') or '',
-                        'expiration_status': row.get('expiration_status') or '',
-                        'payment_source': row.get('payment_source') or '',
+                        'product_name': row['product_name'] or '',
+                        'customer_email': row['email'] or '',
+                        'contact_no': str(phone),
+                        'expiration_status': 'Active',
+                        'payment_source': 'UBL',
                         'lead_creator': email
                     }
 
+
+                    # Check if price_pkr is nan and convert to None
+                    if math.isnan(data_to_post['price_pkr']):
+                        data_to_post['price_pkr'] = None
+
+                    # Check if price_usd is nan and convert to None
+                    if math.isnan(data_to_post['price_usd']):
+                        data_to_post['price_usd'] = None
+
+
+                    # Check if price_usd is nan and convert to None
+                    # if math.isnan(data_to_post['first_name']):
+                    #     data_to_post['first_name'] = None
+
+
+                    print(data_to_post)
 
                     headers = {
                         'Authorization': f'token {keys_of_zeeshan_mehr[0]}:{keys_of_zeeshan_mehr[1]}',
@@ -1631,31 +1664,55 @@ class LeadDataAPIView(APIView):
 
                     response = requests.post(url, json=data_to_post, headers=headers)
                     if response.status_code == 200:
-                        print(f"Data for {row.get('first_name')} sent successfully!")
+                        print(f"Data for {row['email']} sent successfully!")
                     else:
-                        print(f"Failed to send data for {row.get('first_name')}. Status code: {response.status_code}")
+                        print(response.text)
+                        print(f"Failed to send data for {row['email']}. Status code: {response.status_code}")
                 else:
                     print("assigning lead to new agent")
                     # If data doesn't exist, make the POST request
+                    phone = row['phone']
                     data_to_post = {
-                            'price_pkr': row.get('price_pkr'),
-                            'country': row.get('country') or '',
-                            'first_name': row.get('first_name') or '',
-                            'payment': str(payment_date) or '',
-                            'expiration_date': str(expiration_date) or '',
-                            'product_name': row.get('product_name') or '',
-                            'customer_email': row.get('customer_email') or '',
-                            'contact_no': row.get('contact_no') or '',
-                            'expiration_status': row.get('expiration_status') or '',
-                            'payment_source': row.get('payment_source') or '',
+                        'price_pkr': row['amount_pkr'],
+                        'price_usd': row['amount_usd'],
+                        'amount': row['amount'],
+                        # 'first_name': row['depositor_name'] or '',
+                        'first_name': str(row['depositor_name']) if pd.notna(row['depositor_name']) else '',
+                        'payment': str(payment_date) or '',
+                        'expiration_date': str(expiration_date) or '',
+                        'product_name': row['product_name'] or '',
+                        'customer_email': row['email'] or '',
+                        'contact_no': str(phone),
+                        'expiration_status': 'Active',
+                        'payment_source': 'UBL',
+                        # 'lead_creator': email
                     }
 
+                    # Check if price_pkr is nan and convert to None
+                    if math.isnan(data_to_post['price_pkr']):
+                        data_to_post['price_pkr'] = None
+
+                    # Check if price_usd is nan and convert to None
+                    if math.isnan(data_to_post['price_usd']):
+                        data_to_post['price_usd'] = None
+
+
+                    # print(data_to_post)
+
+
+                    # Check if price_usd is nan and convert to None
+                    # if math.isnan(data_to_post['first_name']):
+                    #     data_to_post['first_name'] = None
+
+
                     response = requests.post(url, json=data_to_post, headers=headers)
-                    print(response.status_code)
+                    # print(response.status_code)
+                    
                     if response.status_code == 200:
-                        print(f"Data for {row.get('first_name')} sent successfully!")
+                        print(f"Data for {row['email']} sent successfully!")
                     else:
-                        print(f"Failed to send data for {row.get('first_name')}. Status code: {response.status_code}")
+                        print(response.text)
+                        print(f"Failed to send data for {row['email']}. Status code: {response.status_code}")
 
         return JsonResponse({'message': 'Data processing completed'})
 
