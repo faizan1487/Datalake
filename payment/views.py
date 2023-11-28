@@ -847,11 +847,12 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         if p.source.lower() not in sources:
             if p.currency.lower() == 'pkr':
                 pass
-                # elif p.currency.lower() != 'usd':
-                    # currency_rate = get_USD_rate(p.currency,amount)
-                    # print("type amount",type(int(amount)))
-                    # converted_amount = int(amount) / currency_rate[p.currency]
-                    # total_payments_in_usd += converted_amount
+            elif p.currency.lower() != 'usd':
+                currency_rate = get_USD_rate(p.currency,amount)
+                # print("type amount",type(int(amount)))
+                converted_amount = int(amount) // currency_rate[p.currency]
+                converted_amount = converted_amount - (0.02 * converted_amount)
+                total_payments_in_usd += converted_amount
             else:
                 total_payments_in_usd += int(amount)
 
@@ -1152,7 +1153,12 @@ class PaymentValidationNew(APIView):
                     if source_payment:
                         tolerance = timedelta(days=7)
                         expiry_date = payment.expiration_datetime.date()
-                        expected_expiry = payment.order_datetime.date() + timedelta(days=90) - tolerance                        
+                        expected_expiry = payment.order_datetime.date() + timedelta(days=90) - tolerance
+
+                        # print(payment.alnafi_payment_id)
+                        # print(payment.source_payment_id)
+                        # print("source_payment.order_datetime.date()",source_payment.order_datetime.date())
+                        # print(f"{expected_expiry} <= {expiry_date} <= {source_payment.order_datetime.date() + timedelta(days=90) + tolerance}")                       
                         if source_payment.order_datetime:
                             if expected_expiry <= expiry_date <= (source_payment.order_datetime.date() + timedelta(days=90) + tolerance):
                                 pass
@@ -1537,9 +1543,13 @@ from django.http import JsonResponse
 
 class LeadDataAPIView(APIView):
     def get(self, request):
+        print("api running")
         url = 'https://crm.alnafi.com/api/resource/Suppport'
 
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Checkout-2023-11-23.csv')
+        # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Checkout-2023-11-23.xlsx')
+
+        file_path = '/home/faizan/albaseer/Al-Baseer-Backend/payment/Checkout-2023-11-23.xlsx'
+        data = pd.read_excel(file_path)
 
         for index, row in data.iterrows():
             api_key, api_secret = round_robin_support()
@@ -1551,8 +1561,10 @@ class LeadDataAPIView(APIView):
             payment_date = datetime.strptime(row.get('payment_date'), '%Y-%m-%d %H:%M:%S').date()
             expiration_date = datetime.strptime(row.get('expiration_date'), '%Y-%m-%d %H:%M:%S').date()
 
+            print("payment date",payment_date)
+
             # Check if the data already exists
-            filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
+            filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
             check_response = requests.get(filter_url, headers=headers)
 
             if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
@@ -1560,7 +1572,7 @@ class LeadDataAPIView(APIView):
                 continue
             else:
                 print('row.get("customer_email")',row.get("customer_email"))
-                url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["customer_email", "=", "{row.get("customer_email")}"]]'
+                url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["customer_email", "=", "{row.get("email")}"]]'
 
                 user_api_key = '4e7074f890507cb'
                 user_secret_key = 'c954faf5ff73d31'
@@ -1596,13 +1608,14 @@ class LeadDataAPIView(APIView):
                     print("assigning lead to existing agent")
                     print("agent",email)
                     data_to_post = {
-                        'price_pkr': row.get('price_pkr'),
-                        'country': row.get('country') or '',
-                        'first_name': row.get('first_name') or '',
+                        'price_pkr': row.get('amount_pkr'),
+                        'price_usd': row.get('amount_usd'),
+                        'amount': row.get('amount'),
+                        'first_name': row.get('depositor_name') or '',
                         'payment': str(payment_date) or '',
                         'expiration_date': str(expiration_date) or '',
                         'product_name': row.get('product_name') or '',
-                        'customer_email': row.get('customer_email') or '',
+                        'customer_email': row.get('email') or '',
                         'contact_no': row.get('contact_no') or '',
                         'expiration_status': row.get('expiration_status') or '',
                         'payment_source': row.get('payment_source') or '',
@@ -1648,351 +1661,56 @@ class LeadDataAPIView(APIView):
 
 
 
+# import csv
+# import requests
+# from django.http import JsonResponse
 
+# class LeadDataAPIView(APIView):
+#     def post(self, request):
+#         url = 'https://crm.alnafi.com/api/resource/Suppport'
 
+#         data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/payment/Checkout-2023-11-23.csv')
+#         lst = []
+#         for index, row in data.iterrows():
+#             api_key, api_secret = round_robin_support()
+#             headers = {
+#             'Authorization': f'token {api_key}:{api_secret}',
+#             "Content-Type": "application/json",
+#             "Accept": "application/json",
+#         }
+#             print(api_key)
+#             print(api_secret)
+#             payment_date = datetime.strptime(row.get('payment_date'), '%Y-%m-%d %H:%M:%S').date()
+#             expiration_date = datetime.strptime(row.get('expiration_date'), '%Y-%m-%d %H:%M:%S').date()
 
+#             # Check if the data already exists
+#             filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
+#             check_response = requests.get(filter_url, headers=headers)
 
-
-
-
-
-#OLD
-#response time 6 seconds in prod
-#bug in plan payment filter, when implement plan filter payment gets duplicated
-#issue in product filter when trying to optimize api further than 6 seconds and ,export not fixed
-# class SearchPayments(APIView):
-#     # permission_classes = [IsAuthenticated]   
-#     # Define the sources list here
-#     def get(self, request):
-#         query = self.request.GET.get('q', None)
-#         source = self.request.GET.get('source', None)
-#         origin = self.request.GET.get('origin', None)
-#         start_date = self.request.GET.get('start_date', None)
-#         end_date = self.request.GET.get('end_date', None)
-#         export = self.request.GET.get('export', None)
-#         plan = self.request.GET.get('plan', None)
-#         product = self.request.GET.get('product', None)
-#         status = self.request.GET.get('status', None)
-#         page = int(self.request.GET.get('page', 1))
-#         phone = self.request.GET.get('phone', None)
-
-#         payments, success= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page,request,phone)
-#         if success:
-#             payments = self.process_payments(payments, export,product)            
-#             if export == 'true':
-#                 return Response(payments)
-#             paginated_queryset = self.paginate_response(request,payments)
-#             response = {"total_payments_pkr": payments['total_payments_pkr'],"total_payments_usd":payments['total_payments_usd'],'count': payments['count'],"payments":paginated_queryset}
-#             return Response(response)
-#         else:
-#             payments = []
-#             return Response(payments)
-
-#     def process_payments(self, payments, export,product):
-#         payment_list = []
-#         for payment in payments:
-#             payment_id = payment['id']
-
-#             payment_found = False
-
-#             for existing_payment in payment_list:
-#                 if existing_payment['id'] == payment_id:
-#                     existing_payment['product_names'].append(payment['product'])
-#                     existing_payment['plans'].append(payment['plan'])
-#                     payment_found = True
-#                     break
-
-#             if not payment_found:
-#                 payment_data = {
-#                     'id': payment['id'],
-#                     'user_id': payment['user'],
-#                     'phone': payment['user_phone'],
-#                     'source': payment['source'],
-#                     'amount': payment['amount'],
-#                     'product_names': [payment['product']],
-#                     'plans': [payment['plan']],
-#                     'alnafi_payment_id': payment['alnafi_payment_id'],
-#                     'source_payment_id': payment['source_payment_id'],
-#                     'card_mask': payment['card_mask'],
-#                     'order_datetime': payment['order_datetime'].isoformat(),
-#                     'currency': payment['currency'],
+#             if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
+#                 print(f"Data for {row.get('customer_email')} already exists!")
+#             else:
+#                 # If data doesn't exist, make the POST request
+#                 data_to_post = {
+#                         'price_pkr': row.get('price_pkr'),
+#                         'country': row.get('country') or '',
+#                         'first_name': row.get('first_name') or '',
+#                         'payment': str(payment_date) or '',
+#                         'expiration_date': str(expiration_date) or '',
+#                         'product_name': row.get('product_name') or '',
+#                         'customer_email': row.get('customer_email') or '',
+#                         'contact_no': row.get('contact_no') or '',
+#                         'expiration_status': row.get('expiration_status') or '',
+#                         'payment_source': row.get('payment_source') or '',
 #                 }
 
-#                 payment_list.append(payment_data)
-
-
-#         sources = ['ubl_dd', 'al-nafi', 'easypaisa', 'ubl_ipg']
-#         total_payments_in_pkr = sum(float(p['amount']) for p in payment_list if p['source'].lower() in sources)
-#         # total_payments_in_usd = sum(float(p['amount']) for p in payment_list if p['source'].lower() not in sources)
-
-#         total_payments_in_usd = 0
-#         for p in payment_list:
-#             if p['source'].lower() not in sources:
-#                 if p['currency'].lower() == 'pkr':
-#                     pass
-#                 elif p['currency'].lower() != 'usd':
-#                     currency_rate = get_USD_rate(p['currency'],p['amount'])
-#                     converted_amount = float(p['amount']) / currency_rate[p['currency']]
-#                     total_payments_in_usd += converted_amount
+#                 response = requests.post(url, json=data_to_post, headers=headers)
+#                 print(response.status_code)
+#                 if response.status_code == 200:
+#                     print(f"Data for {row.get('first_name')} sent successfully!")
 #                 else:
-#                     total_payments_in_usd += float(p['amount'])
+#                     print(f"Failed to send data for {row.get('first_name')}. Status code: {response.status_code}")
 
-
-#         if export == 'true':
-#             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-#             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-#             df = pd.DataFrame(payment_list).to_csv(index=False)
-#             s3 = upload_csv_to_s3(df, file_name)
-#             data = {'file_link': file_path, 'export': 'true'}
-#             return data
-
-
-#         return {
-#             'total_payments_pkr': total_payments_in_pkr,
-#             'total_payments_usd': total_payments_in_usd,
-#             'payments': payment_list,
-#             "count": len(payment_list)
-#         }
-
-#     def paginate_response(self, request, payments):
-#         paginator = MyPagination()
-#         paginated_queryset = paginator.paginate_queryset(payments['payments'], request)
-#         return paginated_queryset
-    
-#     def are_product_names_equal(self,product_name1, product_name2):
-#         cleaned_name1 = self.clean_product_name(product_name1)
-#         cleaned_name2 = self.clean_product_name(product_name2)
-        
-#         return cleaned_name1 == cleaned_name2
-    
-#     def clean_product_name(self,product_name):
-#     # List of terms to remove
-#         remove_terms = ["Half Yearly", "Yearly", "Quarterly", "Monthly", "4 Months"]
-#         remove_words = ["in"]
-
-#         # Remove terms from the end of the product name
-#         if type(product_name) == list:
-#             for term in remove_terms:
-#                 if product_name[0].endswith(term):
-#                     product_name = product_name[0][:-len(term)].strip()
-
-#             # Remove specific words from the product name
-#             for word in remove_words:
-#                 product_name = product_name[0].replace(word, "").strip()
-#         else:
-
-#             for term in remove_terms:
-#                 if product_name.endswith(term):
-#                     product_name = product_name[:-len(term)].strip()
-
-#             # Remove specific words from the product name
-#             for word in remove_words:
-#                 product_name = product_name.replace(word, "").strip()
-
-
-#         return product_name.lower().replace(" ", "")
-
-
-
-
-#OLD
-# def search_payment(export, q, start_date, end_date, plan, source, origin, status, product, page, request, phone):
-#     payments = Main_Payment.objects.exclude(
-#         user__email__endswith="yopmail.com"
-#     ).exclude(
-#         source='UBL_DD', status__in=["0", False, 0]
-#     ).filter(
-#         source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']
-#     )
-
-#     if status:
-#         payments = payments.filter(status=status)
-
-#     if source:
-#         payments = payments.filter(source=source)
-
-#     if origin:
-#         source_filter = ['Easypaisa', 'UBL_IPG', 'UBL_DD'] if origin == 'local' else ['Stripe']
-#         payments = payments.filter(source__in=source_filter)
-
-#     if not start_date:
-#         start_date = payments.exclude(order_datetime=None).last().order_datetime.date()
-
-#     if not end_date:
-#         end_date = payments.exclude(order_datetime=None).first().order_datetime.date()
-
-#     payments = payments.filter(order_datetime__range=(start_date, end_date))
-
-#     print(payments)
-
-#     if q:
-#         payments = payments.filter(user__email__icontains=q)
-
-
-#     print(payments)
-
-#     if phone:
-#         phone = phone.strip()
-#         if phone.startswith("92"):
-#             phone = "+" + phone
-#         payments = payments.filter(user__phone__icontains=phone)
-
-#     if product:
-#         keywords = product.split()
-#         query = Q()
-#         for keyword in keywords:
-#             query &= Q(product__product_name__icontains=keyword)
-#         payments = payments.filter(query)
-
-#     if plan:
-#         payments = payments.filter(product__product_plan=plan)
-
-#     payment_cycle_descriptions = {
-#         'Monthly': 'Monthly',
-#         'Yearly': 'Yearly',
-#         'Half Yearly': 'Half-Yearly',
-#         'Quarterly': 'Quarterly'
-#         # Add more plan-value pairs as needed
-#     }
-
-#     payments = payments.annotate(
-#         payment_cycle=Case(
-#             *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
-#             default=Value('Unknown Plan'),
-#             output_field=CharField()
-#         )
-#     )
-
-#     if not payments:
-#         return payments, False
-#     else:
-#         payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount',
-#                                          'order_datetime', 'id', 'payment_cycle', 'alnafi_payment_id', 'card_mask',
-#                                          'source_payment_id', 'currency')
-
-#         payments = [{'user': payment['user__email'], 'user_phone': payment['user__phone'],
-#                      'product': payment['product__product_name'], 'plan': payment['payment_cycle'],
-#                      'source': payment['source'], 'amount': payment['amount'],
-#                      'alnafi_payment_id': payment['alnafi_payment_id'],
-#                      'order_datetime': payment['order_datetime'], 'card_mask': payment['card_mask'],
-#                      'id': payment['id'], 'source_payment_id': payment['source_payment_id'],
-#                      'currency': payment['currency']} for payment in payments_data]
-
-#         return payments, True
-
-
-
-# class PaymentDelete(APIView):
-#     def get(self, request):
-#         objs = UBL_Manual_Payment.objects.all()
-#         objs.delete()
-#         return Response('deleted')
-
-
-
-
-
-
-
-
-# def clean_product_name(product_name):
-#         # print("in clean product name func")
-#         # List of terms to remove
-#         remove_terms = ["Half Yearly", "Yearly", "Quarterly", "Monthly", "4 Months","Annual"]
-#         remove_words = ["in"]
-
-#         # Remove terms from the end of the product name
-#         # print("product_name",type(product_name))
-#         if type(product_name) == list:
-#             # print("product_name[0]",product_name[0])
-#             for term in remove_terms:
-#                 if product_name[0].endswith(term):
-#                     # print("ends with term")
-#                     product_name = product_name[0][:-len(term)].strip()
-#                     # print("product_name",product_name)
-#             # Split the string into words, filter out unwanted words, and join them back
-#             product_name_parts = product_name.split()
-#             product_name_parts = [word for word in product_name_parts if word not in remove_words]
-#             product_name = ' '.join(product_name_parts)
-
-#             # print("product_name",product_name)
-#             # print("word removed")
-#         else:
-#             # print("in else")
-#             # print("product_name",product_name)
-#             for term in remove_terms:
-#                 if product_name.endswith(term):
-#                     # print("ends with term")
-#                     product_name = product_name[:-len(term)].strip()
-#                     # print("product_name",product_name)
-
-#             # Remove specific words from the product name
-#             for word in remove_words:
-#                 product_name = product_name.replace(word, "").strip()
-
-#         # print("product_name",product_name)
-#         # print("exiting clean product name func")
-#         return product_name.lower().replace(" ", "")
-#         # return product_name
-
-
-# def are_product_names_equal(self,product, payment_product):
-#         product = self.clean_product_name(product)
-#         payment_product = self.clean_product_name(payment_product)
-        
-#         # print("cleaned_name1",product)
-#         # print("cleaned_name2",payment_product)
-#         return product == payment_product
-import csv
-import requests
-from django.http import JsonResponse
-
-class LeadDataAPIView(APIView):
-    def post(self, request):
-        url = 'https://crm.alnafi.com/api/resource/Suppport'
-
-        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/payment/Checkout-2023-11-23.csv')
-        lst = []
-        for index, row in data.iterrows():
-            api_key, api_secret = round_robin_support()
-            headers = {
-            'Authorization': f'token {api_key}:{api_secret}',
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
-            print(api_key)
-            print(api_secret)
-            payment_date = datetime.strptime(row.get('payment_date'), '%Y-%m-%d %H:%M:%S').date()
-            expiration_date = datetime.strptime(row.get('expiration_date'), '%Y-%m-%d %H:%M:%S').date()
-
-            # Check if the data already exists
-            filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
-            check_response = requests.get(filter_url, headers=headers)
-
-            if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
-                print(f"Data for {row.get('customer_email')} already exists!")
-            else:
-                # If data doesn't exist, make the POST request
-                data_to_post = {
-                        'price_pkr': row.get('price_pkr'),
-                        'country': row.get('country') or '',
-                        'first_name': row.get('first_name') or '',
-                        'payment': str(payment_date) or '',
-                        'expiration_date': str(expiration_date) or '',
-                        'product_name': row.get('product_name') or '',
-                        'customer_email': row.get('customer_email') or '',
-                        'contact_no': row.get('contact_no') or '',
-                        'expiration_status': row.get('expiration_status') or '',
-                        'payment_source': row.get('payment_source') or '',
-                }
-
-                response = requests.post(url, json=data_to_post, headers=headers)
-                print(response.status_code)
-                if response.status_code == 200:
-                    print(f"Data for {row.get('first_name')} sent successfully!")
-                else:
-                    print(f"Failed to send data for {row.get('first_name')}. Status code: {response.status_code}")
-
-        return JsonResponse({'message': 'Data processing completed'})
+#         return JsonResponse({'message': 'Data processing completed'})
 
 
