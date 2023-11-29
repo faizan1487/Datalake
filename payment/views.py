@@ -1726,6 +1726,8 @@ class ExpiryPayments(APIView):
     def get(self, request):
         start_date_str = self.request.GET.get('start_date', None)
         end_date_str = self.request.GET.get('end_date', None)
+        user_email = self.request.GET.get('q', None)
+        product = self.request.GET.get('product', None) or None
         page = int(self.request.GET.get('page', 1))
 
         if not start_date_str or not end_date_str:
@@ -1740,53 +1742,55 @@ class ExpiryPayments(APIView):
         num_items_per_page = 10 
         
         # Query payments falling within the specified date range
-        if start_date and end_date:
-            # Construct a query to filter payments based on expiration_date falling within the range
-            filtered_payments = Main_Payment.objects.filter(
-                expiration_datetime__range=(start_date, end_date)
-            )
+        filtered_payments = Main_Payment.objects.filter(
+            expiration_datetime__range=(start_date, end_date)
+        )
 
+        if user_email:
+            filtered_payments = filtered_payments.filter(user__email=user_email)
+        if product:
+            filtered_payments = filtered_payments.filter(product__product_name=product)
             # Perform pagination on the filtered payments
-            paginator = Paginator(filtered_payments, num_items_per_page)
-            try:
-                paginated_payments = paginator.page(page)
-            except EmptyPage:
-                paginated_payments = paginator.page(paginator.num_pages)
-            response_data = []
-            for payment in paginated_payments:
-                renewal = (
-                    start_date <= payment.order_datetime.date() <= end_date if payment.order_datetime else False
-                )
-                products = list(payment.product.values_list('product_name', flat=True))
-                plans = list(payment.product.values_list('product_plan', flat=True))
-                payment_data = {
-                    'candidate_name': payment.candidate_name,
-                    'user': payment.user.email if payment.user.email else None,
-                    'phone': payment.candidate_phone,
-                    'product_names':products,
-                    'plans': plans,
-                    'amount': payment.amount,
-                    'currency': payment.currency,
-                    'source': payment.source,
-                    'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
-                    'expiration_datetime': payment.expiration_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.expiration_datetime else None,
-                    'source_payment_id': payment.source_payment_id,
-                    'alnafi_payment_id': payment.alnafi_payment_id,
-                    'card_mask': payment.card_mask,
-                    'country': payment.country,
-                    'comment': payment.comment,
-                    'Renewal': renewal 
-                }
-                response_data.append(payment_data)
+        paginator = Paginator(filtered_payments, num_items_per_page)
+        try:
+            paginated_payments = paginator.page(page)
+        except EmptyPage:
+            paginated_payments = paginator.page(paginator.num_pages)
+        response_data = []
+        for payment in paginated_payments:
+            renewal = (
+                start_date <= payment.order_datetime.date() <= end_date if payment.order_datetime else False
+            )
+            products = list(payment.product.values_list('product_name', flat=True))
+            plans = list(payment.product.values_list('product_plan', flat=True))
+            payment_data = {
+                'candidate_name': payment.candidate_name,
+                'user': payment.user.email if payment.user.email else None,
+                'phone': payment.candidate_phone,
+                'product_names':products,
+                'plans': plans,
+                'amount': payment.amount,
+                'currency': payment.currency,
+                'source': payment.source,
+                'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
+                'expiration_datetime': payment.expiration_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.expiration_datetime else None,
+                'source_payment_id': payment.source_payment_id,
+                'alnafi_payment_id': payment.alnafi_payment_id,
+                'card_mask': payment.card_mask,
+                'country': payment.country,
+                'comment': payment.comment,
+                'Renewal': renewal 
+            }
+            response_data.append(payment_data)
 
-            return Response({
-                'count': filtered_payments.count(),
-                'num_pages': paginator.num_pages,
-                'payments': response_data,
-            })
+        return Response({
+            'count': filtered_payments.count(),
+            'num_pages': paginator.num_pages,
+            'payments': response_data,
+        })
 
-        else:
-            return Response({'error': 'Invalid date range provided'})
+        # else:
+        #     return Response({'error': 'Invalid date range provided'})
         
 # import csv
 # import requests
