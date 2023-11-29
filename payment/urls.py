@@ -31,8 +31,8 @@ urlpatterns = [
     path("totalpayments/", TotalNoOfPayments.as_view(), name='totla-payments'),
     path("nofrenewalpayments/", RenewalNoOfPayments.as_view(), name='no-of-renewal-payments'),
 
-    path("productanalytics/", ProductAnalytics.as_view(), name='product-analytics'),
 
+    path("productanalytics/", ProductAnalytics.as_view(), name='product-analytics'),
     path("upload_support_leads/", LeadDataAPIView.as_view(), name='support-leads'),
 
 ]

@@ -1682,8 +1682,10 @@ class LeadDataAPIView(APIView):
                         'payment': str(payment_date) or '',
                         'expiration_date': str(expiration_date) or '',
                         'product_name': row['product_name'] or '',
-                        'customer_email': row['email'] or '',
-                        'contact_no': str(phone),
+                        # 'customer_email': row['email'] or '',
+                        'customer_email': str(row['email']) if pd.notna(row['email']) else '',
+                        # 'contact_no': str(phone),
+                        'contact_no': str(row['phone']) if pd.notna(row['phone']) else '',
                         'expiration_status': 'Active',
                         'payment_source': 'UBL',
                         # 'lead_creator': email

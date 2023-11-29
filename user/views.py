@@ -507,8 +507,8 @@ class GetUser(APIView):
         user = Main_User.objects.filter(id=user_id)
         # print("user",user)
         try:
-            payments = user[0].user_payments.all().values()
-            # print(payments)
+            # Assuming payments is a queryset of user payments
+            payments = user[0].user_payments.filter(source__in=['Al-Nafi', 'New Alnafi']).values()
             payments = payments.order_by('-order_datetime')
             # latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
             # latest_payment = payments.order_by('-order_datetime')
@@ -610,7 +610,7 @@ class UserLoginView(APIView):
             response.data["user"] = user
             return response
         else:
-            return(response.text)
+            # return(response.text)
             # return Response({'errors':{'non_field_errors':['Email or Password is not Valid']}}, status=status.HTTP_401_UNAUTHORIZED)
             return Response({'error': 'Email or Password is not Valid'}, status=status.HTTP_401_UNAUTHORIZED)
 
