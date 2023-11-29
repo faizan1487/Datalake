@@ -19,9 +19,9 @@ urlpatterns = [
     path("stripe/", GetStripePayments.as_view(), name='all'),  #For all stripe payemnts
 
     path('createpayments/', MainPaymentAPIView.as_view(), name='main-payments-api'),
-    path('expiry-payments/', ExpiryPayments.as_view()),
 
     path("searchpayment/", SearchPayments.as_view(), name='search-payments'),
+    path('expiry-payments/', ExpiryPayments.as_view(), name= 'expiry-payments-in-range'),
     path("searchalnafipayment/", RenewalPayments.as_view(), name='search-alnafi-payments'),
     path("searchactivepayment/", ActivePayments.as_view(), name='search-active-payments'),
     # path("paymentvalidation/", PaymentValidation.as_view(), name='payment-validation'),

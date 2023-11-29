@@ -1720,8 +1720,7 @@ class LeadDataAPIView(APIView):
 from datetime import datetime
 
 class ExpiryPayments(APIView):
-    # ... existing code ...
-
+    permission_classes = [IsAuthenticated]   
     def get(self, request):
         start_date_str = self.request.GET.get('start_date', None)
         end_date_str = self.request.GET.get('end_date', None)
@@ -1731,6 +1730,7 @@ class ExpiryPayments(APIView):
         start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d')).date() if start_date_str else None
         end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')).date() if end_date_str else None
         num_items_per_page = 10 
+        
         # Query payments falling within the specified date range
         if start_date and end_date:
             # Construct a query to filter payments based on expiration_date falling within the range
@@ -1740,14 +1740,11 @@ class ExpiryPayments(APIView):
 
             # Perform pagination on the filtered payments
             paginator = Paginator(filtered_payments, num_items_per_page)
-
             try:
                 paginated_payments = paginator.page(page)
             except EmptyPage:
                 paginated_payments = paginator.page(paginator.num_pages)
-            
             response_data = []
-            
             for payment in paginated_payments:
                 renewal = (
                     start_date <= payment.order_datetime.date() <= end_date if payment.order_datetime else False
