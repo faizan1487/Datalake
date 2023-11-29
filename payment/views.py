@@ -1,7 +1,8 @@
-
+from django.utils import timezone
 from sre_constants import SUCCESS
 from tracemalloc import start
 from rest_framework import status
+from django.core.paginator import Paginator, EmptyPage
 
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
@@ -1716,8 +1717,95 @@ class LeadDataAPIView(APIView):
 
         return JsonResponse({'message': 'Data processing completed'})
 
+from datetime import datetime
 
+class ExpiryPayments(APIView):
+    # ... existing code ...
 
+    def get(self, request):
+        start_date_str = self.request.GET.get('start_date', None)
+        end_date_str = self.request.GET.get('end_date', None)
+        page = int(self.request.GET.get('page', 1))
+
+        # Parse start_date and end_date strings into datetime objects
+        start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d')).date() if start_date_str else None
+        end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')).date() if end_date_str else None
+        num_items_per_page = 10 
+        # Query payments falling within the specified date range
+        if start_date and end_date:
+            # Construct a query to filter payments based on expiration_date falling within the range
+            filtered_payments = Main_Payment.objects.filter(
+                expiration_datetime__range=(start_date, end_date)
+            )
+
+            # Perform pagination on the filtered payments
+            paginator = Paginator(filtered_payments, num_items_per_page)
+
+            try:
+                paginated_payments = paginator.page(page)
+            except EmptyPage:
+                paginated_payments = paginator.page(paginator.num_pages)
+            
+            response_data = []
+            
+            for payment in paginated_payments:
+                renewal = (
+                    start_date <= payment.order_datetime.date() <= end_date if payment.order_datetime else False
+                )
+                payment_data = {
+                    'source_payment_id': payment.source_payment_id,
+                    'alnafi_payment_id': payment.alnafi_payment_id,
+                    'easypaisa_ops_id': payment.easypaisa_ops_id,
+                    'easypaisa_customer_msidn': payment.easypaisa_customer_msidn,
+                    'card_mask': payment.card_mask,
+                    'user': payment.user.id if payment.user else None,
+                    'amount': payment.amount,
+                    'currency': payment.currency,
+                    'source': payment.source,
+                    'internal_source': payment.internal_source,
+                    'status': payment.status,
+                    'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
+                    'expiration_datetime': payment.expiration_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.expiration_datetime else None,
+                    'activation_datetime': payment.activation_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.activation_datetime else None,
+                    'token_paid_datetime': payment.token_paid_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.token_paid_datetime else None,
+                    'created_datetime': payment.created_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.created_datetime else None,
+                    'easypaisa_fee_pkr': payment.easypaisa_fee_pkr,
+                    'easypaisa_fed_pkr': payment.easypaisa_fed_pkr,
+                    'ubl_captured': payment.ubl_captured,
+                    'ubl_reversed': payment.ubl_reversed,
+                    'ubl_refund': payment.ubl_refund,
+                    'ubl_approval_code': payment.ubl_approval_code,
+                    'description': payment.description,
+                    'qarz': payment.qarz,
+                    'remarks': payment.remarks,
+                    'payment_proof': payment.payment_proof,
+                    'send_invoice': payment.send_invoice,
+                    'pk_invoice_number': payment.pk_invoice_number,
+                    'us_invoice_number': payment.us_invoice_number,
+                    'sponsored': payment.sponsored,
+                    'coupon_code': payment.coupon_code,
+                    'is_upgrade_payment': payment.is_upgrade_payment,
+                    'affiliate': payment.affiliate,
+                    'candidate_name': payment.candidate_name,
+                    'ubl_depositor_name': payment.ubl_depositor_name,
+                    'candidate_phone': payment.candidate_phone,
+                    'bin_bank_name': payment.bin_bank_name,
+                    'error_reason': payment.error_reason,
+                    'country': payment.country,
+                    'comment': payment.comment,
+                    'Renewal': renewal 
+                }
+                response_data.append(payment_data)
+
+            return Response({
+                'count': filtered_payments.count(),
+                'num_pages': paginator.num_pages,
+                'payments': response_data,
+            })
+
+        else:
+            return Response({'error': 'Invalid date range provided'})
+        
 # import csv
 # import requests
 # from django.http import JsonResponse
