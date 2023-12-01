@@ -1212,7 +1212,8 @@ class PaymentValidationNew(APIView):
 
 class Renewal_Leads(APIView):
     def get(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
+        print(1)
+        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
         lst = []
         for index, row in data.iterrows():
             first_name = row['name']
@@ -1728,12 +1729,19 @@ class ExpiryPayments(APIView):
         end_date_str = self.request.GET.get('end_date', None)
         user_email = self.request.GET.get('q', None)
         product = self.request.GET.get('product', None) or None
+        renewal_status = self.request.GET.get('Renewal', None)
         page = int(self.request.GET.get('page', 1))
+       
+        today = date.today()
+        start_date = today.replace(day=1)
 
         if not start_date_str or not end_date_str:
-            today = date.today()
+            if today.month == 12:
+                end_date = today.replace(day=1, month=1, year=today.year + 1) - timedelta(days=1)
+            else:
+                end_date = today.replace(day=1, month=today.month + 1) - timedelta(days=1)
+            # Parse start_date and end_date strings into datetime objects
             start_date = today.replace(day=1)
-            end_date = today.replace(day=1, month=today.month + 1) - timedelta(days=1)
         else:
             # Parse start_date and end_date strings into datetime objects
             start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d')).date()
@@ -1747,10 +1755,11 @@ class ExpiryPayments(APIView):
         )
 
         if user_email:
-            filtered_payments = filtered_payments.filter(user__email=user_email)
+            filtered_payments = filtered_payments.filter(user__email__icontains=user_email)
         if product:
-            filtered_payments = filtered_payments.filter(product__product_name=product)
-            # Perform pagination on the filtered payments
+            filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
+
+        # If 'Renewal' parameter is provided, filter based on the status
         paginator = Paginator(filtered_payments, num_items_per_page)
         try:
             paginated_payments = paginator.page(page)
@@ -1761,13 +1770,17 @@ class ExpiryPayments(APIView):
             renewal = (
                 start_date <= payment.order_datetime.date() <= end_date if payment.order_datetime else False
             )
+            if renewal_status == 'true' and not renewal:
+                continue  # Skip if renewal_status is 'true' but payment is not a renewal
+            elif renewal_status == 'false' and renewal:
+                continue
             products = list(payment.product.values_list('product_name', flat=True))
             plans = list(payment.product.values_list('product_plan', flat=True))
             payment_data = {
                 'candidate_name': payment.candidate_name,
                 'user': payment.user.email if payment.user.email else None,
                 'phone': payment.candidate_phone,
-                'product_names':products,
+                'product_names': products,
                 'plans': plans,
                 'amount': payment.amount,
                 'currency': payment.currency,
@@ -1779,7 +1792,7 @@ class ExpiryPayments(APIView):
                 'card_mask': payment.card_mask,
                 'country': payment.country,
                 'comment': payment.comment,
-                'Renewal': renewal 
+                'Renewal': renewal  
             }
             response_data.append(payment_data)
 
