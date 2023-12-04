@@ -58,7 +58,6 @@ class New_Al_Nafi_Payments_Serializer(ModelSerializer):
         # instance.product_amount = validated_data.get('product_amount', instance.product_amount)
         instance.orderId = validated_data.get('orderId', instance.orderId)
         instance.amount = validated_data.get('amount', instance.amount)
-        instance.converted_checkout_amount = validated_data.get('converted_checkout_amount', instance.converted_checkout_amount)
         instance.amount_pkr = validated_data.get('amount_pkr', instance.amount_pkr)
         instance.amount_usd = validated_data.get('amount_usd', instance.amount_usd)
         instance.country = validated_data.get('country', instance.country)

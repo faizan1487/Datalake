@@ -381,6 +381,8 @@ def support_renewal_leads(instance):
     crm_endpoint = 'https://crm.alnafi.com/api/resource/Renewal Leads'
 
     api_key, api_secret = round_robin_support()
+    # api_key = '2a1d467717681df'
+    # api_secret = '39faa082ac5f258'
 
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
@@ -388,6 +390,8 @@ def support_renewal_leads(instance):
         "Accept": "application/json",
     }
 
+    # print("instance.date_joined",instance.date_joined)
+    # print("instance.payment_date",instance.payment_date)
 
     def format_date(date):
         if isinstance(date, str):
@@ -406,13 +410,15 @@ def support_renewal_leads(instance):
         "phone": instance.phone if instance.phone else None,
         "country": instance.country or "Unknown",
         "address": instance.address or None,
-        "date_joined": format_date(instance.date_joined),
-        "payment_date": format_date(instance.payment_date),
+        "date_joined": instance.date_joined,
+        "payment_date": instance.payment_date,
         "expiration_date": instance.expiration_date if instance.expiration_date else None,
         "product_name": instance.product_name or None,
         "status": instance.status or None,
         "assigned_date": datetime.now().date().isoformat()
     }
+
+    # print(data)
 
     failed_leads = []
 
@@ -431,10 +437,11 @@ def support_renewal_leads(instance):
                 writer.writerow(lead)
 
     if response.status_code != 200:
-        print(data)
-        print(f"Failed to upload data for: {instance.user_id}")
-        print(response.status_code)
-        print(response.text)
+        print(headers)
+        # print(data)
+        # print(f"Failed to upload data for: {instance.user_id}")
+        # print(response.status_code)
+        # print(response.text)
     else:
         print("lead created successfully")
 

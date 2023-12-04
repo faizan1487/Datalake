@@ -1212,8 +1212,7 @@ class PaymentValidationNew(APIView):
 
 class Renewal_Leads(APIView):
     def get(self,request):
-        print(1)
-        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
         lst = []
         for index, row in data.iterrows():
             first_name = row['name']
@@ -1235,9 +1234,10 @@ class Renewal_Leads(APIView):
             expiration_date = expiration_date.split()[0]
 
 
-            print(payment_date)
-            print(expiration_date)
-            print(date_joined)
+            # print(date_joined)
+            # print(payment_date)
+            # print(expiration_date)
+
             try:
                 renewal = Renewal.objects.create(
                     first_name=first_name,
@@ -1252,6 +1252,8 @@ class Renewal_Leads(APIView):
             except Exception as e:
                 print(e)
                 lst.append(row['email'])
+            
+
 
         data_Frame = pd.DataFrame(lst)
         data_Frame.to_csv("error.csv")
