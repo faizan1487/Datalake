@@ -28,7 +28,7 @@ from django.conf import settings
 from user.services import upload_csv_to_s3
 import requests
 from user.constants import COUNTRY_CODES
-from secrets_api.algorithem import round_robin_support
+from secrets_api.algorithem import round_robin, round_robin_support
 import math
 
 class MyPagination(PageNumberPagination):
@@ -1219,12 +1219,25 @@ class Renewal_Leads(APIView):
             first_name = row['name']
             user_id = row['email']
             phone = row['phone']
-            date_joined = row['date_joined']
             product_name = row['product_name']
+            status = row['status']
+            date_joined = row['date_joined']
             payment_date = row['payment_date']
             expiration_date = row['expiry_date']
-            status = row['status']
             
+            # Remove everything after the date for date_joined
+            date_joined = date_joined.split()[0]
+
+            # Remove everything after the date for payment_date
+            payment_date = payment_date.split()[0]
+
+            # Remove everything after the date for expiration_date
+            expiration_date = expiration_date.split()[0]
+
+
+            print(payment_date)
+            print(expiration_date)
+            print(date_joined)
             try:
                 renewal = Renewal.objects.create(
                     first_name=first_name,
@@ -1805,56 +1818,78 @@ class ExpiryPayments(APIView):
         # else:
         #     return Response({'error': 'Invalid date range provided'})
         
-# import csv
-# import requests
-# from django.http import JsonResponse
+import csv
+import requests
+from django.http import JsonResponse
 
-# class LeadDataAPIView(APIView):
-#     def post(self, request):
-#         url = 'https://crm.alnafi.com/api/resource/Suppport'
+class UploadLeads(APIView):
+    def get(self, request):
+        url = 'https://crm.alnafi.com/api/resource/Lead'
 
-#         data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/payment/Checkout-2023-11-23.csv')
-#         lst = []
-#         for index, row in data.iterrows():
-#             api_key, api_secret = round_robin_support()
-#             headers = {
-#             'Authorization': f'token {api_key}:{api_secret}',
-#             "Content-Type": "application/json",
-#             "Accept": "application/json",
-#         }
-#             print(api_key)
-#             print(api_secret)
-#             payment_date = datetime.strptime(row.get('payment_date'), '%Y-%m-%d %H:%M:%S').date()
-#             expiration_date = datetime.strptime(row.get('expiration_date'), '%Y-%m-%d %H:%M:%S').date()
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Untitled spreadsheet - Haider Bhai main File (copy).csv')
+        for index, row in data.iterrows():
+            api_key, api_secret = round_robin()
+            headers = {
+            'Authorization': f'token {api_key}:{api_secret}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            }
+            # print(api_key)
+            # print(api_secret)
+            date_joined = row.get('Date Joined')
+            print(type(row.get('Date Joined')))
+            print(row.get('Date Joined'))
+            if type(date_joined) != float:
+                date_joined = datetime.strptime(date_joined, '%Y-%m-%d %H:%M:%S').date()
 
-#             # Check if the data already exists
-#             filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
-#             check_response = requests.get(filter_url, headers=headers)
+            assigned_date = row.get('Assigned Date')
+            if type(assigned_date) != float:
+                assigned_date = datetime.strptime(assigned_date, '%Y-%m-%d %H:%M:%S').date()
 
-#             if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
-#                 print(f"Data for {row.get('customer_email')} already exists!")
-#             else:
-#                 # If data doesn't exist, make the POST request
-#                 data_to_post = {
-#                         'price_pkr': row.get('price_pkr'),
-#                         'country': row.get('country') or '',
-#                         'first_name': row.get('first_name') or '',
-#                         'payment': str(payment_date) or '',
-#                         'expiration_date': str(expiration_date) or '',
-#                         'product_name': row.get('product_name') or '',
-#                         'customer_email': row.get('customer_email') or '',
-#                         'contact_no': row.get('contact_no') or '',
-#                         'expiration_status': row.get('expiration_status') or '',
-#                         'payment_source': row.get('payment_source') or '',
-#                 }
+            # Check if the data already exists
+            # filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
+            # check_response = requests.get(filter_url, headers=headers)
 
-#                 response = requests.post(url, json=data_to_post, headers=headers)
-#                 print(response.status_code)
-#                 if response.status_code == 200:
-#                     print(f"Data for {row.get('first_name')} sent successfully!")
-#                 else:
-#                     print(f"Failed to send data for {row.get('first_name')}. Status code: {response.status_code}")
+            # if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
+            #     print(f"Data for {row.get('customer_email')} already exists!")
+            # else:
+            # If data doesn't exist, make the POST request
+            data_to_post = {
+                    'status': row.get('Status'),
+                    'email_id': row.get('Email'),
+                    'first_name': None if pd.isna(row.get('First Name')) else row.get('First Name'),
+                    'last_name': None if pd.isna(row.get('Last Name')) else row.get('Last Name'),
+                    'date_joined': None if pd.isna(date_joined) else str(date_joined),
+                    'date': None if pd.isna(assigned_date) else str(assigned_date),        
+                    'submit_your_question': None if pd.isna(row.get('Submit Your Question If Any')) else row.get('Submit Your Question If Any'),
+                    'lead_name': None if pd.isna(row.get('Full Name')) else row.get('Full Name'),
+                    'source': row.get('Source') or '',
+                    'form': None if pd.isna(row.get('Form')) else row.get('Form'),
+                    'how_did_you_hear_about_us': None if pd.isna(row.get('How Did You Hear About Us')) else row.get('How Did You Hear About Us'),
 
-#         return JsonResponse({'message': 'Data processing completed'})
+                
+                    'product_names_list': None if pd.isna(row.get('Product Names List')) else row.get('Product Names List'), 
+                    'advert_detail': row.get('Advert Detail') or '', 
+                    'product_name': row.get('Product Name') or '',
+                    'cv_link': row.get('CV Link') or '',
+                    'demo_product': row.get('Demo Product') or '',
+                    'enrollment': row.get('Enrollment') or '',
+                    'mobile_no': str(row.get('Mobile No')) or '',
+                    'country': row.get('Country') or '',
+                    'phone': str(row.get('Phone')) or '',
+                    'Image': row.get('Image') or '',
+                    'title': row.get('Title') or '',
+            }
+
+            print(data_to_post)
+
+            response = requests.post(url, json=data_to_post, headers=headers)
+            print(response.status_code)
+            if response.status_code == 200:
+                print(f"Data for {row.get('Email')} sent successfully!")
+            else:
+                print(f"Failed to send data for {row.get('Email')}. Status code: {response.status_code}")
+
+        return JsonResponse({'message': 'Data processing completed'})
 
 

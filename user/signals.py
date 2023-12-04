@@ -294,6 +294,7 @@ def mocLead_Signalto_sale_doctype(instance,source):
             "interest": instance.interest or None,
             "qualification": instance.qualification or None,
             "date_joined": str(date_joined_str) if date_joined_str else None,
+            "date": str(date_joined_str) if date_joined_str else None,
             "advert_detail": instance.advert or None,
         }
    
@@ -311,8 +312,6 @@ def mocLead_Signalto_sale_doctype(instance,source):
         already_existed = len(lead_data["data"]) > 0
     else:
         already_existed = False
-
-    already_existed = len(lead_data["data"]) > 0
     
     failed_leads = []
     if already_existed:

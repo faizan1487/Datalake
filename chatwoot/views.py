@@ -1,5 +1,7 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
+
+import user
 # Create your views here.
 from .models import Contacts, Inbox, Agent, Conversation
 from django.http import HttpResponse
@@ -625,7 +627,53 @@ class ConversationsList(APIView):
         return Response(data)
     
 
+class Conversations(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        count = 4145
+        items_per_page = 25
+        pages = math.ceil(count / items_per_page)
+        page = int(self.request.GET.get('page', 1))
+
+        # for page_number in range(1, pages + 1):
+        headers = {
+            'api_access_token': api_access_token,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+        params = {
+            'page': page
+        }
+
+        url = 'https://chat.alnafi.com/api/v1/accounts/3/conversations'
+        response = requests.get(url, headers=headers, params=params)
+        data = response.json()
+
+            
+
+        return Response(data)
 
 
 
 
+class ConversationDetail(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request, id):
+        user_id = id
+
+        # for page_number in range(1, pages + 1):
+        headers = {
+            'api_access_token': api_access_token,
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+
+        url = f'https://chat.alnafi.com/api/v1/accounts/3/conversations/{user_id}/messages'
+
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+
+        return Response(data)
