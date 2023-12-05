@@ -1811,14 +1811,55 @@ class ExpiryPayments(APIView):
             }
             response_data.append(payment_data)
 
+        if self.request.GET.get('export') == 'true':
+            payments_data = filtered_payments.values(
+                'user__email', 'user__phone', 'product__product_name', 'source', 'amount', 'currency',
+                'order_datetime', 'id', 'product__product_plan', 'alnafi_payment_id', 'card_mask', 'source_payment_id'
+            )
+            
+            payment_list = []  # Initialize an empty list
+            
+            for payment in payments_data:
+                payment_id = payment['id']
+                payment_found = False
+            
+                for existing_payment in payment_list:
+                    if existing_payment['id'] == payment_id:
+                        payment_found = True
+                        break
+
+                if not payment_found:
+                    payment_data = {
+                        'id': payment['id'],
+                        'user_id': payment['user__email'],
+                        'phone': payment['user__phone'],
+                        'source': payment['source'],
+                        'amount': payment['amount'],
+                        'currency': payment['currency'],
+                        'product_names': [payment['product__product_name']],
+                        'plans': [payment['product__product_plan']],
+                        'alnafi_payment_id': payment['alnafi_payment_id'],
+                        'source_payment_id': payment['source_payment_id'],
+                        'card_mask': payment['card_mask'],
+                        'order_datetime': payment['order_datetime'].strftime('%Y-%m-%d %H:%M:%S') if payment['order_datetime'] else None,
+                    }
+                    payment_list.append(payment_data)
+
+            file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+
+            df = pd.DataFrame(payment_list).to_csv(index=False)
+
+            
+            s3 = upload_csv_to_s3(df, file_name)
+            data = {'file_link': file_path, 'export': 'true'}
+            return Response(data)
+
         return Response({
             'count': filtered_payments.count(),
             'num_pages': paginator.num_pages,
             'payments': response_data,
         })
-
-        # else:
-        #     return Response({'error': 'Invalid date range provided'})
         
 import csv
 import requests
