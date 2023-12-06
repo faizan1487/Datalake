@@ -474,23 +474,25 @@ class GetAffiliateData(APIView):
                 queryset = user.affiliate_commission.all().values()
                 start_date_commission = None
                 if queryset:
-                    if start_date:
-                        start_date_commission = start_date
-                    else:
-                        # Calculate the earliest date among leads, commissions, and commissions
-                        first_commission = queryset.exclude(created_at=None).earliest('created_at')
-                        start_date_commission = first_commission['created_at'].date() if first_commission else None
+                    if not all(item['created_at'] is None for item in queryset):
 
-                    end_date_commission = None
-                    if end_date:
-                        end_date_commission = end_date_commission = end_date
-                        end_date_commission = datetime.datetime.strptime(end_date, "%Y-%m-%d")
-                    else:
-                        # Calculate the latest date among leads, commissions, and commissions
-                        last_commission = queryset.exclude(created_at=None).latest('created_at')
-                        end_date_commission  = last_commission['created_at'].date() + timedelta(days=1) if last_commission else None
+                        if start_date:
+                            start_date_commission = start_date
+                        else:
+                            # Calculate the earliest date among leads, commissions, and commissions
+                            first_commission = queryset.exclude(created_at=None).earliest('created_at')
+                            start_date_commission = first_commission['created_at'].date() if first_commission else None
 
-                    queryset = list(queryset.filter(created_at__range=(start_date_commission, end_date_commission + timedelta(days=1))))
+                        end_date_commission = None
+                        if end_date:
+                            end_date_commission = end_date_commission = end_date
+                            end_date_commission = datetime.datetime.strptime(end_date, "%Y-%m-%d")
+                        else:
+                            # Calculate the latest date among leads, commissions, and commissions
+                            last_commission = queryset.exclude(created_at=None).latest('created_at')
+                            end_date_commission  = last_commission['created_at'].date() + timedelta(days=1) if last_commission else None
+
+                        queryset = list(queryset.filter(created_at__range=(start_date_commission, end_date_commission + timedelta(days=1))))
 
             if queryset:
                 for i in queryset:
