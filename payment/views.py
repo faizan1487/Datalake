@@ -46,9 +46,7 @@ class NewAlnafiPayment(APIView):
         # print(order_id)
 
         try:
-            instance = New_Alnafi_Payments.objects.filter(orderId=order_id)
-            # print(instance)
-            
+            instance = New_Alnafi_Payments.objects.filter(orderId=order_id)            
             serializer = New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
         except:
             serializer = New_Al_Nafi_Payments_Serializer(data=data)
@@ -1212,7 +1210,7 @@ class PaymentValidationNew(APIView):
 
 class Renewal_Leads(APIView):
     def get(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal.csv')
         lst = []
         for index, row in data.iterrows():
             first_name = row['name']

@@ -31,10 +31,10 @@ class AffiliateUniqueClickAdmin(ImportExportModelAdmin, admin.ModelAdmin):
 admin.site.register(AffiliateUniqueClick, AffiliateUniqueClickAdmin)
 
 class CommissionAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('order_id','affiliate', 'product', 'source', 'created_at',
+    list_display = ('order_id','affiliate','student_email', 'product', 'source', 'created_at',
                     'amount_pkr','amount_usd','created_at','commission_usd','commission_pkr')
     list_filter = (('created_at',DateTimeRangeFilter),)
-    search_fields = ('order_id','product','affiliate__email')
+    search_fields = ('order_id','product','affiliate__email','student_email')
     list_per_page = 500
 
 admin.site.register(Commission, CommissionAdmin)
