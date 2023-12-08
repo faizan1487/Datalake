@@ -1736,7 +1736,7 @@ class LeadDataAPIView(APIView):
 from datetime import datetime
 
 class ExpiryPayments(APIView):
-    permission_classes = [IsAuthenticated]   
+    # permission_classes = [IsAuthenticated]   
     def get(self, request):
         start_date_str = self.request.GET.get('start_date', None)
         end_date_str = self.request.GET.get('end_date', None)
@@ -1781,7 +1781,7 @@ class ExpiryPayments(APIView):
         response_data = []
         for payment in paginated_payments:
             renewal = (
-                start_date <= payment.order_datetime.date() <= end_date if payment.order_datetime else False
+                start_date <= payment.order_datetime.date() <= today if payment.order_datetime else False
             )
             if renewal_status == 'true' and not renewal:
                 continue  # Skip if renewal_status is 'true' but payment is not a renewal
