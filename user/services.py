@@ -220,6 +220,7 @@ def search_active_users(q, start_date, req_end_date, is_converted,source,request
 
 #PRODUCTION
 def active_paying_users_details(query_time,is_converted):
+    # print(query_time)
     user_list = []
     if is_converted =='true':
         # all_paid_users_products = list(Main_Payment.objects.filter(source='Al-Nafi').values("user__email", "product__product_name"))
@@ -298,6 +299,7 @@ def active_paying_users_details(query_time,is_converted):
                 user_list.append(user_dict)
     
     # print("user list", user_list)
+    # print(users_count)
     response = {"users":user_list, "count":users_count}
     return response
 

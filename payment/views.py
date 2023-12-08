@@ -1736,7 +1736,7 @@ class LeadDataAPIView(APIView):
 from datetime import datetime
 
 class ExpiryPayments(APIView):
-    # permission_classes = [IsAuthenticated]   
+    permission_classes = [IsAuthenticated]   
     def get(self, request):
         start_date_str = self.request.GET.get('start_date', None)
         end_date_str = self.request.GET.get('end_date', None)
@@ -1762,13 +1762,16 @@ class ExpiryPayments(APIView):
 
         num_items_per_page = 10 
         
+        sources = ['Al-Nafi','NEW ALNAFI']
         # Query payments falling within the specified date range
         filtered_payments = Main_Payment.objects.filter(
-            expiration_datetime__range=(start_date, end_date)
+            expiration_datetime__range=(start_date, end_date),
+            source__in=sources
         )
 
+
         if user_email:
-            filtered_payments = filtered_payments.filter(user__email__icontains=user_email)
+            filtered_payments = filtered_payments.filter(user__email=user_email)
         if product:
             filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
 
@@ -1779,15 +1782,33 @@ class ExpiryPayments(APIView):
         except EmptyPage:
             paginated_payments = paginator.page(paginator.num_pages)
         response_data = []
+
+        payments = Main_Payment.objects.filter(
+            order_datetime__range=(start_date, today)
+        )
+
+
+
         for payment in paginated_payments:
-            renewal = (
-                start_date <= payment.order_datetime.date() <= today if payment.order_datetime else False
-            )
-            if renewal_status == 'true' and not renewal:
-                continue  # Skip if renewal_status is 'true' but payment is not a renewal
-            elif renewal_status == 'false' and renewal:
-                continue
             products = list(payment.product.values_list('product_name', flat=True))
+            #user email matches,product matches and order datetime should be greate than expiration date
+            # print("payment.user.email",payment.user.email)
+            # print("payment.expiration_datetime",payment.expiration_datetime.date())
+            # print("products[0]",products[0])
+            payments = payments.filter(
+                user__email__iexact=payment.user.email,
+                product__product_name=products[0],
+                order_datetime__gt=payment.expiration_datetime.date()
+            )
+
+            # order_datetime__date__gt=payment.expiration_datetime.date()
+            # print("payments[0].order_datetime__date",payments)
+
+            if payments:
+                renewal = True
+            else:
+                renewal = False
+
             plans = list(payment.product.values_list('product_plan', flat=True))
             payment_data = {
                 'candidate_name': payment.candidate_name,
@@ -1807,7 +1828,15 @@ class ExpiryPayments(APIView):
                 'comment': payment.comment,
                 'Renewal': renewal  
             }
-            response_data.append(payment_data)
+
+            if renewal_status == 'true':
+                if payment_data['Renewal'] == True:
+                    response_data.append(payment_data)
+            elif renewal_status == 'false':
+                if payment_data['Renewal'] == False:
+                    response_data.append(payment_data)
+            else:
+                response_data.append(payment_data)
 
         if self.request.GET.get('export') == 'true':
             payments_data = filtered_payments.values(
