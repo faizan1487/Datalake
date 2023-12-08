@@ -118,9 +118,11 @@ def send_payment_support_module(instance,model_name, **kwargs):
                 if already_exist:
                     email = data['data'][0]["lead_creator"]
 
+
                     agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
                               "mutahir.hassan@alnafi.edu.pk": ["ee3c9803e0a7aa0","ad8a5dc4bc4f13f"],
                               "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
+                              "haider.raza@alnafi.edu.pk": ["2a1d467717681df","39faa082ac5f258"],
                               "salman.amjad@alnafi.edu.pk": ["c09e9698c024bd5","02c5e4ff622bb22"],
                               "ahsan.ali@alnafi.edu.pk": ["b5658b2d5a087d0","a9faaabc26bddc5"],
                               "mujtaba.jawed@alnafi.edu.pk": ["940ef42feabf766","7a642a5b930eb44"]
