@@ -1547,8 +1547,265 @@ def search_payment_for_product_analytics(export, q, start_date, end_date, plan, 
         return response_data
 
 
+from datetime import datetime
+
+class ExpiryPayments(APIView):
+    permission_classes = [IsAuthenticated]   
+    def get(self, request):
+        start_date_str = self.request.GET.get('start_date', None)
+        end_date_str = self.request.GET.get('end_date', None)
+        user_email = self.request.GET.get('q', None)
+        product = self.request.GET.get('product', None) or None
+        renewal_status = self.request.GET.get('Renewal', None)
+        page = int(self.request.GET.get('page', 1))
+       
+        today = date.today()
+        start_date = today.replace(day=1)
+
+        if not start_date_str or not end_date_str:
+            if today.month == 12:
+                end_date = today.replace(day=1, month=1, year=today.year + 1) - timedelta(days=1)
+            else:
+                end_date = today.replace(day=1, month=today.month + 1) - timedelta(days=1)
+
+            start_date = today.replace(day=1)
+        else:
+            start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d')).date()
+            end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')).date()
+
+        num_items_per_page = 10 
+        
+        sources = ['Al-Nafi','NEW ALNAFI']
+        # Query payments falling within the specified date range
+        filtered_payments = Main_Payment.objects.filter(
+            expiration_datetime__range=(start_date, end_date),
+            source__in=sources
+        )
 
 
+        if user_email:
+            filtered_payments = filtered_payments.filter(user__email=user_email)
+        if product:
+            filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
+
+        # If 'Renewal' parameter is provided, filter based on the status
+        paginator = Paginator(filtered_payments, num_items_per_page)
+        try:
+            paginated_payments = paginator.page(page)
+        except EmptyPage:
+            paginated_payments = paginator.page(paginator.num_pages)
+        response_data = []
+
+        payments = Main_Payment.objects.filter(
+            order_datetime__range=(start_date, today)
+        )
+
+        for payment in paginated_payments:
+            products = list(payment.product.values_list('product_name', flat=True))
+            #user email matches,product matches and order datetime should be greate than expiration date
+            if products:
+                found_payment = payments.filter(
+                    user__email__iexact=payment.user.email,
+                    product__product_name=products[0],
+                    order_datetime__gt=payment.expiration_datetime
+                )
+            else:
+                found_payment = None
+          
+            if found_payment:
+                renewal = True
+            else:
+                renewal = False
+
+            plans = list(payment.product.values_list('product_plan', flat=True))
+            payment_data = {
+                'candidate_name': payment.candidate_name,
+                'user': payment.user.email if payment.user.email else None,
+                'phone': payment.candidate_phone,
+                'product_names': products,
+                'plans': plans,
+                'amount': payment.amount,
+                'currency': payment.currency,
+                'source': payment.source,
+                'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
+                'expiration_datetime': payment.expiration_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.expiration_datetime else None,
+                'source_payment_id': payment.source_payment_id,
+                'alnafi_payment_id': payment.alnafi_payment_id,
+                'card_mask': payment.card_mask,
+                'country': payment.country,
+                'comment': payment.comment,
+                'Renewal': renewal  
+            }
+
+            if renewal_status == 'true':
+                if payment_data['Renewal'] == True:
+                    response_data.append(payment_data)
+            elif renewal_status == 'false':
+                if payment_data['Renewal'] == False:
+                    response_data.append(payment_data)
+            else:
+                response_data.append(payment_data)
+
+        if self.request.GET.get('export') == 'true':
+            payments_data = filtered_payments.values(
+                'user__email', 'user__phone', 'product__product_name', 'source', 'amount', 'currency',
+                'order_datetime', 'id', 'product__product_plan', 'alnafi_payment_id', 'card_mask', 'source_payment_id'
+            )
+            
+            payment_list = []  # Initialize an empty list
+            
+            for payment in payments_data:
+                payment_id = payment['id']
+                payment_found = False
+            
+                for existing_payment in payment_list:
+                    if existing_payment['id'] == payment_id:
+                        payment_found = True
+                        break
+
+                if not payment_found:
+                    payment_data = {
+                        'id': payment['id'],
+                        'user_id': payment['user__email'],
+                        'phone': payment['user__phone'],
+                        'source': payment['source'],
+                        'amount': payment['amount'],
+                        'currency': payment['currency'],
+                        'product_names': [payment['product__product_name']],
+                        'plans': [payment['product__product_plan']],
+                        'alnafi_payment_id': payment['alnafi_payment_id'],
+                        'source_payment_id': payment['source_payment_id'],
+                        'card_mask': payment['card_mask'],
+                        'order_datetime': payment['order_datetime'].strftime('%Y-%m-%d %H:%M:%S') if payment['order_datetime'] else None,
+                    }
+                    payment_list.append(payment_data)
+
+            file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+
+            df = pd.DataFrame(payment_list).to_csv(index=False)
+
+            
+            s3 = upload_csv_to_s3(df, file_name)
+            data = {'file_link': file_path, 'export': 'true'}
+            return Response(data)
+
+        return Response({
+            'count': len(filtered_payments),
+            'num_pages': paginator.num_pages,
+            'payments': response_data,
+        })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import csv
+import requests
+from django.http import JsonResponse
+
+class UploadLeads(APIView):
+    def get(self, request):
+        url = 'https://crm.alnafi.com/api/resource/Lead'
+
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Untitled spreadsheet - Haider Bhai main File (copy).csv')
+        for index, row in data.iterrows():
+            api_key, api_secret = round_robin()
+            headers = {
+            'Authorization': f'token {api_key}:{api_secret}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            }
+            # print(api_key)
+            # print(api_secret)
+            date_joined = row.get('Date Joined')
+            print(type(row.get('Date Joined')))
+            print(row.get('Date Joined'))
+            if type(date_joined) != float:
+                date_joined = datetime.strptime(date_joined, '%Y-%m-%d %H:%M:%S').date()
+
+            assigned_date = row.get('Assigned Date')
+            if type(assigned_date) != float:
+                assigned_date = datetime.strptime(assigned_date, '%Y-%m-%d %H:%M:%S').date()
+
+            # Check if the data already exists
+            # filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
+            # check_response = requests.get(filter_url, headers=headers)
+
+            # if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
+            #     print(f"Data for {row.get('customer_email')} already exists!")
+            # else:
+            # If data doesn't exist, make the POST request
+            data_to_post = {
+                    'status': row.get('Status'),
+                    'email_id': row.get('Email'),
+                    'first_name': None if pd.isna(row.get('First Name')) else row.get('First Name'),
+                    'last_name': None if pd.isna(row.get('Last Name')) else row.get('Last Name'),
+                    'date_joined': None if pd.isna(date_joined) else str(date_joined),
+                    'date': None if pd.isna(assigned_date) else str(assigned_date),        
+                    'submit_your_question': None if pd.isna(row.get('Submit Your Question If Any')) else row.get('Submit Your Question If Any'),
+                    'lead_name': None if pd.isna(row.get('Full Name')) else row.get('Full Name'),
+                    'source': row.get('Source') or '',
+                    'form': None if pd.isna(row.get('Form')) else row.get('Form'),
+                    'how_did_you_hear_about_us': None if pd.isna(row.get('How Did You Hear About Us')) else row.get('How Did You Hear About Us'),
+
+                
+                    'product_names_list': None if pd.isna(row.get('Product Names List')) else row.get('Product Names List'), 
+                    'advert_detail': row.get('Advert Detail') or '', 
+                    'product_name': row.get('Product Name') or '',
+                    'cv_link': row.get('CV Link') or '',
+                    'demo_product': row.get('Demo Product') or '',
+                    'enrollment': row.get('Enrollment') or '',
+                    'mobile_no': str(row.get('Mobile No')) or '',
+                    'country': row.get('Country') or '',
+                    'phone': str(row.get('Phone')) or '',
+                    'Image': row.get('Image') or '',
+                    'title': row.get('Title') or '',
+            }
+
+            print(data_to_post)
+
+            response = requests.post(url, json=data_to_post, headers=headers)
+            print(response.status_code)
+            if response.status_code == 200:
+                print(f"Data for {row.get('Email')} sent successfully!")
+            else:
+                print(f"Failed to send data for {row.get('Email')}. Status code: {response.status_code}")
+
+        return JsonResponse({'message': 'Data processing completed'})
 
 
 import csv
@@ -1732,234 +1989,3 @@ class LeadDataAPIView(APIView):
                         print(f"Failed to send data for {row['email']}. Status code: {response.status_code}")
 
         return JsonResponse({'message': 'Data processing completed'})
-
-from datetime import datetime
-
-class ExpiryPayments(APIView):
-    permission_classes = [IsAuthenticated]   
-    def get(self, request):
-        start_date_str = self.request.GET.get('start_date', None)
-        end_date_str = self.request.GET.get('end_date', None)
-        user_email = self.request.GET.get('q', None)
-        product = self.request.GET.get('product', None) or None
-        renewal_status = self.request.GET.get('Renewal', None)
-        page = int(self.request.GET.get('page', 1))
-       
-        today = date.today()
-        start_date = today.replace(day=1)
-
-        if not start_date_str or not end_date_str:
-            if today.month == 12:
-                end_date = today.replace(day=1, month=1, year=today.year + 1) - timedelta(days=1)
-            else:
-                end_date = today.replace(day=1, month=today.month + 1) - timedelta(days=1)
-            # Parse start_date and end_date strings into datetime objects
-            start_date = today.replace(day=1)
-        else:
-            # Parse start_date and end_date strings into datetime objects
-            start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d')).date()
-            end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')).date()
-
-        num_items_per_page = 10 
-        
-        sources = ['Al-Nafi','NEW ALNAFI']
-        # Query payments falling within the specified date range
-        filtered_payments = Main_Payment.objects.filter(
-            expiration_datetime__range=(start_date, end_date),
-            source__in=sources
-        )
-
-
-        if user_email:
-            filtered_payments = filtered_payments.filter(user__email=user_email)
-        if product:
-            filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
-
-        # If 'Renewal' parameter is provided, filter based on the status
-        paginator = Paginator(filtered_payments, num_items_per_page)
-        try:
-            paginated_payments = paginator.page(page)
-        except EmptyPage:
-            paginated_payments = paginator.page(paginator.num_pages)
-        response_data = []
-
-        payments = Main_Payment.objects.filter(
-            order_datetime__range=(start_date, today)
-        )
-
-
-
-        for payment in paginated_payments:
-            products = list(payment.product.values_list('product_name', flat=True))
-            #user email matches,product matches and order datetime should be greate than expiration date
-            # print("payment.user.email",payment.user.email)
-            # print("payment.expiration_datetime",payment.expiration_datetime.date())
-            # print("products[0]",products[0])
-            payments = payments.filter(
-                user__email__iexact=payment.user.email,
-                product__product_name=products[0],
-                order_datetime__gt=payment.expiration_datetime.date()
-            )
-
-            # order_datetime__date__gt=payment.expiration_datetime.date()
-            # print("payments[0].order_datetime__date",payments)
-
-            if payments:
-                renewal = True
-            else:
-                renewal = False
-
-            plans = list(payment.product.values_list('product_plan', flat=True))
-            payment_data = {
-                'candidate_name': payment.candidate_name,
-                'user': payment.user.email if payment.user.email else None,
-                'phone': payment.candidate_phone,
-                'product_names': products,
-                'plans': plans,
-                'amount': payment.amount,
-                'currency': payment.currency,
-                'source': payment.source,
-                'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
-                'expiration_datetime': payment.expiration_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.expiration_datetime else None,
-                'source_payment_id': payment.source_payment_id,
-                'alnafi_payment_id': payment.alnafi_payment_id,
-                'card_mask': payment.card_mask,
-                'country': payment.country,
-                'comment': payment.comment,
-                'Renewal': renewal  
-            }
-
-            if renewal_status == 'true':
-                if payment_data['Renewal'] == True:
-                    response_data.append(payment_data)
-            elif renewal_status == 'false':
-                if payment_data['Renewal'] == False:
-                    response_data.append(payment_data)
-            else:
-                response_data.append(payment_data)
-
-        if self.request.GET.get('export') == 'true':
-            payments_data = filtered_payments.values(
-                'user__email', 'user__phone', 'product__product_name', 'source', 'amount', 'currency',
-                'order_datetime', 'id', 'product__product_plan', 'alnafi_payment_id', 'card_mask', 'source_payment_id'
-            )
-            
-            payment_list = []  # Initialize an empty list
-            
-            for payment in payments_data:
-                payment_id = payment['id']
-                payment_found = False
-            
-                for existing_payment in payment_list:
-                    if existing_payment['id'] == payment_id:
-                        payment_found = True
-                        break
-
-                if not payment_found:
-                    payment_data = {
-                        'id': payment['id'],
-                        'user_id': payment['user__email'],
-                        'phone': payment['user__phone'],
-                        'source': payment['source'],
-                        'amount': payment['amount'],
-                        'currency': payment['currency'],
-                        'product_names': [payment['product__product_name']],
-                        'plans': [payment['product__product_plan']],
-                        'alnafi_payment_id': payment['alnafi_payment_id'],
-                        'source_payment_id': payment['source_payment_id'],
-                        'card_mask': payment['card_mask'],
-                        'order_datetime': payment['order_datetime'].strftime('%Y-%m-%d %H:%M:%S') if payment['order_datetime'] else None,
-                    }
-                    payment_list.append(payment_data)
-
-            file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-
-            df = pd.DataFrame(payment_list).to_csv(index=False)
-
-            
-            s3 = upload_csv_to_s3(df, file_name)
-            data = {'file_link': file_path, 'export': 'true'}
-            return Response(data)
-
-        return Response({
-            'count': filtered_payments.count(),
-            'num_pages': paginator.num_pages,
-            'payments': response_data,
-        })
-        
-import csv
-import requests
-from django.http import JsonResponse
-
-class UploadLeads(APIView):
-    def get(self, request):
-        url = 'https://crm.alnafi.com/api/resource/Lead'
-
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Untitled spreadsheet - Haider Bhai main File (copy).csv')
-        for index, row in data.iterrows():
-            api_key, api_secret = round_robin()
-            headers = {
-            'Authorization': f'token {api_key}:{api_secret}',
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-            }
-            # print(api_key)
-            # print(api_secret)
-            date_joined = row.get('Date Joined')
-            print(type(row.get('Date Joined')))
-            print(row.get('Date Joined'))
-            if type(date_joined) != float:
-                date_joined = datetime.strptime(date_joined, '%Y-%m-%d %H:%M:%S').date()
-
-            assigned_date = row.get('Assigned Date')
-            if type(assigned_date) != float:
-                assigned_date = datetime.strptime(assigned_date, '%Y-%m-%d %H:%M:%S').date()
-
-            # Check if the data already exists
-            # filter_url = f'https://crm.alnafi.com/api/resource/Suppport?filters=[["customer_email", "=", "{row.get("customer_email")}"],["product_name", "=", "{row.get("product_name")}"]]&limit_start=0&limit_page_length=10000000'
-            # check_response = requests.get(filter_url, headers=headers)
-
-            # if check_response.status_code == 200 and len(check_response.json().get('data')) > 0:
-            #     print(f"Data for {row.get('customer_email')} already exists!")
-            # else:
-            # If data doesn't exist, make the POST request
-            data_to_post = {
-                    'status': row.get('Status'),
-                    'email_id': row.get('Email'),
-                    'first_name': None if pd.isna(row.get('First Name')) else row.get('First Name'),
-                    'last_name': None if pd.isna(row.get('Last Name')) else row.get('Last Name'),
-                    'date_joined': None if pd.isna(date_joined) else str(date_joined),
-                    'date': None if pd.isna(assigned_date) else str(assigned_date),        
-                    'submit_your_question': None if pd.isna(row.get('Submit Your Question If Any')) else row.get('Submit Your Question If Any'),
-                    'lead_name': None if pd.isna(row.get('Full Name')) else row.get('Full Name'),
-                    'source': row.get('Source') or '',
-                    'form': None if pd.isna(row.get('Form')) else row.get('Form'),
-                    'how_did_you_hear_about_us': None if pd.isna(row.get('How Did You Hear About Us')) else row.get('How Did You Hear About Us'),
-
-                
-                    'product_names_list': None if pd.isna(row.get('Product Names List')) else row.get('Product Names List'), 
-                    'advert_detail': row.get('Advert Detail') or '', 
-                    'product_name': row.get('Product Name') or '',
-                    'cv_link': row.get('CV Link') or '',
-                    'demo_product': row.get('Demo Product') or '',
-                    'enrollment': row.get('Enrollment') or '',
-                    'mobile_no': str(row.get('Mobile No')) or '',
-                    'country': row.get('Country') or '',
-                    'phone': str(row.get('Phone')) or '',
-                    'Image': row.get('Image') or '',
-                    'title': row.get('Title') or '',
-            }
-
-            print(data_to_post)
-
-            response = requests.post(url, json=data_to_post, headers=headers)
-            print(response.status_code)
-            if response.status_code == 200:
-                print(f"Data for {row.get('Email')} sent successfully!")
-            else:
-                print(f"Failed to send data for {row.get('Email')}. Status code: {response.status_code}")
-
-        return JsonResponse({'message': 'Data processing completed'})
-
-
