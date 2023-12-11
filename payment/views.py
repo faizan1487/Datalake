@@ -1732,13 +1732,11 @@ class ExpiryPayments(APIView):
 
         products = list(filtered_payments.values('id','product__product_name','product__product_plan'))
         users = list(filtered_payments.values('user__email','user__phone'))
-        payment_list = list(filtered_payments.values())    
+        payment_list = list(filtered_payments.values("id","candidate_name","user_id","amount","currency","source","order_datetime","expiration_datetime","source_payment_id","alnafi_payment_id","card_mask","country"))   
   
         j=0
 
         for i in range(len(payment_list)):
-
-            # return Response("vdiuh")
             while payment_list[i]['id'] != products[j]['id']:
                 j += 1
 
@@ -1764,10 +1762,6 @@ class ExpiryPayments(APIView):
 
             if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status is None:
                 response_data.append(payment_list[i])
-
-
-        
-
 
         return Response({
             'count': len(response_data),
