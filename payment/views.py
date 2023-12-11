@@ -1696,6 +1696,8 @@ from django.utils import timezone
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from datetime import date, timedelta, datetime
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 class ExpiryPayments(APIView):
     def get(self, request):
@@ -1704,7 +1706,6 @@ class ExpiryPayments(APIView):
         user_email = self.request.GET.get('q')
         product = self.request.GET.get('product')
         renewal_status = self.request.GET.get('Renewal', None)
-        page = int(self.request.GET.get('page', 1))
        
         today = date.today()
         start_date = today.replace(day=1)
@@ -1763,10 +1764,25 @@ class ExpiryPayments(APIView):
             if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status is None:
                 response_data.append(payment_list[i])
 
+        paginator = Paginator(response_data, 10)  # Set the number of items per page (adjust as needed)
+        page_number = request.GET.get('page', 1)
+
+        try:
+            response_data_paginated = paginator.page(page_number)
+        except PageNotAnInteger:
+            response_data_paginated = paginator.page(1)
+        except EmptyPage:
+            response_data_paginated = paginator.page(paginator.num_pages)
+
         return Response({
             'count': len(response_data),
-            'payments': response_data,
+            'num_pages': paginator.num_pages,
+            'current_page': response_data_paginated.number,
+            'has_next': response_data_paginated.has_next(),
+            'has_previous': response_data_paginated.has_previous(),
+            'payments': response_data_paginated.object_list,
         })
+        
 
 
 
