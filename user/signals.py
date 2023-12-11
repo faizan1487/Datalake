@@ -46,7 +46,7 @@ def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
 
 def usersignal(instance,source,sender):
     # print("user signal running")
-    if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form':
+    if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
