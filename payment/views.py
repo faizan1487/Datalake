@@ -1573,6 +1573,7 @@ class ExpiryPayments(APIView):
         user_email = self.request.GET.get('q')
         product = self.request.GET.get('product')
         renewal_status = self.request.GET.get('Renewal', None)
+        export = self.request.GET.get('export', None) or None
        
         today = date.today()
         start_date = today.replace(day=1)
@@ -1635,6 +1636,15 @@ class ExpiryPayments(APIView):
 
             if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
                 response_data.append(payment_list[i])
+
+
+        if export == 'true':
+            file_name = f"Renewed_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            df = pd.DataFrame(response_data).to_csv(index=False)
+            s3 = upload_csv_to_s3(df, file_name)
+            data = {'file_link': file_path, 'export': 'true'}
+            return Response(data)
 
         paginator = Paginator(response_data, 10)  # Set the number of items per page (adjust as needed)
         page_number = request.GET.get('page', 1)
