@@ -1566,7 +1566,7 @@ def search_payment_for_product_analytics(export, q, start_date, end_date, plan, 
 
 
 class ExpiryPayments(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         start_date_str = self.request.GET.get('start_date')
         end_date_str = self.request.GET.get('end_date')
@@ -1633,7 +1633,7 @@ class ExpiryPayments(APIView):
 
             j += 1
 
-            if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status is None:
+            if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
                 response_data.append(payment_list[i])
 
         paginator = Paginator(response_data, 10)  # Set the number of items per page (adjust as needed)
