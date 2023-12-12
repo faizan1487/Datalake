@@ -693,14 +693,17 @@ class SearchPayments(APIView):
                     'user_id': payment['user'],
                     'phone': payment['user_phone'],
                     'source': payment['source'],
+                    'currency': payment['currency'],
                     'amount': payment['amount'],
+                    'converted_amount': payment['converted_amount'],
+                    'after_deduction_amount': payment['after_deduction_amount'],
+                    'deducted_amount': payment['deducted_amount'],
                     'product_names': payment['product'],
                     'plans': payment['plan'],
                     'alnafi_payment_id': payment['alnafi_payment_id'],
                     'source_payment_id': payment['source_payment_id'],
                     'card_mask': payment['card_mask'],
                     'order_datetime': payment['order_datetime'].isoformat(),
-                    'currency': payment['currency'],
                 }
 
                 # print(payment_data)
@@ -855,17 +858,29 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         # if country_name:
         #     amount, tax = add_tax_stripe_according_to_the_country_code(amount,country_name.upper())
         if p.source.lower() not in sources:
-            if p.currency.lower() == 'pkr':
-                pass
+            if p.currency.lower() == 'pkr' or p.currency.lower() == 'PKR':
+                p.converted_amount = amount
+                p.amount_after_deduction = amount
+                p.deducted_amount = 0
             elif p.currency.lower() != 'usd':
+                # print("in elif")
                 currency_rate = get_USD_rate(p.currency,amount)
                 converted_amount = round(int(amount) / currency_rate[p.currency],6)
+                p.converted_amount = converted_amount
+                p.deducted_amount = 0.02 * converted_amount
                 converted_amount = converted_amount - (0.02 * converted_amount)
+                p.amount_after_deduction = converted_amount
                 total_payments_in_usd += converted_amount
             else:
+                p.converted_amount = amount
+                p.amount_after_deduction = amount
+                p.deducted_amount = 0
                 total_payments_in_usd += int(amount)
+        else:
+            p.converted_amount = amount
+            p.amount_after_deduction = amount
+            p.deducted_amount = 0
 
-    
 
     total_payments_in_pkr = sum(float(p.amount) for p in payments if p.source.lower() in sources)
 
@@ -882,16 +897,20 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                 'product': [product.product_name for product in payment.product.all()] if payment.product.exists() else [],
                 'plan': [product.product_plan for product in payment.product.all()] if payment.product.exists() else [],
                 'source': payment.source,
+                'currency': payment.currency,
                 'amount': payment.amount,
+                'converted_amount': payment.converted_amount,
+                'after_deduction_amount': payment.amount_after_deduction,
+                'deducted_amount': payment.deducted_amount,
                 'alnafi_payment_id': payment.alnafi_payment_id,
                 'order_datetime': payment.order_datetime,
                 'card_mask': payment.card_mask,
                 'id': payment.id,
-                'source_payment_id': payment.source_payment_id,
-                'currency': payment.currency
+                'source_payment_id': payment.source_payment_id
             }
             for payment in payments
         ]
+
 
         response_data = {"payments":payments,"total_count":total_count,"success":True,"total_payments_in_pkr":total_payments_in_pkr, "total_payments_in_usd":total_payments_in_usd}
         return response_data
@@ -1628,9 +1647,9 @@ class ExpiryPayments(APIView):
             
 
             payment_list[i]['user_id'] = users[i]['user__email']
-            payment_list[i]['phone'] = users[i]['user__phone']
             payment_list[i]['product_name'] = products[j]['product__product_name']
             payment_list[i]['Renewal'] = renewal_payment
+            payment_list[i]['phone'] = users[i]['user__phone']
 
             j += 1
 
