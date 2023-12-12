@@ -2,7 +2,6 @@ from django.utils import timezone
 from sre_constants import SUCCESS
 from tracemalloc import start
 from rest_framework import status
-from django.core.paginator import Paginator, EmptyPage
 
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
@@ -32,6 +31,12 @@ import requests
 from user.constants import COUNTRY_CODES
 from secrets_api.algorithem import round_robin, round_robin_support
 import math
+
+import csv
+from django.http import JsonResponse
+
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 class MyPagination(PageNumberPagination):
     page_size = 10
@@ -239,6 +244,8 @@ class RenewalPayments(APIView):
             user__email__endswith="yopmail.com"
             ).select_related(
                 'product').values()
+        
+        
 
         if q:
             payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
@@ -284,6 +291,8 @@ class RenewalPayments(APIView):
                 )            
         else:
             payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
+
+        # print(payments)
 
         total_count = payments.count()  # Calculate the total count of payments
 
@@ -1550,156 +1559,14 @@ def search_payment_for_product_analytics(export, q, start_date, end_date, plan, 
 
 
 
-#Production
-# class ExpiryPayments(APIView):
-#     # permission_classes = [IsAuthenticated]   
-#     def get(self, request):
-#         start_date_str = self.request.GET.get('start_date', None)
-#         end_date_str = self.request.GET.get('end_date', None)
-#         user_email = self.request.GET.get('q', None)
-#         product = self.request.GET.get('product', None) or None
-#         renewal_status = self.request.GET.get('Renewal', None)
-#         page = int(self.request.GET.get('page', 1))
-       
-#         today = date.today()
-#         start_date = today.replace(day=1)
-
-#         if not start_date_str or not end_date_str:
-#             if today.month == 12:
-#                 end_date = today.replace(day=1, month=1, year=today.year + 1) - timedelta(days=1)
-#             else:
-#                 end_date = today.replace(day=1, month=today.month + 1) - timedelta(days=1)
-
-#             start_date = today.replace(day=1)
-#         else:
-#             start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d')).date()
-#             end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')).date()
-
-#         num_items_per_page = 10 
-        
-#         sources = ['Al-Nafi','NEW ALNAFI']
-#         # Query payments falling within the specified date range
-#         filtered_payments = Main_Payment.objects.filter(
-#             expiration_datetime__range=(start_date, end_date),
-#             source__in=sources
-#         )
-
-
-#         if user_email:
-#             filtered_payments = filtered_payments.filter(user__email=user_email)
-#         if product:
-#             filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
-
-#         # If 'Renewal' parameter is provided, filter based on the status
-#         paginator = Paginator(filtered_payments, num_items_per_page)
-#         try:
-#             paginated_payments = paginator.page(page)
-#         except EmptyPage:
-#             paginated_payments = paginator.page(paginator.num_pages)
-#         response_data = []
-
-#         payments = Main_Payment.objects.filter(
-#             order_datetime__range=(start_date, today)
-#         )
-
-#         for payment in paginated_payments:
-#             products = list(payment.product.values_list('product_name', flat=True))
-#             #user email matches,product matches and order datetime should be greate than expiration date
-#             if products:
-#                 found_payment = payments.filter(
-#                     user__email__iexact=payment.user.email,
-#                     product__product_name=products[0],
-#                     order_datetime__gt=payment.expiration_datetime
-#                 )
-#             else:
-#                 found_payment = None
-          
-#             if found_payment:
-#                 renewal = True
-#             else:
-#                 renewal = False
-
-#             plans = list(payment.product.values_list('product_plan', flat=True))
-#             payment_data = {
-#                 'candidate_name': payment.candidate_name,
-#                 'user': payment.user.email if payment.user.email else None,
-#                 'phone': payment.candidate_phone,
-#                 'product_names': products,
-#                 'plans': plans,
-#                 'amount': payment.amount,
-#                 'currency': payment.currency,
-#                 'source': payment.source,
-#                 'order_datetime': payment.order_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.order_datetime else None,
-#                 'expiration_datetime': payment.expiration_datetime.strftime('%Y-%m-%d %H:%M:%S') if payment.expiration_datetime else None,
-#                 'source_payment_id': payment.source_payment_id,
-#                 'alnafi_payment_id': payment.alnafi_payment_id,
-#                 'card_mask': payment.card_mask,
-#                 'country': payment.country,
-#                 'comment': payment.comment,
-#                 'Renewal': renewal  
-#             }
-
-#             if renewal_status == 'true':
-#                 if payment_data['Renewal'] == True:
-#                     response_data.append(payment_data)
-#             elif renewal_status == 'false':
-#                 if payment_data['Renewal'] == False:
-#                     response_data.append(payment_data)
-#             else:
-#                 response_data.append(payment_data)
-
-#         if self.request.GET.get('export') == 'true':
-#             payments_data = filtered_payments.values(
-#                 'user__email', 'user__phone', 'product__product_name', 'source', 'amount', 'currency',
-#                 'order_datetime', 'id', 'product__product_plan', 'alnafi_payment_id', 'card_mask', 'source_payment_id'
-#             )
-            
-#             payment_list = []  # Initialize an empty list
-            
-#             for payment in payments_data:
-            
-#                 payment_data = {
-#                     'id': payment['id'],
-#                     'user_id': payment['user__email'],
-#                     'phone': payment['user__phone'],
-#                     'source': payment['source'],
-#                     'amount': payment['amount'],
-#                     'currency': payment['currency'],
-#                     'product_names': [payment['product__product_name']],
-#                     'plans': [payment['product__product_plan']],
-#                     'alnafi_payment_id': payment['alnafi_payment_id'],
-#                     'source_payment_id': payment['source_payment_id'],
-#                     'card_mask': payment['card_mask'],
-#                     'order_datetime': payment['order_datetime'].strftime('%Y-%m-%d %H:%M:%S') if payment['order_datetime'] else None,
-#                 }
-#                 payment_list.append(payment_data)
-
-#             file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-#             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-
-#             df = pd.DataFrame(payment_list).to_csv(index=False)
-
-            
-#             s3 = upload_csv_to_s3(df, file_name)
-#             data = {'file_link': file_path, 'export': 'true'}
-#             return Response(data)
-
-#         return Response({
-#             'count': len(filtered_payments),
-#             'num_pages': paginator.num_pages,
-#             'payments': response_data,
-#         })
 
 
 
-from django.utils import timezone
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from datetime import date, timedelta, datetime
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
 
 
 class ExpiryPayments(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         start_date_str = self.request.GET.get('start_date')
         end_date_str = self.request.GET.get('end_date')
@@ -1717,13 +1584,20 @@ class ExpiryPayments(APIView):
             start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d')).date()
             end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')).date()
 
-        sources = ['Al-Nafi', 'NEW ALNAFI']
-
-        # Query payments falling within the specified date range
         filtered_payments = Main_Payment.objects.filter(
+            source__in=['Al-Nafi','NEW ALNAFI'],
             expiration_datetime__range=(start_date, end_date),
-            source__in=sources
-        ).select_related('user')
+            ).exclude(
+            user__email__endswith="yopmail.com"
+            ).select_related('product').values()
+        
+
+        filtered_payments = filtered_payments.annotate(product_plan=Upper('product__product_plan'))
+
+        if user_email:
+            filtered_payments = filtered_payments.filter(user__email=user_email)
+        if product:
+            filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
 
         # Query payments falling within the specified date range for the renewal check
         renewal_payments = Main_Payment.objects.filter(
@@ -1731,33 +1605,31 @@ class ExpiryPayments(APIView):
         )
         response_data = []
 
-        products = list(filtered_payments.values('id','product__product_name','product__product_plan'))
+        products = list(filtered_payments.values('id','product__product_name'))
         users = list(filtered_payments.values('user__email','user__phone'))
-        payment_list = list(filtered_payments.values("id","candidate_name","user_id","amount","currency","source","order_datetime","expiration_datetime","source_payment_id","alnafi_payment_id","card_mask","country"))   
+        payment_list = list(filtered_payments.values("id","candidate_name","user_id","amount","currency","product_plan","source","order_datetime","expiration_datetime","source_payment_id","alnafi_payment_id","card_mask","country"))   
   
         j=0
 
         for i in range(len(payment_list)):
+            filtered_products = [item for item in products if item['id'] == payment_list[i]['id']]
+
             while payment_list[i]['id'] != products[j]['id']:
                 j += 1
 
             renewal_payment = False
-            if products:
-                plan = products[j]['product__product_plan']
+            if filtered_products:
                 renewal_payment = renewal_payments.filter(
                     user__email__iexact=users[i]['user__email'],
                     product__product_name=products[j]['product__product_name'],
                     order_datetime__gt=payment_list[i]['expiration_datetime']
                 ).exists()
-            else:
-                plan = None
+            
 
             payment_list[i]['user_id'] = users[i]['user__email']
             payment_list[i]['phone'] = users[i]['user__phone']
-            payment_list[i]['product_id'] = products[j]['product__product_name']
+            payment_list[i]['product_name'] = products[j]['product__product_name']
             payment_list[i]['Renewal'] = renewal_payment
-            payment_list[i]['product_plan'] = plan
-
 
             j += 1
 
@@ -1784,19 +1656,6 @@ class ExpiryPayments(APIView):
         })
         
 
-
-
-
-
-
-
-
-
-
-
-import csv
-import requests
-from django.http import JsonResponse
 
 class UploadLeads(APIView):
     def get(self, request):
