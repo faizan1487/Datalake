@@ -1566,7 +1566,7 @@ def search_payment_for_product_analytics(export, q, start_date, end_date, plan, 
 
 
 class ExpiryPayments(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         start_date_str = self.request.GET.get('start_date')
         end_date_str = self.request.GET.get('end_date')
