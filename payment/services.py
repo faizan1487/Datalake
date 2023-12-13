@@ -170,3 +170,23 @@ def get_USD_rate(currency,amount):
 
     # print("usd_details",usd_details)
     return usd_details
+
+
+def get_pkr_rate(currency,amount):
+    pkr_details_str = cache.get(currency)
+    
+    if not pkr_details_str:
+        # print("cache empty")
+        pkr_details = {}
+        url = f"https://v6.exchangerate-api.com/v6/{settings.EXCHANGE_RATE_API_KEY}/latest/PKR/"
+        response = requests.get(url).json()
+        pkr_details[currency] = response["conversion_rates"][currency.upper()]
+        pkr_details["PKR"] = response["conversion_rates"]["PKR"]
+
+        cache.set(currency, json.dumps(pkr_details), 60 * 60 * 24)  # Cache for 1 day (60 seconds * 60 minutes * 24 hours)
+    else:
+        # print("cache not empty")
+        pkr_details = json.loads(pkr_details_str)
+
+    # print("pkr_details",pkr_details)
+    return pkr_details

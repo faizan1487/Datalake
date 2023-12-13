@@ -6,7 +6,7 @@ from rest_framework import status
 from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
                          UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
-from .services import (renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate)
+from .services import (renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate,get_pkr_rate)
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
@@ -1631,6 +1631,9 @@ class ExpiryPayments(APIView):
   
         j=0
 
+        renewal_amount = 0
+        renewed_amount = 0
+
         for i in range(len(payment_list)):
             filtered_products = [item for item in products if item['id'] == payment_list[i]['id']]
 
@@ -1645,6 +1648,22 @@ class ExpiryPayments(APIView):
                     order_datetime__gt=payment_list[i]['expiration_datetime']
                 ).exists()
             
+            if renewal_status == 'false':
+                if not renewal_payment:
+                    single_renewal_amount = self.calculate_renewal_amount(payment_list[i])
+                    renewal_amount += single_renewal_amount
+            elif renewal_status == 'true':
+                if renewal_payment:
+                    single_renewed_amount = self.calculate_renewed_amount(payment_list[i])   
+                    renewed_amount += single_renewed_amount 
+            else:
+                if renewal_payment:
+                    single_renewed_amount = self.calculate_renewed_amount(payment_list[i])
+                    renewed_amount += single_renewed_amount 
+                else:
+                    single_renewal_amount = self.calculate_renewal_amount(payment_list[i])
+                    renewal_amount += single_renewal_amount
+
 
             payment_list[i]['user_id'] = users[i]['user__email']
             payment_list[i]['product_name'] = products[j]['product__product_name']
@@ -1681,9 +1700,36 @@ class ExpiryPayments(APIView):
             'current_page': response_data_paginated.number,
             'has_next': response_data_paginated.has_next(),
             'has_previous': response_data_paginated.has_previous(),
+            'renewal_amount': renewal_amount,
+            'renewed_amount': renewed_amount,
             'payments': response_data_paginated.object_list,
         })
+    
+
+    def calculate_renewed_amount(self, payment):
+        renewed_amount = 0
+        amount = payment['amount']
+        if payment['currency'].lower() != 'pkr':
+            currency_rate = get_pkr_rate(payment['currency'],amount)
+            converted_amount = round(float(amount) / currency_rate[payment['currency']],6)
+            renewed_amount += converted_amount
+        else:
+            renewed_amount += float(amount)
         
+        return renewed_amount
+    
+    def calculate_renewal_amount(self, payment):
+        amount = payment['amount']
+        renewal_amount = 0
+        if payment['currency'].lower() != 'pkr':
+            currency_rate = get_pkr_rate(payment['currency'],amount)
+            converted_amount = round(float(amount) / currency_rate[payment['currency']],6)
+            renewal_amount += converted_amount
+        else:
+            renewal_amount += float(amount)
+
+        return renewal_amount
+
 
 
 class UploadLeads(APIView):
