@@ -1611,6 +1611,8 @@ class ExpiryPayments(APIView):
             user__email__endswith="yopmail.com"
             ).select_related('product').values()
         
+        
+        
 
         filtered_payments = filtered_payments.annotate(product_plan=Upper('product__product_plan'))
 
@@ -1618,6 +1620,7 @@ class ExpiryPayments(APIView):
             filtered_payments = filtered_payments.filter(user__email=user_email)
         if product:
             filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
+
 
         # Query payments falling within the specified date range for the renewal check
         renewal_payments = Main_Payment.objects.filter(
@@ -1645,8 +1648,9 @@ class ExpiryPayments(APIView):
                 renewal_payment = renewal_payments.filter(
                     user__email__iexact=users[i]['user__email'],
                     product__product_name=products[j]['product__product_name'],
-                    order_datetime__gt=payment_list[i]['expiration_datetime']
+                    order_datetime__gt=payment_list[i]['order_datetime']
                 ).exists()
+
             
             if renewal_status == 'false':
                 if not renewal_payment:
