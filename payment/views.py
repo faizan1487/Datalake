@@ -1,3 +1,4 @@
+from xxlimited import new
 from django.utils import timezone
 from sre_constants import SUCCESS
 from tracemalloc import start
@@ -1611,7 +1612,7 @@ class ExpiryPayments(APIView):
             user__email__endswith="yopmail.com"
             ).select_related('product').values()
         
-        
+        all_payments = Main_Payment.objects.all().select_related('product').values()
         
 
         filtered_payments = filtered_payments.annotate(product_plan=Upper('product__product_plan'))
@@ -1636,6 +1637,8 @@ class ExpiryPayments(APIView):
 
         renewal_amount = 0
         renewed_amount = 0
+        total_renewal_amount = 0
+        new_registrations_amount = 0
 
         for i in range(len(payment_list)):
             filtered_products = [item for item in products if item['id'] == payment_list[i]['id']]
@@ -1650,6 +1653,23 @@ class ExpiryPayments(APIView):
                     product__product_name=products[j]['product__product_name'],
                     order_datetime__gt=payment_list[i]['order_datetime']
                 ).exists()
+
+            if filtered_products:
+                new_payment = all_payments.filter(
+                    user__email__iexact=users[i]['user__email'],
+                    product__product_name=products[j]['product__product_name'],
+                )
+
+            if not len(new_payment) > 1:
+                amount = payment_list[i]['amount']
+                if payment_list[i]['currency'].lower() != 'pkr':
+                    currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
+                    converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
+                    new_registrations_amount += converted_amount
+                else:
+                    new_registrations_amount += float(amount)
+                
+            
 
             
             if renewal_status == 'false':
@@ -1679,7 +1699,7 @@ class ExpiryPayments(APIView):
             if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
                 response_data.append(payment_list[i])
 
-
+        total_renewal_amount = renewed_amount + renewal_amount
         if export == 'true':
             file_name = f"Renewed_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -1704,8 +1724,10 @@ class ExpiryPayments(APIView):
             'current_page': response_data_paginated.number,
             'has_next': response_data_paginated.has_next(),
             'has_previous': response_data_paginated.has_previous(),
+            'total_renewal_amount': total_renewal_amount,
             'renewal_amount': renewal_amount,
             'renewed_amount': renewed_amount,
+            'new_registrations_amount': new_registrations_amount,
             'payments': response_data_paginated.object_list,
         })
     
