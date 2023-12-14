@@ -1241,17 +1241,17 @@ class PaymentValidationNew(APIView):
 
 class Renewal_Leads(APIView):
     def get(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
         lst = []
         for index, row in data.iterrows():
             first_name = row['name']
             user_id = row['email']
             phone = row['phone']
-            product_name = row['product_name']
-            status = row['status']
             date_joined = row['date_joined']
+            product_name = row['product_name']
             payment_date = row['payment_date']
             expiration_date = row['expiry_date']
+            status = row['status']
             
             # Remove everything after the date for date_joined
             date_joined = date_joined.split()[0]
@@ -1618,7 +1618,7 @@ class ExpiryPayments(APIView):
             renewal_amount = response['renewal_amount']
             renewed_amount = response['renewed_amount']
             total_renewal_amount = response['total_renewal_amount']
-            new_registrations_amount = response['new_registrations_amount']
+            # new_registrations_amount = response['new_registrations_amount']
         else:
             filtered_payments = Main_Payment.objects.filter(
                 source__in=['Al-Nafi','NEW ALNAFI'],
@@ -1653,7 +1653,7 @@ class ExpiryPayments(APIView):
             renewal_amount = 0
             renewed_amount = 0
             total_renewal_amount = 0
-            new_registrations_amount = 0
+            # new_registrations_amount = 0
 
             for i in range(len(payment_list)):
                 filtered_products = [item for item in products if item['id'] == payment_list[i]['id']]
@@ -1675,14 +1675,14 @@ class ExpiryPayments(APIView):
                         product__product_name=products[j]['product__product_name'],
                     )
 
-                if not len(new_payment) > 1:
-                    amount = payment_list[i]['amount']
-                    if payment_list[i]['currency'].lower() != 'pkr':
-                        currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
-                        converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
-                        new_registrations_amount += converted_amount
-                    else:
-                        new_registrations_amount += float(amount)
+                # if not len(new_payment) > 1:
+                #     amount = payment_list[i]['amount']
+                #     if payment_list[i]['currency'].lower() != 'pkr':
+                #         currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
+                #         converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
+                #         new_registrations_amount += converted_amount
+                #     else:
+                #         new_registrations_amount += float(amount)
                     
                 
 
@@ -1711,12 +1711,12 @@ class ExpiryPayments(APIView):
 
                 j += 1
 
-                if new_registrations == 'true':
-                    if not len(new_payment) > 1:
-                        response_data.append(payment_list[i])
-                else:
-                    if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
-                        response_data.append(payment_list[i])
+                # if new_registrations == 'true':
+                #     if not len(new_payment) > 1:
+                #         response_data.append(payment_list[i])
+                # else:
+                if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
+                    response_data.append(payment_list[i])
 
             total_renewal_amount = renewed_amount + renewal_amount
             if export == 'true':
@@ -1728,7 +1728,11 @@ class ExpiryPayments(APIView):
                 return Response(data)
             
 
-            response = {"response_data": response_data,"renewal_amount":renewal_amount,"renewed_amount":renewed_amount,"total_renewal_amount":total_renewal_amount,"new_registrations_amount":new_registrations_amount}
+            response = {"response_data": response_data,
+                        "renewal_amount":renewal_amount,
+                        "renewed_amount":renewed_amount,
+                        # "new_registrations_amount":new_registrations_amount,
+                        "total_renewal_amount":total_renewal_amount}
             cache.set(cache_key, json.dumps(response, default=str), 60 * 60 * 24)
 
 
@@ -1761,7 +1765,7 @@ class ExpiryPayments(APIView):
             'total_renewal_amount': total_renewal_amount,
             'renewal_amount': renewal_amount,
             'renewed_amount': renewed_amount,
-            'new_registrations_amount': new_registrations_amount,
+            # 'new_registrations_amount': new_registrations_amount,
             'payments': response_data_paginated.object_list,
         })
     
