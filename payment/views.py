@@ -1607,6 +1607,7 @@ class ExpiryPayments(APIView):
 
 
         cache_key = f"expiry_payments_{start_date}_{end_date}_{user_email}_{product}_{renewal_status}_{export}"
+        cache.clear()
         cached_data = cache.get(cache_key)
 
 
