@@ -1594,112 +1594,139 @@ class ExpiryPayments(APIView):
         product = self.request.GET.get('product')
         renewal_status = self.request.GET.get('Renewal', None)
         export = self.request.GET.get('export', None) or None
-       
+
         today = date.today()
         start_date = today.replace(day=1)
 
         if not start_date_str or not end_date_str:
-            end_date = (today.replace(day=1, month=1, year=today.year + 1) if today.month == 12
-                        else today.replace(day=1, month=today.month + 1)) - timedelta(days=1)
+                end_date = (today.replace(day=1, month=1, year=today.year + 1) if today.month == 12
+                            else today.replace(day=1, month=today.month + 1)) - timedelta(days=1)
         else:
             start_date = timezone.make_aware(datetime.strptime(start_date_str, '%Y-%m-%d')).date()
             end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')).date()
 
-        filtered_payments = Main_Payment.objects.filter(
-            source__in=['Al-Nafi','NEW ALNAFI'],
-            expiration_datetime__range=(start_date, end_date),
-            ).exclude(
-            user__email__endswith="yopmail.com"
-            ).select_related('product').values()
-        
-        all_payments = Main_Payment.objects.all().select_related('product').values()
-        
 
-        filtered_payments = filtered_payments.annotate(product_plan=Upper('product__product_plan'))
-
-        if user_email:
-            filtered_payments = filtered_payments.filter(user__email=user_email)
-        if product:
-            filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
+        cache_key = f"expiry_payments_{start_date}_{end_date}_{user_email}_{product}_{renewal_status}_{export}"
+        cached_data = cache.get(cache_key)
 
 
-        # Query payments falling within the specified date range for the renewal check
-        renewal_payments = Main_Payment.objects.filter(
-            order_datetime__range=(start_date, today)
-        )
-        response_data = []
 
-        products = list(filtered_payments.values('id','product__product_name'))
-        users = list(filtered_payments.values('user__email','user__phone'))
-        payment_list = list(filtered_payments.values("id","candidate_name","user_id","amount","currency","product_plan","source","order_datetime","expiration_datetime","source_payment_id","alnafi_payment_id","card_mask","country"))   
-  
-        j=0
+        if cached_data:
+            response = json.loads(cached_data)
+            response_data = response['response_data']
+            renewal_amount = response['renewal_amount']
+            renewed_amount = response['renewed_amount']
+            total_renewal_amount = response['total_renewal_amount']
+            new_registrations_amount = response['new_registrations_amount']
+        else:
+            filtered_payments = Main_Payment.objects.filter(
+                source__in=['Al-Nafi','NEW ALNAFI'],
+                expiration_datetime__range=(start_date, end_date),
+                ).exclude(
+                user__email__endswith="yopmail.com"
+                ).select_related('product').values()
+            
+            all_payments = Main_Payment.objects.all().select_related('product').values()
+            
 
-        renewal_amount = 0
-        renewed_amount = 0
-        total_renewal_amount = 0
-        new_registrations_amount = 0
+            filtered_payments = filtered_payments.annotate(product_plan=Upper('product__product_plan'))
 
-        for i in range(len(payment_list)):
-            filtered_products = [item for item in products if item['id'] == payment_list[i]['id']]
+            if user_email:
+                filtered_payments = filtered_payments.filter(user__email=user_email)
+            if product:
+                filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
 
-            while payment_list[i]['id'] != products[j]['id']:
+
+            # Query payments falling within the specified date range for the renewal check
+            renewal_payments = Main_Payment.objects.filter(
+                order_datetime__range=(start_date, today)
+            )
+            response_data = []
+
+            products = list(filtered_payments.values('id','product__product_name'))
+            users = list(filtered_payments.values('user__email','user__phone'))
+            payment_list = list(filtered_payments.values("id","candidate_name","user_id","amount","currency","product_plan","source","order_datetime","expiration_datetime","source_payment_id","alnafi_payment_id","card_mask","country"))   
+    
+            j=0
+
+            renewal_amount = 0
+            renewed_amount = 0
+            total_renewal_amount = 0
+            new_registrations_amount = 0
+
+            for i in range(len(payment_list)):
+                filtered_products = [item for item in products if item['id'] == payment_list[i]['id']]
+
+                while payment_list[i]['id'] != products[j]['id']:
+                    j += 1
+
+                renewal_payment = False
+                if filtered_products:
+                    renewal_payment = renewal_payments.filter(
+                        user__email__iexact=users[i]['user__email'],
+                        product__product_name=products[j]['product__product_name'],
+                        order_datetime__gt=payment_list[i]['order_datetime']
+                    ).exists()
+
+                if filtered_products:
+                    new_payment = all_payments.filter(
+                        user__email__iexact=users[i]['user__email'],
+                        product__product_name=products[j]['product__product_name'],
+                    )
+
+                if not len(new_payment) > 1:
+                    amount = payment_list[i]['amount']
+                    if payment_list[i]['currency'].lower() != 'pkr':
+                        currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
+                        converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
+                        new_registrations_amount += converted_amount
+                    else:
+                        new_registrations_amount += float(amount)
+                    
+                
+
+                
+                if renewal_status == 'false':
+                    if not renewal_payment:
+                        single_renewal_amount = self.calculate_renewal_amount(payment_list[i])
+                        renewal_amount += single_renewal_amount
+                elif renewal_status == 'true':
+                    if renewal_payment:
+                        single_renewed_amount = self.calculate_renewed_amount(payment_list[i])   
+                        renewed_amount += single_renewed_amount 
+                else:
+                    if renewal_payment:
+                        single_renewed_amount = self.calculate_renewed_amount(payment_list[i])
+                        renewed_amount += single_renewed_amount 
+                    else:
+                        single_renewal_amount = self.calculate_renewal_amount(payment_list[i])
+                        renewal_amount += single_renewal_amount
+
+
+                payment_list[i]['user_id'] = users[i]['user__email']
+                payment_list[i]['product_name'] = products[j]['product__product_name']
+                payment_list[i]['Renewal'] = renewal_payment
+                payment_list[i]['phone'] = users[i]['user__phone']
+
                 j += 1
 
-            renewal_payment = False
-            if filtered_products:
-                renewal_payment = renewal_payments.filter(
-                    user__email__iexact=users[i]['user__email'],
-                    product__product_name=products[j]['product__product_name'],
-                    order_datetime__gt=payment_list[i]['order_datetime']
-                ).exists()
+                if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
+                    response_data.append(payment_list[i])
 
-            if filtered_products:
-                new_payment = all_payments.filter(
-                    user__email__iexact=users[i]['user__email'],
-                    product__product_name=products[j]['product__product_name'],
-                )
-
-            if not len(new_payment) > 1:
-                amount = payment_list[i]['amount']
-                if payment_list[i]['currency'].lower() != 'pkr':
-                    currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
-                    converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
-                    new_registrations_amount += converted_amount
-                else:
-                    new_registrations_amount += float(amount)
-                
+            total_renewal_amount = renewed_amount + renewal_amount
+            if export == 'true':
+                file_name = f"Renewed_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                df = pd.DataFrame(response_data).to_csv(index=False)
+                s3 = upload_csv_to_s3(df, file_name)
+                data = {'file_link': file_path, 'export': 'true'}
+                return Response(data)
             
 
-            
-            if renewal_status == 'false':
-                if not renewal_payment:
-                    single_renewal_amount = self.calculate_renewal_amount(payment_list[i])
-                    renewal_amount += single_renewal_amount
-            elif renewal_status == 'true':
-                if renewal_payment:
-                    single_renewed_amount = self.calculate_renewed_amount(payment_list[i])   
-                    renewed_amount += single_renewed_amount 
-            else:
-                if renewal_payment:
-                    single_renewed_amount = self.calculate_renewed_amount(payment_list[i])
-                    renewed_amount += single_renewed_amount 
-                else:
-                    single_renewal_amount = self.calculate_renewal_amount(payment_list[i])
-                    renewal_amount += single_renewal_amount
+            response = {"response_data": response_data,"renewal_amount":renewal_amount,"renewed_amount":renewed_amount,"total_renewal_amount":total_renewal_amount,"new_registrations_amount":new_registrations_amount}
+            cache.set(cache_key, json.dumps(response, default=str), 60 * 60 * 24)
 
 
-            payment_list[i]['user_id'] = users[i]['user__email']
-            payment_list[i]['product_name'] = products[j]['product__product_name']
-            payment_list[i]['Renewal'] = renewal_payment
-            payment_list[i]['phone'] = users[i]['user__phone']
-
-            j += 1
-
-            if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
-                response_data.append(payment_list[i])
-
-        total_renewal_amount = renewed_amount + renewal_amount
         if export == 'true':
             file_name = f"Renewed_Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
             file_path = os.path.join(settings.MEDIA_ROOT, file_name)
@@ -1707,17 +1734,6 @@ class ExpiryPayments(APIView):
             s3 = upload_csv_to_s3(df, file_name)
             data = {'file_link': file_path, 'export': 'true'}
             return Response(data)
-
-
-        cache_key = f"expiry_payments_{start_date}_{end_date}_{user_email}_{product}_{renewal_status}_{export}"
-        cached_data = cache.get(cache_key)
-
-
-        if cached_data:
-            response_data = json.loads(cached_data)
-        else:
-            cache.set(cache_key, json.dumps(response_data, default=str), 60 * 60 * 24)
-
 
         paginator = Paginator(response_data, 10)  # Set the number of items per page (adjust as needed)
         page_number = request.GET.get('page', 1)
