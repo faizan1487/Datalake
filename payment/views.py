@@ -1593,6 +1593,7 @@ class ExpiryPayments(APIView):
         user_email = self.request.GET.get('q')
         product = self.request.GET.get('product')
         renewal_status = self.request.GET.get('Renewal', None)
+        new_registrations = self.request.GET.get('new_registrations', None)
         export = self.request.GET.get('export', None) or None
 
         today = date.today()
@@ -1606,7 +1607,7 @@ class ExpiryPayments(APIView):
             end_date = timezone.make_aware(datetime.strptime(end_date_str, '%Y-%m-%d')).date()
 
 
-        cache_key = f"expiry_payments_{start_date}_{end_date}_{user_email}_{product}_{renewal_status}_{export}"
+        cache_key = f"expiry_payments_{start_date}_{end_date}_{user_email}_{product}_{renewal_status}_{export}_{new_registrations}"
         cached_data = cache.get(cache_key)
 
 
@@ -1710,8 +1711,12 @@ class ExpiryPayments(APIView):
 
                 j += 1
 
-                if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
-                    response_data.append(payment_list[i])
+                if new_registrations == 'true':
+                    if not len(new_payment) > 1:
+                        response_data.append(payment_list[i])
+                else:
+                    if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
+                        response_data.append(payment_list[i])
 
             total_renewal_amount = renewed_amount + renewal_amount
             if export == 'true':
