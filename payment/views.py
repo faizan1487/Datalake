@@ -696,9 +696,9 @@ class SearchPayments(APIView):
                     'source': payment['source'],
                     'currency': payment['currency'],
                     'amount': payment['amount'],
-                    'converted_amount': payment['converted_amount'],
+                    'converted_in_usd': payment['converted_in_usd'],
+                    'two_percent_deduction': payment['two_percent_deduction'],
                     'after_deduction_amount': payment['after_deduction_amount'],
-                    'deducted_amount': payment['deducted_amount'],
                     'product_names': payment['product'],
                     'plans': payment['plan'],
                     'alnafi_payment_id': payment['alnafi_payment_id'],
@@ -860,7 +860,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         #     amount, tax = add_tax_stripe_according_to_the_country_code(amount,country_name.upper())
         if p.source.lower() not in sources:
             if p.currency.lower() == 'pkr' or p.currency.lower() == 'PKR':
-                p.converted_amount = amount
+                p.converted_amount = 0
                 p.amount_after_deduction = amount
                 p.deducted_amount = 0
             elif p.currency.lower() != 'usd':
@@ -900,9 +900,9 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                 'source': payment.source,
                 'currency': payment.currency,
                 'amount': payment.amount,
-                'converted_amount': payment.converted_amount,
+                'converted_in_usd': payment.converted_amount,
+                'two_percent_deduction': payment.deducted_amount,
                 'after_deduction_amount': payment.amount_after_deduction,
-                'deducted_amount': payment.deducted_amount,
                 'alnafi_payment_id': payment.alnafi_payment_id,
                 'order_datetime': payment.order_datetime,
                 'card_mask': payment.card_mask,
@@ -1627,7 +1627,7 @@ class ExpiryPayments(APIView):
                 user__email__endswith="yopmail.com"
                 ).select_related('product').values()
             
-            all_payments = Main_Payment.objects.all().select_related('product').values()
+            # all_payments = Main_Payment.objects.all().select_related('product').values()
             
 
             filtered_payments = filtered_payments.annotate(product_plan=Upper('product__product_plan'))
@@ -1644,45 +1644,47 @@ class ExpiryPayments(APIView):
             )
             response_data = []
 
-            products = list(filtered_payments.values('id','product__product_name'))
+            # products = list(filtered_payments.values('id','product__product_name'))
             users = list(filtered_payments.values('user__email','user__phone'))
-            payment_list = list(filtered_payments.values("id","candidate_name","user_id","amount","currency","product_plan","source","order_datetime","expiration_datetime","source_payment_id","alnafi_payment_id","card_mask","country"))   
+            payment_list = list(filtered_payments.values("id","candidate_name","user_id","amount","currency","product_plan","product__product_name","source","order_datetime","expiration_datetime","source_payment_id","alnafi_payment_id","card_mask","country"))
     
             j=0
 
             renewal_amount = 0
             renewed_amount = 0
             total_renewal_amount = 0
-            # new_registrations_amount = 0
+            new_registrations_amount = 0
+
+            # print(products)
+
+            # print(payment_list)
 
             for i in range(len(payment_list)):
-                filtered_products = [item for item in products if item['id'] == payment_list[i]['id']]
 
-                while payment_list[i]['id'] != products[j]['id']:
-                    j += 1
+                # while payment_list[i]['id'] != products[j]['id']:
+                #     j += 1
 
                 renewal_payment = False
-                if filtered_products:
-                    renewal_payment = renewal_payments.filter(
-                        user__email__iexact=users[i]['user__email'],
-                        product__product_name=products[j]['product__product_name'],
-                        order_datetime__gt=payment_list[i]['order_datetime']
-                    ).exists()
+                renewal_payment = renewal_payments.filter(
+                    user__email__iexact=users[i]['user__email'],
+                    product__product_name=payment_list[i]['product__product_name'],
+                    order_datetime__gt=payment_list[i]['order_datetime']
+                ).exists()
 
-                if filtered_products:
-                    new_payment = all_payments.filter(
-                        user__email__iexact=users[i]['user__email'],
-                        product__product_name=products[j]['product__product_name'],
-                    )
+                # if not renewal_payment:
+                #     new_payment = all_payments.filter(
+                #         user__email__iexact=users[i]['user__email'],
+                #         product__product_name=payment_list[i]['product__product_name'],
+                #     )
 
-                # if not len(new_payment) > 1:
-                #     amount = payment_list[i]['amount']
-                #     if payment_list[i]['currency'].lower() != 'pkr':
-                #         currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
-                #         converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
-                #         new_registrations_amount += converted_amount
-                #     else:
-                #         new_registrations_amount += float(amount)
+                #     if not len(new_payment) > 1:
+                #         amount = payment_list[i]['amount']
+                #         if payment_list[i]['currency'].lower() != 'pkr':
+                #             currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
+                #             converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
+                #             new_registrations_amount += converted_amount
+                #         else:
+                #             new_registrations_amount += float(amount)
                     
                 
 
@@ -1705,18 +1707,22 @@ class ExpiryPayments(APIView):
 
 
                 payment_list[i]['user_id'] = users[i]['user__email']
-                payment_list[i]['product_name'] = products[j]['product__product_name']
+                # payment_list[i]['product_name'] = products[j]['product__product_name']
                 payment_list[i]['Renewal'] = renewal_payment
                 payment_list[i]['phone'] = users[i]['user__phone']
 
                 j += 1
 
                 # if new_registrations == 'true':
-                #     if not len(new_payment) > 1:
-                #         response_data.append(payment_list[i])
+                #     if not renewal_payment:
+                #         if not len(new_payment) > 1:
+                #             response_data.append(payment_list[i])
                 # else:
                 if (renewal_status == 'true' and renewal_payment) or (renewal_status == 'false' and not renewal_payment) or renewal_status == 'None':
                     response_data.append(payment_list[i])
+
+            # print("renewed_amount",renewed_amount)
+            # print("renewal_amount",renewal_amount)
 
             total_renewal_amount = renewed_amount + renewal_amount
             if export == 'true':
@@ -1744,6 +1750,8 @@ class ExpiryPayments(APIView):
             data = {'file_link': file_path, 'export': 'true'}
             return Response(data)
 
+        # print("renewed_amount",renewed_amount)
+        # print("renewal_amount",renewal_amount)
         paginator = Paginator(response_data, 10)  # Set the number of items per page (adjust as needed)
         page_number = request.GET.get('page', 1)
 
@@ -1765,7 +1773,7 @@ class ExpiryPayments(APIView):
             'total_renewal_amount': total_renewal_amount,
             'renewal_amount': renewal_amount,
             'renewed_amount': renewed_amount,
-            # 'new_registrations_amount': new_registrations_amount,
+            'new_registrations_amount': new_registrations_amount,
             'payments': response_data_paginated.object_list,
         })
     
