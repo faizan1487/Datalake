@@ -1708,6 +1708,17 @@ class ExpiryPayments(APIView):
             data = {'file_link': file_path, 'export': 'true'}
             return Response(data)
 
+
+        cache_key = f"expiry_payments_{start_date}_{end_date}_{user_email}_{product}_{renewal_status}_{export}"
+        cached_data = cache.get(cache_key)
+
+
+        if cached_data:
+            response_data = json.loads(cached_data)
+        else:
+            cache.set(cache_key, json.dumps(response_data, default=str), 60 * 60 * 24)
+
+
         paginator = Paginator(response_data, 10)  # Set the number of items per page (adjust as needed)
         page_number = request.GET.get('page', 1)
 
@@ -1717,6 +1728,8 @@ class ExpiryPayments(APIView):
             response_data_paginated = paginator.page(1)
         except EmptyPage:
             response_data_paginated = paginator.page(paginator.num_pages)
+
+        
 
         return Response({
             'count': len(response_data),
