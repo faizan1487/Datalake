@@ -2,6 +2,7 @@ import string
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 import requests
+from .services import get_pkr_rate
 from payment.views import AlnafiPayment
 
 from products.models import Alnafi_Product
@@ -48,6 +49,19 @@ def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args
     # print("new alnafi signal running for sales")
     model = 'NewAlnafi'
     Thread(target=change_lead_status_sales_module, args=(instance,model,)).start()
+@receiver(pre_save, sender=New_Alnafi_Payments)
+def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+    print("new alnafi signal running for commission")
+    model = 'NewAlnafi'
+    # func = send_payment_to_commission_doctype(instance)
+    Thread(target=send_payment_to_commission_doctype, args=(instance,)).start()
+
+@receiver(pre_save, sender=AlNafi_Payment)
+def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+    print("new alnafi signal running for commission")
+    model = 'NewAlnafi'
+    # func = send_payment_to_commission_doctype(instance)
+    Thread(target=send_payment_to_commission_doctype, args=(instance,)).start()
 
 
 @receiver(pre_save, sender=AlNafi_Payment)
@@ -220,6 +234,123 @@ def change_lead_status_sales_module(instance, **kwargs):
     except Exception as e:
         pass
        
+
+def send_payment_to_commission_doctype(instance, **kwargs):
+    print("signal Running")
+    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","lead_creator","phone"]&filters=[["Lead","email_id","=","{instance.customer_email}"]]'
+    api_key = "4e7074f890507cb"
+    api_secret = "c954faf5ff73d31"
+    email_keys = {
+    "muzammil.raees@alnafi.edu.pk": ("b6d818ef8024f5a", "ce1749a7dcf8577"),
+    "ribal.shahid@alnafi.edu.pk": ("39d14c9d602fa09", "216de0a015e7fd1"),
+    "waqas.shah@alnafi.edu.pk" : ("b09d1796de6444a", "9ac70da03e4c23c"),
+    "shoaib.akhtar@alnafi.edu.pk": ("484f3e9978c00f3","f61de5c03b3935d"),
+    "haider.raza@alnafi.edu.pk": ("2a1d467717681df", "f2edc530744442b"),
+    "saad.askari@alnafi.edu.pk": ("e31afcb884def7e", "cb799e6913b57f9"),
+    "saima.ambreen@alnafi.edu.pk": ("3da0a250742fa00", "5ec8bb8e1e94930"),
+    "hamza.jamal@alnafi.edu.pk": ("dd3d10e83dfbb6b", "a1a50d549455fe3"),
+    "wamiq.siddiqui@alnafi.edu.pk": ("31c85c7e921b270", "845aff8197932c3"),
+    "Administrator": ("4e7074f890507cb", "c954faf5ff73d31"),
+}
+
+    headers = {
+        'Authorization': f'token {api_key}:{api_secret}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    response = requests.get(url, headers=headers)
+    data = response.json()
+    print(data)
+    already_existed = len(data.get("data", [])) > 0
+
+    print("already_existed", already_existed)
+
+    if already_existed:
+        print("In if")
+        lead_info = data["data"][0] if len(data.get("data", [])) > 0 else {}
+        lead_creator_email = lead_info.get('lead_creator', '')
+
+        if lead_creator_email in email_keys:
+            # Keys for the POST request based on email matching
+            post_api_key, post_secret_key = email_keys[lead_creator_email]
+            
+            # Now, use these keys in your headers for the commission POST request
+            headers_post = {
+                'Authorization': f'token {post_api_key}:{post_secret_key}',
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+
+        # Now, use these keys in your headers for the commission POST request
+        converted_date = datetime.now().date()
+        commission_url = 'https://crm.alnafi.com/api/resource/Commission'
+        
+        # Extracting phone and lead_creator safely
+        lead_info = data["data"][0] if len(data.get("data", [])) > 0 else {}
+        phone = lead_info.get('phone')
+        lead_creator = lead_info.get('lead_creator')
+
+        if phone and lead_creator:
+            if instance.payment_method_currency.lower() == 'pkr':
+                commission_percentage = 0.08  
+                commission_amount = instance.amount * commission_percentage
+                total_product_payment = instance.amount
+            else:
+                print("in else")
+                amount = instance.amount
+                currency_rate = get_pkr_rate(instance.payment_method_currency, amount)
+                converted_amount = round(float(amount) / currency_rate[instance.payment_method_currency], 2)
+                print(converted_amount)
+                commission_percentage = 0.08  
+                commission_amount = round(float(converted_amount * commission_percentage), 2)
+                total_product_payment = converted_amount
+
+            # Handle product names if they are empty
+            data = instance.product_names if instance.product_names else None
+            print(data)
+
+            if data:
+                names = [sublist[0] for sublist in data]
+                print(type(names))
+
+                if len(names) > 1:  
+                    concatenated_names = '' 
+                    separator = '\n'
+
+                    for name in names:
+                        concatenated_names += name + '\n'  
+
+                    print(concatenated_names)
+                else:
+                    concatenated_names = instance.product_names[0]
+                
+            commission_data = {
+                "title": instance.customer_email,
+                "phone": phone,
+                "order_id": instance.orderId,
+                "payment_date": converted_date.isoformat(),
+                "total_product_payment": total_product_payment,
+                "owner_pkr": commission_amount,
+                "product": concatenated_names,
+                "source": instance.payment_method_source_name,
+                "lead_owner": lead_creator
+            }
+
+            response = requests.post(commission_url, headers=headers_post, json=commission_data)
+            print(response)
+            if response.status_code == 200:
+                # Successfully created Commission entry based on lead information
+                print(response.text)
+            else:
+                pass
+        else:
+            # Handle cases where phone or lead_creator is missing
+            pass
+    else:
+        # Handle cases where data['data'] is empty
+        pass
+
 
 
 
