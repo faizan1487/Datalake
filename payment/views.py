@@ -878,7 +878,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                 p.deducted_amount = 0
                 total_payments_in_usd += int(amount)
         else:
-            p.converted_amount = amount
+            p.converted_amount = 0
             p.amount_after_deduction = amount
             p.deducted_amount = 0
 
