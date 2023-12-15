@@ -83,50 +83,53 @@ def usersignal(instance,source,sender):
         date_joined_str = None
 
 
-    data = {
-        "first_name": instance.first_name or None,
-        "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
-        "email_id": instance.email or None,
-        "mobile_no": str(instance.phone) if hasattr(instance, 'phone') else None,
-        "country": country_name,
-        "source": source,
-        "form": instance.form or None,
-        "date": date_joined_str,  # Convert to ISO 8601 string
-        # Add other fields from the Main_User model to the data dictionary as needed
-    }
-
-    response = requests.get(url, headers=headers)
-    lead_data = response.json()
-    if 'data' not in lead_data:
-        already_existed = False
-    else:
-        already_existed = len(lead_data["data"]) > 0
-
-    if already_existed:
-        # print("already exists")
-        pass
-        # lead_id = lead_data['data'][0]['name']
-        # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
-        # response = requests.put(url, headers=headers, json=data)
-        # instance.erp_lead_id = lead_data['data'][0]['name']
-    else:
-        url = 'https://crm.alnafi.com/api/resource/Lead'
+        data = {
+            "first_name": instance.first_name or None,
+            "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
+            "email_id": instance.email or None,
+            "mobile_no": str(instance.phone) if hasattr(instance, 'phone') else None,
+            "country": country_name,
+            "source": source,
+            "form": instance.form or None,
+            "date": date_joined_str,  # Convert to ISO 8601 string
+            # Add other fields from the Main_User model to the data dictionary as needed
+        }
+        response = requests.get(url, headers=headers)
         lead_data = response.json()
-        response = requests.post(url, headers=headers, json=data)
+        if 'data' not in lead_data:
+            already_existed = False
+        else:
+            already_existed = len(lead_data["data"]) > 0
 
-        if response.status_code != 200:
-            # pass
-            print("response.status_code",response.text)
-            print("response.status_code",response.status_code)
-        if response.status_code != 200:
-            lead_data = response.json()
-            print(lead_data)
-            # erp_lead_id = lead_data['data']['name']
-            # if erp_lead_id:
-            #     # print("lead id exists")
-            #     instance.erp_lead_id = erp_lead_id
-                # instance.save(update_fields=['erp_lead_id'])
-                # print("Lead created successfully!")
+        if already_existed:
+            # print("already exists")
+            pass
+            # lead_id = lead_data['data'][0]['name']
+            # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
+            # response = requests.put(url, headers=headers, json=data)
+            # instance.erp_lead_id = lead_data['data'][0]['name']
+        else:
+            # print("instance.affiliate_code", instance.affiliate_code)
+            if instance.affiliate_code:
+                print("affiliate lead")
+                pass
+            else:
+                url = 'https://crm.alnafi.com/api/resource/Lead'
+                lead_data = response.json()
+                response = requests.post(url, headers=headers, json=data)
+            if response.status_code != 200:
+                # pass
+                print("response.status_code",response.text)
+                print("response.status_code",response.status_code)
+            if response.status_code != 200:
+                lead_data = response.json()
+                print(lead_data)
+                # erp_lead_id = lead_data['data']['name']
+                # if erp_lead_id:
+                #     # print("lead id exists")
+                #     instance.erp_lead_id = erp_lead_id
+                    # instance.save(update_fields=['erp_lead_id'])
+                    # print("Lead created successfully!")
 
 #############################################################
 @receiver(post_save, sender=Moc_Leads)
@@ -444,27 +447,42 @@ def newsignupsignal(instance,sender):
                 country_name = name
                 break
 
-    if hasattr(instance, 'created_at'):
-        date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
-    else:
-        date_joined_str = None
+        if hasattr(instance, 'created_at'):
+            date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            date_joined_str = None
 
 
-    data = {
-            "first_name": instance.first_name or None,
-            "last_name": None,
-            "email_id": instance.email or None,
-            "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
-            "country": country_name,
-            "source": source,
-            "date": str(date_joined_str) if date_joined_str else None,
-            # Add other fields from the Main_User model to the data dictionary as needed
-        }
-    
-    url = 'https://crm.alnafi.com/api/resource/Lead'
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code != 200:
-        pass
+        data = {
+                "first_name": instance.first_name or None,
+                "last_name": None,
+                "email_id": instance.email or None,
+                "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
+                "country": country_name,
+                "source": source,
+                "date": str(date_joined_str) if date_joined_str else None,
+                # Add other fields from the Main_User model to the data dictionary as needed
+            }
+        response = None
+        # print("source", source)
+        # print("affiliate_code",instance.affiliate_code)
+        if instance.affiliate_code:
+            pass
+        else:
+            print("inside if")
+            url = 'https://crm.alnafi.com/api/resource/Lead'
+            response = requests.post(url, headers=headers, json=data)
+            print(response)
+
+        if response and response.status_code != 200:
+            pass
+            # lead_data = response.json()
+            # print(lead_data)
+            # erp_lead_id = lead_data['data']['name']
+            # if erp_lead_id:
+            #     instance.erp_lead_id = erp_lead_id
+        
+        # response = requests.get(url, headers=headers)
         # lead_data = response.json()
         # print(lead_data)
         # erp_lead_id = lead_data['data']['name']
