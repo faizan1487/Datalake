@@ -41,7 +41,7 @@ class ExpenseCreateAPIView(APIView):
                 currency=currency
             )
 
-            return Response({'id': expense.id}, status=status.HTTP_201_CREATED)
+            return Response({'id': expense.id,'subject':expense.subject,'amount':expense.amount,'month':expense.month,'currency':expense.currency,'user':expense.user.email,'created_at':expense.created_at}, status=status.HTTP_201_CREATED)
 
         except KeyError as e:
             return Response({'error': f'Missing required field: {e}'}, status=status.HTTP_400_BAD_REQUEST)
