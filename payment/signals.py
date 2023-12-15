@@ -31,14 +31,14 @@ DEBUG = env('DEBUG',cast=bool)
 
 
 
-@receiver(pre_save, sender=New_Alnafi_Payments)
+# @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     model_name = 'new_alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
 
-@receiver(pre_save, sender=AlNafi_Payment)
+# @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwargs):
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
@@ -54,14 +54,14 @@ def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args
     print("new alnafi signal running for commission")
     model = 'NewAlnafi'
     # func = send_payment_to_commission_doctype(instance)
-    Thread(target=send_payment_to_commission_doctype, args=(instance,)).start()
+    Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
 @receiver(pre_save, sender=AlNafi_Payment)
-def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+def alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     print("new alnafi signal running for commission")
-    model = 'NewAlnafi'
+    model = 'Alnafi'
     # func = send_payment_to_commission_doctype(instance)
-    Thread(target=send_payment_to_commission_doctype, args=(instance,)).start()
+    Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
 
 @receiver(pre_save, sender=AlNafi_Payment)
@@ -96,7 +96,8 @@ def send_payment_support_module(instance,model_name, **kwargs):
             product_name = instance.product_name            
     else:
         if isinstance(instance.product_names, list):
-            product_name = ", ".join(instance.product_names)
+            flat_list = [item for sublist in instance.product_names for item in sublist]
+            product_name = ", ".join(flat_list)
         else:
             product_name = instance.product_names
 
@@ -235,22 +236,22 @@ def change_lead_status_sales_module(instance, **kwargs):
         pass
        
 
-def send_payment_to_commission_doctype(instance, **kwargs):
-    print("signal Running")
+def send_payment_to_commission_doctype(instance,model_name, **kwargs):
+    # print("signal Running")
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","lead_creator","phone"]&filters=[["Lead","email_id","=","{instance.customer_email}"]]'
     api_key = "4e7074f890507cb"
     api_secret = "c954faf5ff73d31"
     email_keys = {
-    "muzammil.raees@alnafi.edu.pk": ("b6d818ef8024f5a", "ce1749a7dcf8577"),
-    "ribal.shahid@alnafi.edu.pk": ("39d14c9d602fa09", "216de0a015e7fd1"),
-    "waqas.shah@alnafi.edu.pk" : ("b09d1796de6444a", "9ac70da03e4c23c"),
-    "shoaib.akhtar@alnafi.edu.pk": ("484f3e9978c00f3","f61de5c03b3935d"),
-    "haider.raza@alnafi.edu.pk": ("2a1d467717681df", "f2edc530744442b"),
-    "saad.askari@alnafi.edu.pk": ("e31afcb884def7e", "cb799e6913b57f9"),
-    "saima.ambreen@alnafi.edu.pk": ("3da0a250742fa00", "5ec8bb8e1e94930"),
-    "hamza.jamal@alnafi.edu.pk": ("dd3d10e83dfbb6b", "a1a50d549455fe3"),
-    "wamiq.siddiqui@alnafi.edu.pk": ("31c85c7e921b270", "845aff8197932c3"),
-    "Administrator": ("4e7074f890507cb", "c954faf5ff73d31"),
+        "muzammil.raees@alnafi.edu.pk": ("b6d818ef8024f5a", "ce1749a7dcf8577"),
+        "ribal.shahid@alnafi.edu.pk": ("39d14c9d602fa09", "216de0a015e7fd1"),
+        "waqas.shah@alnafi.edu.pk" : ("b09d1796de6444a", "9ac70da03e4c23c"),
+        "shoaib.akhtar@alnafi.edu.pk": ("484f3e9978c00f3","f61de5c03b3935d"),
+        "haider.raza@alnafi.edu.pk": ("2a1d467717681df", "f2edc530744442b"),
+        "saad.askari@alnafi.edu.pk": ("e31afcb884def7e", "cb799e6913b57f9"),
+        "saima.ambreen@alnafi.edu.pk": ("3da0a250742fa00", "5ec8bb8e1e94930"),
+        "hamza.jamal@alnafi.edu.pk": ("dd3d10e83dfbb6b", "a1a50d549455fe3"),
+        "wamiq.siddiqui@alnafi.edu.pk": ("31c85c7e921b270", "845aff8197932c3"),
+        "Administrator": ("4e7074f890507cb", "c954faf5ff73d31"),
 }
 
     headers = {
@@ -261,28 +262,25 @@ def send_payment_to_commission_doctype(instance, **kwargs):
 
     response = requests.get(url, headers=headers)
     data = response.json()
-    print(data)
+    # print(data)
     already_existed = len(data.get("data", [])) > 0
 
-    print("already_existed", already_existed)
+    # print("already_existed", already_existed)
 
     if already_existed:
-        print("In if")
+        # print("In if")
         lead_info = data["data"][0] if len(data.get("data", [])) > 0 else {}
         lead_creator_email = lead_info.get('lead_creator', '')
 
         if lead_creator_email in email_keys:
-            # Keys for the POST request based on email matching
             post_api_key, post_secret_key = email_keys[lead_creator_email]
             
-            # Now, use these keys in your headers for the commission POST request
             headers_post = {
                 'Authorization': f'token {post_api_key}:{post_secret_key}',
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             }
 
-        # Now, use these keys in your headers for the commission POST request
         converted_date = datetime.now().date()
         commission_url = 'https://crm.alnafi.com/api/resource/Commission'
         
@@ -290,58 +288,93 @@ def send_payment_to_commission_doctype(instance, **kwargs):
         lead_info = data["data"][0] if len(data.get("data", [])) > 0 else {}
         phone = lead_info.get('phone')
         lead_creator = lead_info.get('lead_creator')
-
+        total_product_payment = 0
+        commission_amount = 0
         if phone and lead_creator:
-            if instance.payment_method_currency.lower() == 'pkr':
-                commission_percentage = 0.08  
-                commission_amount = instance.amount * commission_percentage
-                total_product_payment = instance.amount
+            # print("model_name",model_name)
+            commission_percentage = 0.0
+            if model_name == "NewAlnafi":
+                if instance.payment_method_currency.lower() == 'pkr':
+                    commission_percentage = 0.08 
+                    if instance.amount: 
+                        commission_amount = instance.amount * commission_percentage
+                        total_product_payment = instance.amount
+                # print("commission_amount", commission_amount)
             else:
-                print("in else")
-                amount = instance.amount
-                currency_rate = get_pkr_rate(instance.payment_method_currency, amount)
-                converted_amount = round(float(amount) / currency_rate[instance.payment_method_currency], 2)
-                print(converted_amount)
-                commission_percentage = 0.08  
-                commission_amount = round(float(converted_amount * commission_percentage), 2)
-                total_product_payment = converted_amount
+                if instance.amount_pkr > 0:
+                    commission_percentage = 0.08
+                    commission_amount = instance.amount_pkr * commission_percentage
+                    total_product_payment = instance.amount_pkr
 
-            # Handle product names if they are empty
-            data = instance.product_names if instance.product_names else None
-            print(data)
+            if model_name == "NewAlnafi":
+                if instance.payment_method_currency.lower() != 'pkr':
+                    if instance.amount:
+                        amount = instance.amount
+                        currency_rate = get_pkr_rate(instance.payment_method_currency, amount)
+                        converted_amount = round(float(amount) / currency_rate[instance.payment_method_currency], 2)
+                        # print(converted_amount)
+                        commission_percentage = 0.08  
+                        commission_amount = round(float(converted_amount * commission_percentage), 2)
+                        total_product_payment = converted_amount
+            else:
+                if instance.amount_usd > 0:
+                    amount = instance.amount_usd
+                    currency = "usd"
+                    currency_rate = get_pkr_rate(currency, amount)
+                    converted_amount = round(float(amount) / currency_rate[currency], 2)
+                    # print(converted_amount)
+                    commission_percentage = 0.08  
+                    commission_amount = round(float(converted_amount * commission_percentage), 2)
+                    total_product_payment = converted_amount
+          
+            if model_name == "NewAlnafi":
+                if isinstance(instance.product_names, list):
+                    # print("is a list")
+                    # print(instance.product_names)
+                    # Flatten the list of lists into a single list
+                    flat_list = [item for sublist in instance.product_names for item in sublist]
 
-            if data:
-                names = [sublist[0] for sublist in data]
-                print(type(names))
-
-                if len(names) > 1:  
-                    concatenated_names = '' 
-                    separator = '\n'
-
-                    for name in names:
-                        concatenated_names += name + '\n'  
-
-                    print(concatenated_names)
+                    # Join the flattened list into a string
+                    product_name = ", ".join(flat_list)
                 else:
-                    concatenated_names = instance.product_names[0]
+                    product_name = instance.product_names
+            if model_name == "Alnafi" :    
+                if isinstance(instance.product_name, list):
+                    # print("is a list")
+                    # print(instance.product_name)
+                    # Flatten the list of lists into a single list
+                    flat_list = [item for sublist in instance.product_name for item in sublist]
+
+                    # Join the flattened list into a string
+                    product_name = ", ".join(flat_list)
+                else:
+                    product_name = instance.product_name  
+            if model_name == "NewAlnafi":
+                order_id = instance.orderId    
+            else:
+                order_id = instance.order_id
+            if model_name == "NewAlnafi":
+                source = instance.payment_method_source_name    
+            else:
+                source = instance.source
                 
             commission_data = {
                 "title": instance.customer_email,
                 "phone": phone,
-                "order_id": instance.orderId,
+                "order_id": order_id,
                 "payment_date": converted_date.isoformat(),
                 "total_product_payment": total_product_payment,
                 "owner_pkr": commission_amount,
-                "product": concatenated_names,
-                "source": instance.payment_method_source_name,
+                "product": product_name,
+                "source": source,
                 "lead_owner": lead_creator
             }
 
             response = requests.post(commission_url, headers=headers_post, json=commission_data)
-            print(response)
+            # print(response.text)
             if response.status_code == 200:
                 # Successfully created Commission entry based on lead information
-                print(response.text)
+                print(response.status_code)
             else:
                 pass
         else:
