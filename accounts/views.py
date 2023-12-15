@@ -4,6 +4,9 @@ from rest_framework.response import Response
 from rest_framework import status
 from .models import Expense
 from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
+from django.db import IntegrityError
 
 
 class ExpenseCreateAPIView(APIView):
@@ -44,6 +47,7 @@ class ExpenseCreateAPIView(APIView):
             return Response({'error': f'Missing required field: {e}'}, status=status.HTTP_400_BAD_REQUEST)
     
 
+
     permission_classes = [IsAuthenticated]
     def get(self, request):
         # Get parameters from the request
@@ -73,7 +77,7 @@ class ExpenseCreateAPIView(APIView):
                 'subject': expense.subject,
                 'amount': expense.amount,
                 'created_at': expense.created_at,
-                'user': expense.user.id,  # Assuming user is a ForeignKey in Expense model
+                'user': expense.user.email,  # Assuming user is a ForeignKey in Expense model
                 'month': expense.month,  # Extract month from created_at
                 'currency': expense.currency,  # Assuming currency is a field in Expense model
             }
@@ -81,3 +85,53 @@ class ExpenseCreateAPIView(APIView):
         ]
 
         return Response(expenses_data)
+    
+
+
+
+
+
+
+class ExpenseUpdateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    def put(self, request, expense_id):
+        # Retrieve the expense instance
+        try:
+            expense = Expense.objects.get(id=expense_id)
+            data = request.data
+
+            attributes_to_update = [
+                'subject', 'amount','currency', 'created_at', 'month'
+            ]
+
+            for attribute in attributes_to_update:
+                if attribute in data:
+                    setattr(expense, attribute, data[attribute])
+
+            expense_data = {
+                    'id': expense.id,
+                    'subject': expense.subject,
+                    'amount': expense.amount if expense.amount else None,
+                    'currency': expense.currency if expense.currency else None,
+                    'created_at': expense.created_at if expense.created_at else None,
+                    'month': expense.month if expense.month else None,
+                    'user': expense.user.email
+
+                }
+
+            return Response(expense_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': f'{e}'}, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    permission_classes = [IsAuthenticated]
+    def delete(self, request, expense_id):
+        try:
+            expense = Expense.objects.get(pk=expense_id)
+            expense.delete()
+            return JsonResponse({'message': 'Expense deleted successfully'}, status=200)
+        except Expense.DoesNotExist:
+            return JsonResponse({'error': 'Expense not found'}, status=404)
+        except IntegrityError:
+            return JsonResponse({'error': 'IntegrityError occurred while deleting expense'}, status=500)
+
