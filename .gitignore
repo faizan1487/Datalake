@@ -4,7 +4,13 @@ db.sqlite3.2
 .env_faizan
 __pycache__
 
-
+populate.py
+conversation_ods.py
+lead_owner.py
+lu23549ad4k4.tmp
+lu223639wfyh.tmp
+.~lock.user_contact_data.csv#
+payment/.~lock.Renewal Leads - Al Baseer to CRM - Near To Expiry.csv#
 
 Project.csv
 Updated_Project.csv

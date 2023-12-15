@@ -329,13 +329,6 @@ class GetUserEnrollments(APIView):
         return paginator.get_paginated_response(user_enrollemnt_serializer.data)    
 
 
-
-
-
-
-
-
-
 class ThinkificUsers(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -459,7 +452,6 @@ class SaveEnrollments(APIView):
                 'email': data['email'][i],
                 'course_id': data['course_id'][i],
                 'course_name': data['course_name'][i],
-                'status': data['status'][i]
             }
             enrollment, created = Thinkific_Users_Enrollments.objects.get_or_create(user_id=user_instance, course_name=data['course_name'][i], defaults=user_data)
 
@@ -479,7 +471,6 @@ class SaveEnrollments(APIView):
                 enrollment.updated_at = user_data['updated_at']
                 enrollment.course_id = user_data['course_id']
                 enrollment.course_name = user_data['course_name']
-                enrollment.status = user_data['status']
                 enrollment.save()
 
         return Response("done")

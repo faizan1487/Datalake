@@ -109,6 +109,8 @@ INSTALLED_APPS = [
     'import_export',
     'rangefilter',
 
+
+    'accounts.apps.AccountsConfig',
     'payment.apps.PaymentConfig',
     'feedback.apps.FeedbackConfig',
     'security.apps.SecurityConfig',

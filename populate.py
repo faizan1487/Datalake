@@ -74,6 +74,8 @@
 #     print(f"Added {num_records_to_create} fake Main_Payment records.")
 
 
+#=====================================================================================================
+
 
 
 # import pandas as pd
@@ -90,71 +92,120 @@
 # # Save the DataFrame back to a CSV file
 # df.to_csv("/home/faizan/albaseer/Al-Baseer-Backend/new_file.csv", index=False)
 
-from datetime import datetime
-import requests
+
+
+
+#+++++=============================================================================
+# from datetime import datetime
+# import requests
+# import pandas as pd
+
+# def crmnote():
+#     user_api_key = '2a1d467717681df'
+#     user_secret_key = '39faa082ac5f258'
+
+#     headers = {
+#         'Authorization': f'token {user_api_key}:{user_secret_key}',
+#         "Content-Type": "application/json",
+#         "Accept": "application/json",
+#     }
+
+#     data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/tabCRM Note_export_2023-11-02_102731.csv')
+
+#     for index, row in data.iterrows():
+#         name = row['name']
+#         creation = row['creation']
+#         modified = row['modified']
+#         modified_by = row['modified_by']
+#         owner = row['owner']
+#         docstatus = row['docstatus']
+#         idx = row['idx']
+#         note = row['note']
+#         added_by = row['added_by']
+#         parent = row['parent']
+#         parentfield = row['parentfield']
+#         parenttype = row['parenttype']
+
+#         added_on = row['added_on']
+#         if pd.isna(added_on):  # Check for "nan"
+#             added_on = None
+
+#         # Convert creation and modified datetime strings to ISO format
+#         creation = datetime.fromisoformat(creation).isoformat()
+#         modified = datetime.fromisoformat(modified).isoformat()
+
+#         # try:
+#         data = {
+#             'name': name,
+#             'parent': parent,
+#             'creation': creation,
+#             'modified': modified,
+#             'modified_by': modified_by,
+#             'owner': owner,
+#             'docstatus': docstatus,
+#             'idx': idx,
+#             'note': note,
+#             'added_by': added_by,
+#             'added_on': added_on,
+#             'parentfield': parentfield,
+#             'parenttype': parenttype,
+#         }
+#         print(data)
+
+#         post_url = 'https://crm.alnafi.com/api/resource/CRM Note'
+#         response = requests.post(post_url, headers=headers, json=data)
+
+#         print(f"Data sent for index {index}: {data}")
+#         print(f"Response Status Code: {response.status_code}")
+#         print(f"Response Text: {response.text}")
+
+#         # except Exception as e:
+#         #     print(f"Error processing data for index {index}: {str(e)}")
+
+# if __name__ == "__main__":
+#     crmnote()
+
+
+
 import pandas as pd
 
-def crmnote():
-    user_api_key = '2a1d467717681df'
-    user_secret_key = '39faa082ac5f258'
+def find_unique_records(file1, file2, email_column='email'):
+    # Read CSV files into pandas DataFrames
+    df1 = pd.read_csv(file1)
+    df2 = pd.read_csv(file2)
 
-    headers = {
-        'Authorization': f'token {user_api_key}:{user_secret_key}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
+    # Identify records in the first file that are not in the second file
+    unique_records_file1 = df1[~df1[email_column].isin(df2[email_column])]
 
-    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/tabCRM Note_export_2023-11-02_102731.csv')
+    return unique_records_file1
 
-    for index, row in data.iterrows():
-        name = row['name']
-        creation = row['creation']
-        modified = row['modified']
-        modified_by = row['modified_by']
-        owner = row['owner']
-        docstatus = row['docstatus']
-        idx = row['idx']
-        note = row['note']
-        added_by = row['added_by']
-        parent = row['parent']
-        parentfield = row['parentfield']
-        parenttype = row['parenttype']
+# Replace 'file1.csv' and 'file2.csv' with the actual file paths
+file1_path = '/home/faizan/albaseer/Al-Baseer-Backend/expired_auth.csv'
+file2_path = '/home/faizan/albaseer/Al-Baseer-Backend/Renewed_Payments_2023-12-13_05-03-02.csv'
 
-        added_on = row['added_on']
-        if pd.isna(added_on):  # Check for "nan"
-            added_on = None
+unique_records_file1 = find_unique_records(file1_path, file2_path)
 
-        # Convert creation and modified datetime strings to ISO format
-        creation = datetime.fromisoformat(creation).isoformat()
-        modified = datetime.fromisoformat(modified).isoformat()
+# Save the unique records to a new CSV file
+unique_records_file1.to_csv('expired_present_auth_missing_albaseer.csv', index=False)
 
-        # try:
-        data = {
-            'name': name,
-            'parent': parent,
-            'creation': creation,
-            'modified': modified,
-            'modified_by': modified_by,
-            'owner': owner,
-            'docstatus': docstatus,
-            'idx': idx,
-            'note': note,
-            'added_by': added_by,
-            'added_on': added_on,
-            'parentfield': parentfield,
-            'parenttype': parenttype,
-        }
-        print(data)
 
-        post_url = 'https://crm.alnafi.com/api/resource/CRM Note'
-        response = requests.post(post_url, headers=headers, json=data)
+# import pandas as pd
 
-        print(f"Data sent for index {index}: {data}")
-        print(f"Response Status Code: {response.status_code}")
-        print(f"Response Text: {response.text}")
+# def find_common_records(file1, file2, email_column='email'):
+#     # Read CSV files into pandas DataFrames
+#     df1 = pd.read_csv(file1)
+#     df2 = pd.read_csv(file2)
 
-        # except Exception as e:
-        #     print(f"Error processing data for index {index}: {str(e)}")
+#     # Identify records that are common in both files
+#     common_records = pd.merge(df1, df2, on=email_column, how='inner', indicator=True).query("_merge == 'both'").drop('_merge', axis=1)
 
-if __name__ == "__main__":
-    crmnote()
+#     return common_records
+
+# # Replace 'file1.csv' and 'file2.csv' with the actual file paths
+# file1_path = '/home/faizan/albaseer/Al-Baseer-Backend/expired_auth.csv'
+# file2_path = '/home/faizan/albaseer/Al-Baseer-Backend/renewed_auth.csv'
+
+# common_records = find_common_records(file1_path, file2_path)
+
+# # Save the common records to a new CSV file
+# common_records.to_csv('common_records.csv', index=False)

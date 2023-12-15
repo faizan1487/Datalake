@@ -1611,7 +1611,6 @@ class ExpiryPayments(APIView):
             renewed_amount = response['renewed_amount']
             total_renewal_amount = response['total_renewal_amount']
         else:
-           
             filtered_payments = Main_Payment.objects.filter(
                 source__in=['Al-Nafi','NEW ALNAFI'],
                 expiration_datetime__range=(start_date, end_date),
@@ -1786,7 +1785,6 @@ class NewPayments(APIView):
         cached_data = cache.get(cache_key)
 
         if cached_data:
-            print("from cache")
             response = json.loads(cached_data)
             response_data = response['response_data']
             new_registrations_amount = response['new_registrations_amount']

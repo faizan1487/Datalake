@@ -1,3 +1,4 @@
+from email.policy import default
 from django.db import models
 
 # Create your models here.
@@ -49,7 +50,8 @@ class Thinkific_Users_Enrollments(models.Model):
     email = models.EmailField(max_length=255, null=True, blank=True)
     course_id = models.IntegerField(null=True, blank=True)
     course_name = models.CharField(max_length=255, null=True, blank=True)
-    status = models.CharField(max_length=200, default='In Progress')
+    completed = models.BooleanField(default=False)
+    expired = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.email}"

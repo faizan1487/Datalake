@@ -65,7 +65,7 @@ def enrollment_created_webhook(request):
     data = request.body
     data_string = data.decode('utf-8')
     json_data = json.loads(data_string)
-    print(json_data)
+    # print(json_data)
     payload_data = json_data['payload']
     created_at = payload_data['created_at']
     if created_at == None:
@@ -137,7 +137,7 @@ def enrollment_created_webhook(request):
 @api_view(['POST'])
 @renderer_classes([JSONRenderer])
 def progress_created_webhook(request):
-    print("progress webhook")
+    # print("progress webhook")
     if(request.method != "POST"):
         return HttpResponse(status=400)
     
@@ -146,7 +146,7 @@ def progress_created_webhook(request):
         data = request.body
         data_string = data.decode('utf-8')
         json_data = json.loads(data_string)
-        print(json_data)
+        # print(json_data)
         
         email = json_data.get('payload', {}).get('user', {}).get('email')
         course_id = json_data.get('payload', {}).get('course', {}).get('id')
@@ -154,10 +154,10 @@ def progress_created_webhook(request):
         percentage = float(percentage)
         percentage = percentage * 100
 
-        print("email",email)
-        print("course_id",course_id)
-        print("percentage",percentage)
-        print("percentage type", type(percentage))
+        # print("email",email)
+        # print("course_id",course_id)
+        # print("percentage",percentage)
+        # print("percentage type", type(percentage))
         
         if not email or not course_id or percentage is None:
             return JsonResponse({'error': 'Invalid or missing data'}, status=400)

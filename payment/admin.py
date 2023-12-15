@@ -35,7 +35,7 @@ admin.site.register(UBL_IPG_Payment, UBLIPGPaymentsAdmin)
 
 #For MainSite(Al-Nafi) Payments:
 class AlNafiPaymentsAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.ModelAdmin):
-    list_display = ['payment_id', 'customer_email', 'product_name', 'amount_pkr', 'amount_usd', 'order_datetime', 'expiration_datetime', 'source', 'order_id', 'date_of_activation', 'created_at', 'qarz', 'remarks', 'payment_proof', 'send_invoice', 'pk_invoice_number', 'us_invoice_number', 'sponsored', 'coupon_code', 'is_upgrade_payment', 'affiliate']
+    list_display = ['id','payment_id', 'customer_email', 'product_name', 'amount_pkr', 'amount_usd', 'order_datetime', 'expiration_datetime', 'source', 'order_id', 'date_of_activation', 'created_at', 'qarz', 'remarks', 'payment_proof', 'send_invoice', 'pk_invoice_number', 'us_invoice_number', 'sponsored', 'coupon_code', 'is_upgrade_payment', 'affiliate']
     search_fields = ('payment_id', 'customer_email', 'order_datetime', 'expiration_datetime','product_name', 'order_id', "created_at","pk_invoice_number","us_invoice_number" )
     list_filter = ("source", 'order_datetime', 'expiration_datetime',"sponsored")
     
@@ -61,7 +61,7 @@ admin.site.register(Main_Payment, MainPaymentAdmin)
 
 #For New Alnafi Payments:
 class New_Alnafi_PaymentsAdmin(ImportExportModelAdmin, admin.ModelAdmin):
-    list_display = ('orderId','product_names','customer_email','username','created_at','expiration_date','payment_date','amount','status','updated_at','card_number','account_number','meta','payment_method_name','payment_method_currency','payment_method_source_name','country','pk_invoice_number','us_invoice_number','send_invoice','purpose','depositor_name','application_id','coupon_id','additional_months','is_manual','amount_pkr','amount_usd','webhook_called','old_payments','remarks','transaction_id')
+    list_display = ('id','orderId','product_names','customer_email','username','created_at','expiration_date','payment_date','amount','status','updated_at','card_number','account_number','meta','payment_method_name','payment_method_currency','payment_method_source_name','country','pk_invoice_number','us_invoice_number','send_invoice','purpose','depositor_name','application_id','coupon_id','additional_months','is_manual','amount_pkr','amount_usd','webhook_called','old_payments','remarks','transaction_id')
     search_fields = ('orderId', 'product_names', 'customer_email', 'username', 'card_number', 'account_number', 'pk_invoice_number', 'us_invoice_number', 'depositor_name', 'coupon_id', 'transaction_id')
     list_filter = ('created_at', 'expiration_date', 'payment_date', 'status', 'payment_method_name', 'payment_method_currency', 'payment_method_source_name', 'country', 'send_invoice', 'is_manual', 'webhook_called')
 
