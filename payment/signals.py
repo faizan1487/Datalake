@@ -50,17 +50,15 @@ def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args
     model = 'NewAlnafi'
     Thread(target=change_lead_status_sales_module, args=(instance,model,)).start()
 @receiver(pre_save, sender=New_Alnafi_Payments)
-def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+def new_alnafi_payment_signal_commission(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     print("new alnafi signal running for commission")
     model = 'NewAlnafi'
-    # func = send_payment_to_commission_doctype(instance)
     Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
 @receiver(pre_save, sender=AlNafi_Payment)
-def alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    print("new alnafi signal running for commission")
+def alnafi_payment_signal_commission(sender, instance: AlNafi_Payment, *args, **kwargs):
+    print("alnafi signal running for commission")
     model = 'Alnafi'
-    # func = send_payment_to_commission_doctype(instance)
     Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
 
@@ -385,10 +383,10 @@ def send_payment_to_commission_doctype(instance,model_name, **kwargs):
                 print("Something Went Wrong")
         else:
             # Handle cases where phone or lead_creator is missing
-            pass
+            print("Something Went Wrong")
     else:
         # Handle cases where data['data'] is empty
-        pass
+        print("Something Went Wrong")
 
 
 
