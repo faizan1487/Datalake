@@ -290,19 +290,47 @@ def send_payment_to_commission_doctype(instance,model_name, **kwargs):
         lead_creator = lead_info.get('lead_creator')
         total_product_payment = 0
         commission_amount = 0
+        if model_name == "NewAlnafi":
+                if isinstance(instance.product_names, list):
+                    # print("is a list")
+                    # print(instance.product_names)
+                    # Flatten the list of lists into a single list
+                    flat_list = [item for sublist in instance.product_names for item in sublist]
+
+                    # Join the flattened list into a string
+                    product_name = ", ".join(flat_list)
+                else:
+                    product_name = instance.product_names
+        if model_name == "Alnafi" :    
+            if isinstance(instance.product_name, list):
+                # print("is a list")
+                # print(instance.product_name)
+                flat_list = [item for sublist in instance.product_name for item in sublist]
+
+                # Join the flattened list into a string
+                product_name = ", ".join(flat_list)
+            else:
+                product_name = instance.product_name 
+        if "easy pay study" in product_name.lower():
+            print(product_name.lower())
+            # print(product_name)
+            commission_percentage = 0.02  
+        else:
+            commission_percentage = 0.08  
+        # print(commission_percentage)
         if phone and lead_creator:
             # print("model_name",model_name)
-            commission_percentage = 0.0
+            # commission_percentage = 0.0
             if model_name == "NewAlnafi":
                 if instance.payment_method_currency.lower() == 'pkr':
-                    commission_percentage = 0.08 
+                    # commission_percentage = 0.08 
                     if instance.amount: 
                         commission_amount = instance.amount * commission_percentage
                         total_product_payment = instance.amount
                 # print("commission_amount", commission_amount)
             else:
                 if instance.amount_pkr > 0:
-                    commission_percentage = 0.08
+                    # commission_percentage = 0.08
                     commission_amount = instance.amount_pkr * commission_percentage
                     total_product_payment = instance.amount_pkr
 
@@ -313,7 +341,7 @@ def send_payment_to_commission_doctype(instance,model_name, **kwargs):
                         currency_rate = get_pkr_rate(instance.payment_method_currency, amount)
                         converted_amount = round(float(amount) / currency_rate[instance.payment_method_currency], 2)
                         # print(converted_amount)
-                        commission_percentage = 0.08  
+                        # commission_percentage = 0.08  
                         commission_amount = round(float(converted_amount * commission_percentage), 2)
                         total_product_payment = converted_amount
             else:
@@ -327,28 +355,6 @@ def send_payment_to_commission_doctype(instance,model_name, **kwargs):
                     commission_amount = round(float(converted_amount * commission_percentage), 2)
                     total_product_payment = converted_amount
           
-            if model_name == "NewAlnafi":
-                if isinstance(instance.product_names, list):
-                    # print("is a list")
-                    # print(instance.product_names)
-                    # Flatten the list of lists into a single list
-                    flat_list = [item for sublist in instance.product_names for item in sublist]
-
-                    # Join the flattened list into a string
-                    product_name = ", ".join(flat_list)
-                else:
-                    product_name = instance.product_names
-            if model_name == "Alnafi" :    
-                if isinstance(instance.product_name, list):
-                    # print("is a list")
-                    # print(instance.product_name)
-                    # Flatten the list of lists into a single list
-                    flat_list = [item for sublist in instance.product_name for item in sublist]
-
-                    # Join the flattened list into a string
-                    product_name = ", ".join(flat_list)
-                else:
-                    product_name = instance.product_name  
             if model_name == "NewAlnafi":
                 order_id = instance.orderId    
             else:
@@ -374,9 +380,9 @@ def send_payment_to_commission_doctype(instance,model_name, **kwargs):
             # print(response.text)
             if response.status_code == 200:
                 # Successfully created Commission entry based on lead information
-                print(response.status_code)
+                print(response.text)
             else:
-                pass
+                print("Something Went Wrong")
         else:
             # Handle cases where phone or lead_creator is missing
             pass
