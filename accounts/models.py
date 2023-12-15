@@ -12,5 +12,4 @@ class Expense(models.Model):
     def __str__(self):
         return f"{self.subject}"
 
-    class Meta:
-        verbose_name = "Expenses"
+  
