@@ -1786,6 +1786,7 @@ class NewPayments(APIView):
         cached_data = cache.get(cache_key)
 
         if cached_data:
+            print("from cache")
             response = json.loads(cached_data)
             response_data = response['response_data']
             new_registrations_amount = response['new_registrations_amount']
