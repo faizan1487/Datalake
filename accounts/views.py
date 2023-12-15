@@ -93,7 +93,29 @@ class ExpenseCreateAPIView(APIView):
 
 
 class ExpenseUpdateAPIView(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
+    def get(self, request, expense_id):
+        # Retrieve the expense instance
+        try:
+            expense = Expense.objects.get(id=expense_id)
+
+            expense_data = {
+                    'id': expense.id,
+                    'subject': expense.subject,
+                    'amount': expense.amount if expense.amount else None,
+                    'currency': expense.currency if expense.currency else None,
+                    'created_at': expense.created_at if expense.created_at else None,
+                    'month': expense.month if expense.month else None,
+                    'user': expense.user.email
+
+                }
+
+            return Response(expense_data, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({'error': f'{e}'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+    
     def put(self, request, expense_id):
         # Retrieve the expense instance
         try:
@@ -107,6 +129,8 @@ class ExpenseUpdateAPIView(APIView):
             for attribute in attributes_to_update:
                 if attribute in data:
                     setattr(expense, attribute, data[attribute])
+
+            expense.save()
 
             expense_data = {
                     'id': expense.id,
@@ -124,7 +148,6 @@ class ExpenseUpdateAPIView(APIView):
             return Response({'error': f'{e}'}, status=status.HTTP_400_BAD_REQUEST)
     
 
-    permission_classes = [IsAuthenticated]
     def delete(self, request, expense_id):
         try:
             expense = Expense.objects.get(pk=expense_id)
