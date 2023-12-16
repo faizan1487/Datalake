@@ -425,5 +425,5 @@ def newsignupsignal(instance,sender):
             url = 'https://crm.alnafi.com/api/resource/Lead'
             response = requests.post(url, headers=headers, json=data)
 
-        if response and response.status_code != 200:
-            print(response.text)        
+            # if response and response.status_code != 200:
+            #     print(response.text)
