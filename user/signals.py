@@ -112,7 +112,7 @@ def usersignal(instance,source,sender):
     else:
             # print("instance.affiliate_code", instance.affiliate_code)
             # print("In else")
-            if instance.affiliate_code:
+            if instance.affiliate_code is not None or instance.affiliate_code != '':
                 # print("affiliate lead")
                 pass
             else:
@@ -468,7 +468,7 @@ def newsignupsignal(instance,sender):
         response = None
         # print("source", source)
         # print("affiliate_code",instance.affiliate_code)
-        if instance.affiliate_code:
+        if instance.affiliate_code is not None or instance.affiliate_code != '':
             pass
         else:
             print("inside if")
