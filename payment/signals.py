@@ -31,14 +31,14 @@ DEBUG = env('DEBUG',cast=bool)
 
 
 
-# @receiver(pre_save, sender=New_Alnafi_Payments)
+@receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     model_name = 'new_alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
 
-# @receiver(pre_save, sender=AlNafi_Payment)
+@receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwargs):
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
@@ -49,6 +49,7 @@ def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args
     # print("new alnafi signal running for sales")
     model = 'NewAlnafi'
     Thread(target=change_lead_status_sales_module, args=(instance,model,)).start()
+
 @receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_commission(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     print("new alnafi signal running for commission")
@@ -635,7 +636,6 @@ def support_renewal_leads(instance):
         # print(response.text)
     else:
         print("lead created successfully")
-
 
 
 

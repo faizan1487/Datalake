@@ -108,6 +108,8 @@ INSTALLED_APPS = [
     'rest_framework_swagger',
     'import_export',
     'rangefilter',
+    'django_crontab',
+
 
 
     'accounts.apps.AccountsConfig',
@@ -125,6 +127,15 @@ INSTALLED_APPS = [
     "corsheaders",
     "secrets_api",
 ]
+
+CRONJOBS = [
+    ('* * * * *', 'payment.renewal_leads.handle'),  # Run every 24 hours
+]
+
+# '0 0 * * *',
+# '* * * * *', 
+
+
 
 if DEBUG:
     INSTALLED_APPS += ['debug_toolbar']

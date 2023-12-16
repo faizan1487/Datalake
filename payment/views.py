@@ -1891,8 +1891,6 @@ class NewPayments(APIView):
 
 
 
-
-
 class UploadLeads(APIView):
     def get(self, request):
         url = 'https://crm.alnafi.com/api/resource/Lead'
