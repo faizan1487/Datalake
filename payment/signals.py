@@ -49,13 +49,13 @@ def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args
     # print("new alnafi signal running for sales")
     model = 'NewAlnafi'
     Thread(target=change_lead_status_sales_module, args=(instance,model,)).start()
-@receiver(pre_save, sender=New_Alnafi_Payments)
+@receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_commission(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     print("new alnafi signal running for commission")
     model = 'NewAlnafi'
     Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
-@receiver(pre_save, sender=AlNafi_Payment)
+@receiver(post_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_commission(sender, instance: AlNafi_Payment, *args, **kwargs):
     print("alnafi signal running for commission")
     model = 'Alnafi'
