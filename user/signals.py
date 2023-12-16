@@ -45,7 +45,7 @@ def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
 
 
 def usersignal(instance,source,sender):
-    print("user signal running")
+    # print("user signal running")
     if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
@@ -86,13 +86,14 @@ def usersignal(instance,source,sender):
         "first_name": instance.first_name or None,
         "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
         "email_id": instance.email or None,
-        "mobile_no": str(instance.phone) if hasattr(instance, 'phone') else None,
+        "mobile_no": str(instance.phone) if hasattr(instance, 'phone') and instance.phone else '00000000000',
         "country": country_name,
         "source": source,
         "form": instance.form or None,
         "date": date_joined_str,  # Convert to ISO 8601 string
         # Add other fields from the Main_User model to the data dictionary as needed
     }
+
     response = requests.get(url, headers=headers)
     lead_data = response.json()
     if 'data' not in lead_data:
@@ -100,38 +101,18 @@ def usersignal(instance,source,sender):
     else:
         already_existed = len(lead_data["data"]) > 0
     
-    # print("already_existed",already_existed)
 
     if already_existed:
-        # print("already exists")
         pass
-        # lead_id = lead_data['data'][0]['name']
-        # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
-        # response = requests.put(url, headers=headers, json=data)
-        # instance.erp_lead_id = lead_data['data'][0]['name']
     else:
-            # print("instance.affiliate_code", instance.affiliate_code)
-            # print("In else")
-            if instance.affiliate_code is not None or instance.affiliate_code != '':
-                # print("affiliate lead")
-                pass
-            else:
-                url = 'https://crm.alnafi.com/api/resource/Lead'
-                lead_data = response.json()
-                response = requests.post(url, headers=headers, json=data)
-                print(response)
-                if response.status_code != 200:
-                    # pass
-                    print("response.status_code",response.text)
-                    print("response.status_code",response.status_code)
-                    lead_data = response.json()
-                    print(lead_data)
-                # erp_lead_id = lead_data['data']['name']
-                # if erp_lead_id:
-                #     # print("lead id exists")
-                #     instance.erp_lead_id = erp_lead_id
-                    # instance.save(update_fields=['erp_lead_id'])
-                    # print("Lead created successfully!")
+        if not instance.affiliate_code:
+            url = 'https://crm.alnafi.com/api/resource/Lead'
+            lead_data = response.json()
+            response = requests.post(url, headers=headers, json=data)
+            if response.status_code != 200:
+                print("response.status_code",response.text)
+                print("response.status_code",response.status_code)
+          
 
 #############################################################
 @receiver(post_save, sender=Moc_Leads)
@@ -155,11 +136,9 @@ def alnafi_lead_to_moc_doctype(sender, instance, **kwargs):
     alnafi_user = mocLead_Signalto_moc_doctype(instance,source)    
 
 def mocLead_Signalto_moc_doctype(instance,source):
-    print("mocdoctype signa;")
-    # api_key = env("FRAPPE_API_KEY")
+    # print("mocdoctype signa;")
     api_key = '351b6479c5a4a16'
     api_secret = 'e459db7e2d30b34'
-    # api_secret = env("FRAPPE_API_SECRET")
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",
@@ -196,68 +175,44 @@ def mocLead_Signalto_moc_doctype(instance,source):
         }
 
 
-    # print("instance.email",instance.email)
     url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]&filters=[["moclead","email","=","{instance.email}"]]'
-    # url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]'
     response = requests.get(url, headers=headers)
-    # print(response.status_code)
-    # print(response.text)
     lead_data = response.json()
-    # print(lead_data['data'])
-    # print(lead_data)
     if response.status_code == 403:
         return
-    # print(lead_data['data'])
-    # print(lead_data)
     if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
     else:
         already_existed = False
 
     failed_leads = []
-    # print(lead_data)
     already_existed = len(lead_data["data"]) > 0
-    if already_existed:
-        pass
-        # print(already_existed)
-        # # pass
-        # email = lead_data['data'][0]['email']
+    if not already_existed:
+        if not instance.affiliate_code:
+            print("mocdoctype signa;")
+            try:
+                post_url = 'https://crm.alnafi.com/api/resource/moclead'
+                response = requests.post(post_url, headers=headers, json=data)
+                if response.status_code == 200:
+                    print("Lead created successfully!")
 
-        # url = f'https://crm.alnafi.com/api/resource/moclead?filters=[["MOC","email","=","{email}"]]'
-        # # url = f'https://crm.alnafi.com/api/resource/moclead/{email}'
-       
-        # response = requests.put(url, headers=headers, json=data)
-        # if response.status_code != 200:
-        #     print(response.status_code)
-        #     print(response.text)
-        #     # print(response.json())
-        # else:
-        #     instance.erp_lead_id = lead_data['data'][0]['name']
-        #     print("lead updated")
-    else:
-        try:
-            post_url = 'https://crm.alnafi.com/api/resource/moclead'
-            response = requests.post(post_url, headers=headers, json=data)
-            if response.status_code == 200:
-                print("Lead created successfully!")
+            except Exception as e:
+                print("Error posting lead data:", str(e))
+                failed_leads.append(data)
+        
 
-        except Exception as e:
-            print("Error posting lead data:", str(e))
-            failed_leads.append(data)
-    
+        if failed_leads:
+            with open('failed_moc_doctype_leads.csv', 'a', newline='') as csvfile:
+                fieldnames = failed_leads[0].keys()
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-    if failed_leads:
-        with open('failed_moc_doctype_leads.csv', 'a', newline='') as csvfile:
-            fieldnames = failed_leads[0].keys()
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                # Check if the file is empty, and write header only if it's a new file
+                if csvfile.tell() == 0:
+                    writer.writeheader()
 
-            # Check if the file is empty, and write header only if it's a new file
-            if csvfile.tell() == 0:
-                writer.writeheader()
-
-            for lead in failed_leads:
-                writer.writerow(lead)
-       
+                for lead in failed_leads:
+                    writer.writerow(lead)
+        
 
 
 def mocLead_Signalto_sale_doctype(instance,source):
@@ -416,12 +371,12 @@ def mocLead_Signalto_sale_doctype(instance,source):
                 writer.writerow(lead)
 
 
+
 def newsignupsignal(instance,sender):
+    # print("newsignupsignal running")
     source = instance.source
-    # print("new sign up signal")
 
     if source == 'Academy' or source == 'Academy Signup':
-        # print("inside if")
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
@@ -465,49 +420,10 @@ def newsignupsignal(instance,sender):
                 "date": str(date_joined_str) if date_joined_str else None,
                 # Add other fields from the Main_User model to the data dictionary as needed
             }
-        response = None
-        # print("source", source)
-        # print("affiliate_code",instance.affiliate_code)
-        if instance.affiliate_code is not None or instance.affiliate_code != '':
-            pass
-        else:
-            print("inside if")
+        
+        if not instance.affiliate_code:
             url = 'https://crm.alnafi.com/api/resource/Lead'
             response = requests.post(url, headers=headers, json=data)
-            print(response)
 
         if response and response.status_code != 200:
-            pass
-            # lead_data = response.json()
-            # print(lead_data)
-            # erp_lead_id = lead_data['data']['name']
-            # if erp_lead_id:
-            #     instance.erp_lead_id = erp_lead_id
-        
-        # response = requests.get(url, headers=headers)
-        # lead_data = response.json()
-        # print(lead_data)
-        # erp_lead_id = lead_data['data']['name']
-        # if erp_lead_id:
-        #     instance.erp_lead_id = erp_lead_id
-    
-    # response = requests.get(url, headers=headers)
-    # lead_data = response.json()
-    # if 'data' in lead_data:
-    #     already_existed = len(lead_data["data"]) > 0
-    # else:
-    #     already_existed = False
-    # if already_existed:
-    #     pass
-        # lead_id = lead_data['data'][0]['name']
-        # if DEBUG:
-        #     url = f'http://3.142.247.16/api/resource/Lead/{lead_id}'
-        # else:
-        # url = f'https://crm.alnafi.com/api/resource/Lead/{lead_id}'
-        # print(data)
-        # response = requests.put(url, headers=headers, json=data)
-        # instance.erp_lead_id = lead_data['data'][0]['name']
-    # else:
-        # if DEBUG:
-        #     url = 'http://3.142.247.16/api/resource/Lead'
-        # else:
+            print(response.text)        
