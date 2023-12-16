@@ -130,7 +130,7 @@ def post_request_moc_doctype(sender, instance, created, **kwargs):
 
 @receiver(post_save, sender=AlNafi_User)
 def alnafi_lead_to_moc_doctype(sender, instance, **kwargs):
-    # print("alnafi lead to moc signal running")
+    print("alnafi lead to moc signal running")
     # source='Academy Signup'
     source = instance.login_source
     alnafi_user = mocLead_Signalto_moc_doctype(instance,source)    
