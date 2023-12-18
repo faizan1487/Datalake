@@ -1784,19 +1784,21 @@ class NewPayments(APIView):
         cache_key = f"new_payments_{start_date}_{end_date}_{user_email}_{product}_{export}_{new_registrations}"
         cached_data = cache.get(cache_key)
 
+
         if cached_data:
             response = json.loads(cached_data)
             response_data = response['response_data']
             new_registrations_amount = response['new_registrations_amount']
         else:
             filtered_payments = Main_Payment.objects.filter(
-                source__in=['Al-Nafi','NEW ALNAFI'],
-                order_datetime__range=(start_date, end_date),
+                source__in=['Al-Nafi','NEW ALNAFI','New_Al-Nafi'],
+                order_datetime__range=(start_date, end_date + timedelta(days=1)),
                 ).exclude(
                 user__email__endswith="yopmail.com"
                 ).select_related('product').values()
             
-            all_payments = Main_Payment.objects.all().select_related('product').values()
+            
+            all_payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI','New_Al-Nafi']).select_related('product').values()
             
             filtered_payments = filtered_payments.annotate(product_plan=Upper('product__product_plan'))
 

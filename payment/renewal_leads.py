@@ -1,10 +1,20 @@
+import sys
+import os
+
+sys.path.append('/home/faizan/albaseer/Al-Baseer-Backend')  # Add your project directory
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'albaseer.settings')
+
+import django
+django.setup()
+
 from payment.models import Renewal
 import requests
 import pandas as pd
 
 def handle():
-    # url = "https://fc37-2400-adc1-175-d500-5cbe-3fd2-50b-5daa.ngrok-free.app/api/v1.0/enrollments/expiry_date_user/"
     url = "https://stage-auth.alnafi.edu.pk/api/v1.0/enrollments/expiry_date_user/"
+
     response = requests.get(url)
     data = response.json()
 
@@ -18,6 +28,15 @@ def handle():
         payment_date = i['payment_date']
         expiration_date = i['expiry_date']
         status = 'Active'
+
+        # print("date_joined",date_joined)
+        # print("payment_date",payment_date)
+        # print("expiration_date",expiration_date)
+
+
+        # print("date_joined",type(date_joined))
+        # print("payment_date",type(payment_date))
+        # print("expiration_date",type(expiration_date))
         
         # Remove everything after the date for date_joined
         date_joined = date_joined.split()[0]

@@ -5,7 +5,6 @@ from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
 # Register your models here.    
 
-
 #For Stripe Payments:
 class StripePaymentAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.ModelAdmin):
     list_display = ('payment_id', 'alnafi_order_id', 'name', 'customer_email', 'phone', 'product_name', 'amount', 'order_datetime', 'status', 'currency', 'source', 'description', 'address')
