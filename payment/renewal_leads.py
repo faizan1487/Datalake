@@ -1,12 +1,12 @@
-import sys
-import os
+# import sys
+# import os
 
-sys.path.append('/home/faizan/albaseer/Al-Baseer-Backend')  # Add your project directory
+# sys.path.append('/home/faizan/albaseer/Al-Baseer-Backend')  # Add your project directory
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'albaseer.settings')
+# os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'albaseer.settings')
 
-import django
-django.setup()
+# import django
+# django.setup()
 
 from payment.models import Renewal
 import requests
