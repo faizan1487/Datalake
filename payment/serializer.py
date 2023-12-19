@@ -63,8 +63,6 @@ class New_Al_Nafi_Payments_Serializer(ModelSerializer):
         instance.country = validated_data.get('country', instance.country)
         instance.status = validated_data.get('status', instance.status)
         # instance.payment_proof = validated_data.get('payment_proof', instance.payment_proof)
-        instance.created_at = validated_data.get('created_at', instance.created_at)
-        instance.updated_at = validated_data.get('updated_at', instance.updated_at)
         instance.card_number = validated_data.get('card_number', instance.card_number)
         instance.account_number = validated_data.get('account_number', instance.account_number)
         instance.send_invoice = validated_data.get('send_invoice', instance.send_invoice)
@@ -73,7 +71,6 @@ class New_Al_Nafi_Payments_Serializer(ModelSerializer):
         instance.meta = validated_data.get('meta', instance.meta)
         instance.depositor_name = validated_data.get('depositor_name', instance.depositor_name)
         instance.purpose = validated_data.get('purpose', instance.purpose)
-        instance.payment_date = validated_data.get('payment_date', instance.payment_date)
         instance.expiration_date = validated_data.get('expiration_date', instance.expiration_date)
         instance.additional_months = validated_data.get('additional_months', instance.additional_months)
         # instance.dynamic_checkout_link = validated_data.get('dynamic_checkout_link', instance.dynamic_checkout_link)
@@ -81,7 +78,10 @@ class New_Al_Nafi_Payments_Serializer(ModelSerializer):
         instance.webhook_called = validated_data.get('webhook_called', instance.webhook_called)
         instance.old_payments = validated_data.get('old_payments', instance.old_payments)
         instance.remarks = validated_data.get('remarks', instance.remarks)
-
+    
+        instance.payment_date = validated_data.get('payment_date', instance.payment_date)
+        instance.created_at = validated_data.get('created_at', instance.created_at)
+        instance.updated_at = validated_data.get('updated_at', instance.updated_at)
         
 
         instance.save()

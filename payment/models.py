@@ -12,12 +12,10 @@ class AlNafi_Payment(models.Model):
     product_name = models.JSONField(null=True, blank=True)
     amount_pkr = models.IntegerField(default=0)
     amount_usd = models.IntegerField(default=0)
-    order_datetime = models.DateTimeField(default=datetime.now)
     expiration_datetime = models.DateTimeField(null=True, blank=True)
     source = models.CharField(max_length=150, null=True, blank=True)
     order_id = models.CharField(max_length=150, null=True, blank=False)
     date_of_activation = models.DateField(null=True, blank=True)
-    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
     qarz = models.BooleanField(default=False)
     remarks = models.CharField(max_length=1000,null=True, blank=True)
     payment_proof = models.CharField(max_length=150, null=True, blank=True)
@@ -30,6 +28,10 @@ class AlNafi_Payment(models.Model):
     affiliate = models.CharField(max_length=200,null=True, blank=True)
     # erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
     erp_lead = models.CharField(max_length=255,blank=True, null=True)
+
+    created_at= models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    order_datetime = models.DateTimeField(default=datetime.now)
+
 
     def __str__(self):
         return f"{self.customer_email}"
@@ -44,7 +46,6 @@ class New_Alnafi_Payments(models.Model):
     orderId = models.CharField(max_length=255)
     amount = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(null=True, blank=True)
     updated_at = models.DateTimeField(null=True, blank=True)
     card_number = models.CharField(max_length=255, blank=True, null=True)
     account_number = models.CharField(max_length=255, blank=True, null=True)
@@ -63,7 +64,6 @@ class New_Alnafi_Payments(models.Model):
     application_id = models.CharField(max_length=255, blank=True, null=True)
     customer_email = models.CharField(max_length=300, null=True, blank=True)
     expiration_date = models.DateTimeField(null=True, blank=True)
-    payment_date = models.DateTimeField(blank=True, null=True)
     coupon_id = models.CharField(max_length=255, blank=True, null=True)
     additional_months = models.IntegerField(null=True, blank=True)
     is_manual = models.BooleanField(default=False)
@@ -74,6 +74,8 @@ class New_Alnafi_Payments(models.Model):
     remarks = models.CharField(max_length=1000,null=True, blank=True)
     transaction_id = models.CharField(max_length=255,null=True, blank=True)
 
+    payment_date = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         managed = True
