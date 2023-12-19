@@ -2180,15 +2180,15 @@ class CommisionData(APIView):
             "Total Product Payments": total_product_payments,
             "Total Commission": total_commission
         }
-        # return Response(response_data)
-        if export == 'true':
-            file_name = f"Commission{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-            df = pd.DataFrame(response_data).to_csv(index=False)
-            s3 = upload_csv_to_s3(df, file_name)
-            data = {'file_link': file_path, 'export': 'true'}
-            return Response(data)
-
         return Response(response_data)
+        # if export == 'true':
+        #     file_name = f"Commission{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+        #     file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        #     df = pd.DataFrame(response_data).to_csv(index=False)
+        #     s3 = upload_csv_to_s3(df, file_name)
+        #     data = {'file_link': file_path, 'export': 'true'}
+        #     return Response(data)
+
+        # return Response(response_data)
         
         
