@@ -2150,7 +2150,7 @@ class CommisionData(APIView):
         export = self.request.GET.get('export', None)
         print("payment_date", payment_date_filter)
 
-        url = f'https://crm.alnafi.com/api/resource/Commission?fields=["title","lead_owner","phone","payment_date","total_product_payment","owner_pkr","product","order_id","payment_id"]&limit_start=0&limit_page_length=10000000'
+        url = f'https://crm.alnafi.com/api/resource/Commission?fields=["title","lead_owner","phone","payment_date","total_product_payment", "owner_pkr","product","order_id","payment_id","order_id", "created_at"]&limit_start=0&limit_page_length=10000000'
         api_key = "4e7074f890507cb"
         api_secret = "c954faf5ff73d31"
         headers = {
