@@ -98,6 +98,8 @@
 #+++++=============================================================================
 # from datetime import datetime
 # import requests
+# from datetime import datetime
+import requests
 # import pandas as pd
 
 # def crmnote():
@@ -167,26 +169,26 @@
 
 
 
-import pandas as pd
+# import pandas as pd
 
-def find_unique_records(file1, file2, email_column='email'):
-    # Read CSV files into pandas DataFrames
-    df1 = pd.read_csv(file1)
-    df2 = pd.read_csv(file2)
+# def find_unique_records(file1, file2, email_column='email'):
+#     # Read CSV files into pandas DataFrames
+#     df1 = pd.read_csv(file1)
+#     df2 = pd.read_csv(file2)
 
-    # Identify records in the first file that are not in the second file
-    unique_records_file1 = df1[~df1[email_column].isin(df2[email_column])]
+#     # Identify records in the first file that are not in the second file
+#     unique_records_file1 = df1[~df1[email_column].isin(df2[email_column])]
 
-    return unique_records_file1
+#     return unique_records_file1
 
-# Replace 'file1.csv' and 'file2.csv' with the actual file paths
-file1_path = '/home/faizan/albaseer/Al-Baseer-Backend/expired_auth.csv'
-file2_path = '/home/faizan/albaseer/Al-Baseer-Backend/Renewed_Payments_2023-12-13_05-03-02.csv'
+# # Replace 'file1.csv' and 'file2.csv' with the actual file paths
+# file1_path = '/home/faizan/albaseer/Al-Baseer-Backend/expired_auth.csv'
+# file2_path = '/home/faizan/albaseer/Al-Baseer-Backend/Renewed_Payments_2023-12-13_05-03-02.csv'
 
-unique_records_file1 = find_unique_records(file1_path, file2_path)
+# unique_records_file1 = find_unique_records(file1_path, file2_path)
 
-# Save the unique records to a new CSV file
-unique_records_file1.to_csv('expired_present_auth_missing_albaseer.csv', index=False)
+# # Save the unique records to a new CSV file
+# unique_records_file1.to_csv('expired_present_auth_missing_albaseer.csv', index=False)
 
 
 # import pandas as pd
@@ -209,3 +211,69 @@ unique_records_file1.to_csv('expired_present_auth_missing_albaseer.csv', index=F
 
 # # Save the common records to a new CSV file
 # common_records.to_csv('common_records.csv', index=False)
+
+
+import csv
+import datetime
+import requests
+
+def get_and_save_all_lead_data():
+
+    user_api_key = '4e7074f890507cb'
+    user_secret_key = 'c954faf5ff73d31'
+
+    headers = {
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    # Construct the URL to get leads
+    get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator"]&limit_start=0&limit_page_length=10000000'
+
+    # Make the API request
+    response = requests.get(get_url, headers=headers)
+
+    if response.status_code == 200:
+        leads_data = response.json()
+
+        if 'data' in leads_data:
+            leads = leads_data['data']
+
+            # Get today's date
+            today_date = datetime.date.today()
+
+            # Calculate 3 days before today
+            three_days_before = today_date - datetime.timedelta(days=3)
+
+            # Filter leads with status 'Lead' and date 3 days before today
+            filtered_leads = [
+                lead for lead in leads 
+                if lead.get('status') == 'Lead'
+                and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk' 
+                and lead.get('date') is not None 
+                and datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date() == three_days_before
+            ]
+
+            print(f"Total number of leads with status 'Lead' and date 3 days before today: {len(filtered_leads)}")
+
+            # Save filtered leads to a CSV file
+            with open('leads_with_status_lead_3_days_before.csv', 'w', newline='') as csvfile:
+                fieldnames = ['Email', 'Status', 'Assigned Date', 'Lead Owner']
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                
+                writer.writeheader()
+                for lead in filtered_leads:
+                    lead_id = lead.get('email_id')
+                    lead_status = lead.get('status')
+                    lead_date = lead.get('date')
+                    lead_creator = lead.get('lead_creator')
+                    writer.writerow({'Email': lead_id, 'Status': lead_status, 'Assigned Date': lead_date, 'Lead Owner': lead_creator})
+
+            print("Filtered leads data saved to 'leads_with_status_lead_3_days_before.csv'")
+        else:
+            print("No leads found in the response.")
+    else:
+        print("Failed to fetch data. Status code:", response.status_code)
+
+get_and_save_all_lead_data()

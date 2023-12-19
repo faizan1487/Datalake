@@ -15,7 +15,7 @@ from django.conf import settings
 import json
 from user.constants import COUNTRY_CODES
 import environ
-from secrets_api.algorithem import round_robin_support
+from secrets_api.algorithem import round_robin_support, round_robin_exam
 from threading import Thread
 from threading import Timer
 from datetime import datetime
@@ -43,6 +43,18 @@ def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwa
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
+@receiver(pre_save, sender=New_Alnafi_Payments)
+def new_alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+    print("new alnafi signal running")
+    model_name = 'new_alnafi'
+    fun = send_payment_exam_module(instance,model_name)
+    # Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
+
+@receiver(pre_save, sender=AlNafi_Payment)
+def alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
+    print("alnafi signal running")
+    model_name = 'alnafi'
+    fun = send_payment_exam_module(instance,model_name)    
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
@@ -496,7 +508,6 @@ def new_alnafi_payment_support_data(instance,payment_user):
 def alnafi_payment_support_data(instance,payment_user):
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
-
     country_code = payment_user[0].country or None
     country_name = None
 
@@ -762,3 +773,131 @@ def change_lead_status_sales_module(instance,model, **kwargs):
             # print('Error occurred while making the request:', str(e))
             # print('Error:', response.status_code)
             # print('Error:', response.text)     
+def send_payment_exam_module(instance,model_name, **kwargs):
+    print("Signal Running")
+    # print("instance.product_name", type(instance.product_name))
+    # print(instance.product_name)
+    if model_name == 'alnafi':     
+        if isinstance(instance.product_name, list):
+                contains_exam = any(isinstance(name, str) and name.startswith('Exam') for name in instance.product_name)
+                product_name = ", ".join(instance.product_name)
+                if contains_exam:
+                    product_name = ", ".join(instance.product_name)
+                else:
+                    product_name = instance.product_name  
+        else:
+            return
+    else:
+        print("In else")
+        # if instance.product_names.startswith('Exam'):
+        # if instance.product_names and instance.product_names[0].lower().startswith('exam'):
+                # print("in If")
+        if isinstance(instance.product_names, list):
+            for product_name in instance.product_names:
+                print("product name",product_name)
+                print("type",)
+                if isinstance(product_name, str) and product_name.startswith('Exam') or product_name=='Exam':
+                    flat_list = [item for sublist in instance.product_names for item in sublist]
+                    product_name = ", ".join(flat_list)
+        else:
+            print("in product else")
+            product_name = instance.product_names
+        # else:
+        #     return
+    url = f'https://crm.alnafi.com/api/resource/Exam 5 6 Leads?fields=["customer_email","product_name"]&filters=[["Exam 5 6 Leads","customer_email","=","{instance.customer_email}"],["Exam 5 6 Leads","product_name","=","{product_name}"]]'
+    user_api_key = '4e7074f890507cb'
+    user_secret_key = 'c954faf5ff73d31'
+    admin_headers = {
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    try:
+        response = requests.get(url, headers=admin_headers)
+        data = response.json()
+        # print("data", data)
+        payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
+        if payment_user:
+            testing_email = payment_user[0].email
+        else:
+            testing_email = None
+        if testing_email and testing_email.endswith("yopmail.com"):
+            pass
+        else:
+            already_existed = len(data["data"]) > 0
+            print(already_existed)
+        
+            if already_existed:
+                pass
+            else:
+                print("IN else")
+                url = f'https://crm.alnafi.com/api/resource/Exam 5 6 Leads?fields=["lead_creator"]&filters=[["Exam 5 6 Leads","customer_email","=","{instance.customer_email}"]]'
+
+                response = requests.get(url, headers=admin_headers)
+                data = response.json()
+
+                print("data", data)
+
+                already_exist = len(data["data"]) > 0
+                if already_exist:
+                    email = data['data'][0]["lead_creator"]
+
+                    agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
+                                "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
+                                "haider.raza@alnafi.edu.pk": ["2a1d467717681df","39faa082ac5f258"],
+                                }
+                    
+                    if email in agents:
+                        keys_of_agent = agents[email]
+                    
+
+                        if model_name == 'alnafi':
+                            customer_data = alnafi_payment_support_data(instance,payment_user)
+                            print("customer_data", customer_data)
+                        else:
+                            customer_data = new_alnafi_payment_support_data(instance, payment_user)
+                            print("customer_data", customer_data)
+
+                        agent_headers = {
+                            'Authorization': f'token {keys_of_agent[0]}:{keys_of_agent[1]}',
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                        }
+                        customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
+                        response = requests.post(customer_url, headers=agent_headers, json=customer_data)
+                        if response.status_code != 200:
+                            lead_data = response.json()
+                        
+                else:
+                    if model_name == 'alnafi':
+                        customer_data = alnafi_payment_support_data(instance,payment_user)
+                    else:
+                        customer_data = new_alnafi_payment_support_data(instance, payment_user)
+                    print("customer_data", customer_data)
+
+                    api_key, api_secret = round_robin_exam()
+                    headers = {
+                        'Authorization': f'token {api_key}:{api_secret}',
+                        "Content-Type": "application/json",
+                        "Accept": "application/json",
+                    }
+                    customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
+                    response = requests.post(customer_url, headers=headers, json=customer_data)
+                    print(response.status_code)
+                    print(response.text)
+                    if response.status_code == 200:
+                        lead_data = response.json()
+                        customer_email = lead_data['data']['customer_email']
+                        if customer_email:
+                            instance.customer_email = customer_email
+                    else:
+                        pass
+                    
+    except RequestException as e:
+        # pass
+        print("in except")
+        print('Error occurred while making the request:', str(e))
+        print('Error:', response.status_code)
+        print('Error:', response.text)         
+            

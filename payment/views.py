@@ -1241,7 +1241,7 @@ class PaymentValidationNew(APIView):
 
 class Renewal_Leads(APIView):
     def get(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
+        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/payment/REnewla.csv')
         lst = []
         for index, row in data.iterrows():
             first_name = row['name']
@@ -2142,3 +2142,53 @@ class LeadDataAPIView(APIView):
                         print(f"Failed to send data for {row['email']}. Status code: {response.status_code}")
 
         return JsonResponse({'message': 'Data processing completed'})
+    
+class CommisionData(APIView):
+    def get(self, request, *args, **kwargs):
+        q = self.request.GET.get('q', None)
+        payment_date_filter = self.request.GET.get('payment_date', None)
+        export = self.request.GET.get('export', None)
+        print("payment_date", payment_date_filter)
+
+        url = f'https://crm.alnafi.com/api/resource/Commission?fields=["title","lead_owner","phone","payment_date","total_product_payment","owner_pkr","product","order_id","payment_id"]&limit_start=0&limit_page_length=10000000'
+        api_key = "4e7074f890507cb"
+        api_secret = "c954faf5ff73d31"
+        headers = {
+            'Authorization': f'token {api_key}:{api_secret}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        response = requests.get(url, headers=headers)
+        data = response.json()
+
+        filtered_items = data["data"]
+
+        if q:
+            # Filter data based on the provided email address (case-insensitive and partial match)
+            filtered_items = [item for item in filtered_items if q.lower() in item.get("lead_owner", "").lower()]
+
+        if payment_date_filter:
+            # Filter data based on the provided payment date
+            filtered_items = [item for item in filtered_items if item.get("payment_date") == payment_date_filter]
+
+        total_product_payments = round(sum(float(item.get('total_product_payment', 0)) for item in filtered_items),2)
+        total_commission = round(sum(float(item.get('owner_pkr', 0)) for item in filtered_items),2)
+
+        # Add Total Product Payments and Total Commission to the response data
+        response_data = {
+            "data": filtered_items,
+            "Total Product Payments": total_product_payments,
+            "Total Commission": total_commission
+        }
+        # return Response(response_data)
+        if export == 'true':
+            file_name = f"Commission{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            df = pd.DataFrame(response_data).to_csv(index=False)
+            s3 = upload_csv_to_s3(df, file_name)
+            data = {'file_link': file_path, 'export': 'true'}
+            return Response(data)
+
+        return Response(response_data)
+        
+        

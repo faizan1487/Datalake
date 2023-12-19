@@ -176,6 +176,18 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
+
+payment/.~lock.Renewal.csv#
+payment/.~lock.REnewal.csv#
+comment.py
+populate.py
+data.py
+lead.py
+notes.py
+All.py
+populate.py
+Support.py
+
 # Pyre type checker
 .pyre/
 

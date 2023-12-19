@@ -51,7 +51,7 @@ import pandas as pd
 class UploadMocLeads(APIView):
     def post(self,request):
         # Read the CSV file into a DataFrame
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
+        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/user/Facebook.csv')
         lst = []
 
         # Iterate over rows in the DataFrame
