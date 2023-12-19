@@ -1578,7 +1578,7 @@ def search_payment_for_product_analytics(export, q, start_date, end_date, plan, 
         return response_data
 
 
-
+#Renewal payments
 class ExpiryPayments(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -1803,7 +1803,7 @@ class NewPayments(APIView):
             filtered_payments = filtered_payments.annotate(product_plan=Upper('product__product_plan'))
 
             if user_email:
-                filtered_payments = filtered_payments.filter(user__email=user_email)
+                filtered_payments = filtered_payments.filter(user__email__icontains=user_email)
             if product:
                 filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
 

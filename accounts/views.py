@@ -48,7 +48,6 @@ class ExpenseCreateAPIView(APIView):
     
 
 
-    permission_classes = [IsAuthenticated]
     def get(self, request):
         # Get parameters from the request
         month = request.GET.get('month')

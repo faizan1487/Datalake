@@ -441,7 +441,7 @@ def new_alnafi_payment_support_data(instance,payment_user):
                 break
 
     
-    current_date = datetime.now().date()
+    # current_date = datetime.now().date()
 
     # if instance.expiration_date and instance.expiration_date.date() >= current_date:
     #     expiration_status = 'Active'
@@ -473,11 +473,14 @@ def new_alnafi_payment_support_data(instance,payment_user):
     else:
         formatted_expire_datetime_str = None
 
-    
     if isinstance(instance.product_names, list):
-        # Handle the list of product names in a way that makes sense for your use case
-        # For example, you can join the list into a single string
-        product_name = ", ".join(instance.product_names)
+        product_names = []
+
+        for product in instance.product_names:
+            if 'exam' in product.lower():  
+                product_names.append(product)  
+
+        product_name = ", ".join(product_names)
     else:
         product_name = instance.product_names
 
@@ -518,11 +521,11 @@ def alnafi_payment_support_data(instance,payment_user):
                 break
 
     
-    current_date = datetime.now().date()
-    if instance.expiration_datetime and instance.expiration_datetime.date() >= current_date:
-        expiration_status = 'Active'
-    else:
-        expiration_status = 'Expired'
+    # current_date = datetime.now().date()
+    # if instance.expiration_datetime and instance.expiration_datetime.date() >= current_date:
+    #     expiration_status = 'Active'
+    # else:
+    #     expiration_status = 'Expired'
 
     if instance.order_datetime:
         order_datetime_str = str(instance.order_datetime)
@@ -551,9 +554,13 @@ def alnafi_payment_support_data(instance,payment_user):
         formatted_expire_datetime_str = None
 
     if isinstance(instance.product_name, list):
-        # Handle the list of product names in a way that makes sense for your use case
-        # For example, you can join the list into a single string
-        product_name = ", ".join(instance.product_name)
+        product_names = []
+
+        for product in instance.product_name:
+            if 'exam' in product.lower():  
+                product_names.append(product)  
+
+        product_name = ", ".join(product_names)
     else:
         product_name = instance.product_name
 
@@ -711,11 +718,6 @@ def change_lead_status_renewal_module(instance):
         print(e)
         print(response)
         print(response.text)
-    
-
-
-
-
 
 
 def change_lead_status_sales_module(instance,model, **kwargs):
@@ -773,37 +775,34 @@ def change_lead_status_sales_module(instance,model, **kwargs):
             # print('Error occurred while making the request:', str(e))
             # print('Error:', response.status_code)
             # print('Error:', response.text)     
+
+
 def send_payment_exam_module(instance,model_name, **kwargs):
-    print("Signal Running")
-    # print("instance.product_name", type(instance.product_name))
-    # print(instance.product_name)
-    if model_name == 'alnafi':     
+
+    if model_name=='alnafi':
         if isinstance(instance.product_name, list):
-                contains_exam = any(isinstance(name, str) and name.startswith('Exam') for name in instance.product_name)
-                product_name = ", ".join(instance.product_name)
-                if contains_exam:
-                    product_name = ", ".join(instance.product_name)
-                else:
-                    product_name = instance.product_name  
+            product_names = []
+
+            for product in instance.product_name:
+                if 'exam' in product.lower():  
+                    product_names.append(product) 
+
+            product_name = product_names[0] 
         else:
-            return
+            product_name = instance.product_name
     else:
-        print("In else")
-        # if instance.product_names.startswith('Exam'):
-        # if instance.product_names and instance.product_names[0].lower().startswith('exam'):
-                # print("in If")
         if isinstance(instance.product_names, list):
-            for product_name in instance.product_names:
-                print("product name",product_name)
-                print("type",)
-                if isinstance(product_name, str) and product_name.startswith('Exam') or product_name=='Exam':
-                    flat_list = [item for sublist in instance.product_names for item in sublist]
-                    product_name = ", ".join(flat_list)
+            product_names = []
+
+            for product in instance.product_names:
+                if 'exam' in product.lower():  
+                    product_names.append(product) 
+
+            product_name = product_names[0] 
         else:
-            print("in product else")
             product_name = instance.product_names
-        # else:
-        #     return
+
+
     url = f'https://crm.alnafi.com/api/resource/Exam 5 6 Leads?fields=["customer_email","product_name"]&filters=[["Exam 5 6 Leads","customer_email","=","{instance.customer_email}"],["Exam 5 6 Leads","product_name","=","{product_name}"]]'
     user_api_key = '4e7074f890507cb'
     user_secret_key = 'c954faf5ff73d31'
@@ -813,91 +812,76 @@ def send_payment_exam_module(instance,model_name, **kwargs):
         "Accept": "application/json",
     }
 
-    try:
-        response = requests.get(url, headers=admin_headers)
-        data = response.json()
-        # print("data", data)
-        payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
-        if payment_user:
-            testing_email = payment_user[0].email
-        else:
-            testing_email = None
-        if testing_email and testing_email.endswith("yopmail.com"):
+    response = requests.get(url, headers=admin_headers)
+    data = response.json()
+    payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
+    if payment_user:
+        testing_email = payment_user[0].email
+    else:
+        testing_email = None
+    if testing_email and testing_email.endswith("yopmail.com"):
+        pass
+    else:
+        already_existed = len(data["data"]) > 0
+    
+        if already_existed:
             pass
         else:
-            already_existed = len(data["data"]) > 0
-            print(already_existed)
-        
-            if already_existed:
-                pass
-            else:
-                print("IN else")
-                url = f'https://crm.alnafi.com/api/resource/Exam 5 6 Leads?fields=["lead_creator"]&filters=[["Exam 5 6 Leads","customer_email","=","{instance.customer_email}"]]'
+            url = f'https://crm.alnafi.com/api/resource/Exam 5 6 Leads?fields=["lead_creator"]&filters=[["Exam 5 6 Leads","customer_email","=","{instance.customer_email}"]]'
 
-                response = requests.get(url, headers=admin_headers)
-                data = response.json()
+            response = requests.get(url, headers=admin_headers)
+            data = response.json()
 
-                print("data", data)
 
-                already_exist = len(data["data"]) > 0
-                if already_exist:
-                    email = data['data'][0]["lead_creator"]
+            already_exist = len(data["data"]) > 0
+            if already_exist:
+                email = data['data'][0]["lead_creator"]
 
-                    agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
-                                "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
-                                "haider.raza@alnafi.edu.pk": ["2a1d467717681df","39faa082ac5f258"],
-                                }
-                    
-                    if email in agents:
-                        keys_of_agent = agents[email]
-                    
+                agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
+                            "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
+                            "haider.raza@alnafi.edu.pk": ["2a1d467717681df","39faa082ac5f258"],
+                            }
+                
+                if email in agents:
+                    keys_of_agent = agents[email]
+                
 
-                        if model_name == 'alnafi':
-                            customer_data = alnafi_payment_support_data(instance,payment_user)
-                            print("customer_data", customer_data)
-                        else:
-                            customer_data = new_alnafi_payment_support_data(instance, payment_user)
-                            print("customer_data", customer_data)
-
-                        agent_headers = {
-                            'Authorization': f'token {keys_of_agent[0]}:{keys_of_agent[1]}',
-                            "Content-Type": "application/json",
-                            "Accept": "application/json",
-                        }
-                        customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
-                        response = requests.post(customer_url, headers=agent_headers, json=customer_data)
-                        if response.status_code != 200:
-                            lead_data = response.json()
-                        
-                else:
                     if model_name == 'alnafi':
                         customer_data = alnafi_payment_support_data(instance,payment_user)
                     else:
                         customer_data = new_alnafi_payment_support_data(instance, payment_user)
-                    print("customer_data", customer_data)
+                    customer_data['created_at'] = datetime.today().isoformat()
 
-                    api_key, api_secret = round_robin_exam()
-                    headers = {
-                        'Authorization': f'token {api_key}:{api_secret}',
+                    agent_headers = {
+                        'Authorization': f'token {keys_of_agent[0]}:{keys_of_agent[1]}',
                         "Content-Type": "application/json",
                         "Accept": "application/json",
                     }
                     customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
-                    response = requests.post(customer_url, headers=headers, json=customer_data)
-                    print(response.status_code)
-                    print(response.text)
-                    if response.status_code == 200:
+                    response = requests.post(customer_url, headers=agent_headers, json=customer_data)
+                    if response.status_code != 200:
                         lead_data = response.json()
-                        customer_email = lead_data['data']['customer_email']
-                        if customer_email:
-                            instance.customer_email = customer_email
-                    else:
-                        pass
                     
-    except RequestException as e:
-        # pass
-        print("in except")
-        print('Error occurred while making the request:', str(e))
-        print('Error:', response.status_code)
-        print('Error:', response.text)         
-            
+            else:
+                if model_name == 'alnafi':
+                    customer_data = alnafi_payment_support_data(instance,payment_user)
+                else:
+                    customer_data = new_alnafi_payment_support_data(instance, payment_user)
+                customer_data['created_at'] = datetime.today().isoformat()
+                
+
+                api_key, api_secret = round_robin_exam()
+                headers = {
+                    'Authorization': f'token {api_key}:{api_secret}',
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                }
+                customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
+                response = requests.post(customer_url, headers=headers, json=customer_data)
+                if response.status_code == 200:
+                    lead_data = response.json()
+                    customer_email = lead_data['data']['customer_email']
+                    if customer_email:
+                        instance.customer_email = customer_email
+                    
+   
