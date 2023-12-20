@@ -290,147 +290,152 @@ def send_payment_to_commission_doctype(instance,model_name, **kwargs):
         response = requests.get(url, headers=headers)
         data = response.json()
         # print(data)
-        already_existed = len(data.get("data", [])) > 0
-
-        # print("already_existed", already_existed)
-        check_payment_url = 'https://crm.alnafi.com/api/resource/Commission'
-        Headers = {
-            'Authorization': f'token {api_key}:{api_secret}',
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
-        check_data = {
-                "filters": [["payment_id", "=", instance.id]]
-        }
-
-        response = requests.get(check_payment_url, headers=Headers, json=check_data)
-        lead_data = response.json()
-        # print("lead_data",lead_data)
-
-        if len(lead_data.get("data", [])) > 0:
-            pass
-            # print("Payment already exists in commission system")
+        # print(data['data'][0]['lead_creator'])
+        if data['data'][0]['lead_creator'] == 'Administrator':
+            # print("IN if")
+            return
         else:
-            if already_existed:
-                # print("In if")
-                lead_info = data["data"][0] if len(data.get("data", [])) > 0 else {}
-                # lead_creator_email = data.get('lead_creator', '')
-                lead_creator_email = lead_info.get('lead_creator', '')
+            already_existed = len(data.get("data", [])) > 0
 
-                if lead_creator_email in email_keys:
-                    post_api_key, post_secret_key = email_keys[lead_creator_email]
+            # print("already_existed", already_existed)
+            check_payment_url = 'https://crm.alnafi.com/api/resource/Commission'
+            Headers = {
+                'Authorization': f'token {api_key}:{api_secret}',
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+            check_data = {
+                    "filters": [["payment_id", "=", instance.id]]
+            }
+
+            response = requests.get(check_payment_url, headers=Headers, json=check_data)
+            lead_data = response.json()
+            # print("lead_data",lead_data)
+
+            if len(lead_data.get("data", [])) > 0:
+                pass
+                # print("Payment already exists in commission system")
+            else:
+                if already_existed:
+                    # print("In if")
+                    lead_info = data["data"][0] if len(data.get("data", [])) > 0 else {}
+                    # lead_creator_email = data.get('lead_creator', '')
+                    lead_creator_email = lead_info.get('lead_creator', '')
+
+                    if lead_creator_email in email_keys:
+                        post_api_key, post_secret_key = email_keys[lead_creator_email]
+                        
+                        headers_post = {
+                            'Authorization': f'token {post_api_key}:{post_secret_key}',
+                            "Content-Type": "application/json",
+                            "Accept": "application/json",
+                        }
+
+                    commission_url = 'https://crm.alnafi.com/api/resource/Commission'
                     
-                    headers_post = {
-                        'Authorization': f'token {post_api_key}:{post_secret_key}',
-                        "Content-Type": "application/json",
-                        "Accept": "application/json",
-                    }
+                    # Extracting phone and lead_creator safely
+                    lead_info = data["data"][0] if len(data.get("data", [])) > 0 else {}
+                    phone = lead_info.get('phone')
+                    lead_creator = lead_info.get('lead_creator')
+                    total_product_payment = 0
+                    commission_amount = 0
+                    if model_name == "NewAlnafi":
+                            payment_date = instance.payment_date.date()
+                            if isinstance(instance.product_names, list):
+                                # Flatten the list of lists into a single list
+                                flat_list = [item for sublist in instance.product_names for item in sublist]
 
-                commission_url = 'https://crm.alnafi.com/api/resource/Commission'
-                
-                # Extracting phone and lead_creator safely
-                lead_info = data["data"][0] if len(data.get("data", [])) > 0 else {}
-                phone = lead_info.get('phone')
-                lead_creator = lead_info.get('lead_creator')
-                total_product_payment = 0
-                commission_amount = 0
-                if model_name == "NewAlnafi":
-                        payment_date = instance.payment_date.date()
-                        if isinstance(instance.product_names, list):
-                            # Flatten the list of lists into a single list
-                            flat_list = [item for sublist in instance.product_names for item in sublist]
+                                # Join the flattened list into a string
+                                product_name = ", ".join(flat_list)
+                            else:
+                                product_name = instance.product_names
+                    if model_name == "Alnafi" :   
+                        payment_date = instance.order_datetime.date()
+                        if isinstance(instance.product_name, list):
+                            flat_list = [item for sublist in instance.product_name for item in sublist]
 
                             # Join the flattened list into a string
                             product_name = ", ".join(flat_list)
                         else:
-                            product_name = instance.product_names
-                if model_name == "Alnafi" :   
-                    payment_date = instance.order_datetime.date()
-                    if isinstance(instance.product_name, list):
-                        flat_list = [item for sublist in instance.product_name for item in sublist]
-
-                        # Join the flattened list into a string
-                        product_name = ", ".join(flat_list)
+                            product_name = instance.product_name 
+                    if "easy pay study" in product_name.lower():
+                        commission_percentage = 0.02  
                     else:
-                        product_name = instance.product_name 
-                if "easy pay study" in product_name.lower():
-                    commission_percentage = 0.02  
-                else:
-                    commission_percentage = 0.08  
-                if lead_creator:
-                    # commission_percentage = 0.0
-                    if model_name == "NewAlnafi":
-                        if instance.payment_method_currency.lower() == 'pkr':
-                            # commission_percentage = 0.08 
-                            if instance.amount: 
-                                commission_amount = instance.amount * commission_percentage
-                                total_product_payment = instance.amount
-                    else:
-                        if instance.amount_pkr > 0:
-                            # commission_percentage = 0.08
-                            commission_amount = instance.amount_pkr * commission_percentage
-                            total_product_payment = instance.amount_pkr
+                        commission_percentage = 0.08  
+                    if lead_creator:
+                        # commission_percentage = 0.0
+                        if model_name == "NewAlnafi":
+                            if instance.payment_method_currency.lower() == 'pkr':
+                                # commission_percentage = 0.08 
+                                if instance.amount: 
+                                    commission_amount = instance.amount * commission_percentage
+                                    total_product_payment = instance.amount
+                        else:
+                            if instance.amount_pkr > 0:
+                                # commission_percentage = 0.08
+                                commission_amount = instance.amount_pkr * commission_percentage
+                                total_product_payment = instance.amount_pkr
 
-                    if model_name == "NewAlnafi":
-                        if instance.payment_method_currency.lower() != 'pkr':
-                            if instance.amount:
-                                amount = instance.amount
-                                currency_rate = get_pkr_rate(instance.payment_method_currency, amount)
-                                converted_amount = round(float(amount) / currency_rate[instance.payment_method_currency], 2)
+                        if model_name == "NewAlnafi":
+                            if instance.payment_method_currency.lower() != 'pkr':
+                                if instance.amount:
+                                    amount = instance.amount
+                                    currency_rate = get_pkr_rate(instance.payment_method_currency, amount)
+                                    converted_amount = round(float(amount) / currency_rate[instance.payment_method_currency], 2)
+                                    # print(converted_amount)
+                                    # commission_percentage = 0.08  
+                                    commission_amount = round(float(converted_amount * commission_percentage), 2)
+                                    total_product_payment = converted_amount
+                        else:
+                            if instance.amount_usd > 0:
+                                amount = instance.amount_usd
+                                currency = "usd"
+                                currency_rate = get_pkr_rate(currency, amount)
+                                converted_amount = round(float(amount) / currency_rate[currency], 2)
                                 # print(converted_amount)
-                                # commission_percentage = 0.08  
+                                commission_percentage = 0.08  
                                 commission_amount = round(float(converted_amount * commission_percentage), 2)
                                 total_product_payment = converted_amount
-                    else:
-                        if instance.amount_usd > 0:
-                            amount = instance.amount_usd
-                            currency = "usd"
-                            currency_rate = get_pkr_rate(currency, amount)
-                            converted_amount = round(float(amount) / currency_rate[currency], 2)
-                            # print(converted_amount)
-                            commission_percentage = 0.08  
-                            commission_amount = round(float(converted_amount * commission_percentage), 2)
-                            total_product_payment = converted_amount
-                
-                    if model_name == "NewAlnafi":
-                        order_id = instance.orderId    
-                    else:
-                        order_id = instance.order_id
-                    if model_name == "NewAlnafi":
-                        source = instance.payment_method_source_name    
-                    else:
-                        source = instance.source
+                    
+                        if model_name == "NewAlnafi":
+                            order_id = instance.orderId    
+                        else:
+                            order_id = instance.order_id
+                        if model_name == "NewAlnafi":
+                            source = instance.payment_method_source_name    
+                        else:
+                            source = instance.source
 
-                        
-                    commission_data = {
-                        "payment_id": instance.id,
-                        "title": instance.customer_email,
-                        "phone": phone or 0,
-                        "order_id": order_id,
-                        "payment_date": payment_date.isoformat(),
-                        "total_product_payment": total_product_payment,
-                        "owner_pkr": commission_amount,
-                        "product": product_name,
-                        "source": source,
-                        "lead_owner": lead_creator,
-                        "created_at": current_date.isoformat()
-                    }
-                
-                    response = requests.post(commission_url, headers=headers_post, json=commission_data)
-                    # print(response.text)
-                    if response.status_code == 200:
-                        # Successfully created Commission entry based on lead information
-                        pass
-                        # print(response.status_code)
+                            
+                        commission_data = {
+                            "payment_id": instance.id,
+                            "title": instance.customer_email,
+                            "phone": phone or 0,
+                            "order_id": order_id,
+                            "payment_date": payment_date.isoformat(),
+                            "total_product_payment": total_product_payment,
+                            "owner_pkr": commission_amount,
+                            "product": product_name,
+                            "source": source,
+                            "lead_owner": lead_creator,
+                            "created_at": current_date.isoformat()
+                        }
+                    
+                        response = requests.post(commission_url, headers=headers_post, json=commission_data)
+                        # print(response.text)
+                        if response.status_code == 200:
+                            # Successfully created Commission entry based on lead information
+                            pass
+                            # print(response.status_code)
+                        else:
+                            pass
+                            print(response.text)
                     else:
                         pass
-                        print(response.text)
+                        # Handle cases where phone or lead_creator is missing
+                        # print("phone or lead_creator is missing Went Wrong")
                 else:
                     pass
-                    # Handle cases where phone or lead_creator is missing
-                    # print("phone or lead_creator is missing Went Wrong")
-            else:
-                pass
                 # Handle cases where data['data'] is empty
                 # print(" data['data'] is empty Went Wrong")
 
