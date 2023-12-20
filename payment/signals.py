@@ -45,14 +45,14 @@ def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwa
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    print("new alnafi signal running")
+    # print("exam new alnafi signal running")
     model_name = 'new_alnafi'
     fun = send_payment_exam_module(instance,model_name)
     # Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    print("alnafi signal running")
+    # print("alnafi exam signal running")
     model_name = 'alnafi'
     fun = send_payment_exam_module(instance,model_name)    
 
@@ -64,13 +64,13 @@ def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args
 
 @receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_commission(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    print("new alnafi signal running for commission")
+    # print("new alnafi signal running for commission")
     model = 'NewAlnafi'
     Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
 @receiver(post_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_commission(sender, instance: AlNafi_Payment, *args, **kwargs):
-    print("alnafi signal running for commission")
+    # print("alnafi signal running for commission")
     model = 'Alnafi'
     Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
@@ -121,87 +121,94 @@ def send_payment_support_module(instance,model_name, **kwargs):
         "Accept": "application/json",
     }
 
-    try:
-        response = requests.get(url, headers=admin_headers)
-        data = response.json()
-        payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
-        testing_email = payment_user[0].email
+    response = requests.get(url, headers=admin_headers)
+    data = response.json()
+    payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
+    testing_email = payment_user[0].email
 
-        if testing_email.endswith("yopmail.com"):
+    if testing_email.endswith("yopmail.com"):
+        pass
+    else:
+        already_existed = len(data["data"]) > 0
+
+        # print("support already_existed",already_existed)
+    
+        if already_existed:
             pass
         else:
-            already_existed = len(data["data"]) > 0
-        
-            if already_existed:
-                pass
-            else:
-                url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["Suppport","customer_email","=","{instance.customer_email}"]]'
+            # print("in else")
+            url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["Suppport","customer_email","=","{instance.customer_email}"]]'
 
-                response = requests.get(url, headers=admin_headers)
-                data = response.json()
+            response = requests.get(url, headers=admin_headers)
+            data = response.json()
 
-                already_exist = len(data["data"]) > 0
-                if already_exist:
-                    email = data['data'][0]["lead_creator"]
+            already_exist = len(data["data"]) > 0
+            if already_exist:
+                email = data['data'][0]["lead_creator"]
 
 
-                    agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
-                              "mutahir.hassan@alnafi.edu.pk": ["ee3c9803e0a7aa0","ad8a5dc4bc4f13f"],
-                              "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
-                              "haider.raza@alnafi.edu.pk": ["2a1d467717681df","39faa082ac5f258"],
-                              "salman.amjad@alnafi.edu.pk": ["c09e9698c024bd5","02c5e4ff622bb22"],
-                              "ahsan.ali@alnafi.edu.pk": ["b5658b2d5a087d0","a9faaabc26bddc5"],
-                              "mujtaba.jawed@alnafi.edu.pk": ["940ef42feabf766","7a642a5b930eb44"]
-                              }
-                    
-                    if email in agents:
-                        keys_of_agent = agents[email]
-                    
-
-                        if model_name == 'alnafi':
-                            customer_data = alnafi_payment_support_data(instance,payment_user)
-                        else:
-                            customer_data = new_alnafi_payment_support_data(instance, payment_user)
-
-                        agent_headers = {
-                            'Authorization': f'token {keys_of_agent[0]}:{keys_of_agent[1]}',
-                            "Content-Type": "application/json",
-                            "Accept": "application/json",
-                        }
-                        customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
-                        response = requests.post(customer_url, headers=agent_headers, json=customer_data)
-                        if response.status_code != 200:
-                            lead_data = response.json()
-                        
-                else:
+                agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
+                            "mutahir.hassan@alnafi.edu.pk": ["ee3c9803e0a7aa0","ad8a5dc4bc4f13f"],
+                            "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
+                            "haider.raza@alnafi.edu.pk": ["2a1d467717681df","39faa082ac5f258"],
+                            "salman.amjad@alnafi.edu.pk": ["c09e9698c024bd5","02c5e4ff622bb22"],
+                            "ahsan.ali@alnafi.edu.pk": ["b5658b2d5a087d0","a9faaabc26bddc5"],
+                            "mujtaba.jawed@alnafi.edu.pk": ["940ef42feabf766","7a642a5b930eb44"]
+                            }
+                
+                if email in agents:
+                    keys_of_agent = agents[email]
+                
+                    product = 'simple product'
                     if model_name == 'alnafi':
-                        customer_data = alnafi_payment_support_data(instance,payment_user)
+                        customer_data = alnafi_payment_support_data(instance,payment_user,product)
                     else:
-                        customer_data = new_alnafi_payment_support_data(instance, payment_user)
+                        customer_data = new_alnafi_payment_support_data(instance, payment_user,product)
+                    
+                    if customer_data is None:
+                        return
 
-                    api_key, api_secret = round_robin_support()
-                    headers = {
-                        'Authorization': f'token {api_key}:{api_secret}',
+                    agent_headers = {
+                        'Authorization': f'token {keys_of_agent[0]}:{keys_of_agent[1]}',
                         "Content-Type": "application/json",
                         "Accept": "application/json",
                     }
                     customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
-                    response = requests.post(customer_url, headers=headers, json=customer_data)
-                    if response.status_code == 200:
-                        lead_data = response.json()
-                        customer_email = lead_data['data']['customer_email']
-                        if customer_email:
-                            instance.customer_email = customer_email
+                    response = requests.post(customer_url, headers=agent_headers, json=customer_data)
+                    if response.status_code != 200:
+                        pass
+                        # print(response.text)
                     else:
                         pass
-                    
-    except RequestException as e:
-        # pass
-        print("in except")
-        print('Error occurred while making the request:', str(e))
-        print('Error:', response.status_code)
-        print('Error:', response.text) 
+                        # print("data for already existed agent sent to support doctype")
+            
 
+            else:
+                product = 'simple product'
+                if model_name == 'alnafi':
+                    customer_data = alnafi_payment_support_data(instance,payment_user,product)
+                else:
+                    customer_data = new_alnafi_payment_support_data(instance, payment_user,product)
+
+                if customer_data is None:
+                    return
+
+                api_key, api_secret = round_robin_support()
+                headers = {
+                    'Authorization': f'token {api_key}:{api_secret}',
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                }
+                customer_url = 'https://crm.alnafi.com/api/resource/Suppport'
+                response = requests.post(customer_url, headers=headers, json=customer_data)
+                if response.status_code != 200:
+                    pass
+                    # print(response.text)
+                else:
+                    pass
+                    # print("data sent to support doctype")
+                   
+   
 
 
 def change_lead_status_sales_module(instance, **kwargs):
@@ -245,7 +252,7 @@ def change_lead_status_sales_module(instance, **kwargs):
             pass
     except Exception as e:
         pass
-       
+
 
 def send_payment_to_commission_doctype(instance,model_name, **kwargs):
     # print("signal Running")
@@ -301,7 +308,8 @@ def send_payment_to_commission_doctype(instance,model_name, **kwargs):
         # print("lead_data",lead_data)
 
         if len(lead_data.get("data", [])) > 0:
-            print("Payment already exists in commission system")
+            pass
+            # print("Payment already exists in commission system")
         else:
             if already_existed:
                 # print("In if")
@@ -412,19 +420,23 @@ def send_payment_to_commission_doctype(instance,model_name, **kwargs):
                     # print(response.text)
                     if response.status_code == 200:
                         # Successfully created Commission entry based on lead information
-                        print(response.status_code)
+                        pass
+                        # print(response.status_code)
                     else:
-                        print("Something Went Wrong")
+                        pass
+                        print(response.text)
                 else:
+                    pass
                     # Handle cases where phone or lead_creator is missing
-                    print("Something Went Wrong")
+                    # print("phone or lead_creator is missing Went Wrong")
             else:
+                pass
                 # Handle cases where data['data'] is empty
-                print("Something Went Wrong")
+                # print(" data['data'] is empty Went Wrong")
 
 
-def new_alnafi_payment_support_data(instance,payment_user):
-    # print("in New Alnafi Payment fubc")
+def new_alnafi_payment_support_data(instance,payment_user,product):
+    # print("in New Alnafi Payment data fubc")
     # print(payment_user)
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
@@ -439,14 +451,6 @@ def new_alnafi_payment_support_data(instance,payment_user):
             if code == country_code:
                 country_name = name
                 break
-
-    
-    # current_date = datetime.now().date()
-
-    # if instance.expiration_date and instance.expiration_date.date() >= current_date:
-    #     expiration_status = 'Active'
-    # else:
-    #     expiration_status = 'Expired'
 
     if instance.payment_date:
         order_datetime_str = str(instance.payment_date)
@@ -474,16 +478,48 @@ def new_alnafi_payment_support_data(instance,payment_user):
         formatted_expire_datetime_str = None
 
     if isinstance(instance.product_names, list):
-        product_names = []
+        if product == 'simple product':
+            product_names = []
 
-        for product in instance.product_names:
-            if 'exam' in product.lower():  
-                product_names.append(product)  
+            for product in instance.product_names:
+                if 'exam' not in product.lower():
+                    product_names.append(product) 
 
-        product_name = ", ".join(product_names)
+            # print("new alnafi simple len(product_names)",len(product_names))
+            if len(product_names) <= 0:
+                return
+
+            product_name = ", ".join(product_names)
+        else:
+            product_names = []
+
+            for product in instance.product_names:
+                if 'exam' in product.lower():  
+                    product_names.append(product) 
+
+            # print('here')
+            # print("new alnafi exam len(product_names)",len(product_names))
+            if len(product_names) <= 0:
+                return
+
+            product_name = ", ".join(product_names)
+            # print("product_name",product_name)
     else:
-        product_name = instance.product_names
+        if not instance.product_names:
+            return
+        #handle exam product here too
+        if product == 'simple product':
+            if 'exam' not in instance.product_names:
+                product_name = instance.product_names
+            else:
+                return
+        else:
+            if 'exam' in instance.product_names:
+                product_name = instance.product_names
+            else:
+                return
 
+    
 
 
 
@@ -508,7 +544,7 @@ def new_alnafi_payment_support_data(instance,payment_user):
 
 
 
-def alnafi_payment_support_data(instance,payment_user):
+def alnafi_payment_support_data(instance,payment_user,product):
     first_name = payment_user[0].first_name if payment_user[0].first_name else ''
     last_name = payment_user[0].last_name if payment_user[0].last_name else ''
     country_code = payment_user[0].country or None
@@ -520,12 +556,6 @@ def alnafi_payment_support_data(instance,payment_user):
                 country_name = name
                 break
 
-    
-    # current_date = datetime.now().date()
-    # if instance.expiration_datetime and instance.expiration_datetime.date() >= current_date:
-    #     expiration_status = 'Active'
-    # else:
-    #     expiration_status = 'Expired'
 
     if instance.order_datetime:
         order_datetime_str = str(instance.order_datetime)
@@ -554,15 +584,48 @@ def alnafi_payment_support_data(instance,payment_user):
         formatted_expire_datetime_str = None
 
     if isinstance(instance.product_name, list):
-        product_names = []
+        if product == 'simple product':
+            product_names = []
 
-        for product in instance.product_name:
-            if 'exam' in product.lower():  
-                product_names.append(product)  
+            for product in instance.product_name:
+                if 'exam' not in product.lower():
+                    product_names.append(product) 
 
-        product_name = ", ".join(product_names)
+            # print("simple len(product_names)",len(product_names))
+            if len(product_names) <= 0:
+                return
+            
+
+            product_name = ", ".join(product_names)
+        else:
+            product_names = []
+
+            for product in instance.product_name:
+                if 'exam' in product.lower():  
+                    product_names.append(product) 
+
+            # print("exam len(product_names)",len(product_names))
+            if len(product_names) <= 0:
+                return
+
+            product_name = ", ".join(product_names)
     else:
-        product_name = instance.product_name
+        #handle exam product here too
+        if product == 'simple product':
+            if not instance.product_name:
+                return
+            if 'exam' not in instance.product_name:
+                product_name = instance.product_name
+            else:
+                return
+        else:
+            if not instance.product_name:
+                return
+            if 'exam' in instance.product_name:
+                product_name = instance.product_name
+            else:
+                return
+
 
     customer_data = {
         "first_name": first_name or None,
@@ -684,7 +747,6 @@ def change_lead_status_renewal_module(instance):
 
         # print(response.status_code)
         # print(data['data'])
-        # exit()
         if already_existed:
             converted_date = datetime.now().date()
             lead_id = data['data'][0]['name']
@@ -714,10 +776,10 @@ def change_lead_status_renewal_module(instance):
         else:
             pass
     except Exception as e:
-        # pass
-        print(e)
-        print(response)
-        print(response.text)
+        pass
+        # print(e)
+        # print(response)
+        # print(response.text)
 
 
 def change_lead_status_sales_module(instance,model, **kwargs):
@@ -785,7 +847,11 @@ def send_payment_exam_module(instance,model_name, **kwargs):
 
             for product in instance.product_name:
                 if 'exam' in product.lower():  
-                    product_names.append(product) 
+                    product_names.append(product)
+
+            # print("exam alnafi payment length of product for filtering the product len(product_names)",len(product_names))
+            if len(product_names) <= 0:
+                return
 
             product_name = product_names[0] 
         else:
@@ -797,6 +863,11 @@ def send_payment_exam_module(instance,model_name, **kwargs):
             for product in instance.product_names:
                 if 'exam' in product.lower():  
                     product_names.append(product) 
+
+
+            # print("exam new alnafi payment length of product for filtering the product len(product_names)",len(product_names))
+            if len(product_names) <= 0:
+                return
 
             product_name = product_names[0] 
         else:
@@ -835,6 +906,7 @@ def send_payment_exam_module(instance,model_name, **kwargs):
 
             already_exist = len(data["data"]) > 0
             if already_exist:
+                print("agent already exists")
                 email = data['data'][0]["lead_creator"]
 
                 agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
@@ -845,11 +917,13 @@ def send_payment_exam_module(instance,model_name, **kwargs):
                 if email in agents:
                     keys_of_agent = agents[email]
                 
-
+                    product = 'exam product'
                     if model_name == 'alnafi':
-                        customer_data = alnafi_payment_support_data(instance,payment_user)
+                        customer_data = alnafi_payment_support_data(instance,payment_user,product)
                     else:
-                        customer_data = new_alnafi_payment_support_data(instance, payment_user)
+                        customer_data = new_alnafi_payment_support_data(instance, payment_user,product)
+                    if customer_data is None:
+                        return
                     customer_data['created_at'] = datetime.today().isoformat()
 
                     agent_headers = {
@@ -863,10 +937,15 @@ def send_payment_exam_module(instance,model_name, **kwargs):
                         lead_data = response.json()
                     
             else:
+
+                product = 'exam product'
                 if model_name == 'alnafi':
-                    customer_data = alnafi_payment_support_data(instance,payment_user)
+                    customer_data = alnafi_payment_support_data(instance,payment_user,product)
                 else:
-                    customer_data = new_alnafi_payment_support_data(instance, payment_user)
+                    customer_data = new_alnafi_payment_support_data(instance, payment_user,product)
+                # print("customer data",customer_data)
+                if customer_data is None:
+                    return
                 customer_data['created_at'] = datetime.today().isoformat()
                 
 
@@ -878,10 +957,10 @@ def send_payment_exam_module(instance,model_name, **kwargs):
                 }
                 customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
                 response = requests.post(customer_url, headers=headers, json=customer_data)
-                if response.status_code == 200:
-                    lead_data = response.json()
-                    customer_email = lead_data['data']['customer_email']
-                    if customer_email:
-                        instance.customer_email = customer_email
+                if response.status_code != 200:
+                    pass
+                    # print(response.text)
+                else:
+                    pass
+                    # print("data sent to exam doctype")
                     
-   
