@@ -2147,8 +2147,9 @@ class CommisionData(APIView):
     def get(self, request, *args, **kwargs):
         q = self.request.GET.get('q', None)
         payment_date_filter = self.request.GET.get('payment_date', None)
+        month_filter = self.request.GET.get('month', None)
         # export = self.request.GET.get('export', None)
-        print("payment_date", payment_date_filter)
+        # print("payment_date", payment_date_filter)
 
         url = f'https://crm.alnafi.com/api/resource/Commission?fields=["title","lead_owner","phone","payment_date","total_product_payment", "owner_pkr","product","order_id","payment_id","order_id", "created_at"]&limit_start=0&limit_page_length=10000000'
         api_key = "4e7074f890507cb"
@@ -2170,15 +2171,19 @@ class CommisionData(APIView):
         if payment_date_filter:
             # Filter data based on the provided payment date
             filtered_items = [item for item in filtered_items if item.get("payment_date") == payment_date_filter]
-
+        if month_filter:
+            # Filter based on the month provided
+            filtered_items = [item for item in filtered_items if
+                              datetime.strptime(item.get("payment_date"), "%Y-%m-%d").month == int(month_filter)]
         total_product_payments = round(sum(float(item.get('total_product_payment', 0)) for item in filtered_items),2)
         total_commission = round(sum(float(item.get('owner_pkr', 0)) for item in filtered_items),2)
 
         # Add Total Product Payments and Total Commission to the response data
         response_data = {
-            "data": filtered_items,
+            "Length": len(filtered_items),
+            "Total Commission": total_commission,
             "Total Product Payments": total_product_payments,
-            "Total Commission": total_commission
+            "data": filtered_items,
         }
         return Response(response_data)
         # if export == 'true':
