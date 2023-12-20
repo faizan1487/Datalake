@@ -2142,12 +2142,14 @@ class LeadDataAPIView(APIView):
                         print(f"Failed to send data for {row['email']}. Status code: {response.status_code}")
 
         return JsonResponse({'message': 'Data processing completed'})
-    
+from operator import itemgetter
 class CommisionData(APIView):
     def get(self, request, *args, **kwargs):
         q = self.request.GET.get('q', None)
-        payment_date_filter = self.request.GET.get('payment_date', None)
-        month_filter = self.request.GET.get('month', None)
+        created_date_filter = self.request.GET.get('created_date', None)
+        # print(created_date_filter)
+        start_date_filter = self.request.GET.get('start_date', None)
+        end_date_filter = self.request.GET.get('end_date', None)
         # export = self.request.GET.get('export', None)
         # print("payment_date", payment_date_filter)
 
@@ -2168,22 +2170,28 @@ class CommisionData(APIView):
             # Filter data based on the provided email address (case-insensitive and partial match)
             filtered_items = [item for item in filtered_items if q.lower() in item.get("lead_owner", "").lower()]
 
-        if payment_date_filter:
+        if created_date_filter:
             # Filter data based on the provided payment date
-            filtered_items = [item for item in filtered_items if item.get("payment_date") == payment_date_filter]
-        if month_filter:
-            # Filter based on the month provided
+            filtered_items = [item for item in filtered_items if item.get("created_at") == created_date_filter]
+        if start_date_filter and end_date_filter:
             filtered_items = [item for item in filtered_items if
-                              datetime.strptime(item.get("payment_date"), "%Y-%m-%d").month == int(month_filter)]
+                              item.get("created_at") and start_date_filter <= item.get("created_at") <= end_date_filter]
+        elif start_date_filter:
+            filtered_items = [item for item in filtered_items if
+                              item.get("created_at") and item.get("created_at") >= start_date_filter]
+        elif end_date_filter:
+            filtered_items = [item for item in filtered_items if
+                              item.get("created_at") and item.get("created_at") <= end_date_filter]
+        reversed_items = filtered_items[::-1]
         total_product_payments = round(sum(float(item.get('total_product_payment', 0)) for item in filtered_items),2)
         total_commission = round(sum(float(item.get('owner_pkr', 0)) for item in filtered_items),2)
 
         # Add Total Product Payments and Total Commission to the response data
         response_data = {
-            "Length": len(filtered_items),
+            "Length": len(reversed_items),
             "Total Commission": total_commission,
             "Total Product Payments": total_product_payments,
-            "data": filtered_items,
+            "data": reversed_items,
         }
         return Response(response_data)
         # if export == 'true':
