@@ -47,14 +47,15 @@ def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwa
 def new_alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("exam new alnafi signal running")
     model_name = 'new_alnafi'
-    fun = send_payment_exam_module(instance,model_name)
-    # Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
+    # fun = send_payment_exam_module(instance,model_name)
+    Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("alnafi exam signal running")
     model_name = 'alnafi'
-    fun = send_payment_exam_module(instance,model_name)    
+    # fun = send_payment_exam_module(instance,model_name)    
+    Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
@@ -487,7 +488,7 @@ def new_alnafi_payment_support_data(instance,payment_user,product):
             product_names = []
 
             for product in instance.product_names:
-                if 'exam' not in product.lower():
+                if 'exam' not in product.lower() and 'Exam' not in product.lower():
                     product_names.append(product) 
 
             # print("new alnafi simple len(product_names)",len(product_names))
@@ -499,7 +500,7 @@ def new_alnafi_payment_support_data(instance,payment_user,product):
             product_names = []
 
             for product in instance.product_names:
-                if 'exam' in product.lower():  
+                if 'exam' in product.lower() or 'Exam' in product.lower() or 'Exams' in product.lower():  
                     product_names.append(product) 
 
             # print('here')
@@ -514,12 +515,12 @@ def new_alnafi_payment_support_data(instance,payment_user,product):
             return
         #handle exam product here too
         if product == 'simple product':
-            if 'exam' not in instance.product_names:
+            if 'exam' not in instance.product_names and 'Exam' not in instance.product_names:
                 product_name = instance.product_names
             else:
                 return
         else:
-            if 'exam' in instance.product_names:
+            if 'exam' in instance.product_names or 'Exam' in instance.product_names or 'Exams' in instance.product_names:
                 product_name = instance.product_names
             else:
                 return
@@ -593,8 +594,8 @@ def alnafi_payment_support_data(instance,payment_user,product):
             product_names = []
 
             for product in instance.product_name:
-                if 'exam' not in product.lower():
-                    product_names.append(product) 
+                if 'exam' not in product.lower() and 'Exam' not in product.lower():
+                    product_names.append(product)
 
             # print("simple len(product_names)",len(product_names))
             if len(product_names) <= 0:
@@ -606,7 +607,7 @@ def alnafi_payment_support_data(instance,payment_user,product):
             product_names = []
 
             for product in instance.product_name:
-                if 'exam' in product.lower():  
+                if 'exam' in product.lower() or 'Exam' in product.lower() or 'Exams' in product.lower():  
                     product_names.append(product) 
 
             # print("exam len(product_names)",len(product_names))
@@ -619,14 +620,14 @@ def alnafi_payment_support_data(instance,payment_user,product):
         if product == 'simple product':
             if not instance.product_name:
                 return
-            if 'exam' not in instance.product_name:
+            if 'exam' not in instance.product_name and 'Exam' not in instance.product_name:
                 product_name = instance.product_name
             else:
                 return
         else:
             if not instance.product_name:
                 return
-            if 'exam' in instance.product_name:
+            if 'exam' in instance.product_name or 'Exams' in instance.product_name or 'Exam' in instance.product_name:
                 product_name = instance.product_name
             else:
                 return
@@ -851,7 +852,7 @@ def send_payment_exam_module(instance,model_name, **kwargs):
             product_names = []
 
             for product in instance.product_name:
-                if 'exam' in product.lower():  
+                if 'exam' in product.lower() or 'Exam' in product.lower() or 'Exams' in product.lower():  
                     product_names.append(product)
 
             # print("exam alnafi payment length of product for filtering the product len(product_names)",len(product_names))
@@ -866,7 +867,7 @@ def send_payment_exam_module(instance,model_name, **kwargs):
             product_names = []
 
             for product in instance.product_names:
-                if 'exam' in product.lower():  
+                if 'exam' in product.lower() or 'Exam' in product.lower() or 'Exams' in product.lower():  
                     product_names.append(product) 
 
 
