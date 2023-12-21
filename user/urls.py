@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserPasswordCheckTokenAPI,SendPasswordResetEmailView,User_logout,UsersDelete,Navbar,AlnafiUser,AllEmployees,
                     GetUser,GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser,UploadMocLeads,getUsser,
-                    NewAlnafiUser,o_level_leads_alnafi_model,GetActiveUsers, UserSetNewPasswordAPIView)
+                    NewAlnafiUser,GetActiveUsers, UserSetNewPasswordAPIView,o_level_leads_alnafi_model)
 from django.http import HttpResponse
 
 urlpatterns = [

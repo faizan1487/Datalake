@@ -91,6 +91,7 @@ def usersignal(instance,source,sender):
         "source": source,
         "form": instance.form or None,
         "date": date_joined_str,  # Convert to ISO 8601 string
+        "advert_detail": instance.advert or None,
         # Add other fields from the Main_User model to the data dictionary as needed
     }
 
@@ -112,6 +113,8 @@ def usersignal(instance,source,sender):
             if response.status_code != 200:
                 print("response.status_code",response.text)
                 print("response.status_code",response.status_code)
+            else:
+                print("lead created successfully")
           
 
 #############################################################

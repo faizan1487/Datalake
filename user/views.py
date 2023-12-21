@@ -51,7 +51,7 @@ import pandas as pd
 class UploadMocLeads(APIView):
     def post(self,request):
         # Read the CSV file into a DataFrame
-        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/user/Facebook.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/.~lock.MOC Leads - Al Baseer to CRM - O Levels.csv#')
         lst = []
 
         # Iterate over rows in the DataFrame
@@ -155,7 +155,8 @@ class o_level_leads_alnafi_model(APIView):
                     'login_source':login_source,
                     'country': country,
                     'created_at': created_at,
-                    'assigned_date':formatted_date
+                    'assigned_date':formatted_date,
+                    'advert': advert
                 })
 
                 # If the object was not created (i.e., it already existed), update its attributes
@@ -168,6 +169,7 @@ class o_level_leads_alnafi_model(APIView):
                     user.country = country
                     user.created_at = created_at
                     user.assigned_date = assigned_date
+                    user.advert = advert
                     user.save()
 
             except Exception as e:
