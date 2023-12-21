@@ -2142,7 +2142,7 @@ class LeadDataAPIView(APIView):
                         print(f"Failed to send data for {row['email']}. Status code: {response.status_code}")
 
         return JsonResponse({'message': 'Data processing completed'})
-from operator import itemgetter
+# from operator import itemgetter
 class CommisionData(APIView):
     def get(self, request, *args, **kwargs):
         q = self.request.GET.get('q', None)
