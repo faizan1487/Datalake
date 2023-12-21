@@ -2207,7 +2207,7 @@ class CommisionData(APIView):
             "Page-Count": total_pages,
             "Total Commission": total_commission,
             "Total Product Payments": total_product_payments,
-            "current_page": int(page_number),
+            "Current-page": int(page_number),
             "data": paginated_data,
         }
         return Response(response_data)
