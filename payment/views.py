@@ -2150,6 +2150,13 @@ class CommisionData(APIView):
         # print(created_date_filter)
         start_date_filter = self.request.GET.get('start_date', None)
         end_date_filter = self.request.GET.get('end_date', None)
+        page_size = 10  # Set your desired page size
+        paginator = PageNumberPagination()
+        paginator.page_size = page_size
+        page_number = request.GET.get('page', 1)
+
+        # print(start_date_filter)
+        # print(end_date_filter)
         # export = self.request.GET.get('export', None)
         # print("payment_date", payment_date_filter)
 
@@ -2174,24 +2181,34 @@ class CommisionData(APIView):
             # Filter data based on the provided payment date
             filtered_items = [item for item in filtered_items if item.get("created_at") == created_date_filter]
         if start_date_filter and end_date_filter:
+            start_date = datetime.strptime(start_date_filter, '%Y-%m-%d')
+            end_date = datetime.strptime(end_date_filter, '%Y-%m-%d')
             filtered_items = [item for item in filtered_items if
-                              item.get("created_at") and start_date_filter <= item.get("created_at") <= end_date_filter]
+                            item.get("created_at") and start_date <= datetime.strptime(item.get("created_at"), '%Y-%m-%d') <= end_date]
         elif start_date_filter:
+            start_date = datetime.strptime(start_date_filter, '%Y-%m-%d')
             filtered_items = [item for item in filtered_items if
-                              item.get("created_at") and item.get("created_at") >= start_date_filter]
+                            item.get("created_at") and start_date <= datetime.strptime(item.get("created_at"), '%Y-%m-%d')]
         elif end_date_filter:
+            end_date = datetime.strptime(end_date_filter, '%Y-%m-%d')
             filtered_items = [item for item in filtered_items if
-                              item.get("created_at") and item.get("created_at") <= end_date_filter]
+                            item.get("created_at") and datetime.strptime(item.get("created_at"), '%Y-%m-%d') <= end_date]
         reversed_items = filtered_items[::-1]
-        total_product_payments = round(sum(float(item.get('total_product_payment', 0)) for item in filtered_items),2)
-        total_commission = round(sum(float(item.get('owner_pkr', 0)) for item in filtered_items),2)
+        paginated_data = paginator.paginate_queryset(reversed_items, request)
+        total_length = len(reversed_items)
+        total_product_payments = round(sum(float(item.get('total_product_payment', 0)) for item in reversed_items),2)
+        total_commission = round(sum(float(item.get('owner_pkr', 0)) for item in reversed_items),2)
+        total_pages = math.ceil(total_length / page_size)
+
 
         # Add Total Product Payments and Total Commission to the response data
         response_data = {
-            "Length": len(reversed_items),
+            "Total Data": total_length,
+            "Page-Count": total_pages,
             "Total Commission": total_commission,
             "Total Product Payments": total_product_payments,
-            "data": reversed_items,
+            "current_page": int(page_number),
+            "data": paginated_data,
         }
         return Response(response_data)
         # if export == 'true':
