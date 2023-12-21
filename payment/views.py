@@ -1759,7 +1759,7 @@ class ExpiryPayments(APIView):
 
 
 
-
+#Fresh users month wise
 class NewPayments(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
@@ -1792,7 +1792,7 @@ class NewPayments(APIView):
         else:
             filtered_payments = Main_Payment.objects.filter(
                 source__in=['Al-Nafi','NEW ALNAFI','New_Al-Nafi'],
-                order_datetime__range=(start_date, end_date + timedelta(days=1)),
+                order_datetime__range=(start_date, end_date),
                 ).exclude(
                 user__email__endswith="yopmail.com"
                 ).select_related('product').values()
