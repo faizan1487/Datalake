@@ -1420,7 +1420,6 @@ class ProductAnalytics(APIView):
                 product_least_payments = 0
 
 
-
            
             if export=='true':
                 df = pd.DataFrame(payments)
@@ -1453,8 +1452,8 @@ class ProductAnalytics(APIView):
                 paginated_queryset = paginator.paginate_queryset(list_of_products, request)
                 
                 data = [{'product_with_max_revenue':product_with_max_revenue}, 
-                        {'max_revenue':max_revenue}, {'product_with_min_revenue':product_with_min_revenue}, 
-                        {'min_revenue': min_revenue}, {'most_payments_product':product_most_payments}, 
+                        {'max_revenue':int(max_revenue)}, {'product_with_min_revenue':product_with_min_revenue}, 
+                        {'min_revenue': int(min_revenue)}, {'most_payments_product':product_most_payments}, 
                         {'most_payments_count':max_payments_count}, {'least_payments_product':product_least_payments}, 
                         {'least_payments_count':min_payments_count},{'total_payments_pkr': total_payments_in_pkr}, 
                         {'total_payments_usd': total_payments_in_usd}]
