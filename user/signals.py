@@ -341,21 +341,12 @@ def mocLead_Signalto_sale_doctype(instance,source):
         try:
             post_url = 'https://crm.alnafi.com/api/resource/Lead'
             response = requests.post(post_url, headers=headers, json=data)
-            # print(response.status_code)
-            if response.status_code == 200:
-                lead_data = response.json()
-                erp_lead_id = lead_data['data']['name']
-                if erp_lead_id:
-                    instance.erp_lead_id = erp_lead_id
-                    print("Lead created successfully!")
-            else:
+            if response.status_code != 200:
+                print(response.status_code)
+                print(response.text)
                 failed_leads.append(data)
         except Exception as e:
             print("Error posting lead data:", str(e))
-            # print(data)
-            # print(data)
-            # print(response.status_code)
-            # print(response.text)
     
     if failed_leads:
         with open('failed_sales_doctype_leads.csv', 'w', newline='') as csvfile:

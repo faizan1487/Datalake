@@ -1241,7 +1241,7 @@ class PaymentValidationNew(APIView):
 
 class Renewal_Leads(APIView):
     def get(self,request):
-        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/payment/REnewla.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
         lst = []
         for index, row in data.iterrows():
             first_name = row['name']
