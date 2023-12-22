@@ -129,7 +129,7 @@ INSTALLED_APPS = [
 ]
 
 CRONJOBS = [
-    ('* * * * *', 'payment.renewal_leads.handle'),  # Run every 24 hours
+    ('0 0 * * *', 'payment.renewal_leads.handle'),  # Run every 24 hours
 ]
 
 # '0 0 * * *',
