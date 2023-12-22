@@ -23,7 +23,7 @@ from django.contrib.auth.tokens import PasswordResetTokenGenerator
 import pandas as pd
 from datetime import datetime
 
-from .models import AlNafi_User, IslamicAcademy_User, Main_User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User
+from .models import AlNafi_User, IslamicAcademy_User, Main_User, NavbarLink,PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User, CvForms
 from .serializers import (AlnafiUserSerializer,UserRegistrationSerializer,UserLoginSerializer,UserProfileSerializer,UserChangePasswordSerializer,
                           SendPasswordResetEmailSerializer,UserPasswordResetSerializer,NavbarSerializer,GroupsSerailizer,MainUserCreateSerializer,
                           NewAlnafiUserSerializer)
@@ -51,7 +51,7 @@ import pandas as pd
 class UploadMocLeads(APIView):
     def post(self,request):
         # Read the CSV file into a DataFrame
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/.~lock.MOC Leads - Al Baseer to CRM - O Levels.csv#')
+        data = pd.read_csv('/home/uzair/Downloads/Al-Baseer-Backend/user/Leads Facebook.csv')
         lst = []
 
         # Iterate over rows in the DataFrame
@@ -155,8 +155,7 @@ class o_level_leads_alnafi_model(APIView):
                     'login_source':login_source,
                     'country': country,
                     'created_at': created_at,
-                    'assigned_date':formatted_date,
-                    'advert': advert
+                    'assigned_date':formatted_date
                 })
 
                 # If the object was not created (i.e., it already existed), update its attributes
@@ -1200,4 +1199,57 @@ class ForgotPasswordView(APIView):
 
 
 #         return Response({"msg":"done"})
-    
+class CvFormsApi(APIView):
+    def post(self, request, *args, **kwargs):
+        data = request.data
+        certificates_data = data.pop('certificates', [])
+        skills_data = data.pop('skills', [])
+
+        # Extract certificate and skills data
+        certificates = data.pop('certificate', None)
+        # skills = data.pop('skills', None)
+        # print("skills", skills_data)
+
+        # Create CvForms instance
+        cv_form = CvForms.objects.create(
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            email=data.get('email'),
+            nationality=data.get('nationality'),
+            cnic_no=data.get('cnic_no'),
+            gender=data.get('gender'),
+            martial_status=data.get('martial_status'),
+            city=data.get('city'),
+            province=data.get('province'),
+            zip_code=data.get('zip_code'),
+            phone_number_1=data.get('phone_number_1'),
+            phone_number_2=data.get('phone_number_2'),
+            updated_resume=request.FILES.get('updated_resume'),
+            your_picture=request.FILES.get('your_picture'),
+            position_uplied_for=data.get('position_uplied_for'),
+            work_experience=data.get('work_experience'),
+            date_you_can_start=data.get('date_you_can_start'),
+            present_salary=data.get('present_salary'),
+            desired_salary=data.get('desired_salary'),
+            academic_qualification=data.get('academic_qualification'),
+            descipline=data.get('descipline'),
+            institution=data.get('institution'),
+            start_date=data.get('start_date'),
+            end_date=data.get('end_date'),
+            marks_obtained=data.get('marks_obtained'),
+            total_marks=data.get('total_marks'),
+            certificate=certificates,
+            job_title=data.get('job_title'),
+            company=data.get('company'),
+            start_date_job=data.get('start_date_job'),
+            end_date_job=data.get('end_date_job'),
+            major_projects=data.get('major_projects'),
+            skills=skills_data,
+            referance_name=data.get('referance_name'),
+            address_city=data.get('address_city'),
+            referance_phone=data.get('referance_phone'),
+            relationship_with=data.get('relationship_with')
+        )
+
+        return Response({"message": "CvForms created successfully"}, status=status.HTTP_201_CREATED)
+   

@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserPasswordCheckTokenAPI,SendPasswordResetEmailView,User_logout,UsersDelete,Navbar,AlnafiUser,AllEmployees,
                     GetUser,GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser,UploadMocLeads,getUsser,
-                    NewAlnafiUser,GetActiveUsers, UserSetNewPasswordAPIView,o_level_leads_alnafi_model)
+                    NewAlnafiUser,o_level_leads_alnafi_model,GetActiveUsers, UserSetNewPasswordAPIView, CvFormsApi)
 from django.http import HttpResponse
 
 urlpatterns = [
@@ -40,5 +40,6 @@ urlpatterns = [
 
     path('newalnafiuser/', NewAlnafiUser.as_view(), name='newalnfiuser'),
     path("navbar/", Navbar.as_view(), name='navbar'),
+    path("cv_form/", CvFormsApi.as_view()),
     # path('users/<int:pk>/', UserDetail.as_view(), name='user-detail'),
 ]

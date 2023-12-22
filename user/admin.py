@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import AlNafi_User
 from .models import Main_User
-from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User
+from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User, CvForms
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin, ExportActionModelAdmin
 
@@ -101,3 +101,9 @@ class NewAlNafiUserAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.Mo
     list_per_page = 100
 
 admin.site.register(New_AlNafi_User, NewAlNafiUserAdmin)
+class CvFormAdmin(admin.ModelAdmin):
+    list_display = ('first_name', 'last_name', 'email', 'cnic_no')
+    list_filter = ('first_name', 'last_name', 'email', 'cnic_no')
+    search_fields = ('first_name', 'last_name', 'email')
+    list_per_page = 100
+admin.site.register(CvForms, CvFormAdmin)

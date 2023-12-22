@@ -1,7 +1,7 @@
 from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 import requests
-from .models import AlNafi_User, IslamicAcademy_User,PSWFormRecords, Moc_Leads,New_AlNafi_User
+from .models import AlNafi_User, IslamicAcademy_User,PSWFormRecords, Moc_Leads,New_AlNafi_User, CvForms
 from user.constants import COUNTRY_CODES
 from newsletter.signals import send_lead_post_request
 import environ
@@ -42,6 +42,12 @@ def psw_lead_to_erp(sender, instance, **kwargs):
 @receiver(post_save, sender=New_AlNafi_User)
 def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
     new_alnafi_user = newsignupsignal(instance,sender)
+
+@receiver(post_save, sender=CvForms)
+def new_alnafi_payment_signal_exam(sender, instance: CvForms, *args, **kwargs):
+    # print("exam new alnafi signal running")
+    fun = data_to_crmforcv(instance)
+    # Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
 
 
 def usersignal(instance,source,sender):
@@ -430,3 +436,84 @@ def newsignupsignal(instance,sender):
 
             # if response and response.status_code != 200:
             #     print(response.text)
+def data_to_crmforcv(instance):
+    url = f'https://crm.alnafi.com/api/resource/Cv Form'
+
+    user_api_key = "4e7074f890507cb"
+    user_secret_key = "c954faf5ff73d31"
+    headers = {
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+    name_of_certificate = instance.certificate
+    certificate_string = ', '.join(name_of_certificate)
+    name_of_skills = instance.skills
+    skills_string = ', '.join(name_of_skills)
+    cv_data ={
+        "first_name": instance.first_name,
+        "last_name": instance.last_name, 
+        "email": instance.email,
+        "nationality": instance.nationality,
+        "cnic": instance.cnic_no,
+        "gender": instance.gender,
+        "marital_status": instance.martial_status,
+        "city": instance.city,
+        "province": instance.province,
+        "zip_code": instance.zip_code,
+        "phone_number_1": instance.phone_number_1,
+        "phone_number_2": instance.phone_number_2,
+        # "updated_resume": instance.updated_resume,
+        # "your_picture": instance.your_picture,
+        "position_applied_for": instance.position_uplied_for,
+        "work_experience_in_years": instance.work_experience,
+        "date_you_can_start_work": instance.date_you_can_start,
+        "present_salary_pkr": instance.present_salary,
+        "salary_desired_pkr": instance.desired_salary,
+        "academic_qualification": instance.academic_qualification,
+        "discipline": instance.descipline,
+        "institution": instance.institution,
+        "city_1": instance.city,
+        "start_date": instance.start_date,
+        "end_date": instance.end_date,
+        "marks_obtained": instance.marks_obtained,
+        "total_obtained": instance.total_marks,
+        "name_of_certificate": certificate_string,
+        "job_title": instance.job_title,
+        "company": instance.company,
+        "start": instance.start_date_job,
+        "end": instance.end_date_job,
+        "major_projects": instance.major_projects,
+        "your_skill": skills_string,
+        "name1": instance.referance_name,
+        "addresscity": instance.address_city,
+        "phone_number": instance.referance_phone,
+        "relationship": instance.relationship_with
+    }
+    # print("name_of_certificate", instance.certificate)
+    # s3 = boto3.client('s3')
+    # # Generate presigned URLs for files stored in S3
+    # print("instance.updated_resume.url",instance.updated_resume.url)
+    # print("instance.your_picture.url",instance.your_picture.url)
+    # resume_url = str(instance.updated_resume.url)
+    # pic_url = str(instance.your_picture.url)
+    # updated_resume_url = s3.generate_presigned_url(
+    #     'get_object',
+    #     Params={'Bucket': 'al-baseer', 'Key': 'resume_url'},
+    #     ExpiresIn=3600
+    # )
+    # your_picture_url = s3.generate_presigned_url(
+    #     'get_object',
+    #     Params={'Bucket': 'al-baseer', 'Key': 'pic_url'},
+    #     ExpiresIn=3600
+    # )
+
+    # Use the generated presigned URLs in the data payload
+    cv_data['updated_resume'] = instance.updated_resume.url
+    cv_data['your_picture'] = instance.your_picture.url
+    response = requests.post(url, headers=headers, json=cv_data)
+    # print(response.status_code)
+    # print(response.text)
+    if response.status_code == 200:
+        print("Data Sent to Crm")
+
