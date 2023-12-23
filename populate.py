@@ -217,63 +217,157 @@ import csv
 import datetime
 import requests
 
-def get_and_save_all_lead_data():
+# def get_and_save_all_lead_data():
 
+#     user_api_key = '4e7074f890507cb'
+#     user_secret_key = 'c954faf5ff73d31'
+
+#     headers = {
+#         'Authorization': f'token {user_api_key}:{user_secret_key}',
+#         "Content-Type": "application/json",
+#         "Accept": "application/json",
+#     }
+
+#     # Construct the URL to get leads
+#     get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator"]&limit_start=0&limit_page_length=10000000'
+
+#     # Make the API request
+#     response = requests.get(get_url, headers=headers)
+
+#     if response.status_code == 200:
+#         leads_data = response.json()
+
+#         if 'data' in leads_data:
+#             leads = leads_data['data']
+
+#             # Get today's date
+#             today_date = datetime.date.today()
+
+#             # Calculate 3 days before today
+#             three_days_before = today_date - datetime.timedelta(days=3)
+
+#             # Filter leads with status 'Lead' and date 3 days before today
+#             filtered_leads = [
+#                 lead for lead in leads 
+#                 if lead.get('status') == 'Lead'
+#                 and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk' 
+#                 and lead.get('date') is not None 
+#                 and datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date() == three_days_before
+#             ]
+
+#             print(f"Total number of leads with status 'Lead' and date 3 days before today: {len(filtered_leads)}")
+
+#             # Save filtered leads to a CSV file
+#             with open('leads_with_status_lead_3_days_before.csv', 'w', newline='') as csvfile:
+#                 fieldnames = ['Email', 'Status', 'Assigned Date', 'Lead Owner']
+#                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                
+#                 writer.writeheader()
+#                 for lead in filtered_leads:
+#                     lead_id = lead.get('email_id')
+#                     lead_status = lead.get('status')
+#                     lead_date = lead.get('date')
+#                     lead_creator = lead.get('lead_creator')
+#                     writer.writerow({'Email': lead_id, 'Status': lead_status, 'Assigned Date': lead_date, 'Lead Owner': lead_creator})
+
+#             print("Filtered leads data saved to 'leads_with_status_lead_3_days_before.csv'")
+#         else:
+#             print("No leads found in the response.")
+#     else:
+#         print("Failed to fetch data. Status code:", response.status_code)
+
+# get_and_save_all_lead_data()
+
+# =========================================================================================================
+
+#extract leads from crm with status lead and with no comments
+#then delete them from crm or send put request and assign those leads to admin
+#or send delete request with id to delete those leads
+
+from datetime import datetime
+import requests
+import pandas as pd
+import csv
+import json
+
+
+def fetch_idol_leads():
+    print("fetch_idol_leads")
+    # Admin keys
     user_api_key = '4e7074f890507cb'
     user_secret_key = 'c954faf5ff73d31'
+    
+    # url = 'https://crm.alnafi.com/api/resource/Lead?fields=["first_name","status","lead_creator","phone","country","email_id","form","advert_detail","product_names_list","source","notes","`tabCRM Note`.note","`tabCRM Note`.added_on","`tabCRM Note`.added_by"]&filters=[["Lead","status","=","Lead"]]&limit_start=0&limit_page_length=10000000'
 
+
+    url = 'https://crm.alnafi.com/api/resource/Lead?fields=["first_name","status","lead_creator","phone","date","country","email_id","form","product_names_list","demo_product","enrollment","interest","qualification","cv_link","source","notes","`tabCRM Note`.note","`tabCRM Note`.added_on","`tabCRM Note`.added_by"]&filters=[["Lead","status","=","Lead"]]&limit_start=0&limit_page_length=10000000'
+
+
+    
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         "Content-Type": "application/json",
         "Accept": "application/json",
     }
 
-    # Construct the URL to get leads
-    get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator"]&limit_start=0&limit_page_length=10000000'
+    response = requests.get(url, headers=headers)
+    lead_data = json.loads(response.text)
 
-    # Make the API request
-    response = requests.get(get_url, headers=headers)
+    if 'data' in lead_data:
+        lead_data = lead_data['data']
 
-    if response.status_code == 200:
-        leads_data = response.json()
+        if lead_data:
+            # Create an empty dictionary to store data
+            data_dict = {}
 
-        if 'data' in leads_data:
-            leads = leads_data['data']
+            # Loop through the response data
+            for item in lead_data:
+                for key, value in item.items():
+                    if key in data_dict:
+                        data_dict[key].append(value)
+                    else:
+                        data_dict[key] = [value]
 
-            # Get today's date
-            today_date = datetime.date.today()
+            # Create a DataFrame from the dictionary
+            df = pd.DataFrame(data_dict)
 
-            # Calculate 3 days before today
-            three_days_before = today_date - datetime.timedelta(days=3)
+            # Define the CSV file name
+            csv_filename = 'all_lead_data.csv'
 
-            # Filter leads with status 'Lead' and date 3 days before today
-            filtered_leads = [
-                lead for lead in leads 
-                if lead.get('status') == 'Lead'
-                and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk' 
-                and lead.get('date') is not None 
-                and datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date() == three_days_before
-            ]
+            # Save the data to a CSV file with column names
+            df.to_csv(csv_filename, index=False)
 
-            print(f"Total number of leads with status 'Lead' and date 3 days before today: {len(filtered_leads)}")
-
-            # Save filtered leads to a CSV file
-            with open('leads_with_status_lead_3_days_before.csv', 'w', newline='') as csvfile:
-                fieldnames = ['Email', 'Status', 'Assigned Date', 'Lead Owner']
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                
-                writer.writeheader()
-                for lead in filtered_leads:
-                    lead_id = lead.get('email_id')
-                    lead_status = lead.get('status')
-                    lead_date = lead.get('date')
-                    lead_creator = lead.get('lead_creator')
-                    writer.writerow({'Email': lead_id, 'Status': lead_status, 'Assigned Date': lead_date, 'Lead Owner': lead_creator})
-
-            print("Filtered leads data saved to 'leads_with_status_lead_3_days_before.csv'")
+            print(f"Data saved to {csv_filename}")
         else:
-            print("No leads found in the response.")
+            print("No data found in the response.")
     else:
-        print("Failed to fetch data. Status code:", response.status_code)
+        print(response.text)
+        print("The 'data' key is missing in the response.")
 
-get_and_save_all_lead_data()
+
+
+    #Loop over the leads data and delete those leads which don't have a comment
+        
+    # data = response.json()
+    # for i in data['data']:
+    #     if not i['note']:
+    #         email = i['email_id']  
+    #         delete_url = f'https://crm.alnafi.com/api/resource/Lead/{email}'
+    #         response = requests.delete(delete_url, headers=headers)
+    #         print(response.text)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+fetch_idol_leads()
