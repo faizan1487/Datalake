@@ -299,7 +299,6 @@ def get_and_save_all_lead_data():
 
     if response.status_code == 200:
         leads_data = response.json()
-        print("leads_data", leads_data)
 
         if 'data' in leads_data:
             leads = leads_data['data']
@@ -344,3 +343,31 @@ def get_and_save_all_lead_data():
         print("Failed to fetch data. Status code:", response.status_code)
 
 get_and_save_all_lead_data()
+
+
+
+    #Loop over the leads data and delete those leads which don't have a comment
+        
+    # data = response.json()
+    # for i in data['data']:
+    #     if not i['note']:
+    #         email = i['email_id']  
+    #         delete_url = f'https://crm.alnafi.com/api/resource/Lead/{email}'
+    #         response = requests.delete(delete_url, headers=headers)
+    #         print(response.text)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# fetch_idol_leads()
