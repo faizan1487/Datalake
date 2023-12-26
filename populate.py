@@ -213,12 +213,75 @@ import requests
 # common_records.to_csv('common_records.csv', index=False)
 
 
+# import csv
+# import datetime
+# import requests
+
+# def get_and_save_all_lead_data():
+
+#     user_api_key = '4e7074f890507cb'
+#     user_secret_key = 'c954faf5ff73d31'
+
+#     headers = {
+#         'Authorization': f'token {user_api_key}:{user_secret_key}',
+#         "Content-Type": "application/json",
+#         "Accept": "application/json",
+#     }
+
+#     # Construct the URL to get leads
+#     get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator"]&limit_start=0&limit_page_length=10000000'
+
+#     # Make the API request
+#     response = requests.get(get_url, headers=headers)
+
+#     if response.status_code == 200:
+#         leads_data = response.json()
+
+#         if 'data' in leads_data:
+#             leads = leads_data['data']
+
+#             # Get today's date
+#             today_date = datetime.date.today()
+
+#             # Calculate 3 days before today
+#             three_days_before = today_date - datetime.timedelta(days=3)
+
+#             # Filter leads with status 'Lead' and date 3 days before today
+#             filtered_leads = [
+#                 lead for lead in leads 
+#                 if lead.get('status') == 'Lead'
+#                 and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk' 
+#                 and lead.get('date') is not None 
+#                 and datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date() == three_days_before
+#             ]
+
+#             print(f"Total number of leads with status 'Lead' and date 3 days before today: {len(filtered_leads)}")
+
+#             # Save filtered leads to a CSV file
+#             with open('leads_with_status_lead_3_days_before.csv', 'w', newline='') as csvfile:
+#                 fieldnames = ['Email', 'Status', 'Assigned Date', 'Lead Owner']
+#                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                
+#                 writer.writeheader()
+#                 for lead in filtered_leads:
+#                     lead_id = lead.get('email_id')
+#                     lead_status = lead.get('status')
+#                     lead_date = lead.get('date')
+#                     lead_creator = lead.get('lead_creator')
+#                     writer.writerow({'Email': lead_id, 'Status': lead_status, 'Assigned Date': lead_date, 'Lead Owner': lead_creator})
+
+#             print("Filtered leads data saved to 'leads_with_status_lead_3_days_before.csv'")
+#         else:
+#             print("No leads found in the response.")
+#     else:
+#         print("Failed to fetch data. Status code:", response.status_code)
+
+# get_and_save_all_lead_data()
 import csv
 import datetime
 import requests
 
 def get_and_save_all_lead_data():
-
     user_api_key = '4e7074f890507cb'
     user_secret_key = 'c954faf5ff73d31'
 
@@ -236,6 +299,7 @@ def get_and_save_all_lead_data():
 
     if response.status_code == 200:
         leads_data = response.json()
+        print("leads_data", leads_data)
 
         if 'data' in leads_data:
             leads = leads_data['data']
@@ -246,31 +310,34 @@ def get_and_save_all_lead_data():
             # Calculate 3 days before today
             three_days_before = today_date - datetime.timedelta(days=3)
 
-            # Filter leads with status 'Lead' and date 3 days before today
-            filtered_leads = [
-                lead for lead in leads 
-                if lead.get('status') == 'Lead'
-                and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk' 
-                and lead.get('date') is not None 
-                and datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date() == three_days_before
-            ]
+            # Group leads by lead_creator
+            leads_by_creator = {}
+            for lead in leads:
+                if lead.get('status') == 'Lead' and lead.get('date') is not None:
+                    lead_date = datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date()
+                    if lead_date == three_days_before and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk':
+                        lead_creator = lead.get('lead_creator')
+                        if lead_creator not in leads_by_creator:
+                            leads_by_creator[lead_creator] = []
+                        leads_by_creator[lead_creator].append(lead)
 
-            print(f"Total number of leads with status 'Lead' and date 3 days before today: {len(filtered_leads)}")
+            print(f"Total number of leads with status 'Lead' and date 3 days before today: {len(leads)}")
 
-            # Save filtered leads to a CSV file
-            with open('leads_with_status_lead_3_days_before.csv', 'w', newline='') as csvfile:
-                fieldnames = ['Email', 'Status', 'Assigned Date', 'Lead Owner']
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                
-                writer.writeheader()
-                for lead in filtered_leads:
-                    lead_id = lead.get('email_id')
-                    lead_status = lead.get('status')
-                    lead_date = lead.get('date')
-                    lead_creator = lead.get('lead_creator')
-                    writer.writerow({'Email': lead_id, 'Status': lead_status, 'Assigned Date': lead_date, 'Lead Owner': lead_creator})
+            # Save leads to separate CSV files based on lead_creator
+            for creator, creator_leads in leads_by_creator.items():
+                filename = f"leads_{creator.replace('@', '_').replace('.', '_')}_3_days_before.csv"
+                with open(filename, 'w', newline='') as csvfile:
+                    fieldnames = ['Email', 'Status', 'Assigned Date', 'Lead Owner']
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                    writer.writeheader()
+                    for lead in creator_leads:
+                        lead_id = lead.get('email_id')
+                        lead_status = lead.get('status')
+                        lead_date = lead.get('date')
+                        lead_creator = lead.get('lead_creator')
+                        writer.writerow({'Email': lead_id, 'Status': lead_status, 'Assigned Date': lead_date, 'Lead Owner': lead_creator})
 
-            print("Filtered leads data saved to 'leads_with_status_lead_3_days_before.csv'")
+                print(f"Filtered leads data for {creator} saved to '{filename}'")
         else:
             print("No leads found in the response.")
     else:
