@@ -51,7 +51,8 @@ import pandas as pd
 class UploadMocLeads(APIView):
     def post(self,request):
         # Read the CSV file into a DataFrame
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
+        # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook (copy).csv')
         lst = []
 
         # Iterate over rows in the DataFrame
@@ -70,21 +71,6 @@ class UploadMocLeads(APIView):
             # You can adjust the format string as needed
             # created_at = pd.to_datetime(created_at_str, format="%d/%m/%Y %H:%M:%S")
             created_at = pd.to_datetime(created_at_str, format="%Y/%m/%d %H:%M:%S")
-            # try:
-            #     print(email)
-            #     moc = Moc_Leads.objects.create(
-            #         full_name=full_name,
-            #         email=email,
-            #         phone=phone,
-            #         form=form,
-            #         country= country,
-            #         source=source,
-            #         created_at=created_at,
-            #         cv_link=cv_link
-            #     )
-            # except Exception as e:
-            #     print(e)
-            #     lst.append(row['email'])
             try:
                 # Try to get or create an Moc_Leads object based on the email
                 moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
@@ -124,7 +110,7 @@ class UploadMocLeads(APIView):
 
 
 
-class o_level_leads_alnafi_model(APIView):
+class o_level_leads_moc_model(APIView):
     def post(self,request):
         data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - O Levels.csv')
         lst = []
@@ -146,34 +132,36 @@ class o_level_leads_alnafi_model(APIView):
             # You can adjust the format string as needed
             # created_at = pd.to_datetime(created_at_str, format="%m/%d/%Y %H:%M:%S")
             created_at = pd.to_datetime(created_at_str, format="%Y/%m/%d %H:%M:%S")
-            try:
-                user, created = AlNafi_User.objects.get_or_create(email=email, defaults={
-                    'first_name': full_name,
-                    'phone': phone,
-                    'email': email,
-                    'form': form,
-                    'login_source':login_source,
-                    'country': country,
-                    'created_at': created_at,
-                    'assigned_date':formatted_date
-                })
 
-                # If the object was not created (i.e., it already existed), update its attributes
-                if not created:
-                    user.first_name = full_name
-                    user.email = email
-                    user.phone = phone
-                    user.form = form
-                    user.login_source = login_source
-                    user.country = country
-                    user.created_at = created_at
-                    user.assigned_date = assigned_date
-                    user.advert = advert
-                    user.save()
+            # try:
+            user, created = Moc_Leads.objects.get_or_create(email=email, defaults={
+                'first_name': full_name,
+                'phone': phone,
+                'email': email,
+                'form': form,
+                'login_source':login_source,
+                'country': country,
+                'created_at': created_at,
+                'assigned_at':formatted_date,
+                'advert': advert
+            })
 
-            except Exception as e:
-                print(e)
-                lst.append(row['email'])
+            # If the object was not created (i.e., it already existed), update its attributes
+            if not created:
+                user.first_name = full_name
+                user.email = email
+                user.phone = phone
+                user.form = form
+                user.login_source = login_source
+                user.country = country
+                user.created_at = created_at
+                user.assigned_at = assigned_date
+                user.advert = advert
+                user.save()
+
+            # except Exception as e:
+            #     print(e)
+            #     lst.append(row['email'])
 
         data_Frame = pd.DataFrame(lst)
         data_Frame.to_csv("error.csv")

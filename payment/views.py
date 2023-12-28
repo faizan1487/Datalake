@@ -1282,8 +1282,6 @@ class Renewal_Leads(APIView):
                 print(e)
                 lst.append(row['email'])
             
-
-
         data_Frame = pd.DataFrame(lst)
         data_Frame.to_csv("error.csv")
         return Response("DONE")

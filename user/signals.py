@@ -225,8 +225,15 @@ def mocLead_Signalto_moc_doctype(instance,source):
 
 
 def mocLead_Signalto_sale_doctype(instance,source):
-    print("sale doctype signa;")
-    user_api_key, user_secret_key = round_robin()
+    print("mocLead_Signalto_sale_doctype")
+    if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)':
+        user_api_key = '2a1d467717681df'
+        user_secret_key = '39faa082ac5f258'
+    else:
+        user_api_key, user_secret_key = round_robin()
+
+
+    # user_api_key, user_secret_key = round_robin()
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
@@ -276,11 +283,6 @@ def mocLead_Signalto_sale_doctype(instance,source):
     response = requests.get(url, headers=headers)
 
     lead_data = response.json()
-
-    # print(response.status_code)
-    
-    # if response.status_code == 403:
-    #     return
     
     if 'data' in lead_data:
         already_existed = len(lead_data["data"]) > 0
@@ -337,38 +339,14 @@ def mocLead_Signalto_sale_doctype(instance,source):
         instance.erp_lead_id = lead_data['data'][0]['name']
         # print("lead updated")
     else:
-        # print("in else")
-        try:
-            post_url = 'https://crm.alnafi.com/api/resource/Lead'
-            response = requests.post(post_url, headers=headers, json=data)
-            if response.status_code != 200:
-                print(response.status_code)
-                print(response.text)
-                failed_leads.append(data)
-        except Exception as e:
-            print("Error posting lead data:", str(e))
-    
-    if failed_leads:
-        with open('failed_sales_doctype_leads.csv', 'w', newline='') as csvfile:
-            fieldnames = failed_leads[0].keys()
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            for lead in failed_leads:
-                writer.writerow(lead)
-
-    # print("failed_leads",failed_leads)
-    
-    if failed_leads:
-        with open('failed_sale_doctype_leads.csv', 'a', newline='') as csvfile:
-            fieldnames = failed_leads[0].keys()
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-            # Check if the file is empty, and write header only if it's a new file
-            if csvfile.tell() == 0:
-                writer.writeheader()
-
-            for lead in failed_leads:
-                writer.writerow(lead)
+        post_url = 'https://crm.alnafi.com/api/resource/Lead'
+        response = requests.post(post_url, headers=headers, json=data)
+        if response.status_code != 200:
+            print(response.status_code)
+            print(response.text)
+            print("email",instance.email)
+        else:
+            print("sale doctype signa; lead created successfully")
 
 
 
@@ -427,84 +405,5 @@ def newsignupsignal(instance,sender):
 
             # if response and response.status_code != 200:
             #     print(response.text)
-# def data_to_crmforcv(instance):
-#     url = f'https://crm.alnafi.com/api/resource/Cv Form'
 
-#     user_api_key = "4e7074f890507cb"
-#     user_secret_key = "c954faf5ff73d31"
-#     headers = {
-#         'Authorization': f'token {user_api_key}:{user_secret_key}',
-#         "Content-Type": "application/json",
-#         "Accept": "application/json",
-#     }
-#     name_of_certificate = instance.certificate
-#     certificate_string = ', '.join(name_of_certificate)
-#     name_of_skills = instance.skills
-#     skills_string = ', '.join(name_of_skills)
-#     cv_data ={
-#         "first_name": instance.first_name,
-#         "last_name": instance.last_name, 
-#         "email": instance.email,
-#         "nationality": instance.nationality,
-#         "cnic": instance.cnic_no,
-#         "gender": instance.gender,
-#         "marital_status": instance.martial_status,
-#         "city": instance.city,
-#         "province": instance.province,
-#         "zip_code": instance.zip_code,
-#         "phone_number_1": instance.phone_number_1,
-#         "phone_number_2": instance.phone_number_2,
-#         # "updated_resume": instance.updated_resume,
-#         # "your_picture": instance.your_picture,
-#         "position_applied_for": instance.position_uplied_for,
-#         "work_experience_in_years": instance.work_experience,
-#         "date_you_can_start_work": instance.date_you_can_start,
-#         "present_salary_pkr": instance.present_salary,
-#         "salary_desired_pkr": instance.desired_salary,
-#         "academic_qualification": instance.academic_qualification,
-#         "discipline": instance.descipline,
-#         "institution": instance.institution,
-#         "city_1": instance.city,
-#         "start_date": instance.start_date,
-#         "end_date": instance.end_date,
-#         "marks_obtained": instance.marks_obtained,
-#         "total_obtained": instance.total_marks,
-#         "name_of_certificate": certificate_string,
-#         "job_title": instance.job_title,
-#         "company": instance.company,
-#         "start": instance.start_date_job,
-#         "end": instance.end_date_job,
-#         "major_projects": instance.major_projects,
-#         "your_skill": skills_string,
-#         "name1": instance.referance_name,
-#         "addresscity": instance.address_city,
-#         "phone_number": instance.referance_phone,
-#         "relationship": instance.relationship_with
-#     }
-    # print("name_of_certificate", instance.certificate)
-    # s3 = boto3.client('s3')
-    # # Generate presigned URLs for files stored in S3
-    # print("instance.updated_resume.url",instance.updated_resume.url)
-    # print("instance.your_picture.url",instance.your_picture.url)
-    # resume_url = str(instance.updated_resume.url)
-    # pic_url = str(instance.your_picture.url)
-    # updated_resume_url = s3.generate_presigned_url(
-    #     'get_object',
-    #     Params={'Bucket': 'al-baseer', 'Key': 'resume_url'},
-    #     ExpiresIn=3600
-    # )
-    # your_picture_url = s3.generate_presigned_url(
-    #     'get_object',
-    #     Params={'Bucket': 'al-baseer', 'Key': 'pic_url'},
-    #     ExpiresIn=3600
-    # )
-
-    # Use the generated presigned URLs in the data payload
-    # cv_data['updated_resume'] = instance.updated_resume.url
-    # cv_data['your_picture'] = instance.your_picture.url
-    # response = requests.post(url, headers=headers, json=cv_data)
-    # # print(response.status_code)
-    # # print(response.text)
-    # if response.status_code == 200:
-    #     print("Data Sent to Crm")
-
+ 
