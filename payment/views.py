@@ -8,12 +8,15 @@ from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_P
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
                          UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
 from .services import (renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate,get_pkr_rate)
+from user.models import Moc_Leads
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from datetime import datetime, timedelta, date
 from django.db.models import Q
+from django.db.models import Case, Value, When, BooleanField
+
 
 from django.http import HttpResponse
 import os
@@ -2217,5 +2220,69 @@ class CommisionData(APIView):
         #     return Response(data)
 
         # return Response(response_data)
-        
-        
+class Roidata(APIView):
+    def get(self, request):
+        start_date_param = request.GET.get('start_date')
+        end_date_param = request.GET.get('end_date')
+
+        moc_emails = Moc_Leads.objects.values_list('email', flat=True)
+
+        # Fetch users from Main_Payment model using the emails from Moc_Leads
+        matching_users = Main_Payment.objects.filter(user__email__in=moc_emails).values('id', 'amount', 'source', 'currency', 'alnafi_payment_id', 'user__email')
+        matching_users = matching_users.filter(
+            Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source='dlocal_india')
+        )
+        # Fetch corresponding Moc_Leads data for matched emails
+        moc_lead_data = Moc_Leads.objects.filter(email__in=moc_emails).values('email', 'created_at__date')
+
+        if start_date_param and end_date_param:
+            start_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_param, '%Y-%m-%d').date()
+
+            matching_users = matching_users.filter(created_datetime__date__range=(start_date, end_date))
+
+            moc_lead_data = moc_lead_data.annotate(
+                moc_lead_created_date=Case(
+                    When(created_at__date__range=(start_date, end_date), then=Value(True)),
+                    default=Value(False),
+                    output_field=BooleanField(),
+                )
+            )
+
+        # Create a dictionary to map email to created_at date from Moc_Leads
+        moc_lead_dates = {entry['email']: entry['created_at__date'] for entry in moc_lead_data}
+
+        # Paginate the queryset
+        paginator = Paginator(matching_users, 10)  # Show 10 payments per page
+
+        page_number = request.GET.get('page')
+        try:
+            paginated_data = paginator.page(page_number)
+        except PageNotAnInteger:
+            paginated_data = paginator.page(1)
+        except EmptyPage:
+            paginated_data = paginator.page(paginator.num_pages)
+
+        total_sum_of_amounts = sum(float(user['amount']) for user in matching_users)
+
+        # Combine data from Main_Payment and Moc_Leads
+        response_data = []
+        for entry in paginated_data:
+            entry_data = {
+                'id': entry['id'],
+                'amount': entry['amount'],
+                'source': entry['source'],
+                'currency': entry['currency'],
+                'alnafi_payment_id': entry['alnafi_payment_id'],
+                'user__email': entry['user__email'],
+                'created_date': moc_lead_dates.get(entry['user__email'], None)
+            }
+            response_data.append(entry_data)
+
+        return JsonResponse({
+            'total_sum_of_amounts': total_sum_of_amounts,
+            'length_data': paginator.count,
+            'page_count': paginator.num_pages,
+            'current_page': paginated_data.number,
+            'data': response_data,
+        })
