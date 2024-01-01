@@ -708,6 +708,7 @@ class SearchPayments(APIView):
                     'source_payment_id': payment['source_payment_id'],
                     'card_mask': payment['card_mask'],
                     'order_datetime': payment['order_datetime'].isoformat(),
+                    'internal_source': payment['internal_source']
                 }
 
                 # print(payment_data)
@@ -735,9 +736,10 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
     if status:
         payments = payments.filter(status=status)
+        
 
     if source:
-        payments = payments.filter(source=source)
+        payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source=source))
 
     if origin:
         if origin == 'local':
@@ -909,7 +911,8 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                 'order_datetime': payment.order_datetime,
                 'card_mask': payment.card_mask,
                 'id': payment.id,
-                'source_payment_id': payment.source_payment_id
+                'source_payment_id': payment.source_payment_id,
+                'internal_source': payment.internal_source
             }
             for payment in payments
         ]
@@ -917,7 +920,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
         response_data = {"payments":payments,"total_count":total_count,"success":True,"total_payments_in_pkr":total_payments_in_pkr, "total_payments_in_usd":total_payments_in_usd}
         return response_data
-
 
 
 def add_tax_stripe_according_to_the_country_code(amount,country_code):
@@ -943,8 +945,6 @@ def add_tax_stripe_according_to_the_country_code(amount,country_code):
 
         final_checkout_amount = float(amount) + tax_amount
         return final_checkout_amount,tax
-
-
 
 
 #PRODUCTION
@@ -1466,8 +1466,6 @@ class ProductAnalytics(APIView):
         else:
             response_data = {"Error": "Incorrect product name or payments for this product does not exist"}
             return Response(response_data)
-
-
 
 
 def search_payment_for_product_analytics(export, q, start_date, end_date, plan, source, origin, status,product,page):

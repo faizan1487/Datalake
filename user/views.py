@@ -52,11 +52,11 @@ class UploadMocLeads(APIView):
     def post(self,request):
         # Read the CSV file into a DataFrame
         # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook (copy).csv')
-        lst = []
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Easy Pay Program.csv')
 
         # Iterate over rows in the DataFrame
         for index, row in data.iterrows():
+            failed_leads = []
             # Extracting data from the row
             full_name = row['full_name']
             email = row['email']
@@ -65,7 +65,8 @@ class UploadMocLeads(APIView):
             country = row['country']
             login_source = row['source']
             created_at_str = row['created_at']    
-            advert = row['advert']      
+            # advert = row['advert']
+            advert = row['advert detail']
 
             # Assuming the original format is "%m/%d/%Y %H:%M:%S"
             # You can adjust the format string as needed
@@ -97,18 +98,25 @@ class UploadMocLeads(APIView):
                     moc.save()
 
             except Exception as e:
-                # If an error occurs, add the email to the list for further analysis
-                print(e)
-                lst.append(row['email'])
+                failed_leads.append(data)
 
-        # Create a DataFrame from the list of emails with errors
-        data_Frame = pd.DataFrame(lst)
-        data_Frame.to_csv("error.csv")
+            if failed_leads:
+                # print("failed leads exits")
+                with open('moc_model_failed_easy_pay_leads.csv', 'a', newline='') as csvfile:
+                    fieldnames = failed_leads[0].keys()
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                    # Check if the file is empty, and write header only if it's a new file
+                    if csvfile.tell() == 0:
+                        writer.writeheader()
+
+                    for lead in failed_leads:
+                        writer.writerow(lead)
+
+
 
         return Response({"msg":"done"})
     
-
-
 
 class o_level_leads_moc_model(APIView):
     def post(self,request):

@@ -4,7 +4,7 @@ import os
 import django
 from faker import Faker
 import random
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 
 # Set up Django environment
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albaseer.settings")  # Replace with your project's settings module
@@ -300,7 +300,6 @@ import json
 #     else:
 #         print("Failed to fetch data. Status code:", response.status_code)
 
-# get_and_save_all_lead_data()
 #     response = requests.get(url, headers=headers)
 #     lead_data = json.loads(response.text)
 
@@ -715,7 +714,7 @@ def sale_easy_pay_leads():
         #         for lead in failed_leads:
         #             writer.writerow(lead)
 
-sale_easy_pay_leads()
+# sale_easy_pay_leads()
 
 #=================================================================================
 
@@ -950,22 +949,22 @@ import pandas as pd
 
 
 # # Read the CSV file into a DataFrame
-# df = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Easy_format_leads.csv')
-
+# df = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Easy Pay Program.csv')
+# output_file_path = '/home/faizan/albaseer/Al-Baseer-Backend/Formatted_MOC Leads - Al Baseer to CRM - Easy Pay Program.csv'
 # # Function to convert the date format
 # def convert_date(date_str):
 #     # Parse the input date string
 #     # dt_object = datetime.strptime(date_str, '%d-%b-%y')
 #     dt_object = datetime.strptime(date_str, '%Y-%m-%dT%H:%M:%S%z')
-
 #     # Format the date as 'yyyy-mm-dd'
-#     formatted_date = dt_object.strftime('%Y-%m-%d')
+#     # formatted_date = dt_object.strftime('%Y-%m-%d')
+#     formatted_date = dt_object.strftime("%Y-%m-%d %H:%M:%S")
 
 #     return formatted_date
 
 # def convert_assign_date(date_str):
 #     # Parse the input date string
-#     dt_object = datetime.strptime(date_str, '%d-%b-%y')
+#     dt_object = datetime.strptime(date_str, '%d %b %Y')  # Use '%b' for the month abbreviation in uppercase
 
 #     # Format the date as 'yyyy-mm-dd'
 #     formatted_date = dt_object.strftime('%Y-%m-%d')
@@ -973,9 +972,8 @@ import pandas as pd
 #     return formatted_date
 
 # # Apply the conversion function to the 'date' column
-# df['formatted_date'] = df['created_at'].apply(convert_date)
-# df['formatted_assigned_date'] = df['assigned_date'].apply(convert_assign_date)
-# # Save the modified DataFrame to a new CSV file
+# df['formatted_created_date'] = df['created_at'].apply(convert_date)
+# df['formatted_assign_date'] = df['assigned_date'].apply(convert_assign_date)
 # df.to_csv(output_file_path, index=False)
 
 
@@ -1055,3 +1053,158 @@ import pandas as pd
 
 
 #=======================================================================================
+
+
+from numpy import nan, source
+from secrets_api.algorithem import round_robin_support, round_robin
+
+# Script to import easy pay leads
+
+def support_easy_pay_leads():
+    # print("func running")
+    crm_endpoint = 'https://crm.alnafi.com/api/resource/Lead'
+    support_endpoint = 'https://crm.alnafi.com/api/resource/Suppport'
+
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Support_Formatted_MOC Leads - Al Baseer to CRM - Easy Pay Program.csv')
+    data = data.applymap(lambda x: None if pd.isna(x) else x)
+
+    # Iterate over rows in the DataFrame
+    for index, row in data.iterrows():
+        failed_leads = []
+
+        first_name = row['full_name']
+        email = row['email']
+        phone = row['phone']
+        form = row['form']
+        country = row['country']
+        advert_detail = row['advert detail']
+        source = row['source']
+        created_at = row['formatted_created_date']
+        assigned_date = row['formatted_assign_date']
+        
+        data = {
+            "first_name": first_name,
+            "customer_email": email,
+            "contact_no": str(phone),
+            "form": form,
+            "country": country,
+            "advert_detail":advert_detail,
+            "source": source,
+            "created_at":created_at,
+            "payment": assigned_date,
+            "expiration_status": "Active"
+        }
+
+        url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["customer_email"]&filters=[["Suppport","customer_email","=","{email}"],["Suppport","form","=","{form}"]]'
+
+        user_api_key = '4e7074f890507cb'
+        user_secret_key = 'c954faf5ff73d31'
+
+        admin_headers = {
+            'Authorization': f'token {user_api_key}:{user_secret_key}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+        response = requests.get(url, headers=admin_headers)
+        lead_data = response.json()
+
+        try:
+            if lead_data["data"]:
+                already_existed = len(lead_data["data"]) > 0
+            else:
+                already_existed = False
+        except KeyError:
+            # Handle the case when "data" key is not present in lead_data
+            already_existed = False
+
+        if not already_existed:
+            post_api_key, post_secret_key = round_robin_support()
+            headers = {
+                'Authorization': f'token {post_api_key}:{post_secret_key}',
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+
+            response = requests.post(support_endpoint, headers=headers, json=data)
+            if response.status_code != 200:
+                failed_leads.append(data)
+            else:
+                print(f"lead created succesfully {email}")
+
+        
+        if failed_leads:
+            # print("failed leads exits")
+            with open('support_failed_easy_pay_leads.csv', 'a', newline='') as csvfile:
+                fieldnames = failed_leads[0].keys()
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                # Check if the file is empty, and write header only if it's a new file
+                if csvfile.tell() == 0:
+                    writer.writeheader()
+
+                for lead in failed_leads:
+                    writer.writerow(lead)
+
+
+        # Extracting data from the row
+        # first_name = row['full_name'] or None
+        # email = row['email'] or None
+        # phone = row['phone'] or None
+        # form = row['form'] or None
+        # country = row['country'] or None
+        # advert_detail = row['advert detail'] or None
+        # source = row['source'] or None
+        # created_at = row['formatted_created_date'] or None
+        # assigned_date = row['formatted_assign_date'] or None
+      
+        # data = {
+        #     "first_name": first_name,
+        #     "lead_name": first_name,
+        #     "email_id": email,
+        #     "phone": str(phone),
+        #     "form": form,
+        #     "country": country,
+        #     "advert_detail":advert_detail,
+        #     "source": source,
+        #     "created_at":created_at,
+        #     "date": assigned_date,
+        # }
+
+
+        # post_api_key, post_secret_key = round_robin()
+
+        # headers = {
+        #     'Authorization': f'token {post_api_key}:{post_secret_key}',
+        #     "Content-Type": "application/json",
+        #     "Accept": "application/json",
+        # }
+
+        # response = requests.post(crm_endpoint, headers=headers, json=data)
+
+        # if response.status_code != 200:
+        #     response_data = json.loads(response.text)
+        #     if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
+        #         pass
+        #     else:
+        #         data['error'] = response.text
+        #         data['status_code'] = response.status_code
+        #         failed_leads.append(data)
+        # else:
+        #     print(f"lead created succesfully {email}")
+
+   
+        # if failed_leads:
+        #     # print("failed leads exits")
+        #     with open('support_failed_easy_pay_leads.csv', 'a', newline='') as csvfile:
+        #         fieldnames = failed_leads[0].keys()
+        #         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+        #         # Check if the file is empty, and write header only if it's a new file
+        #         if csvfile.tell() == 0:
+        #             writer.writeheader()
+
+        #         for lead in failed_leads:
+        #             writer.writerow(lead)
+
+support_easy_pay_leads()
