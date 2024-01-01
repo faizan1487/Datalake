@@ -2225,12 +2225,12 @@ class Roidata(APIView):
         moc_emails = Moc_Leads.objects.values_list('email', flat=True)
 
         # Fetch users from Main_Payment model using the emails from Moc_Leads
-        matching_users = Main_Payment.objects.filter(user__email__in=moc_emails).values('id', 'amount', 'source', 'currency', 'alnafi_payment_id', 'user__email')
+        matching_users = Main_Payment.objects.filter(user__email__in=moc_emails).values('id', 'amount', 'source', 'currency', 'alnafi_payment_id', 'user__email', 'order_datetime')
         matching_users = matching_users.filter(
             Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source='dlocal_india')
         )
         # Fetch corresponding Moc_Leads data for matched emails
-        moc_lead_data = Moc_Leads.objects.filter(email__in=moc_emails).values('email', 'created_at__date')
+        moc_lead_data = Moc_Leads.objects.filter(email__in=moc_emails).values('email', 'created_at__date', 'form', 'login_source', 'advert', 'first_name')
 
         if start_date_param and end_date_param:
             start_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
@@ -2267,11 +2267,16 @@ class Roidata(APIView):
         for entry in paginated_data:
             entry_data = {
                 'id': entry['id'],
+                'first_name': moc_lead_data.filter(email=entry['user__email']).values('first_name').first().get('first_name', None),
                 'amount': entry['amount'],
                 'source': entry['source'],
                 'currency': entry['currency'],
                 'alnafi_payment_id': entry['alnafi_payment_id'],
                 'user__email': entry['user__email'],
+                'order_datetime': entry['order_datetime'],
+                'form': moc_lead_data.filter(email=entry['user__email']).values('form').first().get('form', None),
+                'login_source': moc_lead_data.filter(email=entry['user__email']).values('login_source').first().get('login_source', None),
+                'advert': moc_lead_data.filter(email=entry['user__email']).values('advert').first().get('advert', None),
                 'created_date': moc_lead_dates.get(entry['user__email'], None)
             }
             response_data.append(entry_data)
