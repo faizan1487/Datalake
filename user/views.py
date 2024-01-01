@@ -903,6 +903,99 @@ class ForgotPasswordView(APIView):
         except User.DoesNotExist:
             return Response({'error': 'User with this email does not exist.'}, status=status.HTTP_404_NOT_FOUND)
 
+        
+
+class CvFormsApi(APIView):
+    def post(self, request, format=None):
+        data = request.data
+
+        cv_form = CvForms(
+            first_name=data.get('first_name'),
+            last_name=data.get('last_name'),
+            email=data.get('email'),
+            nationality=data.get('nationality'),
+            cnic_no=data.get('cnic_no'),
+            gender=data.get('gender'),
+            martial_status=data.get('martial_status'),
+            city=data.get('city'),
+            province=data.get('province'),
+            zip_code=data.get('zip_code'),
+            phone_number_1=data.get('phone_number_1'),
+            phone_number_2=data.get('phone_number_2'),
+            updated_resume=request.FILES.get('updated_resume'),
+            your_picture=request.FILES.get('your_picture'),
+            job=data.get('job'),
+            qualification=data.get('qualification'),
+            certificate=data.get('certificate'),
+            work_history=data.get('work_history'),
+            skills=data.get('skills'),
+            refrences=data.get('refrences')
+        )
+        cv_form.save()
+
+        return Response({'message': 'CvForms created successfully'}, status=status.HTTP_201_CREATED)
+
+
+class GetDataCV(APIView):
+    def get(self, request, format=None):
+        cv_forms = CvForms.objects.all()
+        data = []
+        for form in cv_forms:
+            form_data = {
+                'first_name': form.first_name,
+                'last_name': form.last_name,
+                'email': form.email,
+                'nationality': form.nationality,
+                'cnic_no': form.cnic_no,
+                'gender': form.gender,
+                'martial_status': form.martial_status,
+                'city': form.city,
+                'province': form.province,
+                'zip_code': form.zip_code,
+                'phone_number_1': form.phone_number_1,
+                'phone_number_2': form.phone_number_2,
+                'updated_resume': form.updated_resume.url,
+                'your_picture': form.your_picture.url,
+                'job': form.job,
+                'qualification': form.qualification,
+                'certificate': form.certificate,
+                'work_history': form.work_history,
+                'skills': form.skills,
+                'refrences': form.refrences,
+            }
+            data.append(form_data)
+
+        return Response(data)
+    
+
+
+
+
+# ROI CALCULATION
+# get all moc leads then get payments of all those moc leads and calculate how many moc leads converted
+
+
+def RoiCalculation(APIView):
+    def get(self, request):
+        moc_leads = Moc_Leads.objects.all()
+
+
+
+        return Response(moc_leads.values())
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # import os
 # import csv
@@ -1187,62 +1280,3 @@ class ForgotPasswordView(APIView):
 
 
 #         return Response({"msg":"done"})
-class CvFormsApi(APIView):
-    def post(self, request, format=None):
-        data = request.data
-
-        cv_form = CvForms(
-            first_name=data.get('first_name'),
-            last_name=data.get('last_name'),
-            email=data.get('email'),
-            nationality=data.get('nationality'),
-            cnic_no=data.get('cnic_no'),
-            gender=data.get('gender'),
-            martial_status=data.get('martial_status'),
-            city=data.get('city'),
-            province=data.get('province'),
-            zip_code=data.get('zip_code'),
-            phone_number_1=data.get('phone_number_1'),
-            phone_number_2=data.get('phone_number_2'),
-            updated_resume=request.FILES.get('updated_resume'),
-            your_picture=request.FILES.get('your_picture'),
-            job=data.get('job'),
-            qualification=data.get('qualification'),
-            certificate=data.get('certificate'),
-            work_history=data.get('work_history'),
-            skills=data.get('skills'),
-            refrences=data.get('refrences')
-        )
-        cv_form.save()
-
-        return Response({'message': 'CvForms created successfully'}, status=status.HTTP_201_CREATED)
-class GetDataCV(APIView):
-    def get(self, request, format=None):
-        cv_forms = CvForms.objects.all()
-        data = []
-        for form in cv_forms:
-            form_data = {
-                'first_name': form.first_name,
-                'last_name': form.last_name,
-                'email': form.email,
-                'nationality': form.nationality,
-                'cnic_no': form.cnic_no,
-                'gender': form.gender,
-                'martial_status': form.martial_status,
-                'city': form.city,
-                'province': form.province,
-                'zip_code': form.zip_code,
-                'phone_number_1': form.phone_number_1,
-                'phone_number_2': form.phone_number_2,
-                'updated_resume': form.updated_resume.url,
-                'your_picture': form.your_picture.url,
-                'job': form.job,
-                'qualification': form.qualification,
-                'certificate': form.certificate,
-                'work_history': form.work_history,
-                'skills': form.skills,
-                'refrences': form.refrences,
-            }
-            data.append(form_data)
-
-        return Response(data)
