@@ -1,12 +1,14 @@
-# import os
-# import django
-# from faker import Faker
-# import random
-# from datetime import datetime, timedelta
+import imp
+from locale import currency
+import os
+import django
+from faker import Faker
+import random
+from datetime import datetime, timedelta
 
-# # Set up Django environment
-# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albaseer.settings")  # Replace with your project's settings module
-# django.setup()
+# Set up Django environment
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albaseer.settings")  # Replace with your project's settings module
+django.setup()
 
 # # Import your model
 # from payment.models import Main_Payment  # Replace 'your_app' with the name of your Django app
@@ -467,8 +469,9 @@ import random
 
 #================================================================================
 
-from numpy import nan
+from numpy import nan, source
 
+# Script to import easy pay leads
 
 def sale_easy_pay_leads():
     # print("func running")
@@ -489,7 +492,7 @@ def sale_easy_pay_leads():
 
     support_email_keys = {
         "Ahsan": ("b5658b2d5a087d0","a9faaabc26bddc5"),
-        "Haider": ("2a1d467717681df", "f2edc530744442b"),
+        "Haider": ("2a1d467717681df", "39faa082ac5f258"),
         "Mehtab": ("6b0bb41dba21795","f56c627e47bdff6"),
         "Mujtaba": ("940ef42feabf766","7a642a5b930eb44"),
         "Mutahir": ("ee3c9803e0a7aa0","ad8a5dc4bc4f13f"),
@@ -500,11 +503,11 @@ def sale_easy_pay_leads():
 
 
 
-    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Again_Easy_format_leads.csv')
+    # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Again_Easy_format_leads.csv')
 
     # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Again_Easy_format_leads (copy).csv')
 
-    # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/failed_easy_pay_leads.csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/support_failed_easy_pay_leads.csv')
 
     data = data.applymap(lambda x: None if pd.isna(x) else x)
 
@@ -516,22 +519,40 @@ def sale_easy_pay_leads():
         name = row['assigned_agent']
 
         if name in support_names:
-            first_name = row['full_name']
-            email = row['email']
-            phone = row['phone']
-            form = row['form']
-            country = row['country']
-            advert_detail = row['advert detail']
-            source = row['source']
-            created_at = row['formatted_date']
-            assigned_date = row['formatted_assigned_date']
+            # first_name = row['full_name']
+            # email = row['email']
+            # phone = row['phone']
+            # form = row['form']
+            # country = row['country']
+            # advert_detail = row['advert detail']
+            # source = row['source']
+            # created_at = row['formatted_date']
+            # assigned_date = row['formatted_assigned_date']
+            # # comments_by_Agent = row['Comments by Agent']
+            # first_follow_up = row['1st Follow Up']
+            # second_follow_up = row['2nd Follow Up']
+            # third_follow_up = row['3rd Follow Up']
+            # fourth_follow_up = row['4th Follow Up']
+            # status = row['Status']
+            # comment = row['Comments by Agent']
+
+            #from failed lead csv file
+            first_name = row['first_name'] or None
+            email = row['customer_email'] or None
+            phone = row['contact_no'] or None
+            form = row['form'] or None
+            country = row['country'] or None
+            advert_detail = row['advert_detail'] or None
+            source = row['source'] or None
+            created_at = row['created_at'] or None
+            assigned_date = row['assigned_date'] or None
             # comments_by_Agent = row['Comments by Agent']
-            first_follow_up = row['1st Follow Up']
-            second_follow_up = row['2nd Follow Up']
-            third_follow_up = row['3rd Follow Up']
-            fourth_follow_up = row['4th Follow Up']
-            status = row['Status']
-            comment = row['Comments by Agent']
+            first_follow_up = row['first_follow_up_date'] or None
+            second_follow_up = row['second_follow_up_date'] or None
+            third_follow_up = row['third_follow_up_date'] or None
+            fourth_follow_up = row['fourth_follow_up_date'] or None
+            status = row['lead_status']
+            # comment = row['Comments by Agent']
 
             data = {
                 "first_name": first_name,
@@ -542,35 +563,64 @@ def sale_easy_pay_leads():
                 "advert_detail":advert_detail,
                 "source": source,
                 "created_at":created_at,
-                "assigned_date": assigned_date,
+                "payment": assigned_date,
                 "first_follow_up_date":first_follow_up,
                 "second_follow_up_date":second_follow_up,
                 "third_follow_up_date":third_follow_up,
                 "fourth_follow_up_date":fourth_follow_up,
-                "lead_status": status
+                "lead_status": status,
+                "expiration_status": "Active"
             }
 
+            url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["customer_email"]&filters=[["Suppport","customer_email","=","{email}"],["Suppport","form","=","{form}"]]'
 
-            post_api_key, post_secret_key = support_email_keys[name]
-            headers = {
-                'Authorization': f'token {post_api_key}:{post_secret_key}',
+            user_api_key = '4e7074f890507cb'
+            user_secret_key = 'c954faf5ff73d31'
+
+            admin_headers = {
+                'Authorization': f'token {user_api_key}:{user_secret_key}',
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             }
 
-            response = requests.post(support_endpoint, headers=headers, json=data)
-            if response.status_code != 200:
-                response_data = json.loads(response.text)
-                if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
-                    pass
+            response = requests.get(url, headers=admin_headers)
+            lead_data = response.json()
+
+            try:
+                if lead_data["data"]:
+                    already_existed = len(lead_data["data"]) > 0
                 else:
-                    data['assigned_agent'] = name   
-                    data['Comments by Agent'] = comment 
-                    data['error'] = response.text
-                    data['status_code'] = response.status_code     
-                    failed_leads.append(data)
-            else:
-                print(f"lead created succesfully {email}")
+                    already_existed = False
+            except KeyError:
+                # Handle the case when "data" key is not present in lead_data
+                already_existed = False
+
+            if not already_existed:
+                post_api_key, post_secret_key = support_email_keys[name]
+                headers = {
+                    'Authorization': f'token {post_api_key}:{post_secret_key}',
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                }
+
+                response = requests.post(support_endpoint, headers=headers, json=data)
+                if response.status_code != 200:
+                    # print(email)
+                    # print(data)
+                    # print(name)
+                    print(response.text)
+                    # response_data = json.loads(response.text)
+                    # if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
+                    #     pass
+                    # else:
+
+                    #     data['assigned_agent'] = name   
+                    #     data['Comments by Agent'] = comment 
+                    #     data['error'] = response.text
+                    #     data['status_code'] = response.status_code     
+                    #     # failed_leads.append(data)
+                else:
+                    print(f"lead created succesfully {email}")
         else:
             pass
             # print(f"name in sales {name}")
@@ -652,101 +702,142 @@ def sale_easy_pay_leads():
             # else:
             #     print(f"lead created succesfully {email}")
    
-        if failed_leads:
-            # print("failed leads exits")
-            with open('support_failed_easy_pay_leads.csv', 'a', newline='') as csvfile:
-                fieldnames = failed_leads[0].keys()
-                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        # if failed_leads:
+        #     # print("failed leads exits")
+        #     with open('support_failed_easy_pay_leads.csv', 'a', newline='') as csvfile:
+        #         fieldnames = failed_leads[0].keys()
+        #         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-                # Check if the file is empty, and write header only if it's a new file
-                if csvfile.tell() == 0:
-                    writer.writeheader()
+        #         # Check if the file is empty, and write header only if it's a new file
+        #         if csvfile.tell() == 0:
+        #             writer.writeheader()
 
-                for lead in failed_leads:
-                    writer.writerow(lead)
+        #         for lead in failed_leads:
+        #             writer.writerow(lead)
 
 sale_easy_pay_leads()
 
-
+#=================================================================================
 
 #SCRIPT TO IMPORT COMMENTS
 
 #import comments to crm
-# from datetime import datetime
-# import requests
-# from datetime import datetime
-# import requests
-# import pandas as pd
+from datetime import datetime
+import requests
+import requests
+import pandas as pd
 
 # def crmnote():
-      #haider bhai keys
-#     user_api_key = '2a1d467717681df'
-#     user_secret_key = '39faa082ac5f258'
+#     #   haider bhai keys
+#     # user_api_key = '2a1d467717681df'
+#     # user_secret_key = '39faa082ac5f258'
 
-        #Admin keys
-#         api_key = '4e7074f890507cb'
-#         api_secret = 'c954faf5ff73d31'
+#     # Admin keys
+#     api_key = '4e7074f890507cb'
+#     api_secret = 'c954faf5ff73d31'
 
 #     headers = {
-#         'Authorization': f'token {user_api_key}:{user_secret_key}',
+#         'Authorization': f'token {api_key}:{api_secret}',
 #         "Content-Type": "application/json",
 #         "Accept": "application/json",
 #     }
 
-#     data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/tabCRM Note_export_2023-11-02_102731.csv')
+#     # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Easy_pay_leads_comments.csv')
+#     data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/support_failed_easy_pay_comments.csv')
+
+#     support_emails = ['ahsan.ali@alnafi.edu.pk','haider.raza@alnafi.edu.pk','mehtab.sharif@alnafi.edu.pk','mujtaba.jawed@alnafi.edu.pk','mutahir.hassan@alnafi.edu.pk','salman.amjad@alnafi.edu.pk','zeeshan.mehr@alnafi.edu.pk']
+
+#     post_url = 'https://crm.alnafi.com/api/resource/Comment'
 
 #     for index, row in data.iterrows():
-#         name = row['name']
-#         creation = row['creation']
-#         modified = row['modified']
-#         modified_by = row['modified_by']
-#         owner = row['owner']
-#         docstatus = row['docstatus']
-#         idx = row['idx']
-#         note = row['note']
-#         added_by = row['added_by']
+#         failed_leads = []
+
+#         # parent = row['parent']
+#         # owner = row['owner']
+#         # note = row['note']
+#         # form = row['form']
+
 #         parent = row['parent']
-#         parentfield = row['parentfield']
-#         parenttype = row['parenttype']
+#         owner = row['comment_by']
+#         note = row['content']
+#         form = row['form']
+#         source = row['source']
 
-#         added_on = row['added_on']
-#         if pd.isna(added_on):  # Check for "nan"
-#             added_on = None
+#         get_url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["*"]&filters=[["Suppport","customer_email","=","{parent}"],["Suppport","source","=","{source}"]]'
+       
+#         if owner in support_emails:
+#             get_response = requests.get(get_url, headers=headers)
+#             lead_data = get_response.json()
+#             data = {
+#                 'comment_type':'Comment',
+#                 'reference_doctype': 'Suppport',
+#                 'comment_email': owner,
+#                 'comment_by': owner,
+#                 'content': note,
+#             }
 
-#         # Convert creation and modified datetime strings to ISO format
-#         creation = datetime.fromisoformat(creation).isoformat()
-#         modified = datetime.fromisoformat(modified).isoformat()
+            
+#             # try:
+#             support_id = lead_data['data'][0]['name']
+#             support_id_exists = True
+#             data['reference_name'] = support_id
+#             # except:
+#             #     data['parent'] = parent
+#             #     # failed_leads.append(data)
+#             #     support_id_exists = False
+         
+#             # try:
+            
+#             if support_id_exists:   
+#                 response = requests.post(post_url, headers=headers, json=data)
 
-#         # try:
-#         data = {
-#             'name': name,
-#             'parent': parent,
-#             'creation': creation,
-#             'modified': modified,
-#             'modified_by': modified_by,
-#             'owner': owner,
-#             'docstatus': docstatus,
-#             'idx': idx,
-#             'note': note,
-#             'added_by': added_by,
-#             'added_on': added_on,
-#             'parentfield': parentfield,
-#             'parenttype': parenttype,
-#         }
-#         print(data)
+#                 if response.status_code != 200:
+#                     print(f"Response Status Code: {response.status_code}")
+#                     print(f"Response Text: {response.text}")
+#                     data['parent'] = parent
+#                     # failed_leads.append(data)
+#                 else:
+#                     print(f"Data sent for index {index}: {data} {parent}")
+#                     # print("comment added")
 
-#         post_url = 'https://crm.alnafi.com/api/resource/CRM Note'
-#         response = requests.post(post_url, headers=headers, json=data)
+#         # if failed_leads:
+#         #     # print("failed leads exits")
+#         #     with open('support_failed_easy_pay_comments.csv', 'a', newline='') as csvfile:
+#         #         fieldnames = failed_leads[0].keys()
+#         #         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-#         print(f"Data sent for index {index}: {data}")
-#         print(f"Response Status Code: {response.status_code}")
-#         print(f"Response Text: {response.text}")
+#         #         # Check if the file is empty, and write header only if it's a new file
+#         #         if csvfile.tell() == 0:
+#         #             writer.writeheader()
 
-#         # except Exception as e:
-#         #     print(f"Error processing data for index {index}: {str(e)}")
+#         #         for lead in failed_leads:
+#         #             writer.writerow(lead)
+
 
 # if __name__ == "__main__":
 #     crmnote()
+
+#===================================================================================
+
+#SCRIPT TO match two csv file where parent matches take that form value and put it in error file
+
+
+
+import pandas as pd
+
+# # Load the first CSV file into a DataFrame
+# file1 = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Easy_pay_leads_comments.csv')
+
+# # Load the second CSV file into a DataFrame
+# file2 = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/support_failed_easy_pay_comments.csv')
+
+# # Merge the DataFrames based on the 'email' column
+# merged_df = pd.merge(file2, file1[['parent', 'source']], on='parent', how='left')
+
+# # Save the merged DataFrame to a new CSV file
+# merged_df.to_csv('merged_file.csv', index=False)
+
+#=====================================================================================
 
 # import pandas as pd
 # from datetime import datetime
@@ -851,6 +942,13 @@ sale_easy_pay_leads()
 
 # get_data_from_leads()
 
+
+
+
+
+#==================================================================================
+
+
 # # Read the CSV file into a DataFrame
 # df = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Easy_format_leads.csv')
 
@@ -879,3 +977,81 @@ sale_easy_pay_leads()
 # df['formatted_assigned_date'] = df['assigned_date'].apply(convert_assign_date)
 # # Save the modified DataFrame to a new CSV file
 # df.to_csv(output_file_path, index=False)
+
+
+#==================================================================================
+
+# from user.models import Main_User
+# from user.constants import COUNTRY_CODES
+# from payment.models import Main_Payment
+# from secrets_api.algorithem import round_robin_exam
+
+#Import eduqual level 5 and 6 bands
+
+# def send_payment_exam_module():
+#     data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Active Users - Faizan - final (copy).csv')
+
+#     for index, row in data.iterrows():
+#         email = row['email']
+#         product_name = row['name']
+
+#         filtered_payments = Main_Payment.objects.filter(user__email=email, product__product_name=product_name, source__in=['Easypaisa', 'UBL_IPG','UBL_DD','Stripe']).values("amount","product__product_name","currency","user__email","user__phone","user__first_name","user__last_name","user__country","internal_source","source")
+
+#         order_datetime = row['payment_date']
+#         amount = filtered_payments[0]['amount']
+#         source = filtered_payments[0]['source']
+#         currency = filtered_payments[0]['currency']
+#         phone = filtered_payments[0]['user__phone']
+#         country_code = filtered_payments[0]['user__country']
+
+#         first_name = filtered_payments[0]['user__first_name']
+#         last_name = filtered_payments[0]['user__last_name']
+
+#         order_datetime_str = order_datetime
+#         order_datetime_str_without_tz = order_datetime_str[:-6]  # Remove the last 6 characters (+0500)
+#         order_datetime = datetime.fromisoformat(order_datetime_str_without_tz)
+#         formatted_order_date = order_datetime.strftime('%Y-%m-%d')
+
+#         expire_datetime_str = row['expiry_date']
+
+#         if country_code:
+#             for name, code in COUNTRY_CODES.items():
+#                 if code == country_code:
+#                     country_name = name
+#                     break
+
+#         customer_data = {
+#             "first_name": first_name,
+#             "last_name": last_name,
+#             "contact_no": phone,
+#             "customer_email": email,
+#             "country": country_name,
+#             "product_name": product_name,
+#             "amount": amount,
+#             "currency":currency,
+#             "payment_source": source,
+#             "payment": formatted_order_date,
+#             "expiration_date": expire_datetime_str,
+#             "expiration_status": 'Active',
+#         }
+
+#         api_key, api_secret = round_robin_exam()
+
+#         headers = {
+#             'Authorization': f'token {api_key}:{api_secret}',
+#             "Content-Type": "application/json",
+#             "Accept": "application/json",
+#         }
+
+#         customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
+#         response = requests.post(customer_url, headers=headers, json=customer_data)
+#         if response.status_code != 200:
+#             print(response.text)
+#         else:
+#             print("data sent to exam doctype")
+                    
+# send_payment_exam_module()
+            
+
+
+#=======================================================================================

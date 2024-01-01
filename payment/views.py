@@ -721,7 +721,6 @@ class SearchPayments(APIView):
         }
 
    
-
 # PRODUCTION
 # bug, only 3 payments showing up instead of 10 
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
@@ -730,7 +729,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
     ).exclude(
         source='UBL_DD', status__in=["0", False, 0]
     ).filter(
-        source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']
+        Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source='dlocal_india')
     )
 
 
