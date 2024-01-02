@@ -51,8 +51,8 @@ import pandas as pd
 class UploadMocLeads(APIView):
     def post(self,request):
         # Read the CSV file into a DataFrame
-        # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Easy Pay Program.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
+        # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Easy Pay Program.csv')
 
         # Iterate over rows in the DataFrame
         for index, row in data.iterrows():
@@ -65,8 +65,8 @@ class UploadMocLeads(APIView):
             country = row['country']
             login_source = row['source']
             created_at_str = row['created_at']    
-            # advert = row['advert']
-            advert = row['advert detail']
+            advert = row['advert']
+            # advert = row['advert detail']
 
             # Assuming the original format is "%m/%d/%Y %H:%M:%S"
             # You can adjust the format string as needed

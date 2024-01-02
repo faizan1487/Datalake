@@ -762,26 +762,45 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
     if origin:
-        if origin == 'local':
-            payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD'])
+        if not payments:
+            total_count = payments.count() 
+            payments = {"payments": payments, "success": False,"total_count":total_count}
+            return payments
         else:
-            payments = payments.filter(source='Stripe')
+            if origin == 'local':
+                payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD'])
+            else:
+                payments = payments.filter(source='Stripe')
 
     if not start_date:
-        first_payment = payments.exclude(order_datetime=None).last()
-        start_date = first_payment.order_datetime.date() if first_payment else None
+        if not payments:
+            total_count = payments.count() 
+            payments = {"payments": payments, "success": False,"total_count":total_count}
+            return payments
+        else:
+            first_payment = payments.exclude(order_datetime=None).last()
+            start_date = first_payment.order_datetime.date() if first_payment else None
 
     if not end_date:
-        last_payment = payments.exclude(order_datetime=None).first()
-        end_date = last_payment.order_datetime.date() if last_payment else None
+        if not payments:
+            total_count = payments.count() 
+            payments = {"payments": payments, "success": False,"total_count":total_count}
+            return payments
+        else:
+            last_payment = payments.exclude(order_datetime=None).first()
+            end_date = last_payment.order_datetime.date() if last_payment else None
 
-    payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
+    if not payments:
+        total_count = payments.count() 
+        payments = {"payments": payments, "success": False,"total_count":total_count}
+        return payments
+    else:
+        payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
 
     if q:
         payments = payments.filter(user__email__icontains=q)
 
 
-    print(product)
     if product:
         keywords = product.split()
         query = Q()
@@ -790,6 +809,18 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         payments = payments.filter(query)
         payments = payments.distinct()
 
+    # if plan:
+    #     # Split the source string into a list if it contains a comma
+    #     plans_list = plan.split(',')
+
+    #     # If there is more than one source, filter payments using each source
+    #     if len(plans_list) > 1:
+    #         payments = payments.filter(product__product_plan__in=plans_list)
+    #         payments = payments.distinct()
+    #     else:
+    #         # If there is only one source, filter payments using that single source
+    #         payments = payments.filter(product__product_plan=plan)
+    #         payments = payments.distinct()
 
  
     if plan:
@@ -2259,8 +2290,6 @@ class Roidata(APIView):
             end_date = datetime.strptime(end_date_param, '%Y-%m-%d').date()
 
             matching_users = matching_users.filter(created_datetime__date__range=(start_date, end_date))
-
-
 
         # Create a dictionary to map email to created_at date from Moc_Leads
         moc_lead_dates = {entry['email']: entry['created_at__date'] for entry in moc_lead_data}
