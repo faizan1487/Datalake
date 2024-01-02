@@ -493,6 +493,7 @@ class ActivePayments(APIView):
             for i in user_groups:
                 if i == 'Admin' or i == 'MOC':
                     has_perm = True
+                    break
 
             if has_perm:
                 # print("admin user")
