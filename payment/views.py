@@ -747,17 +747,21 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
     if status:
         payments = payments.filter(status=status)
-        
+    
     if source:
         # Split the source string into a list if it contains a comma
         sources_list = source.split(',')
 
-        # If there is more than one source, filter payments using each source
-        if len(sources_list) > 1:
-            payments = payments.filter(Q(source__in=sources_list) | Q(source='NEW ALNAFI', internal_source__in=sources_list))
+        if 'dlocal' in sources_list:
+            if len(sources_list) > 1:
+                payments = payments.filter(Q(source__in=sources_list) | Q(source='NEW ALNAFI', internal_source__contains='dlocal'))
+            else:
+                payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source__contains=source))
         else:
-            # If there is only one source, filter payments using that single source
-            payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source=source))
+            if len(sources_list) > 1:
+                payments = payments.filter(Q(source__in=sources_list) | Q(source='NEW ALNAFI', internal_source__in=sources_list))
+            else:
+                payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source__contains=source))
 
 
 
@@ -799,7 +803,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
     if q:
         payments = payments.filter(user__email__icontains=q)
-
 
     if product:
         keywords = product.split()
