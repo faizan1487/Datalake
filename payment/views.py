@@ -2390,7 +2390,7 @@ class Roidata(APIView):
             today = datetime.now().date()
             existing_payments = existing_payments.filter(order_datetime__date__lt=today)
 
-        payments_info = existing_payments.values('user__email', 'amount', 'source_payment_id', 'order_datetime__date', 'currency')
+        payments_info = existing_payments.values('user__email', 'amount', 'source_payment_id', 'order_datetime__date', 'currency', 'source')
         payments_info = {payment['user__email']: payment for payment in payments_info}
 
         status_filter = status_filter.lower() if status_filter else None
@@ -2409,11 +2409,13 @@ class Roidata(APIView):
                 entry['amount'] = payment_info['amount']
                 entry['source_payment_id'] = payment_info['source_payment_id']
                 entry['currency'] = payment_info['currency']
+                entry['source'] = payment_info['source']
                 entry['order_datetime'] = payment_info['order_datetime__date']
             else:
                 entry['amount'] = None
                 entry['source_payment_id'] = None
                 entry['currency'] = None
+                entry['source'] = None
                 entry['order_datetime__date'] = None
 
             entry['status'] = 'Converted' if email in payments_info else 'Not Converted'
