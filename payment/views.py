@@ -1,3 +1,4 @@
+from cgi import print_directory
 from xxlimited import new
 from django.utils import timezone
 from sre_constants import SUCCESS
@@ -804,30 +805,36 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         payments = payments.filter(user__email__icontains=q)
 
     if product:
-        keywords = product.split()
-        query = Q()
-        for keyword in keywords:
-            query &= Q(product__product_name__icontains=keyword)
-        payments = payments.filter(query)
-        payments = payments.distinct()
+        # keywords = product.split()
+        # query = Q()
+        # for keyword in keywords:
+        #     query &= Q(product__product_name__icontains=keyword)
+        # payments = payments.filter(query)
+        # payments = payments.distinct()
 
-    # if plan:
-    #     # Split the source string into a list if it contains a comma
-    #     plans_list = plan.split(',')
+        products_list = product.split(',')
+        # If there is more than one source, filter payments using each source
+        if len(products_list) > 1:
+            payments = payments.filter(product__product_name__in=products_list)
+            payments = payments.distinct()
+        else:
+            # If there is only one source, filter payments using that single source
+            payments = payments.filter(product__product_name__in=products_list)
+            payments = payments.distinct()
 
-    #     # If there is more than one source, filter payments using each source
-    #     if len(plans_list) > 1:
-    #         payments = payments.filter(product__product_plan__in=plans_list)
-    #         payments = payments.distinct()
-    #     else:
-    #         # If there is only one source, filter payments using that single source
-    #         payments = payments.filter(product__product_plan=plan)
-    #         payments = payments.distinct()
-
- 
     if plan:
-        payments = payments.filter(product__product_plan=plan)
-        payments = payments.distinct()
+        # Split the source string into a list if it contains a comma
+        plans_list = plan.split(',')
+
+        # If there is more than one source, filter payments using each source
+        if len(plans_list) > 1:
+            payments = payments.filter(product__product_plan__in=plans_list)
+            print(payments)
+            payments = payments.distinct()
+        else:
+            # If there is only one source, filter payments using that single source
+            payments = payments.filter(product__product_plan=plan)
+            payments = payments.distinct()
 
 
     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
@@ -2270,90 +2277,6 @@ class CommisionData(APIView):
         #     return Response(data)
 
         # return Response(response_data)
-
-
-# class Roidata(APIView):
-#     def get(self, request):
-#         status_filter = request.GET.get('status')
-#         email_filter = request.GET.get('q')
-#         start_date_filter = request.GET.get('start_date')
-#         end_date_filter = request.GET.get('end_date')
-#         # print(status_filter, email_filter, start_date_filter, end_date_filter)
-        
-#         moc_data = Moc_Leads.objects.values('first_name', 'email', 'phone', 'form', 'country', 'login_source', 'created_at__date', 'advert')         
-#         if email_filter:
-#             moc_data = moc_data.filter(email=email_filter)
-
-#         if start_date_filter:
-#             start_date = datetime.strptime(start_date_filter, "%Y-%m-%d").date()
-#             moc_data = moc_data.filter(created_at__date__gte=start_date)
-
-#         if end_date_filter:
-#             end_date = datetime.strptime(end_date_filter, "%Y-%m-%d").date() + timedelta(days=1)
-#             moc_data = moc_data.filter(created_at__date__lt=end_date)
-
-#         moc_data = list(moc_data)
-
-#         moc_emails = [entry['email'] for entry in moc_data if entry['email']]
-
-#         # Create a dictionary to map email to created_at date from Moc_Leads
-#         moc_lead_dates = {entry['email']: entry['created_at__date'] for entry in moc_lead_data}
-
-#         payments_info = existing_payments.values('user__email', 'amount', 'source_payment_id', 'order_datetime__date', 'currency')
-#         payments_info = {payment['user__email']: payment for payment in payments_info}
-
-#         status_filter = status_filter.lower() if status_filter else None
-
-#         if status_filter == 'converted':
-#             total_sum_of_amounts = sum(float(payment_info['amount']) for payment_info in payments_info.values() if payment_info['amount'])
-#         elif status_filter == 'not converted':
-#             total_sum_of_amounts = 0
-#         else:
-#             total_sum_of_amounts = sum(float(payment_info['amount']) for payment_info in payments_info.values() if payment_info['amount'])
-
-#         for entry in moc_data:
-#             email = entry['email']
-#             if email in payments_info:
-#                 payment_info = payments_info[email]
-#                 entry['amount'] = payment_info['amount']
-#                 entry['source_payment_id'] = payment_info['source_payment_id']
-#                 entry['currency'] = payment_info['currency']
-#                 entry['order_datetime'] = payment_info['order_datetime__date']
-#             else:
-#                 entry['amount'] = None
-#                 entry['source_payment_id'] = None
-#                 entry['currency'] = None
-#                 entry['order_datetime__date'] = None
-
-#             entry['status'] = 'Converted' if email in payments_info else 'Not Converted'
-#             if entry['currency'] not in ['PKR', 'None', None, 'null']:
-#                 currency_rate = get_pkr_rate(entry['currency'], entry['amount'])
-#                 converted_amount = round(float(entry['amount']) / currency_rate[entry['currency']], 2)
-#                 entry['amount'] = converted_amount
-#                 entry['currency'] = 'PKR'
-#         if status_filter:
-#             moc_data = [entry for entry in moc_data if entry['status'].lower() == status_filter]
-
-#         paginator = Paginator(moc_data, 10)
-#         page_number = request.GET.get('page')
-
-#         try:
-#             paginated_data = paginator.page(page_number)
-#         except PageNotAnInteger:
-#             paginated_data = paginator.page(1)
-#         except EmptyPage:
-#             paginated_data = paginator.page(paginator.num_pages)
-
-#         response_data = {
-#             'total_sum_of_amounts': total_sum_of_amounts,
-#             'total_pages': paginator.num_pages,
-#             'current_page': paginated_data.number,
-#             'length_data': paginator.count,
-#             'page_count': paginator.num_pages,
-#             'current_page': paginated_data.number,
-#             'data': response_data,
-#         })
-
 
 
 class Roidata(APIView):
