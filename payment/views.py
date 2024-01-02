@@ -2270,34 +2270,162 @@ class CommisionData(APIView):
         # return Response(response_data)
 
 
+# class Roidata(APIView):
+#     def get(self, request):
+#         status_filter = request.GET.get('status')
+#         email_filter = request.GET.get('q')
+#         start_date_filter = request.GET.get('start_date')
+#         end_date_filter = request.GET.get('end_date')
+#         # print(status_filter, email_filter, start_date_filter, end_date_filter)
+        
+#         moc_data = Moc_Leads.objects.values('first_name', 'email', 'phone', 'form', 'country', 'login_source', 'created_at__date', 'advert')         
+#         if email_filter:
+#             moc_data = moc_data.filter(email=email_filter)
+
+#         if start_date_filter:
+#             start_date = datetime.strptime(start_date_filter, "%Y-%m-%d").date()
+#             moc_data = moc_data.filter(created_at__date__gte=start_date)
+
+#         if end_date_filter:
+#             end_date = datetime.strptime(end_date_filter, "%Y-%m-%d").date() + timedelta(days=1)
+#             moc_data = moc_data.filter(created_at__date__lt=end_date)
+
+#         moc_data = list(moc_data)
+
+#         moc_emails = [entry['email'] for entry in moc_data if entry['email']]
+
+#         # Create a dictionary to map email to created_at date from Moc_Leads
+#         moc_lead_dates = {entry['email']: entry['created_at__date'] for entry in moc_lead_data}
+
+#         payments_info = existing_payments.values('user__email', 'amount', 'source_payment_id', 'order_datetime__date', 'currency')
+#         payments_info = {payment['user__email']: payment for payment in payments_info}
+
+#         status_filter = status_filter.lower() if status_filter else None
+
+#         if status_filter == 'converted':
+#             total_sum_of_amounts = sum(float(payment_info['amount']) for payment_info in payments_info.values() if payment_info['amount'])
+#         elif status_filter == 'not converted':
+#             total_sum_of_amounts = 0
+#         else:
+#             total_sum_of_amounts = sum(float(payment_info['amount']) for payment_info in payments_info.values() if payment_info['amount'])
+
+#         for entry in moc_data:
+#             email = entry['email']
+#             if email in payments_info:
+#                 payment_info = payments_info[email]
+#                 entry['amount'] = payment_info['amount']
+#                 entry['source_payment_id'] = payment_info['source_payment_id']
+#                 entry['currency'] = payment_info['currency']
+#                 entry['order_datetime'] = payment_info['order_datetime__date']
+#             else:
+#                 entry['amount'] = None
+#                 entry['source_payment_id'] = None
+#                 entry['currency'] = None
+#                 entry['order_datetime__date'] = None
+
+#             entry['status'] = 'Converted' if email in payments_info else 'Not Converted'
+#             if entry['currency'] not in ['PKR', 'None', None, 'null']:
+#                 currency_rate = get_pkr_rate(entry['currency'], entry['amount'])
+#                 converted_amount = round(float(entry['amount']) / currency_rate[entry['currency']], 2)
+#                 entry['amount'] = converted_amount
+#                 entry['currency'] = 'PKR'
+#         if status_filter:
+#             moc_data = [entry for entry in moc_data if entry['status'].lower() == status_filter]
+
+#         paginator = Paginator(moc_data, 10)
+#         page_number = request.GET.get('page')
+
+#         try:
+#             paginated_data = paginator.page(page_number)
+#         except PageNotAnInteger:
+#             paginated_data = paginator.page(1)
+#         except EmptyPage:
+#             paginated_data = paginator.page(paginator.num_pages)
+
+#         response_data = {
+#             'total_sum_of_amounts': total_sum_of_amounts,
+#             'total_pages': paginator.num_pages,
+#             'current_page': paginated_data.number,
+#             'length_data': paginator.count,
+#             'page_count': paginator.num_pages,
+#             'current_page': paginated_data.number,
+#             'data': response_data,
+#         })
+
+
+
 class Roidata(APIView):
     def get(self, request):
-        start_date_param = request.GET.get('start_date')
-        end_date_param = request.GET.get('end_date')
+        status_filter = request.GET.get('status')
+        email_filter = request.GET.get('q')
+        start_date_filter = request.GET.get('start_date')
+        end_date_filter = request.GET.get('end_date')
+        # print(status_filter, email_filter, start_date_filter, end_date_filter)
+        
+        moc_data = Moc_Leads.objects.values('first_name', 'email', 'phone', 'form', 'country', 'login_source', 'created_at__date', 'advert')         
+        if email_filter:
+            moc_data = moc_data.filter(email=email_filter)
 
-        moc_emails = Moc_Leads.objects.values_list('email', flat=True)
+        if start_date_filter:
+            start_date = datetime.strptime(start_date_filter, "%Y-%m-%d").date()
+            moc_data = moc_data.filter(created_at__date__gte=start_date)
 
-        # Fetch users from Main_Payment model using the emails from Moc_Leads
-        matching_users = Main_Payment.objects.filter(user__email__in=moc_emails).values('id', 'amount', 'source', 'currency', 'alnafi_payment_id', 'user__email', 'order_datetime')
-        matching_users = matching_users.filter(
-            Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source='dlocal_india')
-        )
-        # Fetch corresponding Moc_Leads data for matched emails
-        moc_lead_data = Moc_Leads.objects.filter(email__in=moc_emails).values('email', 'created_at__date', 'form', 'login_source', 'advert', 'first_name')
+        if end_date_filter:
+            end_date = datetime.strptime(end_date_filter, "%Y-%m-%d").date() + timedelta(days=1)
+            moc_data = moc_data.filter(created_at__date__lt=end_date)
 
-        if start_date_param and end_date_param:
-            start_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
-            end_date = datetime.strptime(end_date_param, '%Y-%m-%d').date()
+        moc_data = list(moc_data)
 
-            matching_users = matching_users.filter(created_datetime__date__range=(start_date, end_date))
+        moc_emails = [entry['email'] for entry in moc_data if entry['email']]
 
-        # Create a dictionary to map email to created_at date from Moc_Leads
-        moc_lead_dates = {entry['email']: entry['created_at__date'] for entry in moc_lead_data}
+        if start_date_filter:
+            start_date_payment = datetime.strptime(start_date_filter, "%Y-%m-%d").date()
+            existing_payments = Main_Payment.objects.filter(user__email__in=moc_emails, order_datetime__date__gte=start_date_payment)
+        else:
+            existing_payments = Main_Payment.objects.filter(user__email__in=moc_emails)
 
-        # Paginate the queryset
-        paginator = Paginator(matching_users, 10)  # Show 10 payments per page
+        if end_date_filter:
+            today = datetime.now().date()
+            existing_payments = existing_payments.filter(order_datetime__date__lt=today)
 
+        payments_info = existing_payments.values('user__email', 'amount', 'source_payment_id', 'order_datetime__date', 'currency')
+        payments_info = {payment['user__email']: payment for payment in payments_info}
+
+        status_filter = status_filter.lower() if status_filter else None
+
+        if status_filter == 'converted':
+            total_sum_of_amounts = sum(float(payment_info['amount']) for payment_info in payments_info.values() if payment_info['amount'])
+        elif status_filter == 'not converted':
+            total_sum_of_amounts = 0
+        else:
+            total_sum_of_amounts = sum(float(payment_info['amount']) for payment_info in payments_info.values() if payment_info['amount'])
+
+        for entry in moc_data:
+            email = entry['email']
+            if email in payments_info:
+                payment_info = payments_info[email]
+                entry['amount'] = payment_info['amount']
+                entry['source_payment_id'] = payment_info['source_payment_id']
+                entry['currency'] = payment_info['currency']
+                entry['order_datetime'] = payment_info['order_datetime__date']
+            else:
+                entry['amount'] = None
+                entry['source_payment_id'] = None
+                entry['currency'] = None
+                entry['order_datetime__date'] = None
+
+            entry['status'] = 'Converted' if email in payments_info else 'Not Converted'
+            if entry['currency'] not in ['PKR', 'None', None, 'null']:
+                currency_rate = get_pkr_rate(entry['currency'], entry['amount'])
+                converted_amount = round(float(entry['amount']) / currency_rate[entry['currency']], 2)
+                entry['amount'] = converted_amount
+                entry['currency'] = 'PKR'
+        if status_filter:
+            moc_data = [entry for entry in moc_data if entry['status'].lower() == status_filter]
+
+        paginator = Paginator(moc_data, 10)
         page_number = request.GET.get('page')
+
         try:
             paginated_data = paginator.page(page_number)
         except PageNotAnInteger:
@@ -2305,107 +2433,15 @@ class Roidata(APIView):
         except EmptyPage:
             paginated_data = paginator.page(paginator.num_pages)
 
-        total_sum_of_amounts = sum(float(user['amount']) for user in matching_users)
-
-        # Combine data from Main_Payment and Moc_Leads
-        response_data = []
-        for entry in paginated_data:
-            entry_data = {
-                'id': entry['id'],
-                'first_name': moc_lead_data.filter(email=entry['user__email']).values('first_name').first().get('first_name', None),
-                'amount': entry['amount'],
-                'source': entry['source'],
-                'currency': entry['currency'],
-                'alnafi_payment_id': entry['alnafi_payment_id'],
-                'user__email': entry['user__email'],
-                'order_datetime': entry['order_datetime'],
-                'form': moc_lead_data.filter(email=entry['user__email']).values('form').first().get('form', None),
-                'login_source': moc_lead_data.filter(email=entry['user__email']).values('login_source').first().get('login_source', None),
-                'advert': moc_lead_data.filter(email=entry['user__email']).values('advert').first().get('advert', None),
-                'created_date': moc_lead_dates.get(entry['user__email'], None)
-            }
-            response_data.append(entry_data)
-
-        return JsonResponse({
+        response_data = {
             'total_sum_of_amounts': total_sum_of_amounts,
+            'total_pages': paginator.num_pages,
+            'current_page': paginated_data.number,
             'length_data': paginator.count,
             'page_count': paginator.num_pages,
-            'current_page': paginated_data.number,
-            'data': response_data,
-        })
+            'data': list(paginated_data),
+        }
+        return JsonResponse(response_data, safe=False)
 
 
 
-class RoiApi(APIView):
-    def get(self, request):
-        start_date_param = request.GET.get('start_date')
-        end_date_param = request.GET.get('end_date')
-
-        moc_emails = Moc_Leads.objects.values_list('email', flat=True)
-
-        # Fetch users from Main_Payment model using the emails from Moc_Leads
-        matching_users = Main_Payment.objects.filter(user__email__in=moc_emails).values('id', 'amount', 'source', 'currency', 'alnafi_payment_id', 'user__email', 'order_datetime')
-        # Fetch corresponding Moc_Leads data for matched emails
-        moc_lead_data = Moc_Leads.objects.filter(email__in=moc_emails).values('email', 'created_at__date', 'form', 'login_source', 'advert', 'first_name')
-
-        if start_date_param and end_date_param:
-            start_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
-            end_date = datetime.strptime(end_date_param, '%Y-%m-%d').date()
-
-            # matching_users = matching_users.filter(created_datetime__date__range=(start_date, end_date))
-            moc_lead_data = moc_lead_data.filter(created_at__date__range=(start_date, end_date))
-
-            # moc_lead_data = moc_lead_data.annotate(
-            #     moc_lead_created_date=Case(
-            #         When(created_at__date__range=(start_date, end_date), then=Value(True)),
-            #         default=Value(False),
-            #         output_field=BooleanField(),
-            #     )
-            # )
-
-        for i in moc_lead_data:
-            matching_users = matching_users.filter(user__email=i['email'])
-            print(matching_users)
-
-        # Create a dictionary to map email to created_at date from Moc_Leads
-        # moc_lead_dates = {entry['email']: entry['created_at__date'] for entry in moc_lead_data}
-
-        # Paginate the queryset
-        paginator = Paginator(moc_lead_data, 10)  # Show 10 payments per page
-
-        page_number = request.GET.get('page')
-        try:
-            paginated_data = paginator.page(page_number)
-        except PageNotAnInteger:
-            paginated_data = paginator.page(1)
-        except EmptyPage:
-            paginated_data = paginator.page(paginator.num_pages)
-
-        total_sum_of_amounts = sum(float(user['amount']) for user in matching_users)
-
-        # Combine data from Main_Payment and Moc_Leads
-        response_data = []
-        for entry in paginated_data:
-            entry_data = {
-                # 'id': entry['id'],
-                'first_name': entry['first_name'],
-                # 'amount': entry['amount'],
-                # 'source': entry['source'],
-                # 'currency': entry['currency'],
-                # 'alnafi_payment_id': entry['alnafi_payment_id'],
-                'user__email': entry['email'],
-                # 'order_datetime': entry['order_datetime'],
-                'form': entry['form'],
-                'login_source': entry['login_source'],
-                'advert': entry['advert'],
-                'created_date': entry['created_at__date']
-            }
-            response_data.append(entry_data)
-
-        return JsonResponse({
-            'total_sum_of_amounts': total_sum_of_amounts,
-            'length_data': paginator.count,
-            'page_count': paginator.num_pages,
-            'current_page': paginated_data.number,
-            'data': response_data,
-        })
