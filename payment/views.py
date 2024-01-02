@@ -401,6 +401,7 @@ class ActivePayments(APIView):
         payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(user__email__endswith="yopmail.com").select_related('product').values()
         payments = payments.filter(expiration_datetime__date__gt=date.today())
 
+
         if payments:
             if not start_date:
                 first_payment = min(payments, key=lambda obj: obj['expiration_datetime'])
@@ -494,9 +495,8 @@ class ActivePayments(APIView):
                 if i == 'Admin' or i == 'MOC':
                     has_perm = True
                     break
-
+            
             if has_perm:
-                # print("admin user")
                 pass
             else:
                 if q:
@@ -546,8 +546,14 @@ class ActivePayments(APIView):
             removed_duplicates = self.remove_duplicate_payments(payment_objects)
             num_pages = (total_count + page_size - 1) // page_size
 
-            # print(removed_duplicates)
-            if request.user.is_admin:
+            user_groups = request.user.groups.values_list('name', flat=True)  # Get the names of all user groups
+            has_perm = False
+            for i in user_groups:
+                if i == 'Admin' or i == 'MOC':
+                    has_perm = True
+                    break
+
+            if has_perm:
                 return Response({
                     'count': total_count,
                     'num_pages': num_pages,
