@@ -742,7 +742,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
     ).exclude(
         source='UBL_DD', status__in=["0", False, 0]
     ).filter(
-        Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source='dlocal_india')
+        Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source__contains='dlocal')
     )
 
     if status:
@@ -751,17 +751,16 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
     if source:
         # Split the source string into a list if it contains a comma
         sources_list = source.split(',')
-
         if 'dlocal' in sources_list:
             if len(sources_list) > 1:
                 payments = payments.filter(Q(source__in=sources_list) | Q(source='NEW ALNAFI', internal_source__contains='dlocal'))
             else:
-                payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source__contains=source))
+                payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source__contains='dlocal'))
         else:
             if len(sources_list) > 1:
-                payments = payments.filter(Q(source__in=sources_list) | Q(source='NEW ALNAFI', internal_source__in=sources_list))
+                payments = payments.filter(source__in=sources_list)
             else:
-                payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source__contains=source))
+                payments = payments.filter(source=source)
 
 
 
