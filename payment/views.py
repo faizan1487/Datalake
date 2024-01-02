@@ -488,8 +488,13 @@ class ActivePayments(APIView):
                 else:
                     payments[i]['is_active'] = False
 
-                
-            if request.user.is_admin:
+            user_groups = request.user.groups.values_list('name', flat=True)  # Get the names of all user groups
+            has_perm = False
+            for i in user_groups:
+                if i == 'Admin' or i == 'MOC':
+                    has_perm = True
+
+            if has_perm:
                 # print("admin user")
                 pass
             else:
