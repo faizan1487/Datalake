@@ -643,7 +643,6 @@ class SearchPayments(APIView):
     # Define the sources list here
     def get(self, request):
         query = self.request.GET.get('q', None)
-        source = self.request.GET.get('source', None)
         origin = self.request.GET.get('origin', None)
         start_date = self.request.GET.get('start_date', None)
         end_date = self.request.GET.get('end_date', None)
@@ -652,6 +651,7 @@ class SearchPayments(APIView):
         product = self.request.GET.get('product', None)
         status = self.request.GET.get('status', None)
         page = int(self.request.GET.get('page', 1))
+        source = self.request.GET.get('source', None)
 
         payments= search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page)
         if export == 'true':
@@ -733,13 +733,21 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source='dlocal_india')
     )
 
-
     if status:
         payments = payments.filter(status=status)
         
-
     if source:
-        payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source=source))
+        # Split the source string into a list if it contains a comma
+        sources_list = source.split(',')
+
+        # If there is more than one source, filter payments using each source
+        if len(sources_list) > 1:
+            payments = payments.filter(Q(source__in=sources_list) | Q(source='NEW ALNAFI', internal_source__in=sources_list))
+        else:
+            # If there is only one source, filter payments using that single source
+            payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source=source))
+
+
 
     if origin:
         if origin == 'local':
@@ -761,7 +769,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         payments = payments.filter(user__email__icontains=q)
 
 
-
+    print(product)
     if product:
         keywords = product.split()
         query = Q()
@@ -2217,6 +2225,8 @@ class CommisionData(APIView):
         #     return Response(data)
 
         # return Response(response_data)
+
+
 class Roidata(APIView):
     def get(self, request):
         start_date_param = request.GET.get('start_date')
@@ -2238,13 +2248,7 @@ class Roidata(APIView):
 
             matching_users = matching_users.filter(created_datetime__date__range=(start_date, end_date))
 
-            moc_lead_data = moc_lead_data.annotate(
-                moc_lead_created_date=Case(
-                    When(created_at__date__range=(start_date, end_date), then=Value(True)),
-                    default=Value(False),
-                    output_field=BooleanField(),
-                )
-            )
+
 
         # Create a dictionary to map email to created_at date from Moc_Leads
         moc_lead_dates = {entry['email']: entry['created_at__date'] for entry in moc_lead_data}
@@ -2278,6 +2282,82 @@ class Roidata(APIView):
                 'login_source': moc_lead_data.filter(email=entry['user__email']).values('login_source').first().get('login_source', None),
                 'advert': moc_lead_data.filter(email=entry['user__email']).values('advert').first().get('advert', None),
                 'created_date': moc_lead_dates.get(entry['user__email'], None)
+            }
+            response_data.append(entry_data)
+
+        return JsonResponse({
+            'total_sum_of_amounts': total_sum_of_amounts,
+            'length_data': paginator.count,
+            'page_count': paginator.num_pages,
+            'current_page': paginated_data.number,
+            'data': response_data,
+        })
+
+
+
+class RoiApi(APIView):
+    def get(self, request):
+        start_date_param = request.GET.get('start_date')
+        end_date_param = request.GET.get('end_date')
+
+        moc_emails = Moc_Leads.objects.values_list('email', flat=True)
+
+        # Fetch users from Main_Payment model using the emails from Moc_Leads
+        matching_users = Main_Payment.objects.filter(user__email__in=moc_emails).values('id', 'amount', 'source', 'currency', 'alnafi_payment_id', 'user__email', 'order_datetime')
+        # Fetch corresponding Moc_Leads data for matched emails
+        moc_lead_data = Moc_Leads.objects.filter(email__in=moc_emails).values('email', 'created_at__date', 'form', 'login_source', 'advert', 'first_name')
+
+        if start_date_param and end_date_param:
+            start_date = datetime.strptime(start_date_param, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_param, '%Y-%m-%d').date()
+
+            # matching_users = matching_users.filter(created_datetime__date__range=(start_date, end_date))
+            moc_lead_data = moc_lead_data.filter(created_at__date__range=(start_date, end_date))
+
+            # moc_lead_data = moc_lead_data.annotate(
+            #     moc_lead_created_date=Case(
+            #         When(created_at__date__range=(start_date, end_date), then=Value(True)),
+            #         default=Value(False),
+            #         output_field=BooleanField(),
+            #     )
+            # )
+
+        for i in moc_lead_data:
+            matching_users = matching_users.filter(user__email=i['email'])
+            print(matching_users)
+
+        # Create a dictionary to map email to created_at date from Moc_Leads
+        # moc_lead_dates = {entry['email']: entry['created_at__date'] for entry in moc_lead_data}
+
+        # Paginate the queryset
+        paginator = Paginator(moc_lead_data, 10)  # Show 10 payments per page
+
+        page_number = request.GET.get('page')
+        try:
+            paginated_data = paginator.page(page_number)
+        except PageNotAnInteger:
+            paginated_data = paginator.page(1)
+        except EmptyPage:
+            paginated_data = paginator.page(paginator.num_pages)
+
+        total_sum_of_amounts = sum(float(user['amount']) for user in matching_users)
+
+        # Combine data from Main_Payment and Moc_Leads
+        response_data = []
+        for entry in paginated_data:
+            entry_data = {
+                # 'id': entry['id'],
+                'first_name': entry['first_name'],
+                # 'amount': entry['amount'],
+                # 'source': entry['source'],
+                # 'currency': entry['currency'],
+                # 'alnafi_payment_id': entry['alnafi_payment_id'],
+                'user__email': entry['email'],
+                # 'order_datetime': entry['order_datetime'],
+                'form': entry['form'],
+                'login_source': entry['login_source'],
+                'advert': entry['advert'],
+                'created_date': entry['created_at__date']
             }
             response_data.append(entry_data)
 

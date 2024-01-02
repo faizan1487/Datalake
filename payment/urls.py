@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (SearchPayments, GetStripePayments,GetUBLIPGPayments, AlnafiPayment,
                     RenewalPayments,GetEasypaisaPayments,NoOfPayments,RenewalNoOfPayments,
                     PaymentValidationNew,MainPaymentAPIView,UBLManualPayment,TotalNoOfPayments,
-                    ActivePayments,ProductAnalytics, NewAlnafiPayment,Renewal_Leads, LeadDataAPIView,ExpiryPayments,UploadLeads,NewPayments,CommisionData, Roidata)
+                    ActivePayments,ProductAnalytics, NewAlnafiPayment,Renewal_Leads, LeadDataAPIView,ExpiryPayments,UploadLeads,NewPayments,CommisionData, Roidata,RoiApi)
 from payment.webhooks import enrollment_created_webhook
 
 urlpatterns = [
@@ -37,6 +37,6 @@ urlpatterns = [
     path("upload_support_leads/", LeadDataAPIView.as_view(), name='support-leads'),
     path("upload_leads/", UploadLeads.as_view(), name='upload-leads'),
     path("commission/", CommisionData.as_view()),
-    path("roi_data/", Roidata.as_view())
+    path("roi_data/", RoiApi.as_view())
 
 ]
