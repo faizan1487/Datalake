@@ -2370,23 +2370,3 @@ class Roidata(APIView):
         }
         return JsonResponse(response_data, safe=False)
 
-class NewAlnafiUnpaid(APIView):
-    def post(self, request):
-        data = request.data
-        # print(data)
-        order_id = data.get('orderId')
-        # print(order_id)
-
-        try:
-            instance = New_ALnafi_Unpaid.objects.filter(orderId=order_id)            
-            serializer = New_Al_Nafi_Unpaid_Serializer(instance.first(), data=data)
-        except:
-            serializer = New_Al_Nafi_Unpaid_Serializer(data=data)
-
-        
-        if serializer.is_valid():
-            serializer.save()
-            # print("valid")
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
