@@ -497,23 +497,15 @@ class GetUser(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, id):
         user_id = id
-        # email = self.request.GET.get('email', None) or None
-        # export = self.request.GET.get('export', None) or None
         url = request.build_absolute_uri()
-        # print("id",id)
         user = Main_User.objects.filter(id=user_id)
-        # print("user",user)
+
+
         try:
-            # Assuming payments is a queryset of user payments
             payments = user[0].user_payments.filter(source__in=['Al-Nafi', 'New Alnafi']).values()
             payments = payments.order_by('-order_datetime')
-            # latest_payment = payments.order_by('-order_datetime')[0]['expiration_datetime']
-            # latest_payment = payments.order_by('-order_datetime')
-            # print(latest_payment[0])
-            # print(user)
+        
             user = dict(user.values()[0])
-
-            # if latest_payment.date() > date.today():
             user['is_paying_customer'] = True
 
             def json_serializable(obj):
@@ -521,20 +513,24 @@ class GetUser(APIView):
                     return obj.isoformat()  # Convert datetime to ISO 8601 format
                 raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-            products = list(payments.values('product__product_name'))
+            products = list(payments.values('product__product_name','id'))
             plans = list(payments.values('product__product_plan'))
             payment_list = list(payments)
-            for i in range(len(payment_list)):
-                try:
-                    payment_list[i]['user_id'] = user['email']
-                    payment_list[i]['product_id'] = products[i]['product__product_name']
-                    payment_list[i]['plan'] = plans[i]['product__product_plan']
-                except Exception as e:
-                    print(e)
-            
 
+            for product_info in products:
+                for i in range(len(payment_list)):
+                    if payment_list[i]['id'] == product_info['id']:
+                        if 'product_id' in payment_list[i]:
+                            payment_list[i]['product_id'].append(product_info['product__product_name'])
+                        else:
+                            payment_list[i]['product_id'] = [product_info['product__product_name']]
+                    
+                    payment_list[i]['user_id'] = user['email']
+                    payment_list[i]['plan'] = plans[i]['product__product_plan']
+            
             payment_json = json.dumps(payment_list, default=json_serializable)  # Serialize the list to JSON with custom encoder
             payment_objects = json.loads(payment_json)
+
 
             response_data = {"user": user, "user payments": payment_objects,"no_of_payments": payments.count(),"Message":"Success"}
             return Response(response_data)
