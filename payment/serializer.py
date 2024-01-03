@@ -1,5 +1,5 @@
 from rest_framework.serializers import ModelSerializer, Serializer, SerializerMethodField, ValidationError
-from .models import UBL_IPG_Payment, AlNafi_Payment, Main_Payment,Easypaisa_Payment, Stripe_Payment, UBL_Manual_Payment, New_Alnafi_Payments, New_ALnafi_Unpaid
+from .models import UBL_IPG_Payment, AlNafi_Payment, Main_Payment,Easypaisa_Payment, Stripe_Payment, UBL_Manual_Payment, New_Alnafi_Payments
 from user.models import Main_User
 
 #For AlNafi (MainSite) Payments:

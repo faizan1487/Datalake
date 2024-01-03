@@ -5,9 +5,9 @@ from sre_constants import SUCCESS
 from tracemalloc import start
 from rest_framework import status
 
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal, New_ALnafi_Unpaid
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
-                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer, New_Al_Nafi_Unpaid_Serializer)
+                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
 from .services import (renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate,get_pkr_rate)
 from user.models import Moc_Leads
 from rest_framework.views import APIView
