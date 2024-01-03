@@ -230,7 +230,6 @@ class RenewalPayments(APIView):
         # print("renewal payment function")
         expiration = self.request.GET.get('expiration_date', None) or None
         q = self.request.GET.get('q', None) or None
-        source = self.request.GET.get('source', None) or None
         exact = self.request.GET.get('exact', None) or None
         export = self.request.GET.get('export', None) or None
         plan = self.request.GET.get('plan', None) or None
@@ -255,11 +254,22 @@ class RenewalPayments(APIView):
         if q:
             payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
             
-        if source:
-            payments = payments.filter(source=source)
 
         if product:
-            payments = payments.filter(product__product_name__icontains=product)
+            products_list = product.split(',')
+            if len(products_list) > 1:
+                payments = payments.filter(product__product_name__in=products_list)
+                # payments = payments.distinct()
+            else:
+                payments = payments.filter(product__product_name__in=products_list)
+                # payments = payments.distinct()
+
+
+
+
+
+
+
 
         if expiration:
             expiration_date = date.today() + timedelta(days=int(expiration))
@@ -281,14 +291,9 @@ class RenewalPayments(APIView):
             'quarterly': 'Quarterly',
             'monthly': 'Monthly',
         }
-        
-        #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
-        # This field represents the uppercase version of the product_plan field of the associated product.
+
         payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
-        #If the plan is provided and it is not 'all', the queryset is further filtered using
-        # the filter() function. It applies a condition using the Q object, which checks if 
-        # the product_plan is an exact case-insensitive match to the given plan 
-        # or if it matches any plan name from the plan_mapping dictionary.
+       
         if plan:
             if plan.lower() != 'all':
                 payments = payments.filter(
@@ -296,8 +301,25 @@ class RenewalPayments(APIView):
                 )            
         else:
             payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
+        
 
-        # print(payments)
+        # queries increasing when trying to implement multiple plan filter logic
+
+        # if plan:
+        #     # Split the source string into a list if it contains a comma
+        #     plans_list = plan.split(',')
+
+        #     # If there is more than one source, filter payments using each source
+        #     if len(plans_list) > 1:
+        #         payments = payments.filter(product__product_plan__in=plans_list)
+        #         payments = payments.distinct()
+        #     else:
+        #         # If there is only one source, filter payments using that single source
+        #         payments = payments.filter(product__product_plan__iexact=plan)
+        #         # payments = payments.distinct()
+
+        # else:
+        #     payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
 
         total_count = payments.count()  # Calculate the total count of payments
 
@@ -314,12 +336,25 @@ class RenewalPayments(APIView):
                 if isinstance(obj, datetime):
                     return obj.isoformat()  # Convert datetime to ISO 8601 format
                 raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
-            
+
+        # print(payments)
+        # users = []
+        # for payment in payments:
+        #     user_info = {
+        #         'user__email': payments.values('user__email'),
+        #         'user__phone': payments.values('user__phone'),
+        #     }
+        #     users.append(user_info)
+
+        # print(users)
+
         users = list(payments.values('user__email','user__phone'))
         products = list(payments.values('product__product_name'))
-        payment_list = list(payments.values())                          
+        payment_list = list(payments.values())  
         for i in range(len(payment_list)):
             try:
+                # payment_list[i]['user_id'] = users[i]['user__email'][0]['user__email']
+                # payment_list[i]['phone'] = users[i]['user__phone'][0]['user__phone']
                 payment_list[i]['user_id'] = users[i]['user__email']
                 payment_list[i]['phone'] = users[i]['user__phone']
                 payment_list[i]['product_id'] = products[i]['product__product_name']
@@ -351,7 +386,6 @@ class RenewalPayments(APIView):
         payment_list = []
         
         for payment in payments:
-            # print(payment)
             payment_id = payment['id']
             payment_found = False
 
@@ -764,7 +798,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
                 payments = payments.filter(source=source)
 
 
-
     if origin:
         if not payments:
             total_count = payments.count() 
@@ -805,13 +838,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         payments = payments.filter(user__email__icontains=q)
 
     if product:
-        # keywords = product.split()
-        # query = Q()
-        # for keyword in keywords:
-        #     query &= Q(product__product_name__icontains=keyword)
-        # payments = payments.filter(query)
-        # payments = payments.distinct()
-
         products_list = product.split(',')
         # If there is more than one source, filter payments using each source
         if len(products_list) > 1:
@@ -829,7 +855,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         # If there is more than one source, filter payments using each source
         if len(plans_list) > 1:
             payments = payments.filter(product__product_plan__in=plans_list)
-            print(payments)
             payments = payments.distinct()
         else:
             # If there is only one source, filter payments using that single source
