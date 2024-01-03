@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment,New_Alnafi_Payments, Renewal
+from .models import UBL_Manual_Payment,AlNafi_Payment,UBL_IPG_Payment,Easypaisa_Payment,Stripe_Payment,Main_Payment,New_Alnafi_Payments, Renewal, New_ALnafi_Unpaid
 from import_export.admin import ImportExportModelAdmin, ExportActionModelAdmin
 from rangefilter.filters import DateRangeFilter, DateTimeRangeFilter
 
@@ -73,3 +73,9 @@ class RenewalAdmin(admin.ModelAdmin):
     search_fields = ('first_name', 'last_name', 'user_id', 'phone', 'product_name')
 
 admin.site.register(Renewal, RenewalAdmin)
+class New_Alnafi_UnpaidAdmin(ImportExportModelAdmin, admin.ModelAdmin):
+    list_display = ('id','orderId','product_names','customer_email','username','created_at','expiration_date','payment_date','amount','status','updated_at','card_number','account_number','meta','payment_method_name','payment_method_currency','payment_method_source_name','country','pk_invoice_number','us_invoice_number','send_invoice','purpose','depositor_name','application_id','coupon_id','additional_months','is_manual','amount_pkr','amount_usd','webhook_called','old_payments','remarks','transaction_id')
+    search_fields = ('orderId', 'product_names', 'customer_email', 'username', 'card_number', 'account_number', 'pk_invoice_number', 'us_invoice_number', 'depositor_name', 'coupon_id', 'transaction_id')
+    list_filter = ('created_at', 'expiration_date', 'payment_date', 'status', 'payment_method_name', 'payment_method_currency', 'payment_method_source_name', 'country', 'send_invoice', 'is_manual', 'webhook_called')
+
+admin.site.register(New_ALnafi_Unpaid, New_Alnafi_UnpaidAdmin)

@@ -5,9 +5,9 @@ from sre_constants import SUCCESS
 from tracemalloc import start
 from rest_framework import status
 
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal, New_ALnafi_Unpaid
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
-                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
+                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer, New_Al_Nafi_Unpaid_Serializer)
 from .services import (renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate,get_pkr_rate)
 from user.models import Moc_Leads
 from rest_framework.views import APIView
@@ -2370,5 +2370,23 @@ class Roidata(APIView):
         }
         return JsonResponse(response_data, safe=False)
 
+class NewAlnafiUnpaid(APIView):
+    def post(self, request):
+        data = request.data
+        # print(data)
+        order_id = data.get('orderId')
+        # print(order_id)
 
+        try:
+            instance = New_ALnafi_Unpaid.objects.filter(orderId=order_id)            
+            serializer = New_Al_Nafi_Unpaid_Serializer(instance.first(), data=data)
+        except:
+            serializer = New_Al_Nafi_Unpaid_Serializer(data=data)
 
+        
+        if serializer.is_valid():
+            serializer.save()
+            # print("valid")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
