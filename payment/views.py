@@ -5,9 +5,9 @@ from sre_constants import SUCCESS
 from tracemalloc import start
 from rest_framework import status
 
-from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal
+from .models import Stripe_Payment, Easypaisa_Payment, UBL_IPG_Payment, AlNafi_Payment,Main_Payment,UBL_Manual_Payment, New_Alnafi_Payments,Renewal, Unpaid_New_Alnafi_Payments
 from .serializer import (Easypaisa_PaymentsSerializer, Ubl_Ipg_PaymentsSerializer, AlNafiPaymentSerializer,MainPaymentSerializer,
-                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer)
+                         UBL_Manual_PaymentSerializer, New_Al_Nafi_Payments_Serializer,Unpaid_New_Al_Nafi_Payments_Serializer)
 from .services import (renewal_no_of_payments,main_no_of_payments,no_of_payments,get_USD_rate,get_pkr_rate)
 from user.models import Moc_Leads
 from rest_framework.views import APIView
@@ -67,6 +67,27 @@ class NewAlnafiPayment(APIView):
         if serializer.is_valid():
             serializer.save()
             # print("valid")
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class UnpaidNewAlnafiPayment(APIView):
+    def post(self, request):
+        data = request.data
+        # print(data)
+        order_id = data.get('orderId')
+        # print(order_id)
+
+        try:
+            instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)            
+            serializer = Unpaid_New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
+        except:
+            serializer = Unpaid_New_Al_Nafi_Payments_Serializer(data=data)
+
+        
+        if serializer.is_valid():
+            serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -1324,8 +1345,6 @@ class PaymentValidationNew(APIView):
             return valid_payment
 
 
-
-
 class Renewal_Leads(APIView):
     def get(self,request):
         data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/payment/Renewal Leads - Al Baseer to CRM - Near To Expiry.csv')
@@ -1374,8 +1393,6 @@ class Renewal_Leads(APIView):
         return Response("DONE")
 
 
-
-
 class MainPaymentAPIView(APIView):
     def post(self, request):
         file = request.FILES['file']
@@ -1394,8 +1411,6 @@ class MainPaymentAPIView(APIView):
             serializer.save()
             return Response(serializer.data, status=201)
         return Response(serializer.errors, status= 400)
-
-
 
 
 class ProductAnalytics(APIView):

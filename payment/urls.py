@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (SearchPayments, GetStripePayments,GetUBLIPGPayments, AlnafiPayment,
                     RenewalPayments,GetEasypaisaPayments,NoOfPayments,RenewalNoOfPayments,
                     PaymentValidationNew,MainPaymentAPIView,UBLManualPayment,TotalNoOfPayments,
-                    ActivePayments,ProductAnalytics, NewAlnafiPayment,Renewal_Leads, LeadDataAPIView,ExpiryPayments,UploadLeads,NewPayments,CommisionData, Roidata)
+                    ActivePayments,ProductAnalytics, NewAlnafiPayment,Renewal_Leads, LeadDataAPIView,ExpiryPayments,UploadLeads,NewPayments,CommisionData, Roidata,UnpaidNewAlnafiPayment)
 from payment.webhooks import enrollment_created_webhook
 
 urlpatterns = [
@@ -13,6 +13,7 @@ urlpatterns = [
     # path("deletepayment/", PaymentDelete.as_view(), name='payment-dalete'),
     path("alnafipayment/", AlnafiPayment.as_view(), name='alnafi-payment'),
     path("newalnafipayment/", NewAlnafiPayment.as_view(), name='new-alnafi-payment'),
+    path("unpaidnewalnafipayment/", UnpaidNewAlnafiPayment.as_view(), name='unpaid-new-alnafi-payment'),
     path("ublmanualpayment/", UBLManualPayment.as_view(), name='ubl-manual-payment'),
     path("ublipgpayment/", GetUBLIPGPayments.as_view(), name='ubl-manual-payment'),
     path("easypaisa/", GetEasypaisaPayments.as_view(), name='easypaisa'), #For all easypaisa Payments

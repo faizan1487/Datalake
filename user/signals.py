@@ -325,10 +325,10 @@ def mocLead_Signalto_sale_doctype(instance,source):
             if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
                 pass
             else:
-                print(response.text)
-                # data['error'] = response.text
-                # data['status_code'] = response.status_code
-                # failed_leads.append(data)
+                # print(response.text)
+                data['error'] = response.text
+                data['status_code'] = response.status_code
+                failed_leads.append(data)
         else:
             print(f"updated {instance.email}")
     else:
@@ -339,24 +339,24 @@ def mocLead_Signalto_sale_doctype(instance,source):
             if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
                 pass
             else:
-                # data['error'] = response.text
-                # data['status_code'] = response.status_code
-                # failed_leads.append(data)
-                print(response.text)
+                data['error'] = response.text
+                data['status_code'] = response.status_code
+                failed_leads.append(data)
+                # print(response.text)
         else:
             print(f"sale doctype signa; lead created successfully {instance.email}")
 
 
-    # if failed_leads:
-    #     with open('failed_affiliate_from_signal.csv', 'a', newline='') as csvfile:
-    #         fieldnames = failed_leads[0].keys()
-    #         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    if failed_leads:
+        with open('failed_affiliate_from_signal.csv', 'a', newline='') as csvfile:
+            fieldnames = failed_leads[0].keys()
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-    #         if csvfile.tell() == 0:
-    #             writer.writeheader()
+            if csvfile.tell() == 0:
+                writer.writeheader()
 
-    #         for lead in failed_leads:
-    #             writer.writerow(lead)
+            for lead in failed_leads:
+                writer.writerow(lead)
 
 
 

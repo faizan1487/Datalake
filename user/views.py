@@ -51,12 +51,10 @@ import pandas as pd
 class UploadMocLeads(APIView):
     def post(self,request):
         # Read the CSV file into a DataFrame
-        # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Facebook.csv')
 
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/view_failed_affiliate.csv')
+        # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/view_failed_affiliate.csv')
         # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/failed_affiliate_from_signal.csv')
-        
-
         # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - Easy Pay Program.csv')
 
         # Iterate over rows in the DataFrame
@@ -67,8 +65,8 @@ class UploadMocLeads(APIView):
             email = row['email']
             phone = row['phone']
             country = row['country']
-            login_source = row['login_source']
-            created_at_str = row['created_at_str']    
+            login_source = row['source']
+            created_at_str = row['created_at']    
 
             #from signal error file
             # full_name = row['first_name']
@@ -78,61 +76,57 @@ class UploadMocLeads(APIView):
             # login_source = row['source']
             # created_at_str = row['date_joined']    
 
-            # form = row['form']
-            # advert = row['advert']
+            form = row['form']
+            advert = row['advert']
             # advert = row['advert detail']
 
-            # Assuming the original format is "%m/%d/%Y %H:%M:%S"
-            # You can adjust the format string as needed
             # created_at = pd.to_datetime(created_at_str, format="%d/%m/%Y %H:%M:%S")
             created_at = pd.to_datetime(created_at_str, format="%Y/%m/%d %H:%M:%S")
-            # try:
-                # Try to get or create an Moc_Leads object based on the email
-            moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
-                'first_name': full_name,
-                'phone': phone,
-                'email': email,
-                # 'form': form,
-                'country': country,
-                'login_source': login_source,
-                'created_at': created_at,
-                # 'advert': advert,
-            })
+            try:
+                moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
+                    'first_name': full_name,
+                    'phone': phone,
+                    'email': email,
+                    'form': form,
+                    'country': country,
+                    'login_source': login_source,
+                    'created_at': created_at,
+                    'advert': advert,
+                })
 
-            # If the object was not created (i.e., it already existed), update its attributes
-            if not created:
-                moc.first_name = full_name
-                moc.email = email
-                moc.phone = phone
-                # moc.form = form
-                moc.country = country
-                moc.login_source = login_source
-                moc.created_at = created_at
-                # moc.advert = advert
-                moc.save()
-            # except Exception as e:
-                # data = {
-                #     'full_name':row['full_name'],
-                #     'email':row['email'],
-                #     'phone': row['phone'],
-                #     'country': row['country'],
-                #     'login_source':row['source'],
-                #     'created_at_str': row['created_at'], 
-                #     # 'form': row['form'],
-                #     # 'advert': row['advert']
-                # }
-                # failed_leads.append(data)
+                if not created:
+                    moc.first_name = full_name
+                    moc.email = email
+                    moc.phone = phone
+                    moc.form = form
+                    moc.country = country
+                    moc.login_source = login_source
+                    moc.created_at = created_at
+                    moc.advert = advert
+                    moc.save()
+            except Exception as e:
+                data = {
+                    'full_name':row['full_name'],
+                    'email':row['email'],
+                    'phone': row['phone'],
+                    'country': row['country'],
+                    'login_source':row['source'],
+                    'created_at_str': row['created_at'], 
+                    'form': row['form'],
+                    'advert': row['advert']
+                }
+                failed_leads.append(data)
 
-            # if failed_leads:
-            #     with open('view_failed_affiliate.csv', 'a', newline='') as csvfile:
-            #         fieldnames = failed_leads[0].keys()
-            #         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            if failed_leads:
+                with open('view_failed_affiliate.csv', 'a', newline='') as csvfile:
+                    fieldnames = failed_leads[0].keys()
+                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
-            #         if csvfile.tell() == 0:
-            #             writer.writeheader()
+                    if csvfile.tell() == 0:
+                        writer.writeheader()
 
-            #         for lead in failed_leads:
-            #             writer.writerow(lead)
+                    for lead in failed_leads:
+                        writer.writerow(lead)
 
         return Response({"msg":"done"})
     
@@ -510,8 +504,6 @@ class GetActiveUsers(APIView):
             # return Response("Please enter email")
 
 
-
-
 class GetUser(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request, id):
@@ -598,9 +590,6 @@ class GetNoOfUsersMonth(APIView):
         return Response(response_data)
 
 
-
-
-
 class UserLoginView(APIView):
     renderer_classes = [UserRenderer]
     def post(self, request, format=None):
@@ -646,8 +635,6 @@ class Navbar(APIView):
         tabs = NavbarLink.objects.filter(group__in=groups).distinct()
         serializer = NavbarSerializer(tabs, many=True)
         return Response(serializer.data)
-
-
 
 
 class UserProfileView(APIView):
@@ -990,35 +977,6 @@ class GetDataCV(APIView):
 
         return Response(data)
     
-
-
-
-
-# ROI CALCULATION
-# get all moc leads then get payments of all those moc leads and calculate how many moc leads converted
-
-
-def RoiCalculation(APIView):
-    def get(self, request):
-        moc_leads = Moc_Leads.objects.all()
-
-
-
-        return Response(moc_leads.values())
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 # import os
 # import csv
