@@ -223,13 +223,16 @@ def mocLead_Signalto_moc_doctype(instance,source):
                     writer.writerow(lead)
         
 
+import json
 
 def mocLead_Signalto_sale_doctype(instance,source):
-    print("mocLead_Signalto_sale_doctype")
+    # print("mocLead_Signalto_sale_doctype")
     if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
+        # user_api_key = '4e7074f890507cb'
+        # user_secret_key = 'c954faf5ff73d31'
         user_api_key, user_secret_key = round_robin()
 
 
@@ -245,7 +248,7 @@ def mocLead_Signalto_sale_doctype(instance,source):
     country_code = getattr(instance, 'country', "Unknown")
     if country_code:
         country_name = None
-        if len(country_code) <= 2:
+        if len(str(country_code)) <= 2:
             if country_code:
                 for name, code in COUNTRY_CODES.items():
                     if code == country_code:
@@ -291,13 +294,8 @@ def mocLead_Signalto_sale_doctype(instance,source):
     
     failed_leads = []
     if already_existed:
-        # print ("already_exists")
-        #on update add demo and enrollment
-        # pass
-        # print("already exixts")
-        # auth_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/demo-user/'
+        # print("already exists")
         auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
-        # enrollment_url = 'http://127.0.0.1:8001/api/v1.0/enrollments/enrollment-user/'
         enrollment_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/enrollment-user/'
         auth_headers = {
         "Content-Type": "application/json",
@@ -307,46 +305,59 @@ def mocLead_Signalto_sale_doctype(instance,source):
         "email": lead_data['data'][0]['email_id']  # Replace with the actual email you want to send
         }
         demo_user = requests.get(auth_url, headers=auth_headers, params=query_parameters)
-        # print(demo_user)
         enrollment_user = requests.get(enrollment_url, headers=auth_headers, params=query_parameters)
         
-        # print("demo status code", demo_user.status_code)
         if demo_user.status_code == 200:
-            # Parse the response content as JSON
             demo_data = demo_user.json()
-            # print(demo_data)
             data['demo_product'] = demo_data['product_name']
 
-        # print("enrollment status code",enrollment_user.status_code)
         if enrollment_user.status_code == 200:
-            # Parse the response content as JSON
             enrollment_data = enrollment_user.json()
-            # print(enrollment_data)
-            # print(data)
             if len(enrollment_data['enrollments']) > 1:
                 data['enrollment'] = enrollment_data['product_name']
-        # print(data)
+
         email_id = lead_data['data'][0]['email_id']
         url = f'https://crm.alnafi.com/api/resource/Lead/{email_id}'
-        # print("url sale", url)
         # print(data)
         response = requests.put(url, headers=headers, json=data)
         if response.status_code != 200:
-            failed_leads.append(data)
-            # print(data)
-            # print(response.status_code)
-            # print(response.json())
-        instance.erp_lead_id = lead_data['data'][0]['name']
-        # print("lead updated")
+            response_data = json.loads(response.text)
+            if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
+                pass
+            else:
+                print(response.text)
+                # data['error'] = response.text
+                # data['status_code'] = response.status_code
+                # failed_leads.append(data)
+        else:
+            print(f"updated {instance.email}")
     else:
         post_url = 'https://crm.alnafi.com/api/resource/Lead'
         response = requests.post(post_url, headers=headers, json=data)
         if response.status_code != 200:
-            print(response.status_code)
-            print(response.text)
-            print("email",instance.email)
+            response_data = json.loads(response.text)
+            if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
+                pass
+            else:
+                # data['error'] = response.text
+                # data['status_code'] = response.status_code
+                # failed_leads.append(data)
+                print(response.text)
         else:
-            print("sale doctype signa; lead created successfully")
+            print(f"sale doctype signa; lead created successfully {instance.email}")
+
+
+    # if failed_leads:
+    #     with open('failed_affiliate_from_signal.csv', 'a', newline='') as csvfile:
+    #         fieldnames = failed_leads[0].keys()
+    #         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+    #         if csvfile.tell() == 0:
+    #             writer.writeheader()
+
+    #         for lead in failed_leads:
+    #             writer.writerow(lead)
+
 
 
 

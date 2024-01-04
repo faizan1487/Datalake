@@ -74,6 +74,8 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
         "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer",
         "role", "erp_lead_id","academy_demo_access"
     )
+
+    # print(source)
     if source:
         if source == 'Academy':
             users = users.filter(Q(internal_source='Academy') | Q(academy_demo_access=True))
@@ -84,8 +86,6 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
 
     if academy_demo_access:
         users = users.filter(academy_demo_access=academy_demo_access)
-    
-
     
     
     if users:
@@ -136,23 +136,9 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
 #PRoduction
 def search_active_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,page):
     users = Main_User.objects.exclude(email__endswith="yopmail.com")
-    # print(users)
-    # exclude(user__email__endswith="yopmail.com")
-
-    # if request.user.is_admin:
     if q:
         users = users.filter(email__iexact=q)
 
-    # print(users)
-
-    # else:
-    #     if q:
-    #         users = users.filter(email__iexact=q) if request.user.is_admin else users.filter(email__iexact=q)
-    #     else:
-    #         response = {'success':False}
-    #         return response
-    
-    # print("users after q", users)
 
     if source:
         if source == 'Academy':
