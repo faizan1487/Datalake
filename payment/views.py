@@ -2323,12 +2323,14 @@ class CommisionData(APIView):
 
 
 class Roidata(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         status_filter = request.GET.get('status')
         email_filter = request.GET.get('q')
         start_date_filter = request.GET.get('start_date')
         end_date_filter = request.GET.get('end_date')
+        export = request.GET.get('export')
+        # print("export", export)
         # print(status_filter, email_filter, start_date_filter, end_date_filter)
         
         moc_data = Moc_Leads.objects.values('first_name', 'email', 'phone', 'form', 'country', 'login_source', 'created_at__date', 'advert')         
@@ -2403,6 +2405,13 @@ class Roidata(APIView):
             paginated_data = paginator.page(1)
         except EmptyPage:
             paginated_data = paginator.page(paginator.num_pages)
+        if export == 'true':
+            file_name = f"Roi_data{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+            file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+            df = pd.DataFrame(moc_data).to_csv(index=False)
+            s3 = upload_csv_to_s3(df, file_name)
+            data = {'file_link': file_path, 'export': 'true'}
+            return Response(data)
 
         response_data = {
             'total_sum_of_amounts': total_sum_of_amounts,
@@ -2413,4 +2422,6 @@ class Roidata(APIView):
             'data': list(paginated_data),
         }
         return JsonResponse(response_data, safe=False)
-
+        
+        
+        
