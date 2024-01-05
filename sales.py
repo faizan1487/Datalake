@@ -8,70 +8,70 @@ import pandas as pd
 
 
 #### For Creating Files Of 3 days Before Lead ####
-def get_and_save_all_lead_data():
-    user_api_key = '4e7074f890507cb'
-    user_secret_key = 'c954faf5ff73d31'
+# def get_and_save_all_lead_data():
+#     user_api_key = '4e7074f890507cb'
+#     user_secret_key = 'c954faf5ff73d31'
     
 
-    headers = {
-        'Authorization': f'token {user_api_key}:{user_secret_key}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
+#     headers = {
+#         'Authorization': f'token {user_api_key}:{user_secret_key}',
+#         "Content-Type": "application/json",
+#         "Accept": "application/json",
+#     }
 
-    # Construct the URL to get leads
-    get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","phone","date","lead_creator"]&limit_start=0&limit_page_length=10000000'
+#     # Construct the URL to get leads
+#     get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","phone","date","lead_creator"]&limit_start=0&limit_page_length=10000000'
 
-    # Make the API request
-    response = requests.get(get_url, headers=headers)
+#     # Make the API request
+#     response = requests.get(get_url, headers=headers)
 
-    if response.status_code == 200:
-        leads_data = response.json()
+#     if response.status_code == 200:
+#         leads_data = response.json()
 
-        if 'data' in leads_data:
-            leads = leads_data['data']
+#         if 'data' in leads_data:
+#             leads = leads_data['data']
 
-            # Get today's date
-            today_date = datetime.date.today()
+#             # Get today's date
+#             today_date = datetime.date.today()
 
-            # Calculate 3 days before today
-            three_days_before = today_date - datetime.timedelta(days=3)
+#             # Calculate 3 days before today
+#             three_days_before = today_date - datetime.timedelta(days=3)
 
-            # Group leads by lead_creator
-            leads_by_creator = {}
-            for lead in leads:
-                if lead.get('status') == 'Lead' and lead.get('date') is not None:
-                    lead_date = datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date()
-                    if lead_date == three_days_before and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk':
-                        lead_creator = lead.get('lead_creator')
-                        if lead_creator not in leads_by_creator:
-                            leads_by_creator[lead_creator] = []
-                        leads_by_creator[lead_creator].append(lead)
+#             # Group leads by lead_creator
+#             leads_by_creator = {}
+#             for lead in leads:
+#                 if lead.get('status') == 'Lead' and lead.get('date') is not None:
+#                     lead_date = datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date()
+#                     if lead_date == three_days_before and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk':
+#                         lead_creator = lead.get('lead_creator')
+#                         if lead_creator not in leads_by_creator:
+#                             leads_by_creator[lead_creator] = []
+#                         leads_by_creator[lead_creator].append(lead)
 
-            print(f"Total number of leads with status 'Lead' and date 3 days before today: {len(leads)}")
+#             print(f"Total number of leads with status 'Lead' and date 3 days before today: {len(leads)}")
 
-            # Save leads to separate CSV files based on lead_creator
-            for creator, creator_leads in leads_by_creator.items():
-                filename = f"leads_{creator.replace('@', '_').replace('.', '_')}_3_days_before.csv"
-                with open(filename, 'w', newline='') as csvfile:
-                    fieldnames = ['Email', 'Status', 'Assigned Date', 'Lead Owner', 'Phone']
-                    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-                    writer.writeheader()
-                    for lead in creator_leads:
-                        lead_id = lead.get('email_id')
-                        lead_status = lead.get('status')
-                        lead_date = lead.get('date')
-                        lead_creator = lead.get('lead_creator')
-                        lead_phone = lead.get('phone')
-                        writer.writerow({'Email': lead_id, 'Status': lead_status, 'Assigned Date': lead_date, 'Lead Owner': lead_creator, 'Phone': lead_phone })
+#             # Save leads to separate CSV files based on lead_creator
+#             for creator, creator_leads in leads_by_creator.items():
+#                 filename = f"leads_{creator.replace('@', '_').replace('.', '_')}_3_days_before.csv"
+#                 with open(filename, 'w', newline='') as csvfile:
+#                     fieldnames = ['Email', 'Status', 'Assigned Date', 'Lead Owner', 'Phone']
+#                     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+#                     writer.writeheader()
+#                     for lead in creator_leads:
+#                         lead_id = lead.get('email_id')
+#                         lead_status = lead.get('status')
+#                         lead_date = lead.get('date')
+#                         lead_creator = lead.get('lead_creator')
+#                         lead_phone = lead.get('phone')
+#                         writer.writerow({'Email': lead_id, 'Status': lead_status, 'Assigned Date': lead_date, 'Lead Owner': lead_creator, 'Phone': lead_phone })
 
-                print(f"Filtered leads data for {creator} saved to '{filename}'")
-        else:
-            print("No leads found in the response.")
-    else:
-        print("Failed to fetch data. Status code:", response.status_code)
+#                 print(f"Filtered leads data for {creator} saved to '{filename}'")
+#         else:
+#             print("No leads found in the response.")
+#     else:
+#         print("Failed to fetch data. Status code:", response.status_code)
 
-get_and_save_all_lead_data()
+# get_and_save_all_lead_data()
 
 
 
@@ -177,33 +177,37 @@ get_and_save_all_lead_data()
 
 ### For Single Lead Upload To Someone ######
 
-# def upload_sales_lead():
-#     url = 'https://crm.alnafi.com/api/resource/Lead'
-#     user_api_key = '484f3e9978c00f3'
-#     user_secret_key = 'f61de5c03b3935d'
+def upload_sales_lead():
+    url = 'https://crm.alnafi.com/api/resource/Lead'
+    user_api_key = 'b09d1796de6444a'
+    user_secret_key = '9ac70da03e4c23c'
 
-#     headers = {
-#         'Authorization': f'token {user_api_key}:{user_secret_key}',
-#         'Content-Type': 'application/json',
-#         'Accept': 'application/json',
-#     }
-#     data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Shioab.csv')
-#     for index, row in data.iterrows():
-#         first_name = str(row['First Name'])
-#         email = str(row['Email'])
-#         phone = str(row['Phone'])
-#         source = str(row['Source'])
-#         status = str(row['Status'])
-#         print(source)
-#         lead = {
-#             'first_name': first_name,
-#             'email_id': email,
-#             'source': source,
-#             'status': status,
-#             'phone': phone,
-#         }
-#         print("lead", lead)
-#         response = requests.post(url, headers=headers, json=lead)
-#         print(response.status_code)
-#         print(response.text)
-# upload_sales_lead()
+    headers = {
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Lead.csv')
+    for index, row in data.iterrows():
+        first_name = str(row['First Name'])
+        email = str(row['Email'])
+        phone = str(row['Phone'])
+        source = str(row['Source'])
+        status = str(row['Status'])
+        form = str(row['Form'])
+        date = datetime.now().date()
+        print(source)
+        lead = {
+            'first_name': first_name,
+            'email_id': email,
+            'source': source,
+            'status': status,
+            'phone': phone,
+            'form': form,
+            'date' : date,
+        }
+        print("lead", lead)
+        response = requests.post(url, headers=headers, json=lead)
+        print(response.status_code)
+        print(response.text)
+upload_sales_lead()
