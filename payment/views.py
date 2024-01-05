@@ -2323,7 +2323,7 @@ class CommisionData(APIView):
 
 
 class Roidata(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         status_filter = request.GET.get('status')
         email_filter = request.GET.get('q')
