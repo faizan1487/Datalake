@@ -7,11 +7,10 @@ import json
 import pandas as pd
 
 
-
+#### For Creating Files Of 3 days Before Lead ####
 def get_and_save_all_lead_data():
     user_api_key = '4e7074f890507cb'
     user_secret_key = 'c954faf5ff73d31'
-    user_api_key = '4e7074f890507cb'
     
 
     headers = {
@@ -78,6 +77,7 @@ get_and_save_all_lead_data()
 
 
 
+### For Reassigning 3 Days before lead ####
 
 # def get_data_from_leads():
 #     print("running")
@@ -175,7 +175,7 @@ get_and_save_all_lead_data()
 # get_data_from_leads()
 
 
-
+### For Single Lead Upload To Someone ######
 
 # def upload_sales_lead():
 #     url = 'https://crm.alnafi.com/api/resource/Lead'
