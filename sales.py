@@ -1,7 +1,6 @@
 import csv
 import datetime
 import requests
-import datetime
 import random
 import json
 import pandas as pd
@@ -176,7 +175,7 @@ import pandas as pd
 
 
 ### For Single Lead Upload To Someone ######
-
+from datetime import datetime
 def upload_sales_lead():
     url = 'https://crm.alnafi.com/api/resource/Lead'
     user_api_key = 'b09d1796de6444a'
@@ -187,7 +186,7 @@ def upload_sales_lead():
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Lead.csv')
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/waqas.csv')
     for index, row in data.iterrows():
         first_name = str(row['First Name'])
         email = str(row['Email'])
@@ -195,7 +194,7 @@ def upload_sales_lead():
         source = str(row['Source'])
         status = str(row['Status'])
         form = str(row['Form'])
-        date = datetime.now().date()
+        date = datetime.now().date().isoformat()
         print(source)
         lead = {
             'first_name': first_name,
