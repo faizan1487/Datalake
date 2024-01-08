@@ -59,8 +59,8 @@ CORS_ALLOWED_ORIGINS = [
     'https://api-al-baseer.alnafi.com',
     'http://ec2-52-6-12-123.compute-1.amazonaws.com',
     'https://e6ea-124-29-228-160.ngrok-free.app',
-    'https://ec2-18-217-108-10.us-east-2.compute.amazonaws.com',
-    'http://ec2-18-217-108-10.us-east-2.compute.amazonaws.com',
+    'https://ec2-18-217-108-10.compute.amazonaws.com',
+    'http://ec2-18-217-108-10.compute.amazonaws.com',
     'http://18.217.108.10'
 ]
 
@@ -70,8 +70,8 @@ CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
                         'https://al-baseer.alnafi.com',
                         'https://api-al-baseer.alnafi.com',
                         'http://ec2-52-6-12-123.compute-1.amazonaws.com',
-                        'https://ec2-18-217-108-10.us-east-2.compute.amazonaws.com',
-                        'http://ec2-18-217-108-10.us-east-2.compute.amazonaws.com',
+                        'https://ec2-18-217-108-10.compute.amazonaws.com',
+                        'http://ec2-18-217-108-10.compute.amazonaws.com',
                         'http://18.217.108.10',
                         'https://18.217.108.10',
                         'https://e6ea-124-29-228-160.ngrok-free.app']
