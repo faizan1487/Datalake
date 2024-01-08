@@ -178,15 +178,15 @@ import pandas as pd
 from datetime import datetime
 def upload_sales_lead():
     url = 'https://crm.alnafi.com/api/resource/Lead'
-    user_api_key = 'b09d1796de6444a'
-    user_secret_key = '9ac70da03e4c23c'
+    user_api_key = '484f3e9978c00f3'
+    user_secret_key = 'f61de5c03b3935d'
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/waqas.csv')
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/shoaib.csv')
     for index, row in data.iterrows():
         first_name = str(row['First Name'])
         email = str(row['Email'])
