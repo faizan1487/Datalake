@@ -43,12 +43,6 @@ def psw_lead_to_erp(sender, instance, **kwargs):
 def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
     new_alnafi_user = newsignupsignal(instance,sender)
 
-# @receiver(post_save, sender=CvForms)
-# def new_alnafi_payment_signal_exam(sender, instance: CvForms, *args, **kwargs):
-#     # print("exam new alnafi signal running")
-#     fun = data_to_crmforcv(instance)
-    # Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
-
 
 def usersignal(instance,source,sender):
     # print("user signal running")

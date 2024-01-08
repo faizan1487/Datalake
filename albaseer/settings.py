@@ -70,6 +70,16 @@ CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
                         'https://e6ea-124-29-228-160.ngrok-free.app']
 
 
+REST_FRAMEWORK = {
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',
+    ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '1/minute',
+    }
+}
+
+
 CORS_ALLOW_METHODS = [
     "DELETE",
     "GET",

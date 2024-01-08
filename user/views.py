@@ -392,7 +392,6 @@ class GetUsers(APIView):
         product = self.request.GET.get('product', None) or None
         phone = self.request.GET.get('phone', None)
         academy_demo_access = self.request.GET.get('academy_demo_access', None)
-        url = request.build_absolute_uri()
 
         users = search_users(q,start_date,req_end_date,is_converted,source,request,phone,academy_demo_access)
         if users:

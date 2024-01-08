@@ -35,6 +35,7 @@ DEBUG = env('DEBUG',cast=bool)
 def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     model_name = 'new_alnafi'
+    # fun = send_payment_support_module(instance,model_name)
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
 
@@ -45,14 +46,14 @@ def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwa
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    # print("exam new alnafi signal running")
+    print("exam new alnafi signal running")
     model_name = 'new_alnafi'
     # fun = send_payment_exam_module(instance,model_name)
     Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
 
 @receiver(pre_save, sender=AlNafi_Payment)
-def alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
-    # print("alnafi exam signal running")
+def alnafi_payment_signal_exam(sender, instance: AlNafi_Payment, *args, **kwargs):
+    print("alnafi exam signal running")
     model_name = 'alnafi'
     # fun = send_payment_exam_module(instance,model_name)    
     Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
@@ -135,6 +136,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
         # print("support already_existed",already_existed)
     
         if already_existed:
+            print("passing")
             pass
         else:
             # print("in else")
@@ -169,8 +171,13 @@ def send_payment_support_module(instance,model_name, **kwargs):
                     if customer_data is None:
                         return
 
+                    api_key = keys_of_agent[0]
+                    api_secret = keys_of_agent[1]
+
+                    # api_key = '4e7074f890507cb'
+                    # api_secret = 'c954faf5ff73d31'
                     agent_headers = {
-                        'Authorization': f'token {keys_of_agent[0]}:{keys_of_agent[1]}',
+                        'Authorization': f'token {api_key}:{api_secret}',
                         "Content-Type": "application/json",
                         "Accept": "application/json",
                     }
@@ -195,6 +202,8 @@ def send_payment_support_module(instance,model_name, **kwargs):
                     return
 
                 api_key, api_secret = round_robin_support()
+                # api_key = '4e7074f890507cb'
+                # api_secret = 'c954faf5ff73d31'
                 headers = {
                     'Authorization': f'token {api_key}:{api_secret}',
                     "Content-Type": "application/json",
@@ -506,12 +515,14 @@ def new_alnafi_payment_support_data(instance,payment_user,product):
             # print('here')
             # print("new alnafi exam len(product_names)",len(product_names))
             if len(product_names) <= 0:
+                print("returning list exam product")
                 return
 
             product_name = ", ".join(product_names)
             # print("product_name",product_name)
     else:
         if not instance.product_names:
+            print("returning not exam product")
             return
         #handle exam product here too
         if product == 'simple product':
@@ -523,6 +534,7 @@ def new_alnafi_payment_support_data(instance,payment_user,product):
             if 'exam' in instance.product_names or 'Exam' in instance.product_names or 'Exams' in instance.product_names:
                 product_name = instance.product_names
             else:
+                print("returning not list exam product")
                 return
 
     
@@ -846,6 +858,7 @@ def change_lead_status_sales_module(instance,model, **kwargs):
 
 
 def send_payment_exam_module(instance,model_name, **kwargs):
+    print("send_payment_exam_module func running")
 
     if model_name=='alnafi':
         if isinstance(instance.product_name, list):
@@ -873,6 +886,7 @@ def send_payment_exam_module(instance,model_name, **kwargs):
 
             # print("exam new alnafi payment length of product for filtering the product len(product_names)",len(product_names))
             if len(product_names) <= 0:
+                print("product returning")
                 return
 
             product_name = product_names[0] 
@@ -891,6 +905,7 @@ def send_payment_exam_module(instance,model_name, **kwargs):
 
     response = requests.get(url, headers=admin_headers)
     data = response.json()
+    print(data)
     payment_user = Main_User.objects.filter(email__iexact=instance.customer_email)
     if payment_user:
         testing_email = payment_user[0].email
@@ -902,6 +917,7 @@ def send_payment_exam_module(instance,model_name, **kwargs):
         already_existed = len(data["data"]) > 0
     
         if already_existed:
+            print("passing")
             pass
         else:
             url = f'https://crm.alnafi.com/api/resource/Exam 5 6 Leads?fields=["lead_creator"]&filters=[["Exam 5 6 Leads","customer_email","=","{instance.customer_email}"]]'
@@ -914,10 +930,12 @@ def send_payment_exam_module(instance,model_name, **kwargs):
             if already_exist:
                 print("agent already exists")
                 email = data['data'][0]["lead_creator"]
+                print("email",email)
 
                 agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
                             "mehtab.sharif@alnafi.edu.pk": ["6b0bb41dba21795","f56c627e47bdff6"],
                             "haider.raza@alnafi.edu.pk": ["2a1d467717681df","39faa082ac5f258"],
+                            # "Administrator": ['4e7074f890507cb','c954faf5ff73d31']
                             }
                 
                 if email in agents:
@@ -929,6 +947,7 @@ def send_payment_exam_module(instance,model_name, **kwargs):
                     else:
                         customer_data = new_alnafi_payment_support_data(instance, payment_user,product)
                     if customer_data is None:
+                        print("returning customer data agent exists")
                         return
                     customer_data['created_at'] = datetime.today().isoformat()
 
@@ -939,11 +958,14 @@ def send_payment_exam_module(instance,model_name, **kwargs):
                     }
                     customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
                     response = requests.post(customer_url, headers=agent_headers, json=customer_data)
+                    print("post `1", response.json())
                     if response.status_code != 200:
-                        lead_data = response.json()
-                    
+                        print(response.text)
+                    else:
+                        print("lead created agent exists")
+                else:
+                    print("Agent email is not available")        
             else:
-
                 product = 'exam product'
                 if model_name == 'alnafi':
                     customer_data = alnafi_payment_support_data(instance,payment_user,product)
@@ -951,11 +973,14 @@ def send_payment_exam_module(instance,model_name, **kwargs):
                     customer_data = new_alnafi_payment_support_data(instance, payment_user,product)
                 # print("customer data",customer_data)
                 if customer_data is None:
+                    print("returning customer data")
                     return
                 customer_data['created_at'] = datetime.today().isoformat()
                 
 
                 api_key, api_secret = round_robin_exam()
+                # api_key = '4e7074f890507cb'
+                # api_secret = 'c954faf5ff73d31'
                 headers = {
                     'Authorization': f'token {api_key}:{api_secret}',
                     "Content-Type": "application/json",
@@ -963,10 +988,12 @@ def send_payment_exam_module(instance,model_name, **kwargs):
                 }
                 customer_url = 'https://crm.alnafi.com/api/resource/Exam 5 6 Leads'
                 response = requests.post(customer_url, headers=headers, json=customer_data)
+                print(response.json())
+                
                 if response.status_code != 200:
-                    pass
-                    # print(response.text)
+                    # pass
+                    print(response.json())
                 else:
-                    pass
-                    # print("data sent to exam doctype")
+                    # pass
+                    print("data sent to exam doctype")
                     
