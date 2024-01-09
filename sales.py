@@ -141,6 +141,7 @@ def get_data_from_leads():
               "wamiq.siddiqui@alnafi.edu.pk": ["31c85c7e921b270", "845aff8197932c3"],
               "suleman.masroor@alnafi.edu.pk": ["3f6d0f005e4fccc", "bbcaef6140205d2"],
               "sunil.toto@alnafi.edu.pk": ["9d37a29d966277f", "018c3f6127c43cc"],
+              "maarij.najam@alnafi.edu.pk": ["b3bb7a167ec651a", "449cd28cd263361"],
             }
             header_post = {
         "Content-Type": "application/json",
