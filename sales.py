@@ -88,7 +88,7 @@ def get_data_from_leads():
         "Content-Type": "application/json",
         "Accept": "application/json",
     }
-    get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator","first_name", "mobile_no", "source", "product_names_list"]&limit_start=0&limit_page_length=10000000'
+    get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator","first_name", "mobile_no", "source", "product_names_list", "form"]&limit_start=0&limit_page_length=10000000'
 
     # Make the API request
     response = requests.get(get_url, headers=headers)
@@ -147,7 +147,7 @@ def get_data_from_leads():
         "Accept": "application/json",
     }
 
-    fields_to_extract = ['email_id', 'status', 'date', 'mobile_no', 'first_name', 'source', 'product_names_list']
+    fields_to_extract = ['email_id', 'status', 'date', 'mobile_no', 'first_name', 'source', 'product_names_list', 'form']
 
     for lead_creator, leads_list in leads_by_creator.items():
         for lead in leads_list:
