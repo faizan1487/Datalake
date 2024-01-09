@@ -339,9 +339,8 @@ class RenewalPayments(APIView):
         #         payments = payments.distinct()
         #     else:
         #         # If there is only one source, filter payments using that single source
-        #         payments = payments.filter(product__product_plan__iexact=plan)
-        #         # payments = payments.distinct()
-
+        #         payments = payments.filter(product__product_plan=plan)
+        #         payments = payments.distinct()
         # else:
         #     payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
 
@@ -361,24 +360,12 @@ class RenewalPayments(APIView):
                     return obj.isoformat()  # Convert datetime to ISO 8601 format
                 raise TypeError(f"Object of type {type(obj).__name__} is not JSON serializable")
 
-        # print(payments)
-        # users = []
-        # for payment in payments:
-        #     user_info = {
-        #         'user__email': payments.values('user__email'),
-        #         'user__phone': payments.values('user__phone'),
-        #     }
-        #     users.append(user_info)
-
-        # print(users)
 
         users = list(payments.values('user__email','user__phone'))
         products = list(payments.values('product__product_name'))
         payment_list = list(payments.values())  
         for i in range(len(payment_list)):
             try:
-                # payment_list[i]['user_id'] = users[i]['user__email'][0]['user__email']
-                # payment_list[i]['phone'] = users[i]['user__phone'][0]['user__phone']
                 payment_list[i]['user_id'] = users[i]['user__email']
                 payment_list[i]['phone'] = users[i]['user__phone']
                 payment_list[i]['product_id'] = products[i]['product__product_name']
@@ -460,7 +447,6 @@ class ActivePayments(APIView):
         payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(user__email__endswith="yopmail.com").select_related('product').values()
         payments = payments.filter(expiration_datetime__date__gt=date.today())
 
-
         if payments:
             if not start_date:
                 first_payment = min(payments, key=lambda obj: obj['expiration_datetime'])
@@ -474,32 +460,41 @@ class ActivePayments(APIView):
 
             if q:
                 payments = payments.filter(user__email__icontains=q) 
-                # payments = payments.filter(Q(user__email__icontains=q) | Q(amount__iexact=q))            
                 
+
             if product:
-                payments = payments.filter(product__product_name__icontains=product)
+                products_list = product.split(',')
+                if len(products_list) > 1:
+                    payments = payments.filter(product__product_name__in=products_list)
+                else:
+                    payments = payments.filter(product__product_name__in=products_list)
     
+            payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
+        
+            # if plan:
+            #     plans_list = plan.split(',')
+
+            #     if len(plans_list) > 1:
+            #         payments = payments.filter(product__product_plan__in=plans_list)
+            #         payments = payments.distinct()
+            #     else:
+            #         payments = payments.filter(product__product_plan=plan)
+            #         payments = payments.distinct()
+            # else:
+            #     payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
+
             plan_mapping = {
                 'yearly': 'Yearly',
                 'halfyearly': 'Half Yearly',
                 'quarterly': 'Quarterly',
                 'monthly': 'Monthly',
             }
-            
-            #The annotate() function is used to add an extra field payment_cycle to each payment object in the queryset. 
-            # This field represents the uppercase version of the product_plan field of the associated product.
 
-            payments = payments.annotate(payment_cycle=Upper('product__product_plan'))
-            
-            #If the plan is provided and it is not 'all', the queryset is further filtered using
-            # the filter() function. It applies a condition using the Q object, which checks if 
-            # the product_plan is an exact case-insensitive match to the given plan 
-            # or if it matches any plan name from the plan_mapping dictionary.
             if plan:
                 if plan.lower() != 'all':
                     payments = payments.filter(
                         Q(product__product_plan__iexact=plan) | Q(product__product_plan__iexact=plan_mapping.get(plan, ''))
-                    )
+                    )            
             else:
                 payments = payments.exclude(Q(payment_cycle__exact='') | Q(payment_cycle__isnull=True))
 
