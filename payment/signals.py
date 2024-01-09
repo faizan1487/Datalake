@@ -109,6 +109,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
         else:
             product_name = instance.product_name            
     else:
+        print("new alnafi model")
         if isinstance(instance.product_names, list):
             flat_list = [item for sublist in instance.product_names for item in sublist]
             product_name = ", ".join(flat_list)
@@ -140,7 +141,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
             print("passing")
             pass
         else:
-            # print("in else")
+            print("in else")
             url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["lead_creator"]&filters=[["Suppport","customer_email","=","{instance.customer_email}"]]'
 
             response = requests.get(url, headers=admin_headers)
@@ -148,7 +149,9 @@ def send_payment_support_module(instance,model_name, **kwargs):
 
             already_exist = len(data["data"]) > 0
             if already_exist:
+                print("agent already exists")
                 email = data['data'][0]["lead_creator"]
+                print("email",email)
 
 
                 agents = {"zeeshan.mehr@alnafi.edu.pk": ["a17f7cc184a55ec","3e26bf2dde0db20"],
@@ -190,9 +193,12 @@ def send_payment_support_module(instance,model_name, **kwargs):
                     else:
                         # pass
                         print("data for already existed agent sent to support doctype")
+                else:
+                    print("lead assigned to admin")
             
 
             else:
+                print("in else agent")
                 product = 'simple product'
                 if model_name == 'alnafi':
                     customer_data = alnafi_payment_support_data(instance,payment_user,product)
