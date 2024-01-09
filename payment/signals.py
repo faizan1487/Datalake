@@ -31,7 +31,7 @@ DEBUG = env('DEBUG',cast=bool)
 
 
 
-@receiver(pre_save, sender=New_Alnafi_Payments)
+@receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
     model_name = 'new_alnafi'
@@ -44,7 +44,7 @@ def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwa
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
-@receiver(pre_save, sender=New_Alnafi_Payments)
+@receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     print("exam new alnafi signal running")
     model_name = 'new_alnafi'
