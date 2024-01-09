@@ -206,6 +206,7 @@ def send_payment_support_module(instance,model_name, **kwargs):
                     customer_data = new_alnafi_payment_support_data(instance, payment_user,product)
 
                 if customer_data is None:
+                    print("customer data return")
                     return
 
                 api_key, api_secret = round_robin_support()
@@ -510,6 +511,7 @@ def new_alnafi_payment_support_data(instance,payment_user,product):
 
             # print("new alnafi simple len(product_names)",len(product_names))
             if len(product_names) <= 0:
+                print("returning list simple product")
                 return
 
             product_name = ", ".join(product_names)
@@ -534,9 +536,11 @@ def new_alnafi_payment_support_data(instance,payment_user,product):
             return
         #handle exam product here too
         if product == 'simple product':
+            print("instance.product_names",instance.product_names)
             if 'exam' not in instance.product_names and 'Exam' not in instance.product_names:
                 product_name = instance.product_names
             else:
+                print("returning simple product")
                 return
         else:
             if 'exam' in instance.product_names or 'Exam' in instance.product_names or 'Exams' in instance.product_names:
@@ -545,7 +549,7 @@ def new_alnafi_payment_support_data(instance,payment_user,product):
                 print("returning not list exam product")
                 return
 
-    
+
 
 
 
