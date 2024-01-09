@@ -102,6 +102,9 @@ def support_renewal_leads_signal(sender, instance: Renewal, *args, **kwargs):
 
 
 def send_payment_support_module(instance,model_name, **kwargs):
+    if instance.pk is None:
+        return
+     
     print("send_payment_support_module running")    
     if model_name == 'alnafi':     
         if isinstance(instance.product_name, list):
@@ -871,6 +874,8 @@ def change_lead_status_sales_module(instance,model, **kwargs):
 
 def send_payment_exam_module(instance,model_name, **kwargs):
     print("send_payment_exam_module func running")
+    if instance.pk is None:
+        return
 
     if model_name=='alnafi':
         if isinstance(instance.product_name, list):
