@@ -9,8 +9,9 @@ from rest_framework import status
 
 class DailyLead(APIView):
     def post(self, request):
+        print("in post")
         data = request.data
-        print(data)
+        # print(data)
         id = data.get('id')
 
         try:

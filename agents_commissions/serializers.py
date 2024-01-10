@@ -17,6 +17,7 @@ class DailyLeadSerializer(ModelSerializer):
         instance.al_baseer_verify = validated_data.get('al_baseer_verify', instance.al_baseer_verify)
         instance.crm_verify = validated_data.get('crm_verify', instance.crm_verify)
         instance.plan = validated_data.get('plan', instance.plan)
+        instance.source = validated_data.get('source', instance.source)
 
         instance.save()
         return instance

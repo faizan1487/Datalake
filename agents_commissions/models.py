@@ -16,6 +16,7 @@ class Daily_lead(models.Model):
     product = models.CharField(max_length = 101, null=True, blank=True)
     plan = models.CharField(max_length = 101, null=True, blank=True)
     amount = models.CharField(max_length = 101, null=True, blank=True)
+    source = models.CharField(max_length = 101, null=True, blank=True)
     lead_creator = models.CharField(max_length =101, null=True, blank=True)
     al_baseer_verify = models.CharField(max_length =50, null=True, blank=True)
     crm_verify = models.CharField(max_length =50, null=True, blank=True)
