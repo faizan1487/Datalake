@@ -10,17 +10,12 @@ from rest_framework import status
 class DailyLead(APIView):
     def post(self, request):
         data = request.data
-        email = data.get('email')
-        product = data.get('product')
-        amount = data.get('amount')
-        created_at = data.get('created_at')
+        print(data)
+        id = data.get('id')
 
         try:
             instance = Daily_lead.objects.filter(
-                email=email,
-                amount=amount,
-                product=product,
-                created_at=created_at
+                id=id
             )
 
             serializer = DailyLeadSerializer(instance.first(), data=data)

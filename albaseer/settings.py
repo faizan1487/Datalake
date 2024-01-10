@@ -62,7 +62,9 @@ CORS_ALLOWED_ORIGINS = [
     'https://ec2-18-217-108-10.us-east-2.compute.amazonaws.com',
     'http://ec2-18-217-108-10.us-east-2.compute.amazonaws.com',
     'http://18.217.108.10',
-    'https://18.217.108.10'
+    'https://18.217.108.10',
+    'https://ecb4-101-53-236-160.ngrok-free.app',
+    'http://ecb4-101-53-236-160.ngrok-free.app'
 ]
 
 CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
@@ -75,6 +77,8 @@ CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
                         'http://ec2-18-217-108-10.us-east-2.compute.amazonaws.com',
                         'http://18.217.108.10',
                         'https://18.217.108.10',
+                        'https://ecb4-101-53-236-160.ngrok-free.app',
+                        'http://ecb4-101-53-236-160.ngrok-free.app',
                         'https://e6ea-124-29-228-160.ngrok-free.app']
 
 
