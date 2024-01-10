@@ -124,8 +124,7 @@ INSTALLED_APPS = [
     'rangefilter',
     'django_crontab',
 
-
-
+    'agents_commissions.apps.AgentsCommissionsConfig',
     'accounts.apps.AccountsConfig',
     'payment.apps.PaymentConfig',
     'feedback.apps.FeedbackConfig',

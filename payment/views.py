@@ -1720,6 +1720,21 @@ class ExpiryPayments(APIView):
             if product:
                 filtered_payments = filtered_payments.filter(product__product_name__icontains=product)
 
+            # if product:
+            #     products_list = product.split(',')
+            #     # print(products_list)
+            #     # If there is more than one source, filter payments using each source
+            #     if len(products_list) > 1:
+            #         print(products_list)
+            #         filtered_payments = filtered_payments.filter(product__product_name__in=products_list)
+            #         print(filtered_payments)
+
+            #         # payments = payments.distinct()
+            #     else:
+            #         filtered_payments = filtered_payments.filter(product__product_name__in=products_list)
+                    # payments = payments.filter(product__product_name__in=products_list)
+                    # payments = payments.distinct()
+
 
             # Query payments falling within the specified date range for the renewal check
             renewal_payments = Main_Payment.objects.filter(
