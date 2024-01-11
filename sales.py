@@ -112,7 +112,7 @@ def get_data_from_leads():
             for lead in leads:
                 if lead.get('status') == 'Lead' and lead.get('date') is not None:
                     lead_date = datetime.datetime.strptime(lead.get('date'), '%Y-%m-%d').date()
-                    if lead_date == three_days_before and lead.get('lead_creator') != 'haider.raza@alnafi.edu.pk':
+                    if lead_date == three_days_before and lead.get('lead_creator') not in ['haider.raza@alnafi.edu.pk','Administrator']:
                         lead_creator = lead.get('lead_creator')
                         if lead_creator not in leads_by_creator:
                             leads_by_creator[lead_creator] = []
