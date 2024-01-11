@@ -56,6 +56,11 @@ class NewAlnafiPayment(APIView):
         # print(data)
         order_id = data.get('orderId')
         # print(order_id)
+        if data['status'].lower() == 'paid':
+            instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)
+            instance.delete()
+            # print("Deleted")
+            return Response("instance deleted")
 
         try:
             instance = New_Alnafi_Payments.objects.filter(orderId=order_id)            
@@ -76,24 +81,27 @@ class UnpaidNewAlnafiPayment(APIView):
     def post(self, request):
         data = request.data
         order_id = data.get('orderId')
+        # print("data", data)
+        # print("order_id", order_id)
+        # print("status", data['status'])
+        # if data['status'].lower() == 'paid':
+        #     instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)
+        #     instance.delete()
+        #     print("Deleted")
+        #     return Response("instance deleted")
+        # else:
+        try:
+            instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)            
+            serializer = Unpaid_New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
+        except:
+            serializer = Unpaid_New_Al_Nafi_Payments_Serializer(data=data)
 
-        if data['status'] == 'paid':
-            instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)
-            instance.delete()
-            return Response("instance deleted")
-        else:
-            try:
-                instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)            
-                serializer = Unpaid_New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
-            except:
-                serializer = Unpaid_New_Al_Nafi_Payments_Serializer(data=data)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # delete this api before production
