@@ -19,6 +19,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
         "status": instance.status,
         "product": instance.product,
         "plan": instance.plan,
+        "renewal": instance.renewal,
         "amount": instance.amount,
         "source": instance.source,
         "lead_creator": instance.lead_creator,
@@ -68,6 +69,23 @@ def on_lead_saved(sender, instance, created, **kwargs):
             gst_tax = amount*0.05
             total_amount = round(amount-gst_tax)
             print("total", total_amount)
+        if instance.plan == 'Yearly':
+            comission_amount = total_amount*0.07
+            print("Yearly", comission_amount)
+        elif instance.plan == 'Half Yearly':
+            comission_amount = total_amount*0.06
+        elif instance.plan == 'Quaterly':
+            comission_amount = total_amount*0.05
+            print("Quaterly", comission_amount)
+        elif instance.plan == 'Monthly':
+            comission_amount = total_amount*0.04
+            print("Monthly", comission_amount)
+        if instance.renewal == 'True':
+            comission_amount = comission_amount*0.015
+            print("Renewal", comission_amount)
+        else:
+            pass            
+
         url_get = f'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
         api_key = "4e7074f890507cb"
         api_secret = "c954faf5ff73d31"
@@ -89,29 +107,16 @@ def on_lead_saved(sender, instance, created, **kwargs):
                 payload = {
                 "daily_lead_id": instance.id,   
                 "lead_owner": instance.lead_creator, 
-                "earn_pkr_commission": total_amount if instance.source != 'Stripe' else 0,
-                "earn_usd_commission": total_amount if instance.source == 'Stripe' else 0,  
+                "earn_pkr_commission": round(comission_amount) if instance.source != 'Stripe' else 0,
+                "earn_usd_commission": round(comission_amount) if instance.source == 'Stripe' else 0,  
                 "payout_pkr_commission": 0,  
                 "payout_usd_commission": 0, 
                 "balance_pkr_commission": 0, 
                 "balance_usd_commission": 0  
                 }
                 url = "https://crm.alnafi.com/api/resource/Leader Board For Sales"
-                # api_key = "4e7074f890507cb"
-                # api_secret = "c954faf5ff73d31"
-
-                # headers = {
-                #     'Authorization': f'token {api_key}:{api_secret}',
-                #     "Content-Type": "application/json",
-                #     "Accept": "application/json",
-                # }
                 response = requests.post(url, headers=headers, json=payload)
                 print(response.status_code)
                 print(response.text)
     else:
         print("Not Verified")
-
-    # lead_fields = instance._meta.fields
-    # for field in lead_fields:
-    #     field_value = getattr(instance, field.attname)
-    #     print(f"{field.name}: {field_value}")

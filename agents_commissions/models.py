@@ -15,6 +15,7 @@ class Daily_lead(models.Model):
     status = models.CharField(max_length = 101, null=True, blank=True)
     product = models.CharField(max_length = 101, null=True, blank=True)
     plan = models.CharField(max_length = 101, null=True, blank=True)
+    renewal = models.CharField(max_length = 101, null=True, blank=True)
     amount = models.CharField(max_length = 101, null=True, blank=True)
     source = models.CharField(max_length = 101, null=True, blank=True)
     lead_creator = models.CharField(max_length =101, null=True, blank=True)

@@ -13,6 +13,7 @@ class DailyLeadSerializer(ModelSerializer):
         instance.status = validated_data.get('status', instance.status)
         instance.product = validated_data.get('product', instance.product)
         instance.amount = validated_data.get('amount', instance.amount)
+        instance.renewal = validated_data.get('renewal', instance.renewal)
         instance.lead_creator = validated_data.get('lead_creator', instance.lead_creator)
         instance.al_baseer_verify = validated_data.get('al_baseer_verify', instance.al_baseer_verify)
         instance.crm_verify = validated_data.get('crm_verify', instance.crm_verify)
