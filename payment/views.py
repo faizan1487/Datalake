@@ -855,6 +855,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         payments = payments.filter(user__email__icontains=q)
 
     if product:
+        product = product.replace('&', 'and')
         products_list = product.split(',')
         # If there is more than one source, filter payments using each source
         if len(products_list) > 1:
@@ -2430,6 +2431,4 @@ class Roidata(APIView):
             'data': list(paginated_data),
         }
         return JsonResponse(response_data, safe=False)
-        
-        
         
