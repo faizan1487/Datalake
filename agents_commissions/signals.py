@@ -81,7 +81,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
             comission_amount = total_amount*0.04
             # print("Monthly", comission_amount)
         if instance.renewal == 'True':
-            comission_amount = comission_amount*0.015
+            comission_amount = total_amount*0.015
             # print("Renewal", comission_amount)
         else:
             pass            
