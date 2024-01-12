@@ -85,6 +85,8 @@ def on_lead_saved(sender, instance, created, **kwargs):
             # print("Renewal", comission_amount)
         else:
             pass            
+        print("Commission", comission_amount)
+        print("Source", instance.source)
 
         url_get = f'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
         api_key = "4e7074f890507cb"
@@ -100,15 +102,32 @@ def on_lead_saved(sender, instance, created, **kwargs):
 
         if response_get.status_code == 200:
             response_data = json.loads(response_get.text)
-            existing_lead_ids = [lead['daily_lead_id'] for lead in response_data['data']]
-            if instance.id in existing_lead_ids:
-                print(f"Lead ID {instance.id} already exists. Skipping POST request.")
+            existing_lead = next((lead for lead in response_data['data'] if lead['lead_owner'] == instance.lead_creator), None)
+            if existing_lead:
+            # Lead_owner exists, make a PUT request to update the existing record
+                lead_id = existing_lead['name']  # Assuming 'name' is the field that holds the lead ID
+                url_put = f'https://crm.alnafi.com/api/resource/Leader Board For Sales/{lead_id}'
+                existing_earn_pkr = float(existing_lead.get('earn_pkr_commission', 0))
+                existing_earn_usd = float(existing_lead.get('earn_usd_commission', 0))
+                existing_amount = float(existing_lead.get('total_revenue',0))
+                print("Existing", existing_amount)
+                instance_amount = float(instance.amount)
+                payload = {
+                    "earn_pkr_commission": round(comission_amount + existing_earn_pkr) if instance.source != 'Stripe' else existing_earn_pkr,
+                    "earn_usd_commission": round(comission_amount + existing_earn_usd) if instance.source == 'Stripe' else existing_earn_usd,
+                    "total_revenue": round(instance_amount + existing_amount)
+                    # Add other fields you want to update
+                }
+                response_put = requests.put(url_put, headers=headers, json=payload)
+                print(response_put.text)
+                # print("Response", response_put)
             else:
                 payload = {
                 "daily_lead_id": instance.id,   
                 "lead_owner": instance.lead_creator, 
                 "earn_pkr_commission": round(comission_amount) if instance.source != 'Stripe' else 0,
                 "earn_usd_commission": round(comission_amount) if instance.source == 'Stripe' else 0,  
+                "total_revenue": instance.amount,
                 "payout_pkr_commission": 0,  
                 "payout_usd_commission": 0, 
                 "balance_pkr_commission": 0, 
@@ -117,7 +136,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
                 url = "https://crm.alnafi.com/api/resource/Leader Board For Sales"
                 response = requests.post(url, headers=headers, json=payload)
                 # print(response.status_code)
-                # print(response.text)
+                print(response.text)
                 # return response("Done")
     else:
         print("Not Verified")
