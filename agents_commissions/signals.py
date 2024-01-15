@@ -80,6 +80,9 @@ def on_lead_saved(sender, instance, created, **kwargs):
         elif instance.plan == 'Monthly':
             comission_amount = total_amount*0.04
             # print("Monthly", comission_amount)
+        elif instance.plan == 'Easy Pay Program':
+            comission_amount = total_amount*0.02
+            # print("In Elif", comission_amount)
         if instance.renewal == 'True':
             comission_amount = total_amount*0.015
             # print("Renewal", comission_amount)
