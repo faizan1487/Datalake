@@ -19,8 +19,9 @@ class Daily_lead(models.Model):
     amount = models.CharField(max_length = 101, null=True, blank=True)
     source = models.CharField(max_length = 101, null=True, blank=True)
     lead_creator = models.CharField(max_length =101, null=True, blank=True)
-    al_baseer_verify = models.CharField(max_length =50, null=True, blank=True)
-    crm_verify = models.CharField(max_length =50, null=True, blank=True)
+    manager_approval = models.CharField(max_length =50, null=True, blank=True)
+    manager_approval_crm = models.CharField(max_length =50, null=True, blank=True)
+    veriification_cfo = models.CharField(max_length =50, null=True, blank=True)
     created_at = models.CharField(max_length =50, null=True, blank=True)
 
     def __str__(self):

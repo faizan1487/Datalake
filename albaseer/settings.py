@@ -68,8 +68,12 @@ CORS_ALLOWED_ORIGINS = [
     'http://1bb0-2400-adc1-175-d500-9632-d0c7-3713-1f3c.ngrok-free.app',
     'https://1bb0-2400-adc1-175-d500-9632-d0c7-3713-1f3c.ngrok-free.app',
     'https://8043-124-29-228-160.ngrok-free.app',
+<<<<<<< Updated upstream
     'https://5d8a-124-29-228-160.ngrok-free.app',
     'https://c5ff-2400-adc1-175-d500-dd6a-bed2-b024-c8.ngrok-free.app',
+=======
+    'https://298c-2400-adc1-175-d500-244a-b18a-9901-5613.ngrok-free.app',
+>>>>>>> Stashed changes
 ]
 
 CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
@@ -86,8 +90,12 @@ CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
                         'http://ecb4-101-53-236-160.ngrok-free.app',
                         'http://1bb0-2400-adc1-175-d500-9632-d0c7-3713-1f3c.ngrok-free.app',
                         'https://1bb0-2400-adc1-175-d500-9632-d0c7-3713-1f3c.ngrok-free.app',
+<<<<<<< Updated upstream
                         'https://c5ff-2400-adc1-175-d500-dd6a-bed2-b024-c8.ngrok-free.app',
                         ' https://5d8a-124-29-228-160.ngrok-free.app',
+=======
+                        'https://298c-2400-adc1-175-d500-244a-b18a-9901-5613.ngrok-free.app',
+>>>>>>> Stashed changes
                         'https://8043-124-29-228-160.ngrok-free.app',
                         'https://e6ea-124-29-228-160.ngrok-free.app']
 

@@ -29,7 +29,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
     # }
     # print("data", data)
     # print(f"al_baseer_verify: {instance.al_baseer_verify}, crm_verify: {instance.crm_verify}")
-    if instance.al_baseer_verify == 'True' and instance.crm_verify == 'True':
+    if instance.manager_approval == 'True' and instance.manager_approval_crm == 'True' and instance.veriification_cfo == 'True':
         if instance.source == 'Easypaisa':
             amount = float(instance.amount)
             fees = amount*0.0085       #0.0085 = 0.85%
