@@ -28,3 +28,13 @@ class DailyLead(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def delete(self,request):
+        data = request.data
+        id = data.get('id')
+
+        instance = Daily_lead.objects.filter(id=id)
+        instance.delete()
+
+        return Response("deleted")
