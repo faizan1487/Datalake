@@ -85,8 +85,8 @@ def on_lead_saved(sender, instance, created, **kwargs):
             # print("Renewal", comission_amount)
         else:
             pass            
-        print("Commission", comission_amount)
-        print("Source", instance.source)
+        # print("Commission", comission_amount)
+        # print("Source", instance.source)
 
         url_get = f'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
         api_key = "4e7074f890507cb"
@@ -119,7 +119,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
                     # Add other fields you want to update
                 }
                 response_put = requests.put(url_put, headers=headers, json=payload)
-                print(response_put.text)
+                # print(response_put.text)
                 # print("Response", response_put)
             else:
                 payload = {
@@ -136,7 +136,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
                 url = "https://crm.alnafi.com/api/resource/Leader Board For Sales"
                 response = requests.post(url, headers=headers, json=payload)
                 # print(response.status_code)
-                print(response.text)
+                # print(response.text)
                 # return response("Done")
     else:
         print("Not Verified")
