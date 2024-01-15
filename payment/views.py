@@ -876,10 +876,13 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
             payments = payments.distinct()
         else:
             # If there is only one source, filter payments using that single source
-            payments = payments.filter(product__product_plan=plan)
-            payments = payments.distinct()
-
-
+            if plan == 'halfyearly':
+                payments = payments.filter(product__product_plan=plan)
+                payments = payments.distinct()
+            else:
+                payments = payments.filter(product__product_plan=plan)
+                payments = payments.distinct()
+                
     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
     payment_cycle_descriptions = {
         'Monthly': 'Monthly',
