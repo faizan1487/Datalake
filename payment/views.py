@@ -1935,10 +1935,11 @@ class NewPayments(APIView):
 
                 if not len(new_payment) > 1:
                     amount = payment_list[i]['amount']
-                    if payment_list[i]['currency'].lower() != 'pkr':
-                        currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
-                        converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
-                        new_registrations_amount += converted_amount
+                    if payment_list[i]['currency']:
+                        if payment_list[i]['currency'].lower() != 'pkr':
+                            currency_rate = get_pkr_rate(payment_list[i]['currency'],amount)
+                            converted_amount = round(float(amount) / currency_rate[payment_list[i]['currency']],6)
+                            new_registrations_amount += converted_amount
                     else:
                         new_registrations_amount += float(amount)
 
