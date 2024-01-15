@@ -866,6 +866,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
             payments = payments.filter(product__product_name__in=products_list)
             payments = payments.distinct()
 
+    
     if plan:
         # Split the source string into a list if it contains a comma
         plans_list = plan.split(',')
@@ -877,12 +878,12 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         else:
             # If there is only one source, filter payments using that single source
             if plan == 'halfyearly':
-                payments = payments.filter(product__product_plan=plan)
+                payments = payments.filter(product__product_plan='Half Yearly')
                 payments = payments.distinct()
             else:
                 payments = payments.filter(product__product_plan=plan)
                 payments = payments.distinct()
-                
+
     payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
     payment_cycle_descriptions = {
         'Monthly': 'Monthly',
