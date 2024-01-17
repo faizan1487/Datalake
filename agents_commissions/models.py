@@ -26,3 +26,21 @@ class Daily_lead(models.Model):
 
     def __str__(self):
         return f"{self.email}"
+    
+class Daily_Sales_Support(models.Model):
+    id = models.CharField(max_length=255, unique=True,primary_key=True)
+    email = models.EmailField(null=True, blank=True)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    status = models.CharField(max_length = 101, null=True, blank=True)
+    product = models.CharField(max_length = 101, null=True, blank=True)
+    plan = models.CharField(max_length = 101, null=True, blank=True)
+    amount = models.CharField(max_length = 101, null=True, blank=True)
+    source = models.CharField(max_length = 101, null=True, blank=True)
+    lead_creator = models.CharField(max_length =101, null=True, blank=True)
+    manager_approval = models.CharField(max_length =50, null=True, blank=True)
+    manager_approval_crm = models.CharField(max_length =50, null=True, blank=True)
+    veriification_cfo = models.CharField(max_length =50, null=True, blank=True)
+    created_at = models.CharField(max_length =50, null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.email}"
