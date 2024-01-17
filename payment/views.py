@@ -2344,12 +2344,15 @@ class Roidata(APIView):
         start_date_filter = request.GET.get('start_date')
         end_date_filter = request.GET.get('end_date')
         export = request.GET.get('export')
-        # print("export", export)
+        form_filter = request.GET.get('form')
+        # print("form_filter", form_filter)
         # print(status_filter, email_filter, start_date_filter, end_date_filter)
         
         moc_data = Moc_Leads.objects.values('first_name', 'email', 'phone', 'form', 'country', 'login_source', 'created_at__date', 'advert')         
         if email_filter:
             moc_data = moc_data.filter(email=email_filter)
+        if form_filter:
+            moc_data = moc_data.filter(form__icontains=form_filter)
 
         if start_date_filter:
             start_date = datetime.strptime(start_date_filter, "%Y-%m-%d").date()
