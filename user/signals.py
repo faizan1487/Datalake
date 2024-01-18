@@ -189,15 +189,17 @@ def mocLead_Signalto_moc_doctype(instance,source):
         already_existed = False
 
     failed_leads = []
-    already_existed = len(lead_data["data"]) > 0
+    # already_existed = len(lead_data["data"]) > 0
     if not already_existed:
-        if not instance.affiliate_code:
+        if hasattr(instance, 'affiliate_code') and instance.affiliate_code:
             print("mocdoctype signa;")
             try:
                 post_url = 'https://crm.alnafi.com/api/resource/moclead'
                 response = requests.post(post_url, headers=headers, json=data)
                 if response.status_code == 200:
                     print("Lead created successfully!")
+                else:
+                    print(response.text)
 
             except Exception as e:
                 print("Error posting lead data:", str(e))
