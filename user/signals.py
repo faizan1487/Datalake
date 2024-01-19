@@ -39,7 +39,7 @@ def psw_lead_to_erp(sender, instance, **kwargs):
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
 
-@receiver(post_save, sender=New_AlNafi_User)
+# @receiver(post_save, sender=New_AlNafi_User)
 def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
     new_alnafi_user = newsignupsignal(instance,sender)
 

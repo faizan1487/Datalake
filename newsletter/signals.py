@@ -12,7 +12,7 @@ from datetime import datetime
 env = environ.Env()
 env.read_env()
 
-@receiver(post_save, sender=Newsletter)
+# @receiver(post_save, sender=Newsletter)
 def send_lead_post_request(sender, instance, created, **kwargs):
     source= instance.source
     newsletter = usersignal(instance,source)        
