@@ -189,7 +189,6 @@ def mocLead_Signalto_moc_doctype(instance,source):
         already_existed = False
 
     failed_leads = []
-    already_existed = len(lead_data["data"]) > 0
     if not already_existed:
         if not instance.affiliate_code:
             print("mocdoctype signa;")
@@ -225,9 +224,9 @@ def mocLead_Signalto_sale_doctype(instance,source):
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
-        #Shoaib
-        user_api_key = '484f3e9978c00f3'
-        user_secret_key = 'f61de5c03b3935d'
+        #Ribal Shahid
+        user_api_key = '5306bb96b02c8f1'
+        user_secret_key = '362d44b933cef9e'
         # user_api_key, user_secret_key = round_robin()
 
     headers = {
