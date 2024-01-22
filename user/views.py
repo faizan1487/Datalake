@@ -80,6 +80,7 @@ class UploadMocLeads(APIView):
             advert = row['advert']
             # advert = row['advert detail']
 
+
             # created_at = pd.to_datetime(created_at_str, format="%d/%m/%Y %H:%M:%S")
             created_at = pd.to_datetime(created_at_str, format="%Y/%m/%d %H:%M:%S")
             try:

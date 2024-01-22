@@ -16,7 +16,7 @@ env = environ.Env()
 env.read_env()
 DEBUG = env('DEBUG',cast=bool)
 
-@receiver(post_save, sender=AlNafi_User)
+# @receiver(post_save, sender=AlNafi_User)
 def alnafi_lead_to_erp(sender, instance, **kwargs):
     # print("alnafi user signal running")
     # source='Academy Signup'
@@ -118,7 +118,7 @@ def usersignal(instance,source,sender):
           
 
 #############################################################
-# @receiver(post_save, sender=Moc_Leads)
+@receiver(post_save, sender=Moc_Leads)
 def post_request_sale_doctype(sender, instance, created, **kwargs):
     # return
     source=instance.login_source
@@ -225,16 +225,10 @@ def mocLead_Signalto_sale_doctype(instance,source):
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
-        #meeraj
-        # user_api_key = '3da0a250742fa00'
-        # user_secret_key = '5ec8bb8e1e94930'
-        # user_api_key = '4e7074f890507cb'
-        # user_secret_key = 'c954faf5ff73d31'
-        user_api_key, user_secret_key = round_robin()
-    # print(user_api_key)
-    # print(user_secret_key
-
-    # user_api_key, user_secret_key = round_robin()
+        #Shoaib
+        user_api_key = '484f3e9978c00f3'
+        user_secret_key = 'f61de5c03b3935d'
+        # user_api_key, user_secret_key = round_robin()
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
@@ -339,6 +333,7 @@ def mocLead_Signalto_sale_doctype(instance,source):
             else:
                 data['error'] = response.text
                 data['status_code'] = response.status_code
+                print(response.text)
                 failed_leads.append(data)
                 # print(response.text)
         else:
@@ -415,4 +410,3 @@ def newsignupsignal(instance,sender):
             # if response and response.status_code != 200:
             #     print(response.text)
 
- 
