@@ -9,6 +9,7 @@ from secrets_api.algorithem import round_robin
 from albaseer.settings import DEBUG
 from datetime import datetime
 import csv
+import json
 
 
 
@@ -16,7 +17,7 @@ env = environ.Env()
 env.read_env()
 DEBUG = env('DEBUG',cast=bool)
 
-# @receiver(post_save, sender=AlNafi_User)
+@receiver(post_save, sender=AlNafi_User)
 def alnafi_lead_to_erp(sender, instance, **kwargs):
     # print("alnafi user signal running")
     # source='Academy Signup'
@@ -39,7 +40,7 @@ def psw_lead_to_erp(sender, instance, **kwargs):
     source='PSWFormRecords'
     psw_form_user = usersignal(instance,source,sender)
 
-# @receiver(post_save, sender=New_AlNafi_User)
+@receiver(post_save, sender=New_AlNafi_User)
 def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
     new_alnafi_user = newsignupsignal(instance,sender)
 
@@ -49,73 +50,71 @@ def usersignal(instance,source,sender):
     if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
-    else:
-        user_api_key, user_secret_key = round_robin()
 
-    if instance.email.endswith("yopmail.com"):
-        # Admin keys
-        user_api_key = '4e7074f890507cb'
-        user_secret_key = 'c954faf5ff73d31'
-    
-    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
-    
-    headers = {
-        'Authorization': f'token {user_api_key}:{user_secret_key}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
+        if instance.email.endswith("yopmail.com"):
+            # Admin keys
+            user_api_key = '4e7074f890507cb'
+            user_secret_key = 'c954faf5ff73d31'
+        
+        url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+        
+        headers = {
+            'Authorization': f'token {user_api_key}:{user_secret_key}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
 
-    country_code = getattr(instance, 'country', "Unknown")
-    country_name = None
+        country_code = getattr(instance, 'country', "Unknown")
+        country_name = None
 
-    if country_code:
-        for name, code in COUNTRY_CODES.items():
-            if code == country_code:
-                country_name = name
-                break
+        if country_code:
+            for name, code in COUNTRY_CODES.items():
+                if code == country_code:
+                    country_name = name
+                    break
 
 
 
-    # Assuming instance.created_at is a datetime object
-    if hasattr(instance, 'created_at'):
-        date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
-    else:
-        date_joined_str = None
+        # Assuming instance.created_at is a datetime object
+        if hasattr(instance, 'created_at'):
+            date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
+        else:
+            date_joined_str = None
 
-    data = {
-        "first_name": instance.first_name or None,
-        "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
-        "email_id": instance.email or None,
-        "mobile_no": str(instance.phone) if hasattr(instance, 'phone') and instance.phone else '00000000000',
-        "country": country_name,
-        "source": source,
-        "form": instance.form or None,
-        "date": date_joined_str,  # Convert to ISO 8601 string
-        "advert_detail": instance.advert or None,
-        # Add other fields from the Main_User model to the data dictionary as needed
-    }
+        data = {
+            "first_name": instance.first_name or None,
+            "last_name": instance.last_name if hasattr(instance, 'last_name') else None,
+            "email_id": instance.email or None,
+            "mobile_no": str(instance.phone) if hasattr(instance, 'phone') and instance.phone else '00000000000',
+            "country": country_name,
+            "source": source,
+            "form": instance.form or None,
+            "date": date_joined_str,  # Convert to ISO 8601 string
+            "advert_detail": instance.advert or None,
+            # Add other fields from the Main_User model to the data dictionary as needed
+        }
 
-    response = requests.get(url, headers=headers)
-    lead_data = response.json()
-    if 'data' not in lead_data:
-        already_existed = False
-    else:
-        already_existed = len(lead_data["data"]) > 0
-    
+        response = requests.get(url, headers=headers)
+        lead_data = response.json()
+        if 'data' not in lead_data:
+            already_existed = False
+        else:
+            already_existed = len(lead_data["data"]) > 0
+        
 
-    if already_existed:
-        pass
-    else:
-        if not instance.affiliate_code:
-            url = 'https://crm.alnafi.com/api/resource/Lead'
-            lead_data = response.json()
-            response = requests.post(url, headers=headers, json=data)
-            if response.status_code != 200:
-                print("response.status_code",response.text)
-                print("response.status_code",response.status_code)
-            else:
-                print("lead created successfully")
-          
+        if already_existed:
+            pass
+        else:
+            if not instance.affiliate_code:
+                url = 'https://crm.alnafi.com/api/resource/Lead'
+                lead_data = response.json()
+                response = requests.post(url, headers=headers, json=data)
+                if response.status_code != 200:
+                    print("response.status_code",response.text)
+                    print("response.status_code",response.status_code)
+                else:
+                    print("lead created successfully")
+            
 
 #############################################################
 @receiver(post_save, sender=Moc_Leads)
@@ -216,7 +215,6 @@ def mocLead_Signalto_moc_doctype(instance,source):
                     writer.writerow(lead)
         
 
-import json
 
 def mocLead_Signalto_sale_doctype(instance,source):
     # print("mocLead_Signalto_sale_doctype")
@@ -360,52 +358,49 @@ def newsignupsignal(instance,sender):
     if source == 'Academy' or source == 'Academy Signup':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
-    else:
-        user_api_key, user_secret_key = round_robin()
     
+        if instance.email.endswith("yopmail.com"):
+            user_api_key = '4e7074f890507cb'
+            user_secret_key = 'c954faf5ff73d31'
 
-    if instance.email.endswith("yopmail.com"):
-        user_api_key = '4e7074f890507cb'
-        user_secret_key = 'c954faf5ff73d31'
+        url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
 
-    url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
+        headers = {
+            'Authorization': f'token {user_api_key}:{user_secret_key}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
 
-    headers = {
-        'Authorization': f'token {user_api_key}:{user_secret_key}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
+        country_code = getattr(instance, 'country', "Unknown")
+        country_name = None
 
-    country_code = getattr(instance, 'country', "Unknown")
-    country_name = None
+        if country_code:
+            for name, code in COUNTRY_CODES.items():
+                if code == country_code:
+                    country_name = name
+                    break
 
-    if country_code:
-        for name, code in COUNTRY_CODES.items():
-            if code == country_code:
-                country_name = name
-                break
-
-        if hasattr(instance, 'created_at'):
-            date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
-        else:
-            date_joined_str = None
+            if hasattr(instance, 'created_at'):
+                date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                date_joined_str = None
 
 
-        data = {
-                "first_name": instance.first_name or None,
-                "last_name": None,
-                "email_id": instance.email or None,
-                "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
-                "country": country_name,
-                "source": source,
-                "date": str(date_joined_str) if date_joined_str else None,
-                # Add other fields from the Main_User model to the data dictionary as needed
-            }
-        
-        if not instance.affiliate_code:
-            url = 'https://crm.alnafi.com/api/resource/Lead'
-            response = requests.post(url, headers=headers, json=data)
+            data = {
+                    "first_name": instance.first_name or None,
+                    "last_name": None,
+                    "email_id": instance.email or None,
+                    "mobile_no": instance.phone if hasattr(instance, 'phone') else None,
+                    "country": country_name,
+                    "source": source,
+                    "date": str(date_joined_str) if date_joined_str else None,
+                    # Add other fields from the Main_User model to the data dictionary as needed
+                }
+            
+            if not instance.affiliate_code:
+                url = 'https://crm.alnafi.com/api/resource/Lead'
+                response = requests.post(url, headers=headers, json=data)
 
-            # if response and response.status_code != 200:
-            #     print(response.text)
+                # if response and response.status_code != 200:
+                #     print(response.text)
 
