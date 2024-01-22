@@ -118,7 +118,7 @@ def usersignal(instance,source,sender):
           
 
 #############################################################
-@receiver(post_save, sender=Moc_Leads)
+# @receiver(post_save, sender=Moc_Leads)
 def post_request_sale_doctype(sender, instance, created, **kwargs):
     # return
     source=instance.login_source
@@ -225,10 +225,14 @@ def mocLead_Signalto_sale_doctype(instance,source):
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
+        #meeraj
+        # user_api_key = '3da0a250742fa00'
+        # user_secret_key = '5ec8bb8e1e94930'
         # user_api_key = '4e7074f890507cb'
         # user_secret_key = 'c954faf5ff73d31'
         user_api_key, user_secret_key = round_robin()
-
+    # print(user_api_key)
+    # print(user_secret_key
 
     # user_api_key, user_secret_key = round_robin()
 
