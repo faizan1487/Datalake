@@ -59,6 +59,8 @@ class New_AlNafi_User(models.Model):
     is_staff = models.BooleanField(default=False)
     is_active = models.BooleanField(default=False)
     date_joined = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    how_did_you_hear_about_us = models.CharField(max_length=255, null=True, blank=True)
+
 
 
     def _str_(self):
