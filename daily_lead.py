@@ -131,7 +131,7 @@ def upload_leads():
             user_api_key = '31c85c7e921b270'
             user_secret_key = '845aff8197932c3'
             
-        print(f"Iteration: {index}, Using keys: {user_api_key}, {user_secret_key}")
+        # print(f"Iteration: {index}, Using keys: {user_api_key}, {user_secret_key}")
         headers = {
             'Authorization': f'token {user_api_key}:{user_secret_key}',
             "Content-Type": "application/json",
@@ -226,7 +226,7 @@ def upload_leads():
         else:
             # for i in range(1, leads_per_group * len(api_key_groups) + 1):
             post_url = 'https://crm.alnafi.com/api/resource/Lead'
-            print("headers", headers)
+            # print("headers", headers)
             response = requests.post(post_url, headers=headers, json=data)
             # print(response)
             if response.status_code != 200:
