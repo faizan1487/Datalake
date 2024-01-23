@@ -11,7 +11,7 @@ class DailyLead(APIView):
     def post(self, request):
         data = request.data
         id = data.get('id')
-        print("data", data)
+        # print("data", data)
 
         serializer = DailyLeadSerializer(data=data)
         if serializer.is_valid():
@@ -23,7 +23,7 @@ class DailyLead(APIView):
     def put(self, request):
         data = request.data 
         id = data.get('id')
-        print("data", data)
+        # print("data", data)
 
         try:
             instance = Daily_lead.objects.get(id=id)

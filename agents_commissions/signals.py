@@ -10,8 +10,8 @@ from django.dispatch import receiver
 @receiver(post_save, sender=Daily_lead)
 def on_lead_saved(sender, instance, created, **kwargs):
     print("signal running")
-    # if instance.pk is None:
-    #     return
+    if instance.pk is None:
+        return
     # data = {
     #     "id": instance.id,
     #     "email": instance.email,
@@ -123,7 +123,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
                     # Add other fields you want to update
                 }
                 response_put = requests.put(url_put, headers=headers, json=payload)
-                print(response_put.text)
+                # print(response_put.text)
                 # print("Response", response_put)
             else:
                 payload = {
@@ -139,7 +139,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
                 }
                 url = "https://crm.alnafi.com/api/resource/Leader Board For Sales"
                 response = requests.post(url, headers=headers, json=payload)
-                print(response.status_code)
+                # print(response.status_code)
                 # print(response.text)
                 # return response("Done")
     else:
