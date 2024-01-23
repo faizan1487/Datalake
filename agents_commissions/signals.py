@@ -146,7 +146,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
         print("Not Verified")
 
 @receiver(post_save, sender=Daily_Sales_Support)
-def on_lead_saved(sender, instance, created, **kwargs):
+def on_support_saved(sender, instance, created, **kwargs):
     # print("signal running")
     if instance.pk is None:
         return
