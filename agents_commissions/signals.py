@@ -10,8 +10,8 @@ from django.dispatch import receiver
 @receiver(post_save, sender=Daily_lead)
 def on_lead_saved(sender, instance, created, **kwargs):
     print("signal running")
-    if instance.pk is None:
-        return
+    # if instance.pk is None:
+    #     return
     # data = {
     #     "id": instance.id,
     #     "email": instance.email,
