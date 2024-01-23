@@ -117,7 +117,7 @@ def usersignal(instance,source,sender):
             
 
 #############################################################
-@receiver(post_save, sender=Moc_Leads)
+# @receiver(post_save, sender=Moc_Leads)
 def post_request_sale_doctype(sender, instance, created, **kwargs):
     # return
     source=instance.login_source
