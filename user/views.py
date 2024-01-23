@@ -2,6 +2,9 @@ from threading import Thread
 from django.shortcuts import render
 from django.utils.encoding import smart_bytes
 from rest_framework.views import APIView
+from django.utils import timezone
+
+
 from rest_framework.response import Response
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.core.mail import EmailMultiAlternatives
@@ -1261,3 +1264,30 @@ class GetDataCV(APIView):
 
 
 #         return Response({"msg":"done"})
+
+class ExportDataAPIView(APIView):
+    def get(self, request):
+        # Get data based on the created_at condition
+        start_time = timezone.make_aware(datetime(2024, 1, 22, 10, 0, 0))  # Make datetime aware of timezone
+        end_time = timezone.now()
+        
+        filtered_data = Main_User.objects.filter(
+            created_at__range=(start_time, end_time),
+        ).exclude(internal_source__in=["Academy Signup", "Academy"]).exclude(source="Islamic Academy")
+
+        if not filtered_data:
+            return Response({"msg": "No data found."})
+
+        # Prepare data for CSV
+        with open('filtered_data.csv', 'a', newline='') as csvfile:
+            fieldnames = [field.name for field in Main_User._meta.fields]
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+            if csvfile.tell() == 0:
+                writer.writeheader()
+
+            for data in filtered_data:
+                row_data = {field: str(getattr(data, field)) for field in fieldnames}
+                writer.writerow(row_data)
+
+        return Response({"msg": "done"})
