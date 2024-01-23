@@ -12,7 +12,7 @@ env.read_env()
 api_key = env("FRAPPE_API_KEY")
 api_secret = env("FRAPPE_API_SECRET")
 
-@receiver(post_save, sender=Contacts)
+# @receiver(post_save, sender=Contacts)
 def send_lead_post_request(sender, instance, created, **kwargs):
     # return
     source='Chatwoot'
