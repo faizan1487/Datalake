@@ -63,6 +63,8 @@ class NewAlnafiUserSerializer(serializers.ModelSerializer):
     instance.easypaisa_number = validated_data.get('easypaisa_number', instance.easypaisa_number)
     instance.affiliate_code = validated_data.get('affiliate_code', instance.affiliate_code)
     instance.created_at = validated_data.get('created_at', instance.created_at)
+    instance.how_did_you_hear_about_us = validated_data.get('how_did_you_hear_about_us', instance.how_did_you_hear_about_us)
+
     
     instance.save()
     return instance
