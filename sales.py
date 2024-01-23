@@ -131,10 +131,6 @@ import pandas as pd
 #                         print(response.text)
 #             post_url = 'https://crm.alnafi.com/api/resource/Lead'
 #             keys ={
-<<<<<<< Updated upstream
-=======
-#                "muzammil.raees@alnafi.edu.pk": ["b6d818ef8024f5a", "ce1749a7dcf8577"],
->>>>>>> Stashed changes
 #                 "ribal.shahid@alnafi.edu.pk": ["39d14c9d602fa09", "216de0a015e7fd1"],
 #                "waqas.shah@alnafi.edu.pk": ["b09d1796de6444a", "9ac70da03e4c23c"],
 #                "shoaib.akhtar@alnafi.edu.pk": ["484f3e9978c00f3", "f61de5c03b3935d"],
