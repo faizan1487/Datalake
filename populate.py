@@ -7,8 +7,8 @@ import random
 from datetime import date, datetime, timedelta
 
 # Set up Django environment
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albaseer.settings")  # Replace with your project's settings module
-django.setup()
+# os.environ.setdefault("DJANGO_SETTINGS_MODULE", "albaseer.settings")  # Replace with your project's settings module
+# django.setup()
 
 # # Import your model
 # from payment.models import Main_Payment  # Replace 'your_app' with the name of your Django app
@@ -1055,8 +1055,8 @@ import pandas as pd
 #=======================================================================================
 
 
-from numpy import nan, source
-from secrets_api.algorithem import round_robin_support, round_robin
+# from numpy import nan, source
+# from secrets_api.algorithem import round_robin_support, round_robin
 
 # Script to import easy pay leads
 
@@ -1207,4 +1207,24 @@ def support_easy_pay_leads():
         #         for lead in failed_leads:
         #             writer.writerow(lead)
 
-support_easy_pay_leads()
+# support_easy_pay_leads()
+                    
+
+
+
+
+
+
+import pandas as pd
+
+# Load your CSV file into a DataFrame
+df = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/filtered_data.csv')
+
+# Assuming your columns are named 'First Name' and 'Last Name'
+df['full_name'] = df['first_name'] + ' ' + df['last_name']
+
+# Remove duplicate rows based on the 'Full Name' column
+df.drop_duplicates(subset=['email'], keep='first', inplace=True)
+
+# Save the updated DataFrame (without duplicates) back to a CSV file
+df.to_csv('output_file_no_duplicates.csv', index=False)

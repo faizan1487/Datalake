@@ -10,7 +10,7 @@ from albaseer.settings import DEBUG
 from datetime import datetime
 import csv
 import json
-
+import pandas as pd
 
 
 env = environ.Env()
@@ -123,7 +123,7 @@ def post_request_sale_doctype(sender, instance, created, **kwargs):
     source=instance.login_source
     Moc_Leads = mocLead_Signalto_sale_doctype(instance,source)   
 
-@receiver(post_save, sender=Moc_Leads)
+# @receiver(post_save, sender=Moc_Leads)
 def post_request_moc_doctype(sender, instance, created, **kwargs):
     # return
     source=instance.login_source
@@ -137,6 +137,9 @@ def alnafi_lead_to_moc_doctype(sender, instance, **kwargs):
     source = instance.login_source
     alnafi_user = mocLead_Signalto_moc_doctype(instance,source)    
 
+
+import math  # Import math for handling nan
+
 def mocLead_Signalto_moc_doctype(instance,source):
     # print("mocdoctype signa;")
     api_key = '351b6479c5a4a16'
@@ -148,18 +151,24 @@ def mocLead_Signalto_moc_doctype(instance,source):
     }
 
     country_code = getattr(instance, 'country', "Unknown")
-    if country_code:
+    print("country_code",country_code)
+
+    if math.isnan(country_code):
         country_name = None
-        if len(country_code) <= 2:
-            if country_code:
-                for name, code in COUNTRY_CODES.items():
-                    if code == country_code:
-                        country_name = name
-                        break
-        else:
-            country_name = country_code
     else:
-        country_name = "Unknown"
+        if country_code:
+            country_name = None
+            if len(country_code) <= 2:
+                if country_code:
+                    for name, code in COUNTRY_CODES.items():
+                        if code == country_code:
+                            country_name = name
+                            break
+            else:
+                country_name = country_code
+        else:
+            country_name = "Unknown"
+    
     data = {
             "name1": instance.first_name or None,
             "first_name": instance.first_name or None,
@@ -175,6 +184,8 @@ def mocLead_Signalto_moc_doctype(instance,source):
             "created_at": instance.created_at.isoformat() or None,
             # Add other fields from the Main_User model to the data dictionary as needed
         }
+    
+    print(data)
 
 
     url = f'https://crm.alnafi.com/api/resource/moclead?fields=["name","email"]&filters=[["moclead","email","=","{instance.email}"]]'
@@ -189,7 +200,8 @@ def mocLead_Signalto_moc_doctype(instance,source):
 
     failed_leads = []
     if not already_existed:
-        if not instance.affiliate_code:
+        if hasattr(instance, 'affiliate_code') and not instance.affiliate_code:
+
             print("mocdoctype signa;")
             try:
                 post_url = 'https://crm.alnafi.com/api/resource/moclead'
@@ -222,10 +234,15 @@ def mocLead_Signalto_sale_doctype(instance,source):
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
-        #Saad  5
-        user_api_key = 'e31afcb884def7e'
-        user_secret_key = 'cb799e6913b57f9'
+        #	
+        user_api_key = '5306bb96b02c8f1'
+        user_secret_key = '362d44b933cef9e'
         # user_api_key, user_secret_key = round_robin()
+
+        #admin keys
+        # user_api_key = '4e7074f890507cb'
+        # user_secret_key = 'c954faf5ff73d31'
+        
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
@@ -249,10 +266,11 @@ def mocLead_Signalto_sale_doctype(instance,source):
         country_name = "Unknown"
 
 
-    if hasattr(instance, 'created_at'):
+    if hasattr(instance, 'created_at') and instance.created_at is not None:
         date_joined_str = instance.created_at.strftime('%Y-%m-%d %H:%M:%S')
     else:
-        date_joined_str = None      
+        date_joined_str = None
+
         
 
     data = {
@@ -270,7 +288,12 @@ def mocLead_Signalto_sale_doctype(instance,source):
             "date": str(date_joined_str) if date_joined_str else None,
             "advert_detail": instance.advert or None,
         }
-   
+    
+    for key, value in data.items():
+        if pd.isna(value):
+            data[key] = None
+    
+
     url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
     response = requests.get(url, headers=headers)
 
@@ -330,7 +353,8 @@ def mocLead_Signalto_sale_doctype(instance,source):
             else:
                 data['error'] = response.text
                 data['status_code'] = response.status_code
-                print(response.text)
+                print("response.text",response.text)
+                print("status code",response.status_code)
                 failed_leads.append(data)
                 # print(response.text)
         else:
