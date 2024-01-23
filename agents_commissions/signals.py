@@ -9,7 +9,7 @@ from django.dispatch import receiver
 
 @receiver(post_save, sender=Daily_lead)
 def on_lead_saved(sender, instance, created, **kwargs):
-    print("signal running")
+    # print("signal running")
     if instance.pk is None:
         return
     # data = {
@@ -30,7 +30,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
     # print("data", data)
     # print(f"al_baseer_verify: {instance.al_baseer_verify}, crm_verify: {instance.crm_verify}")
     if instance.manager_approval.lower() == 'true' and instance.manager_approval_crm.lower() == 'true' and instance.veriification_cfo.lower() == 'true':
-        print("in condition")
+        # print("in condition")
         if instance.source == 'Easypaisa':
             amount = float(instance.amount)
             fees = amount*0.0085       #0.0085 = 0.85%
