@@ -25,9 +25,9 @@ admin.site.register(Marketing_PKR_Form, Marketing_PKR_Admin)
 
 # For MainSite Users:
 class AlnafiUserAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.ModelAdmin):
-    list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'phone', 'created_at','login_source','form', 'address', 'country', 'language', 'verification_code', 'isAffiliate', 'how_did_you_hear_about_us', 'affiliate_code', 'isMentor')
+    list_display = ('id', 'username', 'first_name', 'last_name', 'email', 'phone', 'created_at','academy_demo_access','login_source','form', 'address', 'country', 'language', 'verification_code', 'isAffiliate', 'how_did_you_hear_about_us', 'affiliate_code', 'isMentor')
     search_fields = ('id', 'username', 'email', 'phone','form','login_source')
-    list_filter = ('created_at', 'isAffiliate', 'isMentor','login_source', 'language', 'country')
+    list_filter = ('created_at', 'isAffiliate', 'isMentor','login_source','academy_demo_access')
 
 admin.site.register(AlNafi_User, AlnafiUserAdmin)
 
@@ -106,4 +106,5 @@ class CvFormAdmin(admin.ModelAdmin):
     list_filter = ('first_name', 'last_name', 'email', 'cnic_no')
     search_fields = ('first_name', 'last_name', 'email')
     list_per_page = 100
+
 admin.site.register(CvForms, CvFormAdmin)

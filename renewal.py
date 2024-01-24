@@ -11,7 +11,7 @@ def post_data_for_academy_renewal():
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Academy renewal.csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Renewal Leads - Al Baseer to CRM - Near To Expiry - Academy.csv')
     for index, row in data.iterrows():
         first_name = row['name']
         user_id = row['email']
@@ -43,6 +43,8 @@ def post_data_for_academy_renewal():
         response = requests.post(url, headers=headers, json=renewal)
         print(response.status_code)
         print(response.text)
+
+
 
 post_data_for_academy_renewal()
 

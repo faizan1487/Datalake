@@ -87,7 +87,6 @@ def search_users(q, start_date, req_end_date, is_converted,source,request,phone,
     if academy_demo_access:
         users = users.filter(academy_demo_access=academy_demo_access)
     
-    
     if users:
         if not start_date:
             first_user = users.exclude(created_at=None).last()

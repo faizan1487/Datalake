@@ -797,6 +797,9 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source__contains='dlocal')
     )
 
+
+    # print(payments)
+
     if status:
         payments = payments.filter(status=status)
     
@@ -850,6 +853,8 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         return payments
     else:
         payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
+
+    # print(payments)
 
     if q:
         payments = payments.filter(user__email__icontains=q)
