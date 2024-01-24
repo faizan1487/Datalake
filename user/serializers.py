@@ -14,10 +14,10 @@ from django.contrib.auth.models import Group
 class AlnafiUserSerializer(serializers.ModelSerializer):
     class Meta:
         model = AlNafi_User
-        fields = ('username','first_name','last_name','email','phone','isAffiliate','isMentor','country','created_at','affiliate_code','login_source')
+        fields = ('username','first_name','last_name','email','phone','isAffiliate','isMentor','country','created_at','affiliate_code','login_source','academy_demo_access')
 
     def update(self, instance, validated_data):
-      print("in update serializer")
+      # print("in update serializer")
       instance.username = validated_data.get('username', instance.username)
       instance.first_name = validated_data.get('first_name', instance.first_name)
       instance.last_name = validated_data.get('last_name', instance.last_name)
@@ -33,6 +33,7 @@ class AlnafiUserSerializer(serializers.ModelSerializer):
       instance.isMentor = validated_data.get('isMentor', instance.isMentor)
       instance.login_source = validated_data.get('login_source', instance.login_source)
       instance.created_at = validated_data.get('created_at', instance.created_at)
+      instance.academy_demo_access = validated_data.get('academy_demo_access', instance.academy_demo_access)
 
       instance.save()
       return instance
