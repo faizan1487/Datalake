@@ -1272,26 +1272,54 @@ class GetDataCV(APIView):
 class ExportDataAPIView(APIView):
     def get(self, request):
         # Get data based on the created_at condition
-        start_time = timezone.make_aware(datetime(2024, 1, 22, 10, 0, 0))  # Make datetime aware of timezone
+        start_time = timezone.make_aware(datetime(2024, 1, 23, 10, 0, 0))  
         end_time = timezone.now()
         
         filtered_data = Main_User.objects.filter(
             created_at__range=(start_time, end_time),
-        ).exclude(internal_source__in=["Academy Signup", "Academy"]).exclude(source="Islamic Academy")
-
+        ).exclude(
+            internal_source__in=["Academy Signup", "Academy"],
+            source="Islamic Academy"
+        ).exclude(
+            email__endswith="@yopmail.com"
+        ).exclude(
+            email__contains="yopmail.com"
+        ).values(
+            'first_name',
+            'last_name',
+            'email',
+            'country',
+            'source',
+            'created_at',
+            'phone',
+        )
         if not filtered_data:
             return Response({"msg": "No data found."})
 
         # Prepare data for CSV
         with open('filtered_data.csv', 'a', newline='') as csvfile:
             fieldnames = [field.name for field in Main_User._meta.fields]
+            fieldnames.remove('first_name')
+            fieldnames.remove('last_name')
+            fieldnames.append('full_name')
+            fieldnames = list(set(fieldnames))
+            fieldnames.insert(fieldnames.index('email') + 1, 'full_name')
+            
             writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
             if csvfile.tell() == 0:
                 writer.writeheader()
 
+            unique_emails = set()  # Keep track of unique emails
+
             for data in filtered_data:
-                row_data = {field: str(getattr(data, field)) for field in fieldnames}
-                writer.writerow(row_data)
+                # Concatenate "first_name" and "last_name" into a single "full_name" field
+                data.full_name = f'{data.first_name} {data.last_name}'
+
+                # Ensure uniqueness for the "email" field
+                if data.email not in unique_emails:
+                    row_data = {field: str(getattr(data, field)) for field in fieldnames}
+                    writer.writerow(row_data)
+                    unique_emails.add(data.email)
 
         return Response({"msg": "done"})
