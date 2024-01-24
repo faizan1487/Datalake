@@ -1,7 +1,7 @@
 import sys
 import os
 
-sys.path.append('/home/faizan/albaseer/Al-Baseer-Backend')  # Add your project directory
+sys.path.append('/home/faizan/albaseer/Al-Baseer-Backend')
 
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'albaseer.settings')
 

@@ -5,13 +5,13 @@ from datetime import date
 
 
 # Your API endpoint to fetch data
-# url = "https://stageapi.alnafi.com/pay/expiry_data/"
-url = "http://127.0.0.1:8000/pay/expiry_data/"
+url = "https://api.alnafi.com/pay/expiry_data/"
+# url = "http://127.0.0.1:8000/pay/expiry_data/"
 
 # Fetch data from the API
 response = requests.get(url)
 data = response.json()
-print(data)  
+# print(data)  
 
 url = 'https://crm.alnafi.com/api/resource/Renewal Leads'
 user_api_key = '2a1d467717681df'
@@ -39,7 +39,7 @@ for entry in data:
     }
 
     response = requests.post(url, headers=headers, json=serial_data)
-    print(response.text)
+    # print(response.text)
     if response.status_code == 200:
         print('Data successfully sent!')
     else:
