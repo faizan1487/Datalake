@@ -8,6 +8,7 @@ import random
 import csv
 import django
 import json
+import math
 from datetime import date, datetime, timedelta
 import pandas as pd
 
@@ -158,7 +159,7 @@ def upload_leads():
             date_joined_str = None
         data = {
             "first_name": full_name or None,
-            "last_name": None,  # Assuming last_name is not available in your CSV or DataFrame
+            "last_name": None,  
             "email_id": email or None,
             "mobile_no": str(phone) if phone else None,
             "country": country_name,
@@ -168,8 +169,8 @@ def upload_leads():
             "interest": None,  
             "qualification": None,  
             "date_joined": str(date_joined_str) if date_joined_str else None,
-            "date": str(date_joined_str) if date_joined_str else None,
-            "advert_detail": advert or None,
+            "date": str(datetime.now().date()),
+            "advert_detail": None if isinstance(advert, float) and math.isnan(advert) else advert,
         }
 
 
@@ -242,7 +243,7 @@ def upload_leads():
                     failed_leads.append(data)
                     # print(response.text)
             else:
-                print(f"sale doctype signa; lead created successfully {email}")
+                print(f"sale doctype signal; lead created successfully {email}")
 
         if failed_leads:
             with open('failed_affiliate_from_signal.csv', 'a', newline='') as csvfile:
