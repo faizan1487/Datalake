@@ -20,7 +20,7 @@ django.setup()
 from user.models import Moc_Leads
 
 def upload_leads():
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Facebook.csv')
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/filtered_data.csv')
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []

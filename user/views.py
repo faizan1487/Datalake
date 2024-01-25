@@ -1283,15 +1283,7 @@ class ExportDataAPIView(APIView):
         ).exclude(
             email__endswith="@yopmail.com"
         ).exclude(
-            email__contains="yopmail.com"
-        ).values(
-            'first_name',
-            'last_name',
-            'email',
-            'country',
-            'source',
-            'created_at',
-            'phone',
+            email__contains="youpmail.com"
         )
         if not filtered_data:
             return Response({"msg": "No data found."})

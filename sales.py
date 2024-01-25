@@ -334,50 +334,50 @@ import requests
 
 
 #### Script For Saving Lead in Csv ##
-def get_and_save_all_lead_data():
-    user_api_key = '4e7074f890507cb'
-    user_secret_key = 'c954faf5ff73d31'
+# def get_and_save_all_lead_data():
+#     user_api_key = '4e7074f890507cb'
+#     user_secret_key = 'c954faf5ff73d31'
     
-    headers = {
-        'Authorization': f'token {user_api_key}:{user_secret_key}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
+#     headers = {
+#         'Authorization': f'token {user_api_key}:{user_secret_key}',
+#         "Content-Type": "application/json",
+#         "Accept": "application/json",
+#     }
 
-    # Construct the URL to get leads
-    get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator","first_name", "mobile_no", "source", "product_names_list", "form", "advert_detail"]&limit_start=0&limit_page_length=10000000'
+#     # Construct the URL to get leads
+#     get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator","first_name", "mobile_no", "source", "product_names_list", "form", "advert_detail"]&limit_start=0&limit_page_length=10000000'
 
-    # Make the API request
-    response = requests.get(get_url, headers=headers)
-    # print(response.text)
+#     # Make the API request
+#     response = requests.get(get_url, headers=headers)
+#     # print(response.text)
 
-    if response.status_code == 200:
-        leads_data = response.json()
+#     if response.status_code == 200:
+#         leads_data = response.json()
 
-        if 'data' in leads_data:
-            leads = leads_data['data']
+#         if 'data' in leads_data:
+#             leads = leads_data['data']
 
-            filtered_leads = [
-                lead for lead in leads
-                if lead.get('status') == 'Lead'
-            ]
-            print("Data", len(filtered_leads))
-            # print("Data", filtered_leads)
-            # csv_file_path = 'Lead_with_status_lead.csv'
+#             filtered_leads = [
+#                 lead for lead in leads
+#                 if lead.get('status') == 'Lead'
+#             ]
+#             print("Data", len(filtered_leads))
+#             # print("Data", filtered_leads)
+#             # csv_file_path = 'Lead_with_status_lead.csv'
 
-            # with open(csv_file_path, mode='w', newline='') as csv_file:
-            #     fieldnames = filtered_leads[0].keys() if filtered_leads else []
-            #     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+#             # with open(csv_file_path, mode='w', newline='') as csv_file:
+#             #     fieldnames = filtered_leads[0].keys() if filtered_leads else []
+#             #     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
 
-            #     writer.writeheader()
+#             #     writer.writeheader()
 
-            #     writer.writerows(filtered_leads)
+#             #     writer.writerows(filtered_leads)
 
-            # print(f"Filtered leads data saved to {csv_file_path}")
-            for lead in filtered_leads:
-                email = lead.get('email_id')
-                delete_url = f'https://crm.alnafi.com/api/resource/Lead/{email}'
-                response = requests.delete(delete_url, headers=headers)
-                print(f"Lead with email {email} deleted. Response: {response.text}")
+#             # print(f"Filtered leads data saved to {csv_file_path}")
+#             for lead in filtered_leads:
+#                 email = lead.get('email_id')
+#                 delete_url = f'https://crm.alnafi.com/api/resource/Lead/{email}'
+#                 response = requests.delete(delete_url, headers=headers)
+#                 print(f"Lead with email {email} deleted. Response: {response.text}")
 
-get_and_save_all_lead_data()
+# get_and_save_all_lead_data()
