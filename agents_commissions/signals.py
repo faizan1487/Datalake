@@ -219,12 +219,14 @@ def on_support_saved(sender, instance, created, **kwargs):
                 existing_earn_pkr = float(existing_lead.get('earn_pkr_commission', 0))
                 existing_earn_usd = float(existing_lead.get('earn_usd_commission', 0))
                 existing_amount = float(existing_lead.get('total_revenue',0))
+                existing_usd_revenue = float(existing_lead.get('total_usd_revenue', 0))
                 # print("Existing", existing_amount)
                 instance_amount = float(instance.amount)
                 payload = {
-                    "earn_pkr_commission": round(comission_amount + existing_earn_pkr) if instance.source != 'Stripe' else existing_earn_pkr,
-                    "earn_usd_commission": round(comission_amount + existing_earn_usd) if instance.source == 'Stripe' else existing_earn_usd,
-                    "total_revenue": round(instance_amount + existing_amount)
+                    "earn_pkr_commission": round(comission_amount + existing_earn_pkr) if instance.source not in ['Stripe', 'dlocal'] else existing_earn_pkr,
+                    "earn_usd_commission": round(comission_amount + existing_earn_usd) if instance.source in ['Stripe', 'dlocal'] else existing_earn_usd,
+                    "total_revenue": round(instance_amount + existing_amount) if instance.source not in ['Stripe', 'dlocal'] else existing_amount,
+                    "total_usd_revenue": round(instance_amount + existing_usd_revenue) if instance.source in ['Stripe', 'dlocal'] else existing_usd_revenue,
                     # Add other fields you want to update
                 }
                 response_put = requests.put(url_put, headers=headers, json=payload)
@@ -232,9 +234,10 @@ def on_support_saved(sender, instance, created, **kwargs):
                 payload = {
                 "daily_lead_id": instance.id,   
                 "lead_owner": instance.lead_creator, 
-                "earn_pkr_commission": round(comission_amount) if instance.source != 'Stripe' else 0,
-                "earn_usd_commission": round(comission_amount) if instance.source == 'Stripe' else 0,  
-                "total_revenue": instance.amount,
+                "earn_pkr_commission": round(comission_amount) if instance.source not in ['Stripe', 'dlocal'] else 0,
+                "earn_usd_commission": round(comission_amount) if instance.source in ['Stripe', 'dlocal'] else 0,  
+                "total_revenue": instance.amount if instance.source not in ['Stripe', 'dlocal'] else 0,
+                "total_usd_revenue": instance.amount if instance.source in ['Stripe', 'dlocal'] else 0,
                 "payout_pkr_commission": 0,  
                 "payout_usd_commission": 0, 
                 "balance_pkr_commission": 0, 
