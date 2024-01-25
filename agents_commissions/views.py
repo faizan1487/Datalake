@@ -72,16 +72,12 @@ class DailySalesSupport(APIView):
     
     def delete(self, request):
         data = request.data
-        # print("data", data)
+        print("data", data)
         id = data.get('id')
 
         try:
             instance = Daily_Sales_Support.objects.get(id=id)
             instance.delete()
-            # print("Deleted")
-            return Response("Deleted", status=status.HTTP_204_NO_CONTENT)
+            return Response("deleted")
         except Daily_Sales_Support.DoesNotExist:
-            return Response("Not Found", status=status.HTTP_404_NOT_FOUND)
-        except Exception as e:
-            # print(f"Error: {e}")
-            return Response(str(e), status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
