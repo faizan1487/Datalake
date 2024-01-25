@@ -188,42 +188,42 @@ def upload_leads():
         failed_leads = []
         if already_existed:
             # print("already exists")
-            auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
-            enrollment_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/enrollment-user/'
-            auth_headers = {
-                "Content-Type": "application/json",
-                "Accept": "application/json",
-            }
-            query_parameters = {
-                "email": lead_data['data'][0]['email_id']  # Replace with the actual email you want to send
-            }
-            demo_user = requests.get(auth_url, headers=auth_headers, params=query_parameters)
-            enrollment_user = requests.get(enrollment_url, headers=auth_headers, params=query_parameters)
+            # auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
+            # enrollment_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/enrollment-user/'
+            # auth_headers = {
+            #     "Content-Type": "application/json",
+            #     "Accept": "application/json",
+            # }
+            # query_parameters = {
+            #     "email": lead_data['data'][0]['email_id']  # Replace with the actual email you want to send
+            # }
+            # demo_user = requests.get(auth_url, headers=auth_headers, params=query_parameters)
+            # enrollment_user = requests.get(enrollment_url, headers=auth_headers, params=query_parameters)
 
-            if demo_user.status_code == 200:
-                demo_data = demo_user.json()
-                data['demo_product'] = demo_data['product_name']
+            # if demo_user.status_code == 200:
+            #     demo_data = demo_user.json()
+            #     data['demo_product'] = demo_data['product_name']
 
-            if enrollment_user.status_code == 200:
-                enrollment_data = enrollment_user.json()
-                if len(enrollment_data['enrollments']) > 1:
-                    data['enrollment'] = enrollment_data['product_name']
+            # if enrollment_user.status_code == 200:
+            #     enrollment_data = enrollment_user.json()
+            #     if len(enrollment_data['enrollments']) > 1:
+            #         data['enrollment'] = enrollment_data['product_name']
 
-            email_id = lead_data['data'][0]['email_id']
-            url = f'https://crm.alnafi.com/api/resource/Lead/{email_id}'
-            # print(data)
-            response = requests.put(url, headers=headers, json=data)
-            if response.status_code != 200:
-                response_data = json.loads(response.text)
-                if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
-                    pass
-                else:
-                    # print(response.text)
-                    data['error'] = response.text
-                    data['status_code'] = response.status_code
-                    failed_leads.append(data)
-            else:
-                print(f"updated {email}")
+            # email_id = lead_data['data'][0]['email_id']
+            # url = f'https://crm.alnafi.com/api/resource/Lead/{email_id}'
+            # # print(data)
+            # response = requests.put(url, headers=headers, json=data)
+            # if response.status_code != 200:
+            #     response_data = json.loads(response.text)
+            #     if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
+            #         pass
+            #     else:
+            #         # print(response.text)
+            #         data['error'] = response.text
+            #         data['status_code'] = response.status_code
+            #         failed_leads.append(data)
+            # else:
+            print(f"Already Exist {email}")
         else:
             # for i in range(1, leads_per_group * len(api_key_groups) + 1):
             post_url = 'https://crm.alnafi.com/api/resource/Lead'
@@ -235,6 +235,7 @@ def upload_leads():
                 response_data = json.loads(response.text)
                 # print("response_data", response_data)
                 if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
+                    print(f'This {email} Is Already There')
                     pass
                 else:
                     data['error'] = response.text
@@ -246,7 +247,7 @@ def upload_leads():
                 print(f"sale doctype signal; lead created successfully {email}")
 
         if failed_leads:
-            with open('failed_affiliate_from_signal.csv', 'a', newline='') as csvfile:
+            with open('failed_lead_from_script.csv', 'a', newline='') as csvfile:
                 fieldnames = failed_leads[0].keys()
                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
 
