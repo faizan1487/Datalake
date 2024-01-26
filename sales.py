@@ -176,40 +176,42 @@ import pandas as pd
 
 ### For Single Lead Upload To Someone ######
 from datetime import datetime
-# def upload_sales_lead():
-#     url = 'https://crm.alnafi.com/api/resource/Lead'
-#     user_api_key = '484f3e9978c00f3'
-#     user_secret_key = 'f61de5c03b3935d'
+def upload_sales_lead():
+    url = 'https://crm.alnafi.com/api/resource/Lead'
+    user_api_key = 'b3bb7a167ec651a'
+    user_secret_key = '449cd28cd263361'
 
-#     headers = {
-#         'Authorization': f'token {user_api_key}:{user_secret_key}',
-#         'Content-Type': 'application/json',
-#         'Accept': 'application/json',
-#     }
-#     data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/shoaib.csv')
-#     for index, row in data.iterrows():
-#         first_name = str(row['First Name'])
-#         email = str(row['Email'])
-#         phone = str(row['Phone'])
-#         source = str(row['Source'])
-#         status = str(row['Status'])
-#         form = str(row['Form'])
-#         date = datetime.now().date().isoformat()
-#         print(source)
-#         lead = {
-#             'first_name': first_name,
-#             'email_id': email,
-#             'source': source,
-#             'status': status,
-#             'phone': phone,
-#             'form': form,
-#             'date' : date,
-#         }
-#         print("lead", lead)
-#         response = requests.post(url, headers=headers, json=lead)
-#         print(response.status_code)
-#         print(response.text)
-# upload_sales_lead()
+    headers = {
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Special.csv')
+    for index, row in data.iterrows():
+        first_name = str(row['First Name'])
+        email = str(row['Email'])
+        phone = str(row['Phone'])
+        source = str(row['Source'])
+        status = 'Lead'
+        form = str(row['Form'])
+        advert = str(row['Advert'])
+        date = datetime.now().date().isoformat()
+        print(source)
+        lead = {
+            'first_name': first_name,
+            'email_id': email,
+            'source': source,
+            'status': status,
+            'phone': phone,
+            'advert': advert,
+            'form': form,
+            'date' : date,
+        }
+        print("lead", lead)
+        response = requests.post(url, headers=headers, json=lead)
+        print(response.status_code)
+        print(response.text)
+upload_sales_lead()
 
 ### For Creating Files Of Particular Sales Member ####
 import csv
