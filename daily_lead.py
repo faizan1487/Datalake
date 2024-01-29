@@ -20,7 +20,7 @@ django.setup()
 from user.models import Moc_Leads
 
 def upload_leads():
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/filtered_data.csv')
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/29 jaN LEADS.csv')
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
@@ -96,7 +96,7 @@ def upload_leads():
             user_api_key = 'e31afcb884def7e'
             user_secret_key = 'cb799e6913b57f9'
         elif index >= 80 and index < 120:
-            # Meeraj Keys
+            # Marij Keys
             user_api_key = 'b3bb7a167ec651a'
             user_secret_key = '449cd28cd263361'
         elif index >= 120 and index < 160:
@@ -223,6 +223,9 @@ def upload_leads():
             #         data['status_code'] = response.status_code
             #         failed_leads.append(data)
             # else:
+            # with open('update_leads.csv', 'a', newline='') as csvfile:
+            #     fieldnames = failed_leads[0].keys()
+            #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             print(f"Already Exist {email}")
         else:
             # for i in range(1, leads_per_group * len(api_key_groups) + 1):

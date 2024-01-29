@@ -178,8 +178,8 @@ import pandas as pd
 from datetime import datetime
 def upload_sales_lead():
     url = 'https://crm.alnafi.com/api/resource/Lead'
-    user_api_key = 'b3bb7a167ec651a'
-    user_secret_key = '449cd28cd263361'
+    user_api_key = '5306bb96b02c8f1'
+    user_secret_key = '362d44b933cef9e'
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
