@@ -402,7 +402,7 @@ def deduct_from_leader_board_support(sender, instance, **kwargs):
                 # print("total", total_amount)
             comission_amount = total_amount*0.02
             # print("amont", amount_to_deduct)
-            url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
+            url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Support?fields=["*"]'
             api_key = "4e7074f890507cb"
             api_secret = "c954faf5ff73d31"
             headers = {
@@ -428,7 +428,7 @@ def deduct_from_leader_board_support(sender, instance, **kwargs):
                             payload["earn_pkr_commission"] = max(round(float(lead_entry.get('earn_pkr_commission', 0)) - comission_amount), 0)
                             payload["total_revenue"] = max(round(float(lead_entry.get('total_revenue', 0)) - amount_to_deduct), 0)
                         # print("payload", payload)
-                        url_put = f'https://crm.alnafi.com/api/resource/Leader Board For Sales/{lead_entry["name"]}'
+                        url_put = f'https://crm.alnafi.com/api/resource/Leader Board For Support/{lead_entry["name"]}'
                         response_put = requests.put(url_put, headers=headers, json=payload)
                         if response_put.status_code != 200:
                             print(f"Failed to update Leader Board: {response_put.status_code}")
