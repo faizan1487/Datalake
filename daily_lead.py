@@ -188,6 +188,7 @@ def upload_leads():
         failed_leads = []
         if already_existed:
             # print("already exists")
+            # # print("already exists")
             # auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
             # enrollment_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/enrollment-user/'
             # auth_headers = {
@@ -227,6 +228,7 @@ def upload_leads():
             #     fieldnames = failed_leads[0].keys()
             #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             print(f"Already Exist {email}")
+            print(f"updated {email}")
         else:
             # for i in range(1, leads_per_group * len(api_key_groups) + 1):
             post_url = 'https://crm.alnafi.com/api/resource/Lead'
@@ -259,6 +261,8 @@ def upload_leads():
 
                 for lead in failed_leads:
                     writer.writerow(lead)
+
+
 upload_leads()
 
 

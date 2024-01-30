@@ -42,6 +42,6 @@ urlpatterns = [
     path("navbar/", Navbar.as_view(), name='navbar'),
     path("cv_form/", CvFormsApi.as_view()),
     path("cv_data/", GetDataCV.as_view()),
-    path("export_data/", ExportDataAPIView.as_view()),
+    path("export_data/", ExportDataAPIView.as_view(), name='export-new-main-site-sign-up'),
     # path('users/<int:pk>/', UserDetail.as_view(), name='user-detail'),
 ]

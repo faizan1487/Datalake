@@ -178,15 +178,39 @@ import pandas as pd
 from datetime import datetime
 def upload_sales_lead():
     url = 'https://crm.alnafi.com/api/resource/Lead'
-    user_api_key = '5306bb96b02c8f1'
-    user_secret_key = '362d44b933cef9e'
+    # user_api_key = '5306bb96b02c8f1'
+    # user_secret_key = '362d44b933cef9e'
+
+    #waqas
+    # user_api_key = 'b09d1796de6444a'
+    # user_secret_key = '9ac70da03e4c23c'
+
+    # @wamiq
+    # user_api_key = '31c85c7e921b270'
+    # user_secret_key = '845aff8197932c3'
+    
+    # Marij Keys
+    # user_api_key = 'b3bb7a167ec651a'
+    # user_secret_key = '449cd28cd263361'
+
+    # Saad Bhai Keys
+    # user_api_key = 'e31afcb884def7e'
+    # user_secret_key = 'cb799e6913b57f9'
+
+    #sunil
+    # user_api_key = '9d37a29d966277f'
+    # user_secret_key = '018c3f6127c43cc'
+
+    # Ribal Keys
+    user_api_key = '39d14c9d602fa09'
+    user_secret_key = '216de0a015e7fd1'
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Special.csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Special.csv')
     for index, row in data.iterrows():
         first_name = str(row['First Name'])
         email = str(row['Email'])
