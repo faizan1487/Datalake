@@ -20,7 +20,7 @@ django.setup()
 from user.models import Moc_Leads
 
 def upload_leads():
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/29 jaN LEADS.csv')
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Special.csv')
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
@@ -186,7 +186,9 @@ def upload_leads():
             already_existed = False
 
         failed_leads = []
+        updated_leads = []
         if already_existed:
+            updated_leads.append(data)
             # print("already exists")
             # # print("already exists")
             # auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
@@ -224,9 +226,9 @@ def upload_leads():
             #         data['status_code'] = response.status_code
             #         failed_leads.append(data)
             # else:
-            # with open('update_leads.csv', 'a', newline='') as csvfile:
-            #     fieldnames = failed_leads[0].keys()
-            #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            with open('update_leads.csv', 'a', newline='') as csvfile:
+                fieldnames = updated_leads[0].keys()
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
             print(f"Already Exist {email}")
             print(f"updated {email}")
         else:

@@ -81,3 +81,16 @@ class DailySalesSupport(APIView):
             return Response("deleted")
         except Daily_Sales_Support.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+class ResaveLeadsAPIView(APIView):
+    def get(self, request):
+        # Retrieve leads with lead_creator as 'administrator'
+        leads = Daily_Sales_Support.objects.filter(lead_creator='haider.raza@alnafi.edu.pk')
+
+        # Iterate over the leads and re-save them
+        for lead in leads:
+            # You may need to handle any specific logic for re-saving here
+            # For example, modifying fields before re-saving
+            lead.save()
+
+        # Return a response indicating success
+        return Response({"message": "Leads re-saved successfully."})

@@ -72,7 +72,7 @@ CORS_ALLOWED_ORIGINS = [
     'https://c5ff-2400-adc1-175-d500-dd6a-bed2-b024-c8.ngrok-free.app',
     'https://fe25-2400-adc1-175-d500-af5b-a4c-9b94-2340.ngrok-free.app',
     'https://fd13-2400-adc1-175-d500-8e67-9ff0-a654-6784.ngrok-free.app',
-    'https://6163-2400-adc1-175-d500-262-7800-23df-3ef5.ngrok-free.app',
+    'https://bc65-2400-adc1-175-d500-bdf8-9150-8ee2-b154.ngrok-free.app',
 ]
 
 CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
@@ -92,7 +92,7 @@ CSRF_TRUSTED_ORIGINS = ['https://stage-api-al-baseer.alnafi.com',
                         'https://c5ff-2400-adc1-175-d500-dd6a-bed2-b024-c8.ngrok-free.app',
                         'https://fe25-2400-adc1-175-d500-af5b-a4c-9b94-2340.ngrok-free.app',
                         'https://fd13-2400-adc1-175-d500-8e67-9ff0-a654-6784.ngrok-free.app',
-                        'https://6163-2400-adc1-175-d500-262-7800-23df-3ef5.ngrok-free.app',
+                        'https://bc65-2400-adc1-175-d500-bdf8-9150-8ee2-b154.ngrok-free.app',
                         'https://5d8a-124-29-228-160.ngrok-free.app',
                         'https://8043-124-29-228-160.ngrok-free.app',
                         'https://e6ea-124-29-228-160.ngrok-free.app']
