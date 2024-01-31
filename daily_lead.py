@@ -173,6 +173,9 @@ def upload_leads():
             "advert_detail": None if isinstance(advert, float) and math.isnan(advert) else advert,
         }
 
+        for key, value in data.items():
+            if pd.isna(value):
+                data[key] = None
 
         url = 'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{}"]]'.format(row['email'])
 
