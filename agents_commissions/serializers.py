@@ -14,6 +14,7 @@ class DailyLeadSerializer(ModelSerializer):
         instance.product = validated_data.get('product', instance.product)
         instance.amount = validated_data.get('amount', instance.amount)
         instance.renewal = validated_data.get('renewal', instance.renewal)
+        instance.is_exam_fee = validated_data.get('is_exam_fee', instance.is_exam_fee)
         instance.lead_creator = validated_data.get('lead_creator', instance.lead_creator)
         instance.manager_approval = validated_data.get('manager_approval', instance.manager_approval)
         instance.manager_approval_crm = validated_data.get('manager_approval_crm', instance.manager_approval_crm)

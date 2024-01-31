@@ -71,25 +71,28 @@ def on_lead_saved(sender, instance, created, **kwargs):
             gst_tax = amount*0.05
             total_amount = round(amount-gst_tax)
             # print("total", total_amount)
-        if instance.plan == 'Yearly':
-            comission_amount = total_amount*0.07
-            # print("Yearly", comission_amount)
-        elif instance.plan == 'Half Yearly':
-            comission_amount = total_amount*0.06
-        elif instance.plan == 'Quaterly':
-            comission_amount = total_amount*0.05
-            # print("Quaterly", comission_amount)
-        elif instance.plan == 'Monthly':
-            comission_amount = total_amount*0.04
-            # print("Monthly", comission_amount)
-        elif instance.plan == 'Easy Pay Program':
-            comission_amount = total_amount*0.02
-            # print("In Elif", comission_amount)
-        if instance.renewal == 'True':
-            comission_amount = total_amount*0.015
-            # print("Renewal", comission_amount)
+        if instance.is_exam_fee.lower() == 'true':
+            comission_amount = total_amount*0
         else:
-            pass            
+            if instance.plan == 'Yearly':
+                comission_amount = total_amount*0.07
+                # print("Yearly", comission_amount)
+            elif instance.plan == 'Half Yearly':
+                comission_amount = total_amount*0.06
+            elif instance.plan == 'Quaterly':
+                comission_amount = total_amount*0.05
+                # print("Quaterly", comission_amount)
+            elif instance.plan == 'Monthly':
+                comission_amount = total_amount*0.04
+                # print("Monthly", comission_amount)
+            elif instance.plan == 'Easy Pay Program':
+                comission_amount = total_amount*0.02
+                # print("In Elif", comission_amount)
+            if instance.renewal == 'True':
+                comission_amount = total_amount*0.015
+                # print("Renewal", comission_amount)
+            else:
+                pass            
         # print("Commission", comission_amount)
         # print("Source", instance.source)
 
