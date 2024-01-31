@@ -299,7 +299,10 @@ def on_support_saved(sender, instance, created, **kwargs):
             gst_tax = amount*0.05
             total_amount = round(amount-gst_tax)
             # print("total", total_amount)
-        comission_amount = total_amount*0.02
+        if instance.is_exam_fee.lower() == 'true':
+            comission_amount = total_amount*0
+        else:
+            comission_amount = total_amount*0.02
         # print('comission', comission_amount)
         url_get = f'https://crm.alnafi.com/api/resource/Leader Board For Support?fields=["*"]'
         api_key = "4e7074f890507cb"
