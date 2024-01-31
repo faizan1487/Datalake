@@ -159,6 +159,7 @@ INSTALLED_APPS = [
     'affiliate.apps.AffiliateConfig',
     "corsheaders",
     "secrets_api",
+    'elasticapm.contrib.django',
 ]
 
 CRONJOBS = [
@@ -185,6 +186,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
+    'elasticapm.contrib.django.middleware.TracingMiddleware'
 ]
 
 if DEBUG:
@@ -457,3 +459,11 @@ AWS_ACCESS_KEY_ID = env("EMAIL_AWS_ACCESS_KEY_ID")
 # MAIL_PASSWORD=env("MAIL_PASSWORD")
 # MAIL_ENCRYPTION=env("MAIL_ENCRYPTION")
 # MAIL_FROM_ADDRESS=env("MAIL_FROM_ADDRESS")
+
+
+ELASTIC_APM = {
+   'SERVICE_NAME': env('SERVICE_NAME'),
+   'SECRET_TOKEN': env('SECRET_TOKEN'),
+   'SERVER_URL':env('SERVER_URL'),
+   'ENVIRONMENT': env('ENVIRONMENT')
+}

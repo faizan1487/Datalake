@@ -154,7 +154,7 @@ class o_level_leads_moc_model(APIView):
             created_at_str = row['created_at']
             assigned_date = row['assigned_date']
             advert = row["advert"]
-
+            
             assigned_date = datetime.strptime(assigned_date, '%d %b %Y')
             formatted_date = assigned_date.strftime('%Y-%m-%d')
 
