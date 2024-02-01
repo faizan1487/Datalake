@@ -21,6 +21,7 @@ class DailyLeadSerializer(ModelSerializer):
         instance.veriification_cfo = validated_data.get('veriification_cfo', instance.veriification_cfo)
         instance.plan = validated_data.get('plan', instance.plan)
         instance.source = validated_data.get('source', instance.source)
+        instance.support = validated_data.get('support', instance.support)
 
         instance.save()
         return instance

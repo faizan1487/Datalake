@@ -71,9 +71,6 @@ def on_lead_saved(sender, instance, created, **kwargs):
             gst_tax = amount*0.05
             total_amount = round(amount-gst_tax)
             # print("total", total_amount)
-
-
-
         
         if instance.is_exam_fee.lower() == 'true':
             comission_amount = total_amount*0
@@ -230,7 +227,7 @@ def deduct_from_leader_board(sender, instance, **kwargs):
                 if instance.renewal == 'True':
                     comission_amount = total_amount*0.015
 
-                    
+
             # print("amont", amount_to_deduct)
             url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
             api_key = "4e7074f890507cb"
@@ -369,6 +366,11 @@ def on_support_saved(sender, instance, created, **kwargs):
                 # return response("Done")
     else:
         print("Not Verified")
+
+
+
+
+
 @receiver(post_save, sender=Daily_Sales_Support)
 def deduct_from_leader_board_support(sender, instance, **kwargs):
     # print("signal running")
