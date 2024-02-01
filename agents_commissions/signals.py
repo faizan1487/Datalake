@@ -71,8 +71,14 @@ def on_lead_saved(sender, instance, created, **kwargs):
             gst_tax = amount*0.05
             total_amount = round(amount-gst_tax)
             # print("total", total_amount)
+
+
+
+        
         if instance.is_exam_fee.lower() == 'true':
             comission_amount = total_amount*0
+        elif instance.support.lower() == 'true':
+            comission_amount = total_amount*0.02
         else:
             if instance.plan == 'Yearly':
                 comission_amount = total_amount*0.07
