@@ -156,6 +156,8 @@ def on_lead_saved(sender, instance, created, **kwargs):
                 # return response("Done")
     else:
         print("Not Verified")
+
+
 @receiver(post_save, sender=Daily_lead)
 def deduct_from_leader_board(sender, instance, **kwargs):
     # print("signal running")
@@ -261,6 +263,8 @@ def deduct_from_leader_board(sender, instance, **kwargs):
                             print(f"Failed to update Leader Board: {response_put.text}")
         except Exception as e:
             print(f"Error occurred while deducting from Leader Board: {str(e)}")
+
+
 
 @receiver(post_save, sender=Daily_Sales_Support)
 def on_support_saved(sender, instance, created, **kwargs):
