@@ -209,22 +209,28 @@ def deduct_from_leader_board(sender, instance, **kwargs):
                 gst_tax = amount*0.05
                 total_amount = round(amount-gst_tax)
                 # print("total", total_amount)
-            if instance.plan == 'Yearly':
-                comission_amount = total_amount*0.07
-                # print("Yearly", comission_amount)
-            elif instance.plan == 'Half Yearly':
-                comission_amount = total_amount*0.06
-            elif instance.plan == 'Quaterly':
-                comission_amount = total_amount*0.05
-                # print("Quaterly", comission_amount)
-            elif instance.plan == 'Monthly':
-                comission_amount = total_amount*0.04
-                # print("Monthly", comission_amount)
-            elif instance.plan == 'Easy Pay Program':
+
+            if instance.support.lower() == 'true':
                 comission_amount = total_amount*0.02
-                # print("In Elif", comission_amount)
-            if instance.renewal == 'True':
-                comission_amount = total_amount*0.015
+            else:
+                if instance.plan == 'Yearly':
+                    comission_amount = total_amount*0.07
+                    # print("Yearly", comission_amount)
+                elif instance.plan == 'Half Yearly':
+                    comission_amount = total_amount*0.06
+                elif instance.plan == 'Quaterly':
+                    comission_amount = total_amount*0.05
+                    # print("Quaterly", comission_amount)
+                elif instance.plan == 'Monthly':
+                    comission_amount = total_amount*0.04
+                    # print("Monthly", comission_amount)
+                elif instance.plan == 'Easy Pay Program':
+                    comission_amount = total_amount*0.02
+                    # print("In Elif", comission_amount)
+                if instance.renewal == 'True':
+                    comission_amount = total_amount*0.015
+
+                    
             # print("amont", amount_to_deduct)
             url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
             api_key = "4e7074f890507cb"
