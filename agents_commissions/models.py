@@ -23,6 +23,7 @@ class Daily_lead(models.Model):
     manager_approval = models.CharField(max_length =50, null=True, blank=True)
     manager_approval_crm = models.CharField(max_length =50, null=True, blank=True)
     veriification_cfo = models.CharField(max_length =50, null=True, blank=True)
+    support = models.CharField(max_length =50, null=True, blank=True)
     created_at = models.CharField(max_length =50, null=True, blank=True)
 
     def __str__(self):
