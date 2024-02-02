@@ -16,6 +16,7 @@ class DailyLead(APIView):
         serializer = DailyLeadSerializer(data=data)
         if serializer.is_valid():
             # print(serializer)
+            print("is valid")
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -24,7 +25,7 @@ class DailyLead(APIView):
     def put(self, request):
         data = request.data 
         id = data.get('id')
-        # print("data", data)
+        print("data", data)
 
         try:
             instance = Daily_lead.objects.get(id=id)
@@ -33,6 +34,7 @@ class DailyLead(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if serializer.is_valid():
+            print("update is valid")
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
