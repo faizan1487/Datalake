@@ -15,6 +15,7 @@ class DailyLead(APIView):
 
         serializer = DailyLeadSerializer(data=data)
         if serializer.is_valid():
+            # print(serializer)
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -54,25 +55,32 @@ class DailySalesSupport(APIView):
         data = request.data
         # print(data)
         id = data.get('id')
-
-        try:
-            instance = Daily_Sales_Support.objects.filter(
-                id=id
-            )
-
-            serializer = DailySalesSupportSerializer(instance.first(), data=data)
-        except:
-            serializer = DailySalesSupportSerializer(data=data)
+        serializer = DailySalesSupportSerializer(data=data)
 
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
+    def put(self, request):
+        data = request.data 
+        id = data.get('id')
+        # print("data", data)
+
+        try:
+            instance = Daily_Sales_Support.objects.get(id=id)
+            serializer = DailyLeadSerializer(instance, data=data)
+        except Daily_Sales_Support.DoesNotExist:
+            return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     def delete(self, request):
         data = request.data
-        print("data", data)
+        # print("data", data)
         id = data.get('id')
 
         try:
