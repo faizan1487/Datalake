@@ -65,12 +65,12 @@ class DailySalesSupport(APIView):
     def put(self, request):
         data = request.data 
         id = data.get('id')
-        # print("data", data)
+        print("data", data)
 
         try:
             instance = Daily_Sales_Support.objects.get(id=id)
-            serializer = DailyLeadSerializer(instance, data=data)
-        except Daily_Sales_Support.DoesNotExist:
+            serializer = DailySalesSupportSerializer(instance, data=data)
+        except DailySalesSupportSerializer.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if serializer.is_valid():
@@ -85,7 +85,9 @@ class DailySalesSupport(APIView):
 
         try:
             instance = Daily_Sales_Support.objects.get(id=id)
+            print(instance)
             instance.delete()
+            print("deleted")
             return Response("deleted")
         except Daily_Sales_Support.DoesNotExist:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
