@@ -419,7 +419,10 @@ def on_support_saved(sender, instance, created, **kwargs):
             gst_tax = amount*0.05
             total_amount = round(amount-gst_tax)
             # print("total", total_amount)
-        if instance.is_exam_fee.lower() == 'true':
+
+
+            
+        if instance.is_exam_fee is not None and instance.is_exam_fee.lower() == 'true':
             comission_amount = total_amount*0
         else:
             comission_amount = total_amount*0.02

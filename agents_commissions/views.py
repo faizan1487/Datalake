@@ -99,7 +99,7 @@ class DailySalesSupport(APIView):
 class ResaveLeadsAPIView(APIView):
     def get(self, request):
         # Retrieve leads with lead_creator as 'administrator'
-        leads = Daily_lead.objects.all()
+        leads = Daily_Sales_Support.objects.all()
 
         # Iterate over the leads and re-save them
         for lead in leads:
