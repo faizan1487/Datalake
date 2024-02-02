@@ -163,7 +163,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
 def deduct_from_leader_board(sender, instance, **kwargs):
     # print("signal running")
     # print("veriification_cfo", instance.veriification_cfo)
-    if instance.veriification_cfo == 'Deduct Commission Due Some Cause' or instance.delete():
+    if instance.veriification_cfo == 'Deduct Commission Due Some Cause':
         try:
             lead_creator = instance.lead_creator
             # print("instance.lead_creator",  lead_creator)
