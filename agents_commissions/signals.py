@@ -29,7 +29,8 @@ def on_lead_saved(sender, instance, created, **kwargs):
     # }
     # print("data", data)
     # print(f"al_baseer_verify: {instance.al_baseer_verify}, crm_verify: {instance.crm_verify}")
-    if instance.manager_approval == 'True' and instance.manager_approval_crm == 'True' and instance.veriification_cfo == 'True':
+    # print(instance.completely_verified)
+    if instance.manager_approval == 'True' and instance.manager_approval_crm == 'True' and instance.veriification_cfo == 'True' and instance.completely_verified == '1':
         # print("in condition")
         if instance.source == 'Easypaisa':
             amount = float(instance.amount)
@@ -378,7 +379,7 @@ def on_support_saved(sender, instance, created, **kwargs):
     # print("signal running")
     if instance.pk is None:
         return
-    if instance.manager_approval == 'True' and instance.manager_approval_crm == 'True' and instance.veriification_cfo == 'True':
+    if instance.manager_approval == 'True' and instance.manager_approval_crm == 'True' and instance.veriification_cfo == 'True' and instance.completely_verified == '1':
         if instance.source == 'Easypaisa':
             amount = float(instance.amount)
             fees = amount*0.0085       #0.0085 = 0.85%

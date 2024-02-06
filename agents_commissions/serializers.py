@@ -21,6 +21,7 @@ class DailyLeadSerializer(ModelSerializer):
         instance.veriification_cfo = validated_data.get('veriification_cfo', instance.veriification_cfo)
         instance.plan = validated_data.get('plan', instance.plan)
         instance.source = validated_data.get('source', instance.source)
+        instance.completely_verified =  validated_data.get("completely_verified", instance.completely_verified)
         instance.support = validated_data.get('support', instance.support)
 
         instance.save()
@@ -42,6 +43,7 @@ class DailySalesSupportSerializer(ModelSerializer):
         instance.manager_approval_crm = validated_data.get('manager_approval_crm', instance.manager_approval_crm)
         instance.veriification_cfo = validated_data.get('veriification_cfo', instance.veriification_cfo)
         instance.plan = validated_data.get('plan', instance.plan)
+        instance.completely_verified =  validated_data.get("completely_verified", instance.completely_verified)
         instance.source = validated_data.get('source', instance.source)
 
         instance.save()
