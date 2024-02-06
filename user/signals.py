@@ -285,7 +285,7 @@ def mocLead_Signalto_sale_doctype(instance,source):
             "interest": instance.interest or None,
             "qualification": instance.qualification or None,
             "date_joined": str(date_joined_str) if date_joined_str else None,
-            "date": str(date_joined_str) if date_joined_str else None,
+            "date": datetime.now().date().isoformat(),
             "advert_detail": instance.advert or None,
         }
     
