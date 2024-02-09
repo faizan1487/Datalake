@@ -29,8 +29,6 @@ env.read_env()
 # api_secret = env("FRAPPE_API_SECRET")
 DEBUG = env('DEBUG',cast=bool)
 
-
-
 @receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")

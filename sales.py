@@ -174,68 +174,103 @@ import pandas as pd
 # get_data_from_leads()
 
 
+
+#--------------------------------========================================
+
+#upload single individual agent leads lead
+
 ### For Single Lead Upload To Someone ######
 from datetime import datetime
-# def upload_sales_lead():
-#     url = 'https://crm.alnafi.com/api/resource/Lead'
+
+
+
+def upload_sales_lead():
+    url = 'https://crm.alnafi.com/api/resource/Lead'
+
     # user_api_key = '5306bb96b02c8f1'
     # user_secret_key = '362d44b933cef9e'
 
-    #waqas
+    # waqas
     # user_api_key = 'b09d1796de6444a'
     # user_secret_key = '9ac70da03e4c23c'
 
-    # @wamiq
+    # # @wamiq
     # user_api_key = '31c85c7e921b270'
     # user_secret_key = '845aff8197932c3'
     
-    # Marij Keys
+    # # Marij Keys
     # user_api_key = 'b3bb7a167ec651a'
     # user_secret_key = '449cd28cd263361'
 
-    # Saad Bhai Keys
+    # # Saad Keys
     # user_api_key = 'e31afcb884def7e'
     # user_secret_key = 'cb799e6913b57f9'
 
-    #sunil
+    # sunil
     # user_api_key = '9d37a29d966277f'
     # user_secret_key = '018c3f6127c43cc'
 
     # Ribal Keys
-#     user_api_key = '39d14c9d602fa09'
-#     user_secret_key = '216de0a015e7fd1'
+    # user_api_key = '39d14c9d602fa09'
+    # user_secret_key = '216de0a015e7fd1'
 
-#     headers = {
-#         'Authorization': f'token {user_api_key}:{user_secret_key}',
-#         'Content-Type': 'application/json',
-#         'Accept': 'application/json',
-#     }
-#     data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Special.csv')
-#     for index, row in data.iterrows():
-#         first_name = str(row['First Name'])
-#         email = str(row['Email'])
-#         phone = str(row['Phone'])
-#         source = str(row['Source'])
-#         status = 'Lead'
-#         form = str(row['Form'])
-#         advert = str(row['Advert'])
-#         date = datetime.now().date().isoformat()
-#         print(source)
-#         lead = {
-#             'first_name': first_name,
-#             'email_id': email,
-#             'source': source,
-#             'status': status,
-#             'phone': phone,
-#             'advert': advert,
-#             'form': form,
-#             'date' : date,
-#         }
-#         print("lead", lead)
-#         response = requests.post(url, headers=headers, json=lead)
-#         print(response.status_code)
-#         print(response.text)
-# upload_sales_lead()
+    #saima
+    # user_api_key = "3da0a250742fa00"
+    # user_secret_key = "5ec8bb8e1e94930"
+
+    # "suleman
+    user_api_key = "3f6d0f005e4fccc"
+    user_secret_key = "bbcaef6140205d2"
+
+
+    # "shoaib.akhtar@alnafi.edu.pk": ["484f3e9978c00f3", "f61de5c03b3935d"],
+    # "saima.ambreen@alnafi.edu.pk": ["3da0a250742fa00", "5ec8bb8e1e94930"],
+    # "hamza.jamal@alnafi.edu.pk": ["dd3d10e83dfbb6b", "a1a50d549455fe3"],
+    # "suleman.masroor@alnafi.edu.pk": ["3f6d0f005e4fccc", "bbcaef6140205d2"],
+
+    headers = {
+        'Authorization': f'token {user_api_key}:{user_secret_key}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Updated_MOC Leads - Al Baseer to CRM - Facebook.csv')
+    for index, row in data.iterrows():
+        first_name = str(row['full_name'])
+        email = str(row['email'])
+        phone = str(row['phone'])
+        source = str(row['source'])
+        status = 'Lead'
+        form = str(row['form'])
+        advert = str(row['advert'])
+        city = str(row['city'])
+
+        date = datetime.now().date().isoformat()
+        lead = {
+            'first_name': first_name,
+            'email_id': email,
+            'source': source,
+            'status': status,
+            'phone': phone,
+            'advert': advert,
+            'form': form,
+            'date' : date,
+            'city': city,
+        }
+
+        response = requests.post(url, headers=headers, json=lead)
+        print(response.status_code)
+        print(response.text)
+
+
+
+
+upload_sales_lead()
+
+
+
+
+################################################################
+
 
 ### For Creating Files Of Particular Sales Member ####
 import csv
@@ -302,6 +337,8 @@ import requests
 # get_and_save_all_lead_data()
 
 
+#====================================================================
+
 # from datetime import datetime
 # def upload_sales_lead():
 #     url = 'https://crm.alnafi.com/api/resource/Lead'
@@ -358,6 +395,7 @@ import requests
 
 # upload_sales_lead()
 
+#================================================================
 
 #### Script For Saving Lead in Csv ##
 # def get_and_save_all_lead_data():
@@ -407,33 +445,53 @@ import requests
 #                 print(f"Lead with email {email} deleted. Response: {response.text}")
 
 # get_and_save_all_lead_data()
-def get_lead_data():
-    user_api_key = '4e7074f890507cb'
-    user_secret_key = 'c954faf5ff73d31'
+
+
+
+
+
+
+# def get_lead_data():
+#     user_api_key = '4e7074f890507cb'
+#     user_secret_key = 'c954faf5ff73d31'
     
-    headers = {
-        'Authorization': f'token {user_api_key}:{user_secret_key}',
-        "Content-Type": "application/json",
-        "Accept": "application/json",
-    }
-    get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id", "status"]&limit_start=0&limit_page_length=10000000'
-    response =  requests.get(get_url, headers=headers)
-    try:
-        response_data = response.json()  
-        leads = response_data.get('data', [])  # Extract the list of leads from the response data
+#     headers = {
+#         'Authorization': f'token {user_api_key}:{user_secret_key}',
+#         "Content-Type": "application/json",
+#         "Accept": "application/json",
+#     }
+#     get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id", "status"]&limit_start=0&limit_page_length=10000000'
+#     response =  requests.get(get_url, headers=headers)
+#     try:
+#         response_data = response.json()  
+#         leads = response_data.get('data', [])  # Extract the list of leads from the response data
         
-        # print(leads)
-        # print(response_data)  
+#         # print(leads)
+#         # print(response_data)  
         
-        data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/AffilateLeads-2024-02-02.csv')
-        for index, row in data.iterrows():
-            email = str(row['email'])
-            # print(f"Email from CSV: {email}")  
-            for lead in leads: 
-                # print("lead:", lead)
-                if lead['email_id'] == email and lead['status'] == 'Lead':
-                    print(f"Email: {email}")
-                    break
-    except json.JSONDecodeError:
-        print("Error decoding JSON from the response")
-get_lead_data()
+#         data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/AffilateLeads-2024-02-02.csv')
+#         for index, row in data.iterrows():
+#             email = str(row['email'])
+#             # print(f"Email from CSV: {email}")  
+#             for lead in leads: 
+#                 # print("lead:", lead)
+#                 if lead['email_id'] == email and lead['status'] == 'Lead':
+#                     print(f"Email: {email}")
+#                     break
+#     except json.JSONDecodeError:
+#         print("Error decoding JSON from the response")
+
+
+
+
+
+# get_lead_data()
+
+
+
+
+
+
+
+
+#================================================================
