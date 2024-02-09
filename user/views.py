@@ -1275,7 +1275,7 @@ class GetDataCV(APIView):
 class ExportDataAPIView(APIView):
     def get(self, request):
         # Get data based on the created_at condition
-        start_time = timezone.make_aware(datetime(2024, 1, 29, 10, 0, 0))  
+        start_time = timezone.make_aware(datetime(2024, 2, 4, 10, 0, 0))  
         end_time = timezone.now()
         
         filtered_data = Main_User.objects.filter(

@@ -204,6 +204,7 @@ class Moc_Leads(models.Model):
     phone = models.CharField(max_length=255, null=True, blank=True)
     form = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=100, null=True, blank=True)
+    city = models.CharField(max_length=100, null=True, blank=True)
     login_source = models.CharField(max_length=255, null=True, blank=True)
     qualification = models.CharField(max_length=255, null=True, blank=True)
     interest = models.CharField(max_length=255, null=True, blank=True)
