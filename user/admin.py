@@ -33,7 +33,7 @@ admin.site.register(AlNafi_User, AlnafiUserAdmin)
 
 
 class MocLeadsAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.ModelAdmin):
-    list_display = ('id', 'first_name', 'email', 'phone', 'created_at',)
+    list_display = ('id', 'first_name', 'email', 'phone', 'created_at','city','country',)
     search_fields = ('id', 'first_name', 'email', 'phone')
     list_filter = ('created_at',)
 
