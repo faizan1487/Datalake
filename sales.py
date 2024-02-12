@@ -182,7 +182,8 @@ import pandas as pd
 ### For Single Lead Upload To Someone ######
 from datetime import datetime
 
-
+#india leads
+#maarij hamza toqir sunil
 
 def upload_sales_lead():
     url = 'https://crm.alnafi.com/api/resource/Lead'
@@ -190,7 +191,7 @@ def upload_sales_lead():
     # user_api_key = '5306bb96b02c8f1'
     # user_secret_key = '362d44b933cef9e'
 
-    # waqas
+    # waqas     
     # user_api_key = 'b09d1796de6444a'
     # user_secret_key = '9ac70da03e4c23c'
 
@@ -222,18 +223,21 @@ def upload_sales_lead():
     user_api_key = "3f6d0f005e4fccc"
     user_secret_key = "bbcaef6140205d2"
 
+    # Toqir Bhai keys
+    # user_api_key = '5306bb96b02c8f1'
+    # user_secret_key = '362d44b933cef9e'
 
-    # "shoaib.akhtar@alnafi.edu.pk": ["484f3e9978c00f3", "f61de5c03b3935d"],
-    # "saima.ambreen@alnafi.edu.pk": ["3da0a250742fa00", "5ec8bb8e1e94930"],
-    # "hamza.jamal@alnafi.edu.pk": ["dd3d10e83dfbb6b", "a1a50d549455fe3"],
-    # "suleman.masroor@alnafi.edu.pk": ["3f6d0f005e4fccc", "bbcaef6140205d2"],
+    # Hamza Bhai keys
+    # user_api_key = 'dd3d10e83dfbb6b'
+    # user_secret_key = 'a1a50d549455fe3'
+
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Updated_MOC Leads - Al Baseer to CRM - Facebook.csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook.csv')
     for index, row in data.iterrows():
         first_name = str(row['full_name'])
         email = str(row['email'])
@@ -243,6 +247,7 @@ def upload_sales_lead():
         form = str(row['form'])
         advert = str(row['advert'])
         city = str(row['city'])
+        country = str(row['country'])
 
         date = datetime.now().date().isoformat()
         lead = {
@@ -255,6 +260,7 @@ def upload_sales_lead():
             'form': form,
             'date' : date,
             'city': city,
+            'country': country
         }
 
         response = requests.post(url, headers=headers, json=lead)
