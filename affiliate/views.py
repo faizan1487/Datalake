@@ -632,7 +632,7 @@ class CreateAffiliateClick(APIView):
         data = request.data.copy()
         # Retrieve the AffiliateUser instance using the provided email
         user  = AffiliateUser.objects.get(email=data['affiliate_id'])
-
+        
         # Get the IP address from the data
         ip = data.get("ip")
         
