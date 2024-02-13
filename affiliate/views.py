@@ -35,7 +35,6 @@ class MyPagination(PageNumberPagination):
     max_page_size = 100  
   
 class CreateAffiliateUser(APIView):
-    permission_classes = [IsAuthenticated]
     def get(self, request):
         # Get query parameters from the request
         start_date = self.request.GET.get('start_date', None) or None
@@ -590,6 +589,9 @@ class GetAffiliateUsersEmails(APIView):
 
         # Return the retrieved data as a response
         return Response(affiliate)
+
+
+
 
 class CreateAffiliateLead(APIView):
     def post(self, request):
