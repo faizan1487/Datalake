@@ -2,6 +2,8 @@ from django.shortcuts import render
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
+
+import affiliate
 # Create your views here.
 from .models import AffiliateUser, AffiliateUniqueClick, AffiliateLead, Commission
 from django.db.models import Q
@@ -630,8 +632,7 @@ class CreateAffiliateClick(APIView):
         data = request.data.copy()
         # Retrieve the AffiliateUser instance using the provided email
         user  = AffiliateUser.objects.get(email=data['affiliate_id'])
-        # Replace the email in the data with the corresponding AffiliateUser's ID
-        data['affiliate_id'] = user.id
+
         # Get the IP address from the data
         ip = data.get("ip")
         
@@ -646,7 +647,7 @@ class CreateAffiliateClick(APIView):
 
         if serializer.is_valid():
             # If the serializer's data is valid, save the instance and return a success response
-            serializer.save()
+            serializer.save(affiliate=user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         
         # If the serializer's data is invalid, return an error response with the validation errors

@@ -67,8 +67,9 @@ class AffiliateClickSerializer(ModelSerializer):
         fields = '__all__'
 
     def update(self, instance, validated_data):
+        print("update")
         instance.page_url = validated_data.get('page_url', instance.page_url)
-        instance.affiliate = validated_data.get('affiliate', instance.affiliate)
+        instance.affiliate = validated_data.get('affiliate_id', instance.affiliate)
         instance.pkr_price = validated_data.get('pkr_price', instance.pkr_price)
         instance.usd_price = validated_data.get('usd_price', instance.usd_price)
 
