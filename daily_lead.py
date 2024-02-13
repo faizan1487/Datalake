@@ -97,96 +97,96 @@ def upload_leads():
         }
 
 
-        if index <= 39:
-            # Toqir Bhai keys
+        # if index <= 39:
+        #     # Toqir Bhai keys
+        #     user_api_key = '5306bb96b02c8f1'
+        #     user_secret_key = '362d44b933cef9e'
+        # elif index >= 40 and index < 80: 
+        #     # Saad Bhai Keys
+        #     user_api_key = 'e31afcb884def7e'
+        #     user_secret_key = 'cb799e6913b57f9'
+        # elif index >= 80 and index < 120:
+        #     # Marij Keys
+        #     user_api_key = 'b3bb7a167ec651a'
+        #     user_secret_key = '449cd28cd263361'
+        # elif index >= 120 and index < 160:
+        #     # Sunil Keys
+        #     user_api_key = '9d37a29d966277f'
+        #     user_secret_key = '018c3f6127c43cc'
+        # elif index >= 160 and index < 200:
+        #     # Suleman Keys
+        #     user_api_key = '3f6d0f005e4fccc'
+        #     user_secret_key = 'bbcaef6140205d2'
+        # elif index >= 200 and index < 240:
+        #     # Ribal Keys
+        #     user_api_key = '39d14c9d602fa09'
+        #     user_secret_key = '216de0a015e7fd1'
+        # elif index >= 240 and index < 280:
+        #     # Waqas Keys
+        #     user_api_key = 'b09d1796de6444a'
+        #     user_secret_key = '9ac70da03e4c23c'
+        # elif index >= 280 and index < 320:
+        #     # Shoaib keys
+        #     user_api_key = '484f3e9978c00f3'
+        #     user_secret_key = 'f61de5c03b3935d'
+        # elif index >= 320 and index < 360:
+        #     # Saima Keys
+        #     user_api_key = '3da0a250742fa00'
+        #     user_secret_key = '5ec8bb8e1e94930'
+        # elif index >= 360 and index < 400:
+        #     # Hamza Bhai keys
+        #     user_api_key = 'dd3d10e83dfbb6b'
+        #     user_secret_key = 'a1a50d549455fe3'
+        # elif index >= 400 and index < 441:
+        #     # Wamiq Keys
+        #     user_api_key = '31c85c7e921b270'
+        #     user_secret_key = '845aff8197932c3'
+
+        if index <= 26:
+        # Toqir Bhai keys
             user_api_key = '5306bb96b02c8f1'
             user_secret_key = '362d44b933cef9e'
-        elif index >= 40 and index < 80: 
+        elif index >= 27 and index < 54:
             # Saad Bhai Keys
             user_api_key = 'e31afcb884def7e'
             user_secret_key = 'cb799e6913b57f9'
-        elif index >= 80 and index < 120:
+        elif index >= 54 and index < 81:
             # Marij Keys
             user_api_key = 'b3bb7a167ec651a'
             user_secret_key = '449cd28cd263361'
-        elif index >= 120 and index < 160:
+        elif index >= 81 and index < 108:
             # Sunil Keys
             user_api_key = '9d37a29d966277f'
             user_secret_key = '018c3f6127c43cc'
-        elif index >= 160 and index < 200:
+        elif index >= 108 and index < 135:
             # Suleman Keys
             user_api_key = '3f6d0f005e4fccc'
             user_secret_key = 'bbcaef6140205d2'
-        elif index >= 200 and index < 240:
+        elif index >= 135 and index < 162:
             # Ribal Keys
             user_api_key = '39d14c9d602fa09'
             user_secret_key = '216de0a015e7fd1'
-        elif index >= 240 and index < 280:
+        elif index >= 162 and index < 189:
             # Waqas Keys
             user_api_key = 'b09d1796de6444a'
             user_secret_key = '9ac70da03e4c23c'
-        elif index >= 280 and index < 320:
+        elif index >= 189 and index < 216:
             # Shoaib keys
             user_api_key = '484f3e9978c00f3'
             user_secret_key = 'f61de5c03b3935d'
-        elif index >= 320 and index < 360:
+        elif index >= 216 and index < 243:
             # Saima Keys
             user_api_key = '3da0a250742fa00'
             user_secret_key = '5ec8bb8e1e94930'
-        elif index >= 360 and index < 400:
+        elif index >= 243 and index < 270:
             # Hamza Bhai keys
             user_api_key = 'dd3d10e83dfbb6b'
             user_secret_key = 'a1a50d549455fe3'
-        elif index >= 400 and index < 441:
+        elif index >= 270 and index < 297:
             # Wamiq Keys
             user_api_key = '31c85c7e921b270'
             user_secret_key = '845aff8197932c3'
 
-
-        # if index <= 590:
-        #     # Toqir Bhai keys
-        #     user_api_key = '5306bb96b02c8f1'
-        #     user_secret_key = '362d44b933cef9e'
-        # elif index >= 14 and index < 28: 
-        #     # Saad Bhai Keys
-        #     user_api_key = 'e31afcb884def7e'
-        #     user_secret_key = 'cb799e6913b57f9'
-        # elif index >= 28 and index < 42:
-        #     # Marij Keys
-        #     user_api_key = 'b3bb7a167ec651a'
-        #     user_secret_key = '449cd28cd263361'
-        # elif index >= 42 and index < 56:
-        #     # Sunil Keys
-        #     user_api_key = '9d37a29d966277f'
-        #     user_secret_key = '018c3f6127c43cc'
-        # elif index >= 56 and index < 69:
-        #     # Suleman Keys
-        #     user_api_key = '3f6d0f005e4fccc'
-        #     user_secret_key = 'bbcaef6140205d2'
-        # elif index >= 69 and index < 82:
-        #     # Ribal Keys
-        #     user_api_key = '39d14c9d602fa09'
-        #     user_secret_key = '216de0a015e7fd1'
-        # elif index >= 82 and index < 95:
-        #     # Waqas Keys
-        #     user_api_key = 'b09d1796de6444a'
-        #     user_secret_key = '9ac70da03e4c23c'
-        # elif index >= 95 and index < 108:
-        #     # Shoaib keys
-        #     user_api_key = '484f3e9978c00f3'
-        #     user_secret_key = 'f61de5c03b3935d'
-        # elif index >= 108 and index < 121:
-        #     # Saima Keys
-        #     user_api_key = '3da0a250742fa00'
-        #     user_secret_key = '5ec8bb8e1e94930'
-        # elif index >= 121 and index < 135:
-        #     # Hamza Bhai keys
-        #     user_api_key = 'dd3d10e83dfbb6b'
-        #     user_secret_key = 'a1a50d549455fe3'
-        # elif index >= 135 and index < 152:
-        #     # Wamiq Keys
-        #     user_api_key = '31c85c7e921b270'
-        #     user_secret_key = '845aff8197932c3'
 
         # print(f"Iteration: {index}, Using keys: {user_api_key}, {user_secret_key}")
         headers = {

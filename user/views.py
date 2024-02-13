@@ -1269,14 +1269,25 @@ class GetDataCV(APIView):
 
 #         return Response({"msg":"done"})
 
-
+from datetime import datetime, timedelta
 
 #Export user signups of new main site
 class ExportDataAPIView(APIView):
     def get(self, request):
         # Get data based on the created_at condition
-        start_time = timezone.make_aware(datetime(2024, 2, 6, 10, 0, 0))  
+        # start_time = timezone.make_aware(datetime(2024, 2, 6, 10, 0, 0))  
+        # end_time = timezone.now()
+
         end_time = timezone.now()
+
+        # Set start time to yesterday
+        start_time = end_time - timedelta(days=1)
+
+        start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
+
+
+        print(start_time)
+        print(end_time)
         
         filtered_data = Main_User.objects.filter(
             created_at__range=(start_time, end_time),
@@ -1302,6 +1313,7 @@ class ExportDataAPIView(APIView):
 
             unique_emails = set()  # Keep track of unique emails
             for data in filtered_data:
+                print("data['email']",data['email'])
                 # Concatenate "first_name" and "last_name" into a single "full_name" field
                 data['full_name'] = f"{data['first_name']} {data['last_name']}"
                 del data['first_name']

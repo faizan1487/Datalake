@@ -220,8 +220,8 @@ def upload_sales_lead():
     # user_secret_key = "5ec8bb8e1e94930"
 
     # "suleman
-    user_api_key = "3f6d0f005e4fccc"
-    user_secret_key = "bbcaef6140205d2"
+    # user_api_key = "3f6d0f005e4fccc"
+    # user_secret_key = "bbcaef6140205d2"
 
     # Toqir Bhai keys
     # user_api_key = '5306bb96b02c8f1'
@@ -230,7 +230,6 @@ def upload_sales_lead():
     # Hamza Bhai keys
     # user_api_key = 'dd3d10e83dfbb6b'
     # user_secret_key = 'a1a50d549455fe3'
-
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
