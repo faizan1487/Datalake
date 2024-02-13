@@ -627,9 +627,9 @@ class CreateAffiliateClick(APIView):
         # Copy the incoming data to avoid modifying the original request data
         data = request.data.copy()
         # Retrieve the AffiliateUser instance using the provided email
-        user  = AffiliateUser.objects.get(email=data['affiliate'])
+        user  = AffiliateUser.objects.get(email=data['affiliate_id'])
         # Replace the email in the data with the corresponding AffiliateUser's ID
-        data['affiliate'] = user.id
+        data['affiliate_id'] = user.id
         # Get the IP address from the data
         ip = data.get("ip")
         

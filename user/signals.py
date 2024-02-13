@@ -151,23 +151,24 @@ def mocLead_Signalto_moc_doctype(instance,source):
     }
 
     country_code = getattr(instance, 'country', "Unknown")
-    print("country_code",country_code)
-
-    if math.isnan(country_code):
+    if country_code:
         country_name = None
-    else:
-        if country_code:
-            country_name = None
-            if len(country_code) <= 2:
-                if country_code:
-                    for name, code in COUNTRY_CODES.items():
-                        if code == country_code:
-                            country_name = name
-                            break
-            else:
-                country_name = country_code
+        if len(str(country_code)) <= 2:
+            if country_code:
+                for name, code in COUNTRY_CODES.items():
+                    if code == country_code:
+                        country_name = name
+                        break
         else:
-            country_name = "Unknown"
+            country_name = country_code
+    else:
+        country_name = "Unknown"
+
+
+
+
+
+
     
     data = {
             "name1": instance.first_name or None,
