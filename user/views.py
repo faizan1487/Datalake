@@ -1285,9 +1285,6 @@ class ExportDataAPIView(APIView):
 
         start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
 
-
-        print(start_time)
-        print(end_time)
         
         filtered_data = Main_User.objects.filter(
             created_at__range=(start_time, end_time),
@@ -1313,7 +1310,6 @@ class ExportDataAPIView(APIView):
 
             unique_emails = set()  # Keep track of unique emails
             for data in filtered_data:
-                print("data['email']",data['email'])
                 # Concatenate "first_name" and "last_name" into a single "full_name" field
                 data['full_name'] = f"{data['first_name']} {data['last_name']}"
                 del data['first_name']
