@@ -2345,7 +2345,7 @@ class Roidata(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         status_filter = request.GET.get('status')
-        email_filter = request.GET.get('q')
+        email_filter = request.GET.get('email')
         start_date_filter = request.GET.get('start_date')
         end_date_filter = request.GET.get('end_date')
         export = request.GET.get('export')
