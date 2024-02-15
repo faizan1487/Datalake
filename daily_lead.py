@@ -122,206 +122,72 @@ def upload_leads():
         #     user_secret_key = '7a642a5b930eb44'
         #     print("mujtaba")
         
-        # if index <= 39: 
-        #     # Toqir Bhai keys
-        #     user_api_key = '5306bb96b02c8f1'
-        #     user_secret_key = '362d44b933cef9e'
-        # elif index >= 40 and index < 80: 
-        #     # Saad Bhai Keys
-        #     user_api_key = 'e31afcb884def7e'
-        #     user_secret_key = 'cb799e6913b57f9'
-        # elif index >= 80 and index < 120:
-        #     # Marij Keys
-        #     user_api_key = 'b3bb7a167ec651a'
-        #     user_secret_key = '449cd28cd263361'
-        # elif index >= 120 and index < 160:
-        #     # Sunil Keys
-        #     user_api_key = '9d37a29d966277f'
-        #     user_secret_key = '018c3f6127c43cc'
-        # elif index >= 160 and index < 200:
-        #     # Suleman Keys
-        #     user_api_key = '3f6d0f005e4fccc'
-        #     user_secret_key = 'bbcaef6140205d2'
-        # elif index >= 200 and index < 240:
-        #     # Ribal Keys
-        #     user_api_key = '39d14c9d602fa09'
-        #     user_secret_key = '216de0a015e7fd1'
-        # elif index >= 240 and index < 280:
-        #     # Waqas Keys
-        #     user_api_key = 'b09d1796de6444a'
-        #     user_secret_key = '9ac70da03e4c23c'
-        # elif index >= 280 and index < 320:
-        #     # Shoaib keys
-        #     user_api_key = '484f3e9978c00f3'
-        #     user_secret_key = 'f61de5c03b3935d'
-        # elif index >= 320 and index < 360:
-        #     # Saima Keys
-        #     user_api_key = '3da0a250742fa00'
-        #     user_secret_key = '5ec8bb8e1e94930'
-        # elif index >= 360 and index < 400:
-        #     # Hamza Bhai keys
-        #     user_api_key = 'dd3d10e83dfbb6b'
-        #     user_secret_key = 'a1a50d549455fe3'
-        # elif index >= 400 and index < 440:
-        #     # Wamiq Keys
-        #     user_api_key = '31c85c7e921b270'
-        #     user_secret_key = '845aff8197932c3'
 
-
-        # if index <= 590:
-        #     # Toqir Bhai keys
-        #     user_api_key = '5306bb96b02c8f1'
-        #     user_secret_key = '362d44b933cef9e'
-        # elif index >= 14 and index < 28: 
-        #     # Saad Bhai Keys
-        #     user_api_key = 'e31afcb884def7e'
-        #     user_secret_key = 'cb799e6913b57f9'
-        # elif index >= 28 and index < 42:
-        #     # Marij Keys
-        #     user_api_key = 'b3bb7a167ec651a'
-        #     user_secret_key = '449cd28cd263361'
-        # elif index >= 42 and index < 56:
-        #     # Sunil Keys
-        #     user_api_key = '9d37a29d966277f'
-        #     user_secret_key = '018c3f6127c43cc'
-        # elif index >= 56 and index < 69:
-        #     # Suleman Keys
-        #     user_api_key = '3f6d0f005e4fccc'
-        #     user_secret_key = 'bbcaef6140205d2'
-        # elif index >= 69 and index < 82:
-        #     # Ribal Keys
-        #     user_api_key = '39d14c9d602fa09'
-        #     user_secret_key = '216de0a015e7fd1'
-        # elif index >= 82 and index < 95:
-        #     # Waqas Keys
-        #     user_api_key = 'b09d1796de6444a'
-        #     user_secret_key = '9ac70da03e4c23c'
-        # elif index >= 95 and index < 108:
-        #     # Shoaib keys
-        #     user_api_key = '484f3e9978c00f3'
-        #     user_secret_key = 'f61de5c03b3935d'
-        # elif index >= 108 and index < 121:
-        #     # Saima Keys
-        #     user_api_key = '3da0a250742fa00'
-        #     user_secret_key = '5ec8bb8e1e94930'
-        # elif index >= 121 and index < 135:
-        #     # Hamza Bhai keys
-        #     user_api_key = 'dd3d10e83dfbb6b'
-        #     user_secret_key = 'a1a50d549455fe3'
-        # elif index >= 135 and index < 152:
-        #     # Wamiq Keys
-        #     user_api_key = '31c85c7e921b270'
-        #     user_secret_key = '845aff8197932c3'
 
         #india leads
         #maarij hamza toqir sunil
 
 
-        if index <= 25: 
+        if index <= 34: 
             # Wamiq Keys
             user_api_key = '31c85c7e921b270'
             user_secret_key = '845aff8197932c3'
-        elif index >= 25 and index < 50: 
+        elif index >= 34 and index < 68: 
             # Saad Bhai Keys
             user_api_key = 'e31afcb884def7e'
             user_secret_key = 'cb799e6913b57f9'
-        elif index >= 50 and index < 75:
+        elif index >= 68 and index < 102:
             # Saima Keys
             user_api_key = '3da0a250742fa00'
             user_secret_key = '5ec8bb8e1e94930'
-        elif index >= 75 and index < 100:
+        elif index >= 102 and index < 136:
             # Shoaib keys
             user_api_key = '484f3e9978c00f3'
             user_secret_key = 'f61de5c03b3935d'
-        elif index >= 100 and index < 125:
+        elif index >= 136 and index < 170:
             # Suleman Keys
             user_api_key = '3f6d0f005e4fccc'
             user_secret_key = 'bbcaef6140205d2'
-        elif index >= 125 and index < 150:
+        elif index >= 170 and index < 204:
             # Ribal Keys
             user_api_key = '39d14c9d602fa09'
             user_secret_key = '216de0a015e7fd1'
-        elif index >= 150 and index < 175:
+        elif index >= 204 and index < 238:
             # Waqas Keys
             user_api_key = 'b09d1796de6444a'
             user_secret_key = '9ac70da03e4c23c'
-        elif index >= 175 and index < 194:
+        elif index >= 238 and index < 272:
             # Sunil Keys
             user_api_key = '9d37a29d966277f'
             user_secret_key = '018c3f6127c43cc'
-        elif index >= 194 and index < 212:
+        elif index >= 272 and index < 306:
             # Marij Keys
             user_api_key = 'b3bb7a167ec651a'
             user_secret_key = '449cd28cd263361'
-        elif index >= 212 and index < 230:
+        elif index >= 306 and index < 340:
             # Hamza Bhai keys
             user_api_key = 'dd3d10e83dfbb6b'
             user_secret_key = 'a1a50d549455fe3'
-        elif index >= 230 and index < 251:
+        elif index >= 340 and index < 372:
             # Toqir Bhai keys
             user_api_key = '5306bb96b02c8f1'
             user_secret_key = '362d44b933cef9e'
+    
 
-
-
-        # print(f"Iteration: {index}, Using keys: {user_api_key}, {user_secret_key}")
-        # if index <= 25: 
-        #     # Wamiq Keys
-        #     user_api_key = '31c85c7e921b270'
-        #     user_secret_key = '845aff8197932c3'
-        # elif index >= 25 and index < 50: 
-        #     # Saad Bhai Keys
-        #     user_api_key = 'e31afcb884def7e'
-        #     user_secret_key = 'cb799e6913b57f9'
-        # elif index >= 50 and index < 75:
-        #     # Saima Keys
-        #     user_api_key = '3da0a250742fa00'
-        #     user_secret_key = '5ec8bb8e1e94930'
-        # elif index >= 75 and index < 100:
-        #     # Shoaib keys
-        #     user_api_key = '484f3e9978c00f3'
-        #     user_secret_key = 'f61de5c03b3935d'
-        # elif index >= 100 and index < 125:
-        #     # Suleman Keys
-        #     user_api_key = '3f6d0f005e4fccc'
-        #     user_secret_key = 'bbcaef6140205d2'
-        # elif index >= 125 and index < 150:
-        #     # Ribal Keys
-        #     user_api_key = '39d14c9d602fa09'
-        #     user_secret_key = '216de0a015e7fd1'
-        # elif index >= 150 and index < 175:
-        #     # Waqas Keys
-        #     user_api_key = 'b09d1796de6444a'
-        #     user_secret_key = '9ac70da03e4c23c'
-        # elif index >= 175 and index < 194:
-        #     # Sunil Keys
-        #     user_api_key = '9d37a29d966277f'
-        #     user_secret_key = '018c3f6127c43cc'
-        # elif index >= 194 and index < 212:
-        #     # Marij Keys
-        #     user_api_key = 'b3bb7a167ec651a'
-        #     user_secret_key = '449cd28cd263361'
-        # elif index >= 212 and index < 230:
-        #     # Hamza Bhai keys
-        #     user_api_key = 'dd3d10e83dfbb6b'
-        #     user_secret_key = 'a1a50d549455fe3'
-        # elif index >= 230 and index < 251:
+     
+        # if index <= 3:
         #     # Toqir Bhai keys
         #     user_api_key = '5306bb96b02c8f1'
         #     user_secret_key = '362d44b933cef9e'
-        if index <= 3:
-            # Toqir Bhai keys
-            user_api_key = '5306bb96b02c8f1'
-            user_secret_key = '362d44b933cef9e'
-        elif index >= 3 and index < 7:
-            user_api_key = 'dd3d10e83dfbb6b'
-            user_secret_key = 'a1a50d549455fe3'
-        elif index >= 7 and index < 10:
-            user_api_key = '9d37a29d966277f'
-            user_secret_key = '018c3f6127c43cc'
-        elif index >= 10 and index < 14:
-            user_api_key = 'b3bb7a167ec651a'
-            user_secret_key = '449cd28cd263361'
+        # elif index >= 3 and index < 7:
+        #     user_api_key = 'dd3d10e83dfbb6b'
+        #     user_secret_key = 'a1a50d549455fe3'
+        # elif index >= 7 and index < 10:
+        #     user_api_key = '9d37a29d966277f'
+        #     user_secret_key = '018c3f6127c43cc'
+        # elif index >= 10 and index < 14:
+        #     user_api_key = 'b3bb7a167ec651a'
+        #     user_secret_key = '449cd28cd263361'
 
         headers = {
             'Authorization': f'token {user_api_key}:{user_secret_key}',
@@ -333,19 +199,19 @@ def upload_leads():
 
         if isinstance(country_code, str):
             country_name = country_code
-        # else:
-        #     if isinstance(country_code, (pd.DataFrame, pd.Series)):
-        #         if not country_code.empty and country_code.notna().any():
-        #             country_name = None
-        #             if len(str(country_code.iloc[0])) <= 2:
-        #                 for name, code in COUNTRY_CODES.items():
-        #                     if code == country_code.iloc[0]:
-        #                         country_name = name
-        #                         break
-        #             else:
-        #                 country_name = row['country']
-                # else:
-                #     country_name = "Unknown"
+        else:
+            if isinstance(country_code, (pd.DataFrame, pd.Series)):
+                if not country_code.empty and country_code.notna().any():
+                    country_name = None
+                    if len(str(country_code.iloc[0])) <= 2:
+                        for name, code in COUNTRY_CODES.items():
+                            if code == country_code.iloc[0]:
+                                country_name = name
+                                break
+                    else:
+                        country_name = row['country']
+                else:
+                    country_name = "Unknown"
 
         if 'created_at' in data and isinstance(data['created_at'], pd.Series) and pd.api.types.is_datetime64_any_dtype(data['created_at']):
             date_joined_str = data['created_at'].dt.strftime('%Y-%m-%d %H:%M:%S')
@@ -385,52 +251,8 @@ def upload_leads():
             already_existed = False
 
         failed_leads = []
-        updated_leads = []
         if already_existed:
             print(data['email_id'])
-            # updated_leads.append(data)
-            # print("already exists")
-            # # print("already exists")
-            # auth_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/demo-user/'
-            # enrollment_url = 'https://auth.alnafi.edu.pk/api/v1.0/enrollments/enrollment-user/'
-            # auth_headers = {
-            #     "Content-Type": "application/json",
-            #     "Accept": "application/json",
-            # }
-            # query_parameters = {
-            #     "email": lead_data['data'][0]['email_id']  # Replace with the actual email you want to send
-            # }
-            # demo_user = requests.get(auth_url, headers=auth_headers, params=query_parameters)
-            # enrollment_user = requests.get(enrollment_url, headers=auth_headers, params=query_parameters)
-
-            # if demo_user.status_code == 200:
-            #     demo_data = demo_user.json()
-            #     data['demo_product'] = demo_data['product_name']
-
-            # if enrollment_user.status_code == 200:
-            #     enrollment_data = enrollment_user.json()
-            #     if len(enrollment_data['enrollments']) > 1:
-            #         data['enrollment'] = enrollment_data['product_name']
-
-            # email_id = lead_data['data'][0]['email_id']
-            # url = f'https://crm.alnafi.com/api/resource/Lead/{email_id}'
-            # # print(data)
-            # response = requests.put(url, headers=headers, json=data)
-            # if response.status_code != 200:
-            #     response_data = json.loads(response.text)
-            #     if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
-            #         pass
-            #     else:
-            #         # print(response.text)
-            #         data['error'] = response.text
-            #         data['status_code'] = response.status_code
-            #         failed_leads.append(data)
-            # else:
-            # with open('update_leads.csv', 'a', newline='') as csvfile:
-            #     fieldnames = updated_leads[0].keys()
-            #     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            # print(f"Already Exist {email}")
-            # print(f"updated {email}")
         else:
             # for i in range(1, leads_per_group * len(api_key_groups) + 1):
             post_url = 'https://crm.alnafi.com/api/resource/Lead'
@@ -465,174 +287,3 @@ def upload_leads():
 
 
 upload_leads()
-
-
-
-
-#Support leads function
-
-
-# def upload_support_leads():
-#     data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/support_leads.csv')
-#     # Iterate over rows in the DataFrame
-#     for index, row in data.iterrows():
-#         failed_leads = []
-
-#         full_name = row['full_name']
-#         email = row['email']
-#         phone = row['phone']
-#         login_source = row['source']
-#         form = row['form']
-#         form = None if pd.isna(form) else form
-#         advert = row['advert']
-       
-
-#         # if index <= 39:
-#         #     # Toqir Bhai keys
-#         #     user_api_key = '5306bb96b02c8f1'
-#         #     user_secret_key = '362d44b933cef9e'
-#         # elif index >= 40 and index < 80: 
-#         #     # Saad Bhai Keys
-#         #     user_api_key = 'e31afcb884def7e'
-#         #     user_secret_key = 'cb799e6913b57f9'
-#         # elif index >= 80 and index < 120:
-#         #     # Marij Keys
-#         #     user_api_key = 'b3bb7a167ec651a'
-#         #     user_secret_key = '449cd28cd263361'
-#         # elif index >= 120 and index < 160:
-#         #     # Sunil Keys
-#         #     user_api_key = '9d37a29d966277f'
-#         #     user_secret_key = '018c3f6127c43cc'
-#         # elif index >= 160 and index < 200:
-#         #     # Suleman Keys
-#         #     user_api_key = '3f6d0f005e4fccc'
-#         #     user_secret_key = 'bbcaef6140205d2'
-#         # elif index >= 200 and index < 240:
-#         #     # Ribal Keys
-#         #     user_api_key = '39d14c9d602fa09'
-#         #     user_secret_key = '216de0a015e7fd1'
-#         # elif index >= 240 and index < 280:
-#         #     # Waqas Keys
-#         #     user_api_key = 'b09d1796de6444a'
-#         #     user_secret_key = '9ac70da03e4c23c'
-#         # elif index >= 280 and index < 320:
-#         #     # Shoaib keys
-#         #     user_api_key = '484f3e9978c00f3'
-#         #     user_secret_key = 'f61de5c03b3935d'
-#         # elif index >= 320 and index < 360:
-#         #     # Saima Keys
-#         #     user_api_key = '3da0a250742fa00'
-#         #     user_secret_key = '5ec8bb8e1e94930'
-#         # elif index >= 360 and index < 400:
-#         #     # Hamza Bhai keys
-#         #     user_api_key = 'dd3d10e83dfbb6b'
-#         #     user_secret_key = 'a1a50d549455fe3'
-#         # elif index >= 400 and index < 440:
-#         #     # Wamiq Keys
-#         #     user_api_key = '31c85c7e921b270'
-#         #     user_secret_key = '845aff8197932c3'
-
-#         #admin keys
-#         user_api_key = '4e7074f890507cb'
-#         user_secret_key = 'c954faf5ff73d31'
-
-#         # print(f"Iteration: {index}, Using keys: {user_api_key}, {user_secret_key}")
-#         headers = {
-#             'Authorization': f'token {user_api_key}:{user_secret_key}',
-#             "Content-Type": "application/json",
-#             "Accept": "application/json",
-#         }
-#         country_code = row['country']
-
-#         if isinstance(country_code, str):
-#             country_name = country_code
-#         else:
-#             if not country_code.empty and country_code.notna().any():
-#                 country_name = None
-#                 if len(str(country_code.iloc[0])) <= 2:
-#                     for name, code in COUNTRY_CODES.items():
-#                         if code == country_code.iloc[0]:
-#                             country_name = name
-#                             break
-#                 else:
-#                     country_name = row['country']
-#             else:
-#                 country_name = "Unknown"
-
-
-#         if 'created_at' in data and isinstance(data['created_at'], pd.Series) and pd.api.types.is_datetime64_any_dtype(data['created_at']):
-#             date_joined_str = data['created_at'].dt.strftime('%Y-%m-%d %H:%M:%S')
-#         else:
-#             date_joined_str = None
-
-#         data = {
-#             "first_name": full_name or None,
-#             "last_name": None,  
-#             "customer_email": email or None,
-#             "mobile_no": str(phone) if phone else None,
-#             "country": country_name,
-#             "source": login_source or None,
-#             "form": form or None,
-#             "cv_link": None,  
-#             "interest": None,  
-#             "qualification": None,  
-#             "date_joined": str(date_joined_str) if date_joined_str else None,
-#             "date": str(datetime.now().date()),
-#             "advert_detail": None if isinstance(advert, float) and math.isnan(advert) else advert,
-#         }
-
-#         # full_name
-#         # email
-#         # phone
-#         # login_source
-#         # form
-#         # form
-#         # advert
-
-#         for key, value in data.items():
-#             if pd.isna(value):
-#                 data[key] = None
-
-#         url = f'https://crm.alnafi.com/api/resource/Suppport?fields=["customer_email","product_name"]&filters=[["Suppport","customer_email","=","{email}"],["Suppport","form","=","{form}"]]'
-
-#         response = requests.get(url, headers=headers)
-
-#         lead_data = response.json()
-
-#         if 'data' in lead_data:
-#             already_existed = len(lead_data["data"]) > 0
-#         else:
-#             already_existed = False
-
-#         failed_leads = []
-#         if already_existed:
-#             print(data['email_id'])
-#         else:
-#             post_url = 'https://crm.alnafi.com/api/resource/Suppport'
-#             response = requests.post(post_url, headers=headers, json=data)
-#             if response.status_code != 200:
-#                 response_data = json.loads(response.text)
-#                 if "exception" in response_data and "DuplicateEntryError" in response_data["exception"]:
-#                     print(f'This {email} Is Already There')
-#                 else:
-#                     data['error'] = response.text
-#                     data['status_code'] = response.status_code
-#                     print(response.text)
-#                     failed_leads.append(data)
-#             else:
-#                 print(f"support doctype signal; lead created successfully {email}")
-
-#         if failed_leads:
-#             with open('failed_support_lead_from_script.csv', 'a', newline='') as csvfile:
-#                 fieldnames = failed_leads[0].keys()
-#                 writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-
-#                 if csvfile.tell() == 0:
-#                     writer.writeheader()
-
-#                 for lead in failed_leads:
-#                     writer.writerow(lead)
-
-
-# upload_support_leads()
-

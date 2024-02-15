@@ -224,8 +224,8 @@ def upload_sales_lead():
     # user_secret_key = "bbcaef6140205d2"
 
     # Toqir Bhai keys
-    # user_api_key = '5306bb96b02c8f1'
-    # user_secret_key = '362d44b933cef9e'
+    user_api_key = '5306bb96b02c8f1'
+    user_secret_key = '362d44b933cef9e'
 
     # Hamza Bhai keys
     # user_api_key = 'dd3d10e83dfbb6b'
@@ -249,14 +249,18 @@ def upload_sales_lead():
     # user_api_key = 'b5658b2d5a087d0'
     # user_secret_key = 'a9faaabc26bddc5'
     # mujtaba_jawed	
-    user_api_key = '940ef42feabf766'
-    user_secret_key = '7a642a5b930eb44'
+    # user_api_key = '940ef42feabf766'
+    # user_secret_key = '7a642a5b930eb44'
+
+
+
+    
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Special.csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook (copy).csv')
     for index, row in data.iterrows():
         first_name = str(row['full_name'])
         email = str(row['email'])

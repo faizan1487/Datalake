@@ -2351,10 +2351,8 @@ class Roidata(APIView):
         export = request.GET.get('export')
         form_filter = request.GET.get('form')
         login_source_filter = request.GET.get('login_source')
-        # print("login_source_filter", login_source_filter)
-        # print(status_filter, email_filter, start_date_filter, end_date_filter)
         
-        moc_data = Moc_Leads.objects.values('first_name', 'email', 'phone', 'form', 'country', 'login_source', 'created_at__date', 'advert')     
+        moc_data = Moc_Leads.objects.values('first_name', 'email', 'phone', 'form', 'country', 'login_source', 'created_at__date', 'advert').exclude(email="yopmail.com")  
             
         if email_filter:
             moc_data = moc_data.filter(email=email_filter)
