@@ -2342,7 +2342,7 @@ class CommisionData(APIView):
 
 
 class Roidata(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         status_filter = request.GET.get('status')
         email_filter = request.GET.get('q')
@@ -2355,7 +2355,7 @@ class Roidata(APIView):
         moc_data = Moc_Leads.objects.values('first_name', 'email', 'phone', 'form', 'country', 'login_source', 'created_at__date', 'advert').exclude(email__endswith="yopmail.com")  
             
         if email_filter:
-            moc_data = moc_data.filter(email=email_filter)
+            moc_data = moc_data.filter(email__icontains=email_filter)
         if form_filter:
             moc_data = moc_data.filter(form__icontains=form_filter)
         if login_source_filter:
