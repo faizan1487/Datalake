@@ -182,12 +182,84 @@ def upload_leads():
         # elif index >= 3 and index < 7:
         #     user_api_key = 'dd3d10e83dfbb6b'
         #     user_secret_key = 'a1a50d549455fe3'
+<<<<<<< Updated upstream
         # elif index >= 7 and index < 10:
         #     user_api_key = '9d37a29d966277f'
         #     user_secret_key = '018c3f6127c43cc'
         # elif index >= 10 and index < 14:
         #     user_api_key = 'b3bb7a167ec651a'
         #     user_secret_key = '449cd28cd263361'
+=======
+        # elif index >= 135 and index < 152:
+        #     # Wamiq Keys
+        #     user_api_key = '31c85c7e921b270'
+        #     user_secret_key = '845aff8197932c3'
+
+        # print(f"Iteration: {index}, Using keys: {user_api_key}, {user_secret_key}")
+        # if index <= 38: 
+        #     # Wamiq Keys
+        #     user_api_key = '31c85c7e921b270'
+        #     user_secret_key = '845aff8197932c3'
+        # elif index >= 38 and index < 76: 
+        #     # Saad Bhai Keys
+        #     user_api_key = 'e31afcb884def7e'
+        #     user_secret_key = 'cb799e6913b57f9'
+        # elif index >= 76 and index < 114:
+        #     # Saima Keys
+        #     user_api_key = '3da0a250742fa00'
+        #     user_secret_key = '5ec8bb8e1e94930'
+        # elif index >= 114 and index < 152:
+        #     # Shoaib keys
+        #     user_api_key = '484f3e9978c00f3'
+        #     user_secret_key = 'f61de5c03b3935d'
+        # elif index >= 152 and index < 190:
+        #     # Suleman Keys
+        #     user_api_key = '3f6d0f005e4fccc'
+        #     user_secret_key = 'bbcaef6140205d2'
+        # elif index >= 190 and index < 228:
+        #     # Ribal Keys
+        #     user_api_key = '39d14c9d602fa09'
+        #     user_secret_key = '216de0a015e7fd1'
+        # elif index >= 228 and index < 266:
+        #     # Waqas Keys
+        #     user_api_key = 'b09d1796de6444a'
+        #     user_secret_key = '9ac70da03e4c23c'
+        # elif index >= 266 and index < 303:
+        #     # Sunil Keys
+        #     user_api_key = '9d37a29d966277f'
+        #     user_secret_key = '018c3f6127c43cc'
+        # elif index >= 303 and index < 341:
+        #     # Marij Keys
+        #     user_api_key = 'b3bb7a167ec651a'
+        #     user_secret_key = '449cd28cd263361'
+        # elif index >= 341 and index < 374:
+        #     # Hamza Bhai keys
+        #     user_api_key = 'dd3d10e83dfbb6b'
+        #     user_secret_key = 'a1a50d549455fe3'
+        # elif index >= 374 and index < 415:
+        #     # Toqir Bhai keys
+        #     user_api_key = '5306bb96b02c8f1'
+        #     user_secret_key = '362d44b933cef9e'
+
+
+
+        if index <= 2:
+            # Toqir Bhai keys
+            user_api_key = '5306bb96b02c8f1'
+            user_secret_key = '362d44b933cef9e'
+        elif index >= 2 and index < 5:
+            # hamza
+            user_api_key = 'dd3d10e83dfbb6b'
+            user_secret_key = 'a1a50d549455fe3'
+        elif index >= 5 and index < 6:
+            # sunil
+            user_api_key = '9d37a29d966277f'
+            user_secret_key = '018c3f6127c43cc'
+        elif index >= 6 and index < 9:
+            # Marij
+            user_api_key = 'b3bb7a167ec651a'
+            user_secret_key = '449cd28cd263361'
+>>>>>>> Stashed changes
 
         headers = {
             'Authorization': f'token {user_api_key}:{user_secret_key}',
@@ -272,7 +344,7 @@ def upload_leads():
                     failed_leads.append(data)
                     # print(response.text)
             else:
-                print(f"sale doctype signal; lead created successfully {email}")
+                print(f"lead created successfully {email}")
 
         if failed_leads:
             with open('failed_lead_from_script.csv', 'a', newline='') as csvfile:
