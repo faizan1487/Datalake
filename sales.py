@@ -271,7 +271,10 @@ def upload_sales_lead():
         advert = str(row['advert'])
         city = str(row['city'])
         country = str(row['country'])
-
+        if country == 'nan':
+            country = "Unknown"
+        else:
+            country = country
         date = datetime.now().date().isoformat()
         lead = {
             'first_name': first_name,
