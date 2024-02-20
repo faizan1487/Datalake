@@ -237,11 +237,11 @@ def upload_sales_lead():
     # user_api_key = 'ee3c9803e0a7aa0'
     # user_secret_key = 'ad8a5dc4bc4f13f'
     # zeeshan	
-    user_api_key = 'a17f7cc184a55ec'
-    user_secret_key = '3e26bf2dde0db20'
+    # user_api_key = 'a17f7cc184a55ec'
+    # user_secret_key = '3e26bf2dde0db20'
     # mehtab_sharif	
-    # user_api_key = '6b0bb41dba21795'
-    # user_secret_key = 'f56c627e47bdff6'
+    user_api_key = '6b0bb41dba21795'
+    user_secret_key = 'f56c627e47bdff6'
     # salman_amjad	
     # user_api_key = 'c09e9698c024bd5'
     # user_secret_key = '02c5e4ff622bb22'
@@ -260,7 +260,7 @@ def upload_sales_lead():
         'Content-Type': 'application/json',
         'Accept': 'application/json',
     }
-    data = pd.read_csv('/home/uzair/Desktop/Al-Baseer-Backend/filtered_data.csv')
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/support_leads.csv')
     for index, row in data.iterrows():
         first_name = str(row['full_name'])
         email = str(row['email'])
