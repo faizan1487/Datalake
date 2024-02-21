@@ -304,111 +304,114 @@ def deduct_from_leader_board(sender, instance, **kwargs):
             print(f"Error occurred while deducting from Leader Board: {str(e)}")
 
 
-@receiver(post_delete, sender=Daily_lead)
+# @receiver(post_delete, sender=Daily_lead)
 def deduct_from_leader_board_on_delete(sender, instance, **kwargs):
-    # print("delete signal running")
+    print("delete signal running")
     # print("veriification_cfo", instance.veriification_cfo)
     # if instance.veriification_cfo == 'Deduct Commission Due Some Cause':
-    try:
-        lead_creator = instance.lead_creator
-        # print("instance.lead_creator",  lead_creator)
-        if lead_creator:
-            amount_to_deduct = float(instance.amount)
-        if instance.source == 'Easypaisa':
-            amount = float(instance.amount)
-            fees = amount*0.0085       #0.0085 = 0.85%
-            # print("fees", fees)
-            fed = fees*0.16            #0.16 = 16%
-            # print("fed", fed)
-            net_amount = amount-fees-fed
-            # print("net_amount", net_amount)
-            gst_tax = net_amount*0.05   #0.05 = 5%
-            # print("gst_tax", gst_tax)
-            total_amount = round(net_amount-gst_tax)
-            # print("Toatl", total_amount)
+    if instance.paid == '0' and instance.completely_verified == 'true':
+        try:
+            lead_creator = instance.lead_creator
+            # print("instance.lead_creator",  lead_creator)
+            if lead_creator:
+                amount_to_deduct = float(instance.amount)
+            if instance.source == 'Easypaisa':
+                amount = float(instance.amount)
+                fees = amount*0.0085       #0.0085 = 0.85%
+                # print("fees", fees)
+                fed = fees*0.16            #0.16 = 16%
+                # print("fed", fed)
+                net_amount = amount-fees-fed
+                # print("net_amount", net_amount)
+                gst_tax = net_amount*0.05   #0.05 = 5%
+                # print("gst_tax", gst_tax)
+                total_amount = round(net_amount-gst_tax)
+                # print("Toatl", total_amount)
 
-            # print("Easypaisa")
-        elif instance.source == 'UBL-IPG':
-            amount = float(instance.amount)
-            fees = amount*0.024   #0.024 = 2.4%
-            # print("fees", fees)
-            fed = fees*0.13       #0.13 = 13%
-            # print("fed", fed)
-            net_amount = amount-fees-fed
-            # print("net_amount", net_amount)
-            gst_tax = net_amount*0.05 
-            # print("gst_tax", gst_tax)
-            total_amount = round(net_amount-gst_tax)
-            # print("Toatl", total_amount)
-            # print("UBL")
-        elif instance.source == 'Stripe':
-            amount = float(instance.amount)
-            conversion = amount*0.07    #0.07 = 7%
-            change = amount - conversion
-            gst_tax = change*0.13
-            total_amount = round(change-gst_tax)
-            # usd_amount = total_amount
-            # print("total", total_amount)           
-        else:
-            amount = float(instance.amount)
-            gst_tax = amount*0.05
-            total_amount = round(amount-gst_tax)
-            # print("total", total_amount)
+                # print("Easypaisa")
+            elif instance.source == 'UBL-IPG':
+                amount = float(instance.amount)
+                fees = amount*0.024   #0.024 = 2.4%
+                # print("fees", fees)
+                fed = fees*0.13       #0.13 = 13%
+                # print("fed", fed)
+                net_amount = amount-fees-fed
+                # print("net_amount", net_amount)
+                gst_tax = net_amount*0.05 
+                # print("gst_tax", gst_tax)
+                total_amount = round(net_amount-gst_tax)
+                # print("Toatl", total_amount)
+                # print("UBL")
+            elif instance.source == 'Stripe':
+                amount = float(instance.amount)
+                conversion = amount*0.07    #0.07 = 7%
+                change = amount - conversion
+                gst_tax = change*0.13
+                total_amount = round(change-gst_tax)
+                # usd_amount = total_amount
+                # print("total", total_amount)           
+            else:
+                amount = float(instance.amount)
+                gst_tax = amount*0.05
+                total_amount = round(amount-gst_tax)
+                # print("total", total_amount)
 
-        if instance.support.lower() == 'true':
-            comission_amount = total_amount*0.02
-        else:
-            if instance.plan == 'Yearly':
-                comission_amount = total_amount*0.07
-                # print("Yearly", comission_amount)
-            elif instance.plan == 'Half Yearly':
-                comission_amount = total_amount*0.06
-            elif instance.plan == 'Quaterly':
-                comission_amount = total_amount*0.05
-                # print("Quaterly", comission_amount)
-            elif instance.plan == 'Monthly':
-                comission_amount = total_amount*0.04
-                # print("Monthly", comission_amount)
-            elif instance.plan == 'Easy Pay Program':
+            if instance.support.lower() == 'true':
                 comission_amount = total_amount*0.02
-                # print("In Elif", comission_amount)
-            if instance.renewal == 'True':
-                comission_amount = total_amount*0.015
+            else:
+                if instance.plan == 'Yearly':
+                    comission_amount = total_amount*0.07
+                    # print("Yearly", comission_amount)
+                elif instance.plan == 'Half Yearly':
+                    comission_amount = total_amount*0.06
+                elif instance.plan == 'Quaterly':
+                    comission_amount = total_amount*0.05
+                    # print("Quaterly", comission_amount)
+                elif instance.plan == 'Monthly':
+                    comission_amount = total_amount*0.04
+                    # print("Monthly", comission_amount)
+                elif instance.plan == 'Easy Pay Program':
+                    comission_amount = total_amount*0.02
+                    # print("In Elif", comission_amount)
+                if instance.renewal == 'True':
+                    comission_amount = total_amount*0.015
 
 
-        # print("amont", amount_to_deduct)
-        url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
-        api_key = "4e7074f890507cb"
-        api_secret = "c954faf5ff73d31"
-        headers = {
-            'Authorization': f'token {api_key}:{api_secret}',
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
-        response_get = requests.get(url_get, headers=headers)
-        # print(response_get.text)
-        if response_get.status_code == 200:
-            response_data = response_get.json()
-            # print("response data", response_data)
-            for lead_entry in response_data['data']:
-                if lead_entry.get('lead_owner') == lead_creator:
-                    # print("Owner", lead_entry.get('lead_owner'))
-                    # print(lead_entry.get('earn_usd_commission'))
-                    # print(lead_entry.get('total_usd_revenue'))
-                    payload = {}
-                    if instance.source in ['dlocal', 'Stripe']:
-                        payload["earn_usd_commission"] = max(round(float(lead_entry.get('earn_usd_commission', 0)) - comission_amount), 0)
-                        payload["total_usd_revenue"] = max(round(float(lead_entry.get('total_usd_revenue', 0)) - amount_to_deduct), 0)
-                    else:
-                        payload["earn_pkr_commission"] = max(round(float(lead_entry.get('earn_pkr_commission', 0)) - comission_amount), 0)
-                        payload["total_revenue"] = max(round(float(lead_entry.get('total_revenue', 0)) - amount_to_deduct), 0)
-                    # print("payload", payload)
-                    url_put = f'https://crm.alnafi.com/api/resource/Leader Board For Sales/{lead_entry["name"]}'
-                    response_put = requests.put(url_put, headers=headers, json=payload)
-                    if response_put.status_code != 200:
-                        print(f"Failed to update Leader Board: {response_put.text}")
-    except Exception as e:
-        print(f"Error occurred while deducting from Leader Board: {str(e)}")
+            # print("amont", amount_to_deduct)
+            url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
+            api_key = "4e7074f890507cb"
+            api_secret = "c954faf5ff73d31"
+            headers = {
+                'Authorization': f'token {api_key}:{api_secret}',
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+            response_get = requests.get(url_get, headers=headers)
+            # print(response_get.text)
+            if response_get.status_code == 200:
+                response_data = response_get.json()
+                # print("response data", response_data)
+                for lead_entry in response_data['data']:
+                    if lead_entry.get('lead_owner') == lead_creator:
+                        # print("Owner", lead_entry.get('lead_owner'))
+                        # print(lead_entry.get('earn_usd_commission'))
+                        # print(lead_entry.get('total_usd_revenue'))
+                        payload = {}
+                        if instance.source in ['dlocal', 'Stripe']:
+                            payload["earn_usd_commission"] = max(round(float(lead_entry.get('earn_usd_commission', 0)) - comission_amount), 0)
+                            payload["total_usd_revenue"] = max(round(float(lead_entry.get('total_usd_revenue', 0)) - amount_to_deduct), 0)
+                        else:
+                            payload["earn_pkr_commission"] = max(round(float(lead_entry.get('earn_pkr_commission', 0)) - comission_amount), 0)
+                            payload["total_revenue"] = max(round(float(lead_entry.get('total_revenue', 0)) - amount_to_deduct), 0)
+                        # print("payload", payload)
+                        url_put = f'https://crm.alnafi.com/api/resource/Leader Board For Sales/{lead_entry["name"]}'
+                        response_put = requests.put(url_put, headers=headers, json=payload)
+                        if response_put.status_code != 200:
+                            print(f"Failed to update Leader Board: {response_put.text}")
+        except Exception as e:
+            print(f"Error occurred while deducting from Leader Board: {str(e)}")
+    else:
+        print("Not Deducted")
 
 
 @receiver(post_save, sender=Daily_Sales_Support)
@@ -636,85 +639,86 @@ def deduct_from_leader_board_support(sender, instance, **kwargs):
         except Exception as e:
             print(f"Error occurred while deducting from Leader Board: {str(e)}")
 
-@receiver(post_delete, sender=Daily_Sales_Support)
+# @receiver(post_delete, sender=Daily_Sales_Support)
 def deduct_from_leader_board_support_on_delete(sender, instance, **kwargs):
-    print("signal running")
+    # print("signal running")
     # print("veriification_cfo", instance.veriification_cfo)
-    try:
-        lead_creator = instance.lead_creator
-        # print("instance.lead_creator",  lead_creator)
-        if lead_creator:
-            amount_to_deduct = float(instance.amount)
-        if instance.source == 'Easypaisa':
-            amount = float(instance.amount)
-            fees = amount*0.0085       #0.0085 = 0.85%
-            # print("fees", fees)
-            fed = fees*0.16            #0.16 = 16%
-            # print("fed", fed)
-            net_amount = amount-fees-fed
-            # print("net_amount", net_amount)
-            gst_tax = net_amount*0.05   #0.05 = 5%
-            # print("gst_tax", gst_tax)
-            total_amount = round(net_amount-gst_tax)
-            # print("Toatl", total_amount)
-            # print("Easypaisa")
-        elif instance.source == 'UBL-IPG':
-            amount = float(instance.amount)
-            fees = amount*0.024   #0.024 = 2.4%
-            # print("fees", fees)
-            fed = fees*0.13       #0.13 = 13%
-            # print("fed", fed)
-            net_amount = amount-fees-fed
-            # print("net_amount", net_amount)
-            gst_tax = net_amount*0.05 
-            # print("gst_tax", gst_tax)
-            total_amount = round(net_amount-gst_tax)
-            # print("Toatl", total_amount)
-            # print("UBL")
-        elif instance.source == 'Stripe':
-            amount = float(instance.amount)
-            conversion = amount*0.07    #0.07 = 7%
-            change = amount - conversion
-            gst_tax = change*0.13
-            total_amount = round(change-gst_tax)
-            # usd_amount = total_amount
-            # print("total", total_amount)           
-        else:
-            amount = float(instance.amount)
-            gst_tax = amount*0.05
-            total_amount = round(amount-gst_tax)
-            # print("total", total_amount)
-        comission_amount = total_amount*0.02
-        # print("amont", amount_to_deduct)
-        url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Support?fields=["*"]'
-        api_key = "4e7074f890507cb"
-        api_secret = "c954faf5ff73d31"
-        headers = {
-            'Authorization': f'token {api_key}:{api_secret}',
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
-        response_get = requests.get(url_get, headers=headers)
-        # print(response_get.text)
-        if response_get.status_code == 200:
-            response_data = response_get.json()
-            # print("response data", response_data)
-            for lead_entry in response_data['data']:
-                if lead_entry.get('lead_owner') == lead_creator:
-                    # print("Owner", lead_entry.get('lead_owner'))
-                    # print(lead_entry.get('earn_usd_commission'))
-                    # print(lead_entry.get('total_usd_revenue'))
-                    payload = {}
-                    if instance.source in ['dlocal', 'Stripe']:
-                        payload["earn_usd_commission"] = max(round(float(lead_entry.get('earn_usd_commission', 0)) - comission_amount), 0)
-                        payload["total_usd_revenue"] = max(round(float(lead_entry.get('total_usd_revenue', 0)) - amount_to_deduct), 0)
-                    else:
-                        payload["earn_pkr_commission"] = max(round(float(lead_entry.get('earn_pkr_commission', 0)) - comission_amount), 0)
-                        payload["total_revenue"] = max(round(float(lead_entry.get('total_revenue', 0)) - amount_to_deduct), 0)
-                    # print("payload", payload)
-                    url_put = f'https://crm.alnafi.com/api/resource/Leader Board For Support/{lead_entry["name"]}'
-                    response_put = requests.put(url_put, headers=headers, json=payload)
-                    if response_put.status_code != 200:
-                        print(f"Failed to update Leader Board: {response_put.status_code}")
-    except Exception as e:
-        print(f"Error occurred while deducting from Leader Board: {str(e)}")
+    if instance.paid == '0' and instance.completely_verified == 'true':
+        try:
+            lead_creator = instance.lead_creator
+            # print("instance.lead_creator",  lead_creator)
+            if lead_creator:
+                amount_to_deduct = float(instance.amount)
+            if instance.source == 'Easypaisa':
+                amount = float(instance.amount)
+                fees = amount*0.0085       #0.0085 = 0.85%
+                # print("fees", fees)
+                fed = fees*0.16            #0.16 = 16%
+                # print("fed", fed)
+                net_amount = amount-fees-fed
+                # print("net_amount", net_amount)
+                gst_tax = net_amount*0.05   #0.05 = 5%
+                # print("gst_tax", gst_tax)
+                total_amount = round(net_amount-gst_tax)
+                # print("Toatl", total_amount)
+                # print("Easypaisa")
+            elif instance.source == 'UBL-IPG':
+                amount = float(instance.amount)
+                fees = amount*0.024   #0.024 = 2.4%
+                # print("fees", fees)
+                fed = fees*0.13       #0.13 = 13%
+                # print("fed", fed)
+                net_amount = amount-fees-fed
+                # print("net_amount", net_amount)
+                gst_tax = net_amount*0.05 
+                # print("gst_tax", gst_tax)
+                total_amount = round(net_amount-gst_tax)
+                # print("Toatl", total_amount)
+                # print("UBL")
+            elif instance.source == 'Stripe':
+                amount = float(instance.amount)
+                conversion = amount*0.07    #0.07 = 7%
+                change = amount - conversion
+                gst_tax = change*0.13
+                total_amount = round(change-gst_tax)
+                # usd_amount = total_amount
+                # print("total", total_amount)           
+            else:
+                amount = float(instance.amount)
+                gst_tax = amount*0.05
+                total_amount = round(amount-gst_tax)
+                # print("total", total_amount)
+            comission_amount = total_amount*0.02
+            # print("amont", amount_to_deduct)
+            url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Support?fields=["*"]'
+            api_key = "4e7074f890507cb"
+            api_secret = "c954faf5ff73d31"
+            headers = {
+                'Authorization': f'token {api_key}:{api_secret}',
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+            }
+            response_get = requests.get(url_get, headers=headers)
+            # print(response_get.text)
+            if response_get.status_code == 200:
+                response_data = response_get.json()
+                # print("response data", response_data)
+                for lead_entry in response_data['data']:
+                    if lead_entry.get('lead_owner') == lead_creator:
+                        # print("Owner", lead_entry.get('lead_owner'))
+                        # print(lead_entry.get('earn_usd_commission'))
+                        # print(lead_entry.get('total_usd_revenue'))
+                        payload = {}
+                        if instance.source in ['dlocal', 'Stripe']:
+                            payload["earn_usd_commission"] = max(round(float(lead_entry.get('earn_usd_commission', 0)) - comission_amount), 0)
+                            payload["total_usd_revenue"] = max(round(float(lead_entry.get('total_usd_revenue', 0)) - amount_to_deduct), 0)
+                        else:
+                            payload["earn_pkr_commission"] = max(round(float(lead_entry.get('earn_pkr_commission', 0)) - comission_amount), 0)
+                            payload["total_revenue"] = max(round(float(lead_entry.get('total_revenue', 0)) - amount_to_deduct), 0)
+                        # print("payload", payload)
+                        url_put = f'https://crm.alnafi.com/api/resource/Leader Board For Support/{lead_entry["name"]}'
+                        response_put = requests.put(url_put, headers=headers, json=payload)
+                        if response_put.status_code != 200:
+                            print(f"Failed to update Leader Board: {response_put.status_code}")
+        except Exception as e:
+            print(f"Error occurred while deducting from Leader Board: {str(e)}")
