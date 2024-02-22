@@ -231,8 +231,8 @@ def upload_sales_lead():
     # user_api_key = 'dd3d10e83dfbb6b'
     # user_secret_key = 'a1a50d549455fe3'
     #  haider_raza	
-    user_api_key = '2a1d467717681df'
-    user_secret_key = '39faa082ac5f258'
+    # user_api_key = '2a1d467717681df'
+    # user_secret_key = '39faa082ac5f258'
     # # mutahir	
     # user_api_key = 'ee3c9803e0a7aa0'
     # user_secret_key = 'ad8a5dc4bc4f13f'
@@ -243,8 +243,8 @@ def upload_sales_lead():
     # user_api_key = '6b0bb41dba21795'
     # user_secret_key = 'f56c627e47bdff6'
     # salman_amjad	
-    # user_api_key = 'c09e9698c024bd5'
-    # user_secret_key = '02c5e4ff622bb22'
+    user_api_key = 'c09e9698c024bd5'
+    user_secret_key = '02c5e4ff622bb22'
     # ahsan_ali	
     # user_api_key = 'b5658b2d5a087d0'
     # user_secret_key = 'a9faaabc26bddc5'
