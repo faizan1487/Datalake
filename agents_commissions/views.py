@@ -1,5 +1,5 @@
 from django.shortcuts import render
-
+import requests
 # Create your views here.
 from rest_framework.views import APIView
 from .models import Daily_lead, Daily_Sales_Support
@@ -109,3 +109,34 @@ class ResaveLeadsAPIView(APIView):
 
         # Return a response indicating success
         return Response({"message": "Leads re-saved successfully."})
+class MatchingId(APIView):
+    def get(self, request):
+        url = 'https://crm.alnafi.com/api/resource/Daily Sales Module?fields=["*"]&limit_start=0&limit_page_length=10000000'
+        api_key = "4e7074f890507cb"
+        api_secret = "c954faf5ff73d31"
+
+        headers = {
+            'Authorization': f'token {api_key}:{api_secret}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+        response_get = requests.get(url, headers=headers)
+        if response_get.status_code == 200:
+            response_data = response_get.json()
+            data = response_data.get('data', [])
+            # print(len(data))
+            all_daily_leads = Daily_lead.objects.all()
+
+            for record in data:
+                api_name = record.get('name')
+
+                matching_ids = all_daily_leads.filter(id=api_name)
+                if matching_ids.exists():
+                    print(f"This is in my Model: {api_name}")
+                else:
+                    print(f"This is not there: {api_name}")
+
+            return Response(response_data)
+        else:
+            return Response({'error': 'Failed to retrieve data from the API'}, status=response_get.status_code)
+        

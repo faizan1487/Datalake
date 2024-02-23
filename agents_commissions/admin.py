@@ -7,8 +7,8 @@ from import_export.admin import ImportExportModelAdmin, ExportActionMixin
 
 class DailyLeadAdmin(ImportExportModelAdmin, ExportActionMixin, admin.ModelAdmin):
     list_display = ('id','email','phone','status','product','plan','amount','lead_creator','support','manager_approval','manager_approval_crm', 'veriification_cfo','is_exam_fee','renewal','created_at')
-    search_fields = ('email','phone','status','product','amount','lead_creator','created_at','plan')
-    list_filter = ('status','product','lead_creator','created_at','plan')
+    search_fields = ('id','email','phone','status','product','amount','lead_creator','created_at','plan')
+    list_filter = ('id','status','product','lead_creator','created_at','plan')
 
 
 admin.site.register(Daily_lead, DailyLeadAdmin)
