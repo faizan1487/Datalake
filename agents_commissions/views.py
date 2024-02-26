@@ -103,11 +103,7 @@ class ResaveLeadsAPIView(APIView):
 
         # Iterate over the leads and re-save them
         for lead in leads:
-            # You may need to handle any specific logic for re-saving here
-            # For example, modifying fields before re-saving
             lead.save()
-
-        # Return a response indicating success
         return Response({"message": "Leads re-saved successfully."})
 class MatchingId(APIView):
     def get(self, request):
