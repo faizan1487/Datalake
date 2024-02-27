@@ -454,6 +454,10 @@ class ActivePayments(APIView):
             product__product_name__iexact="test"
         ).exclude(
             product__product_name__iexact="TEST"
+        ).exclude(
+            user__email__icontains="test"
+        ).exclude(
+            user__email__icontains="Test"
         ).select_related('product').values()
 
         payments = payments.filter(expiration_datetime__date__gt=date.today())
