@@ -141,9 +141,9 @@ class UploadMocLeads(APIView):
 
 class o_level_leads_moc_model(APIView):
     def post(self,request):
-        data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/user/OLEVEL.csv')
+        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - O Levels.csv')
         lst = []
-
+        
         for index, row in data.iterrows():
             full_name = row['full_name']
             phone = row['phone']

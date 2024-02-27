@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 # Create your views here.
-from .models import Feedback, FeedbackAnswers
+from .models import Feedback, FeedbackAnswers, FeedbackQuestion
 from django.db.models import Q
 from django.db.models import Count
 from rest_framework import status
@@ -13,6 +13,7 @@ from datetime import date, datetime, timedelta
 from rest_framework.permissions import IsAuthenticated
 from .models import FeedbackQuestion
 from collections import defaultdict
+
 
 # Create your views here.
 class GetFeedbacks(APIView):
@@ -220,3 +221,10 @@ class GetCoursesUsers(APIView):
 
         # return Response(grouped_data)
         return Response(emails)
+    
+
+
+                # departments = Department.objects.filter(name__in=assigned_to_names)
+                #                 data['assigned_to'] = department_ids
+
+

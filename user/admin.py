@@ -62,7 +62,7 @@ class UserModelAdmin(BaseUserAdmin):
   # These override the definitions on the base UserModelAdmin
   # that reference specific fields on auth.User.
   list_display = ('id', 'email', 'name','department','is_admin')
-  list_filter = ('is_admin',)
+  list_filter = ('is_admin','department',)
   fieldsets = (
       ('User Credentials', {'fields': ('email', 'password')}),
       ('Personal info', {'fields': ('name','phone','department',)}),

@@ -25,6 +25,8 @@ class FeedbackQuestion(models.Model):
     def __str__(self):
         return self.chapter_name or "-"
 
+
+
 class FeedbackAnswers(models.Model):
     user_email = models.CharField(max_length=255)
     question_answer = models.JSONField()
