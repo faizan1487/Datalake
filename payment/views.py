@@ -442,7 +442,20 @@ class ActivePayments(APIView):
         start_date = self.request.GET.get('start_date', None) or None
         end_date = self.request.GET.get('end_date', None) or None
 
-        payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(user__email__endswith="yopmail.com").select_related('product').values()
+        # payments = Main_Payment.objects.filter(source__in=['Al-Nafi','NEW ALNAFI']).exclude(user__email__endswith="yopmail.com").select_related('product').values()
+        
+        payments = Main_Payment.objects.filter(
+            source__in=['Al-Nafi', 'NEW ALNAFI']
+        ).exclude(
+            user__email__endswith="yopmail.com"
+        ).exclude(
+            product__name__iexact="Test Course"
+        ).exclude(
+            product__name__iexact="test"
+        ).exclude(
+            product__name__iexact="TEST"
+        ).select_related('product').values()
+
         payments = payments.filter(expiration_datetime__date__gt=date.today())
 
         if payments:
