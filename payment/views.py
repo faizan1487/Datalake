@@ -449,11 +449,11 @@ class ActivePayments(APIView):
         ).exclude(
             user__email__endswith="yopmail.com"
         ).exclude(
-            product__name__iexact="Test Course"
+            product__product_name__iexact="Test Course"
         ).exclude(
-            product__name__iexact="test"
+            product__product_name__iexact="test"
         ).exclude(
-            product__name__iexact="TEST"
+            product__product_name__iexact="TEST"
         ).select_related('product').values()
 
         payments = payments.filter(expiration_datetime__date__gt=date.today())
