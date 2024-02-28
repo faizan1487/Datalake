@@ -251,6 +251,7 @@ def upload_sales_lead():
     # user_api_key = 'c09e9698c024bd5'
     # user_secret_key = '02c5e4ff622bb22'
     # ahsan_ali	
+<<<<<<< Updated upstream
     user_api_key = 'b5658b2d5a087d0'
     user_secret_key = 'a9faaabc26bddc5'
 
@@ -261,6 +262,13 @@ def upload_sales_lead():
     # mujtaba_jawed	
     # user_api_key = '940ef42feabf766'
     # user_secret_key = '7a642a5b930eb44'
+=======
+#     user_api_key = 'b5658b2d5a087d0'
+#     user_secret_key = 'a9faaabc26bddc5'
+#     # mujtaba_jawed	
+    user_api_key = '940ef42feabf766'
+    user_secret_key = '7a642a5b930eb44'
+>>>>>>> Stashed changes
 
 
     # Shoaib keys
@@ -547,3 +555,55 @@ import requests
 
 
 #================================================================
+# import csv
+# import requests
+
+# def get_and_save_all_lead_data():
+#     user_api_key = '4e7074f890507cb'
+#     user_secret_key = 'c954faf5ff73d31'
+    
+#     headers = {
+#         'Authorization': f'token {user_api_key}:{user_secret_key}',
+#         "Content-Type": "application/json",
+#         "Accept": "application/json",
+#     }
+
+#     # Construct the URL to get leads
+#     get_url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","status","date","lead_creator","first_name", "mobile_no", "source", "product_names_list", "form", "advert_detail", "date"]&limit_start=0&limit_page_length=10000000'
+
+#     # Make the API request
+#     response = requests.get(get_url, headers=headers)
+#     # print(response.text)
+
+#     if response.status_code == 200:
+#         leads_data = response.json()
+
+#         if 'data' in leads_data:
+#             leads = leads_data['data']
+
+#             start_date = datetime(2024, 1, 1)
+#             end_date = datetime(2024, 2, 27)
+
+#             # Filter the leads based on the date range
+#             filtered_leads = [
+#                 lead for lead in leads
+#                 if lead.get('date') and start_date <= datetime.strptime(lead['date'], '%Y-%m-%d') <= end_date
+#             ]
+
+#             print("Data", len(filtered_leads))
+#           # Specify the CSV file path
+#             csv_file_path = 'January_Feb_leads.csv'
+
+#             # Write the leads to the CSV file
+#             with open(csv_file_path, mode='w', newline='') as csv_file:
+#                 fieldnames = leads[0].keys() if leads else []
+#                 writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+#                 # Write header
+#                 writer.writeheader()
+
+#                 # Write data
+#                 writer.writerows(filtered_leads)
+#             print(f"Leads data for all saved to {csv_file_path}")
+
+# get_and_save_all_lead_data()

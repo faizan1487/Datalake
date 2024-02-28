@@ -25,8 +25,12 @@ from user.models import Moc_Leads
 #
 
 def upload_leads():
+<<<<<<< Updated upstream
     data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/support_leads.csv')
     data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook.csv')
+=======
+    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Special.csv')
+>>>>>>> Stashed changes
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
@@ -122,6 +126,7 @@ def upload_leads():
 
 
         ## For Old Leads Support
+<<<<<<< Updated upstream
         # if index <= 10:
         #     user_api_key = 'ee3c9803e0a7aa0'
         #     user_secret_key = 'ad8a5dc4bc4f13f'
@@ -181,6 +186,24 @@ def upload_leads():
         #     print("mujtaba")
 
 
+=======
+        if index <= 10:
+            user_api_key = 'ee3c9803e0a7aa0'
+            user_secret_key = 'ad8a5dc4bc4f13f'
+            print("mutahir")
+        elif index >= 10 and index < 21:
+            user_api_key = 'c09e9698c024bd5'
+            user_secret_key = '02c5e4ff622bb22'  
+            print("salman")
+        elif index >= 21 and index < 31:
+            user_api_key = 'b5658b2d5a087d0'
+            user_secret_key = 'a9faaabc26bddc5' 
+            print("ahsan") 
+        elif index >= 31 and index < 41:
+            user_api_key = '940ef42feabf766'
+            user_secret_key = '7a642a5b930eb44'
+            print("mujtaba")
+>>>>>>> Stashed changes
         
         # New Lead distribution keys concept for support
         # if index <= 10:
@@ -195,7 +218,15 @@ def upload_leads():
         #     user_api_key = 'a17f7cc184a55ec'
         #     user_secret_key = '3e26bf2dde0db20'
         #     print("zeeshan")
-        
+        # if index <= 20:
+        #     user_api_key = 'a17f7cc184a55ec'
+        #     user_secret_key = '3e26bf2dde0db20'
+        #     print("zeeshan")
+        # elif index >=20 and index <= 40:
+            # user_api_key = '6b0bb41dba21795'
+            # user_secret_key = 'f56c627e47bdff6'
+            # print("mehtab")
+
         #india leads
         #maarij hamza toqir sunil
 
