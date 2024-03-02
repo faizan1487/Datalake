@@ -51,13 +51,22 @@ class TrainersData(APIView):
         # trainers = Trainer.objects.all().prefetch_related('products__product_payments__user')
         trainers = Trainer.objects.all().prefetch_related('products')
         # print(trainers)
+
+        user_groups = request.user.groups.values_list('name', flat=True)  # Get the names of all user groups
+        has_perm = False
+        
+        for i in user_groups:
+            if i == 'Trainer Admin':
+                has_perm = True
+
+
         if q:
-            if request.user.is_admin:
+            if has_perm:
                 trainer = trainers.get(email__iexact=q.strip())
             else:
                 trainers = trainers.get(email__iexact=request.user.email)
         else:
-            if request.user.is_admin:
+            if has_perm:
                 trainer = trainers.get(email__iexact='sana@gmail.com')
             else:
                 trainer = trainers.get(email__iexact=request.user.email)
