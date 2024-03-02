@@ -25,12 +25,7 @@ from user.models import Moc_Leads
 #
 
 def upload_leads():
-<<<<<<< Updated upstream
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/support_leads.csv')
-    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook.csv')
-=======
     data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Special.csv')
->>>>>>> Stashed changes
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
@@ -126,23 +121,22 @@ def upload_leads():
 
 
         ## For Old Leads Support
-<<<<<<< Updated upstream
-        # if index <= 10:
-        #     user_api_key = 'ee3c9803e0a7aa0'
-        #     user_secret_key = 'ad8a5dc4bc4f13f'
-        #     print("mutahir")
-        # elif index >= 10 and index < 20:
-        #     user_api_key = 'c09e9698c024bd5'
-        #     user_secret_key = '02c5e4ff622bb22'  
-        #     print("salman")
-        # elif index >= 20 and index < 30:
-        #     user_api_key = 'b5658b2d5a087d0'
-        #     user_secret_key = 'a9faaabc26bddc5' 
-        #     print("ahsan") 
-        # elif index >= 30 and index < 40:
-        #     user_api_key = '940ef42feabf766'
-        #     user_secret_key = '7a642a5b930eb44'
-        #     print("mujtaba")
+        if index <= 11:
+            user_api_key = 'ee3c9803e0a7aa0'
+            user_secret_key = 'ad8a5dc4bc4f13f'
+            print("mutahir")
+        elif index >= 11 and index < 21:
+            user_api_key = 'c09e9698c024bd5'
+            user_secret_key = '02c5e4ff622bb22'  
+            print("salman")
+        elif index >= 21 and index < 31:
+            user_api_key = 'b5658b2d5a087d0'
+            user_secret_key = 'a9faaabc26bddc5' 
+            print("ahsan") 
+        elif index >= 31 and index < 41:
+            user_api_key = '940ef42feabf766'
+            user_secret_key = '7a642a5b930eb44'
+            print("mujtaba")
         #support
         # lead_data = {
         #     'full_name':row['first_name'],
@@ -186,24 +180,6 @@ def upload_leads():
         #     print("mujtaba")
 
 
-=======
-        if index <= 10:
-            user_api_key = 'ee3c9803e0a7aa0'
-            user_secret_key = 'ad8a5dc4bc4f13f'
-            print("mutahir")
-        elif index >= 10 and index < 21:
-            user_api_key = 'c09e9698c024bd5'
-            user_secret_key = '02c5e4ff622bb22'  
-            print("salman")
-        elif index >= 21 and index < 31:
-            user_api_key = 'b5658b2d5a087d0'
-            user_secret_key = 'a9faaabc26bddc5' 
-            print("ahsan") 
-        elif index >= 31 and index < 41:
-            user_api_key = '940ef42feabf766'
-            user_secret_key = '7a642a5b930eb44'
-            print("mujtaba")
->>>>>>> Stashed changes
         
         # New Lead distribution keys concept for support
         # if index <= 10:
@@ -231,54 +207,54 @@ def upload_leads():
         #maarij hamza toqir sunil
 
 
-        if index <= 27:
-            # Wamiq Keys
-            user_api_key = '31c85c7e921b270'
-            user_secret_key = '845aff8197932c3'
-        elif index >= 27 and index < 54: 
-            # Saad Bhai Keys
-            user_api_key = 'e31afcb884def7e'
-            user_secret_key = 'cb799e6913b57f9'
-        elif index >= 54 and index < 81:
-            # Saima Keys
-            user_api_key = '3da0a250742fa00'
-            user_secret_key = '5ec8bb8e1e94930'
-        elif index >= 81 and index < 108:
-            # Shoaib keys
-            user_api_key = '484f3e9978c00f3'
-            user_secret_key = 'f61de5c03b3935d'
-        elif index >= 108 and index < 135:
-            # Suleman Keys
-            user_api_key = '3f6d0f005e4fccc'
-            user_secret_key = 'bbcaef6140205d2'
-        elif index >= 135 and index < 162:
-            # Ribal Keys
-            user_api_key = '39d14c9d602fa09'
-            user_secret_key = '216de0a015e7fd1'
-        elif index >= 162 and index < 189:
-            # Waqas Kes
-            user_api_key = 'b09d1796de6444a'
-            user_secret_key = '9ac70da03e4c23c'
-        elif index >= 189 and index < 216:
-            # Rehan Bhai keys
-            user_api_key = 'b6a9a44a08790f8'
-            user_secret_key = 'b6d91bfa5792ccc'
-        elif index >= 216 and index < 243:
-            # Marij Keys
-            user_api_key = 'b3bb7a167ec651a'
-            user_secret_key = '449cd28cd263361'
-        elif index >= 243 and index < 270:
-            # Hamza Bhai keys
-            user_api_key = 'dd3d10e83dfbb6b'
-            user_secret_key = 'a1a50d549455fe3'
-        elif index >= 270 and index < 297:
-            # Toqir Bhai keys
-            user_api_key = '5306bb96b02c8f1'
-            user_secret_key = '362d44b933cef9e'
-        elif index >= 297 and index < 331:
-            # Sunil Keys
-            user_api_key = '9d37a29d966277f'
-            user_secret_key = '018c3f6127c43cc'
+        # if index <= 27:
+        #     # Wamiq Keys
+        #     user_api_key = '31c85c7e921b270'
+        #     user_secret_key = '845aff8197932c3'
+        # elif index >= 27 and index < 54: 
+        #     # Saad Bhai Keys
+        #     user_api_key = 'e31afcb884def7e'
+        #     user_secret_key = 'cb799e6913b57f9'
+        # elif index >= 54 and index < 81:
+        #     # Saima Keys
+        #     user_api_key = '3da0a250742fa00'
+        #     user_secret_key = '5ec8bb8e1e94930'
+        # elif index >= 81 and index < 108:
+        #     # Shoaib keys
+        #     user_api_key = '484f3e9978c00f3'
+        #     user_secret_key = 'f61de5c03b3935d'
+        # elif index >= 108 and index < 135:
+        #     # Suleman Keys
+        #     user_api_key = '3f6d0f005e4fccc'
+        #     user_secret_key = 'bbcaef6140205d2'
+        # elif index >= 135 and index < 162:
+        #     # Ribal Keys
+        #     user_api_key = '39d14c9d602fa09'
+        #     user_secret_key = '216de0a015e7fd1'
+        # elif index >= 162 and index < 189:
+        #     # Waqas Kes
+        #     user_api_key = 'b09d1796de6444a'
+        #     user_secret_key = '9ac70da03e4c23c'
+        # elif index >= 189 and index < 216:
+        #     # Rehan Bhai keys
+        #     user_api_key = 'b6a9a44a08790f8'
+        #     user_secret_key = 'b6d91bfa5792ccc'
+        # elif index >= 216 and index < 243:
+        #     # Marij Keys
+        #     user_api_key = 'b3bb7a167ec651a'
+        #     user_secret_key = '449cd28cd263361'
+        # elif index >= 243 and index < 270:
+        #     # Hamza Bhai keys
+        #     user_api_key = 'dd3d10e83dfbb6b'
+        #     user_secret_key = 'a1a50d549455fe3'
+        # elif index >= 270 and index < 297:
+        #     # Toqir Bhai keys
+        #     user_api_key = '5306bb96b02c8f1'
+        #     user_secret_key = '362d44b933cef9e'
+        # elif index >= 297 and index < 331:
+        #     # Sunil Keys
+        #     user_api_key = '9d37a29d966277f'
+        #     user_secret_key = '018c3f6127c43cc'
 
         #maarij
         #rehan
