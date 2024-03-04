@@ -144,3 +144,17 @@ class MatchingId(APIView):
         else:
             return Response({'error': 'Failed to retrieve data from the API'}, status=response_get.status_code)
         
+
+
+class UpdateDailyLead(APIView):
+    def get(self, request):
+        print("get")
+        leads = Daily_Sales_Support.objects.all()
+        
+   
+        for lead in leads:
+            if lead.manager_approval == 'True' and lead.manager_approval_crm == 'True' and lead.veriification_cfo == 'True' and lead.completely_verified == '1' and lead.paid == '0':
+                lead.is_comission = True
+                lead.save()
+
+        return Response("vdifbvofd")
