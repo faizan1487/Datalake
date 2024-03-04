@@ -1320,6 +1320,7 @@ class ExportDataAPIView(APIView):
                     unique_emails.add(data['email'])
 
         return Response({"msg": "done"})
+
 class GetAuthDataLead(APIView):
     def get(self, request):
         email_filter = request.GET.get('q')
