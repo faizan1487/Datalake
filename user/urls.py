@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (GetUsers, UserRegistrationView,UserLoginView,UserProfileView,
                     UserPasswordCheckTokenAPI,SendPasswordResetEmailView,User_logout,UsersDelete,Navbar,AlnafiUser,AllEmployees,
                     GetUser,GetNoOfUsersMonth,PSWFormRecord,IslamicUser,Marketing_Pkr_Form,Moc_leads_upload, NewAlnafiUser,UploadMocLeads,getUsser,
-                    NewAlnafiUser,o_level_leads_moc_model,GetActiveUsers, UserSetNewPasswordAPIView, CvFormsApi, GetDataCV, ExportDataAPIView)
+                    NewAlnafiUser,o_level_leads_moc_model,GetActiveUsers, UserSetNewPasswordAPIView, CvFormsApi, GetDataCV, ExportDataAPIView, GetAuthDataLead)
 from django.http import HttpResponse
 
 urlpatterns = [
@@ -43,5 +43,6 @@ urlpatterns = [
     path("cv_form/", CvFormsApi.as_view()),
     path("cv_data/", GetDataCV.as_view()),
     path("export_data/", ExportDataAPIView.as_view(), name='export-new-main-site-sign-up'),
+    path("lead_data/", GetAuthDataLead.as_view()),
     # path('users/<int:pk>/', UserDetail.as_view(), name='user-detail'),
 ]

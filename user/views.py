@@ -1320,3 +1320,12 @@ class ExportDataAPIView(APIView):
                     unique_emails.add(data['email'])
 
         return Response({"msg": "done"})
+class GetAuthDataLead(APIView):
+    def get(self, request):
+        url = "http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/"
+        response = requests.get(url)
+        if response.status_code != 200:
+            return None
+        else:
+            json_data = response.json()
+            return Response (json_data)
