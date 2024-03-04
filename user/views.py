@@ -1322,6 +1322,7 @@ class ExportDataAPIView(APIView):
         return Response({"msg": "done"})
 
 class GetAuthDataLead(APIView):
+    Authentication = [IsAuthenticated]
     def get(self, request):
         email_filter = request.GET.get('q')
         source_filter = request.GET.get('source')
