@@ -4,7 +4,7 @@ from django.utils.encoding import smart_bytes
 from numpy import full
 from rest_framework.views import APIView
 from django.utils import timezone
-
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 from rest_framework.response import Response
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -1322,10 +1322,46 @@ class ExportDataAPIView(APIView):
         return Response({"msg": "done"})
 class GetAuthDataLead(APIView):
     def get(self, request):
-        url = "http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/"
+        email_filter = request.GET.get('q')
+        source_filter = request.GET.get('source')
+        export = request.GET.get('export')
+        page_number = request.GET.get('page')
+        # url = "http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/"
+        url = env('AUTH_SERVICE_LEAD_DATA')
         response = requests.get(url)
+        
         if response.status_code != 200:
-            return None
+            return Response(status=response.status_code)
         else:
             json_data = response.json()
-            return Response (json_data)
+            filtered_data = []
+            if not email_filter and not source_filter and not export:
+                filtered_data = json_data
+            for lead in json_data:
+                if email_filter and email_filter.lower() in lead.get('email', '').lower():
+                    filtered_data.append(lead)
+                if lead.get('page_source'):
+                    if source_filter and source_filter.lower() in lead.get('page_source', '').lower():
+                        filtered_data.append(lead)
+            
+            paginator = Paginator(filtered_data, 10)  
+            try:
+                paginated_data = paginator.page(page_number)
+            except PageNotAnInteger:
+                paginated_data = paginator.page(1)
+            except EmptyPage:
+                paginated_data = paginator.page(paginator.num_pages)
+            
+            if export == 'true':
+                file_name = f"Leads_Data_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                df = pd.DataFrame(paginated_data.object_list).to_csv(index=False)
+                s3 = upload_csv_to_s3(df, file_name)
+                data = {'file_link': file_path, 'export': 'true'}
+                return Response(data)
+            return Response({
+                "num_pages": paginator.num_pages,
+                'current_page': paginated_data.number,
+                'has_next': paginated_data.has_next(), 
+                "data": paginated_data.object_list
+            })
