@@ -23,6 +23,7 @@ class DailyLead(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def put(self, request):
+        print("put")
         data = request.data 
         id = data.get('id')
         print("data", data)
@@ -34,8 +35,9 @@ class DailyLead(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if serializer.is_valid():
-            # print("update is valid")
-            if instance.manager_approval == 'True' and instance.manager_approval_crm == 'True' and instance.veriification_cfo == 'True' and instance.completely_verified == '1' and instance.paid == '0':
+
+            if data['manager_approval'] == 'True' and data['manager_approval_crm'] == 'True' and data['veriification_cfo'] == 'True' and data['completely_verified'] == '1' and data['paid'] == '0':
+                print("is commision true")
                 serializer.validated_data['is_comission'] = True
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

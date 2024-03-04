@@ -1281,7 +1281,7 @@ class ExportDataAPIView(APIView):
         end_time = timezone.now()
 
         # Set start time to yesterday
-        start_time = end_time - timedelta(days=1)
+        start_time = end_time - timedelta(days=1) #stop from 28 feb
 
         start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
 

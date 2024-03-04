@@ -224,8 +224,8 @@ def upload_sales_lead():
     # user_secret_key = "bbcaef6140205d2"
 
     # Toqir Bhai keys
-    # user_api_key = '5306bb96b02c8f1'
-    # user_secret_key = '362d44b933cef9e'
+    user_api_key = '5306bb96b02c8f1'
+    user_secret_key = '362d44b933cef9e'
 
     # Hamza Bhai keys
     # user_api_key = 'dd3d10e83dfbb6b'
@@ -251,9 +251,10 @@ def upload_sales_lead():
     # user_api_key = 'c09e9698c024bd5'
     # user_secret_key = '02c5e4ff622bb22'
     # ahsan_ali	
-<<<<<<< Updated upstream
     user_api_key = 'b5658b2d5a087d0'
     user_secret_key = 'a9faaabc26bddc5'
+    # user_api_key = 'b5658b2d5a087d0'
+    # user_secret_key = 'a9faaabc26bddc5'
 
     # ahsan_ali	
     # user_api_key = 'b5658b2d5a087d0'
@@ -262,13 +263,11 @@ def upload_sales_lead():
     # mujtaba_jawed	
     # user_api_key = '940ef42feabf766'
     # user_secret_key = '7a642a5b930eb44'
-=======
 #     user_api_key = 'b5658b2d5a087d0'
 #     user_secret_key = 'a9faaabc26bddc5'
 #     # mujtaba_jawed	
     user_api_key = '940ef42feabf766'
     user_secret_key = '7a642a5b930eb44'
->>>>>>> Stashed changes
 
 
     # Shoaib keys
@@ -276,8 +275,8 @@ def upload_sales_lead():
     # user_secret_key = 'f61de5c03b3935d'
 
     # Rehan Bhai keys
-    user_api_key = 'b6a9a44a08790f8'
-    user_secret_key = 'b6d91bfa5792ccc'
+    # user_api_key = 'b6a9a44a08790f8'
+    # user_secret_key = 'b6d91bfa5792ccc'
 
 
     headers = {
@@ -541,10 +540,6 @@ import requests
 #     except json.JSONDecodeError:
 #         print("Error decoding JSON from the response")
 
-
-
-
-
 # get_lead_data()
 
 
@@ -607,3 +602,4 @@ import requests
 #             print(f"Leads data for all saved to {csv_file_path}")
 
 # get_and_save_all_lead_data()
+#================================================================
