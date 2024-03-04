@@ -11,7 +11,7 @@ class DailyLead(APIView):
     def post(self, request):
         data = request.data
         id = data.get('id')
-        # print("data", data)
+        print("data", data)
 
         serializer = DailyLeadSerializer(data=data)
         if serializer.is_valid():
@@ -25,7 +25,7 @@ class DailyLead(APIView):
     def put(self, request):
         data = request.data 
         id = data.get('id')
-        # print("data", data)
+        print("data", data)
 
         try:
             instance = Daily_lead.objects.get(id=id)
@@ -35,6 +35,8 @@ class DailyLead(APIView):
 
         if serializer.is_valid():
             # print("update is valid")
+            if instance.manager_approval == 'True' and instance.manager_approval_crm == 'True' and instance.veriification_cfo == 'True' and instance.completely_verified == '1' and instance.paid == '0':
+                serializer.validated_data['is_comission'] = True
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -99,12 +101,15 @@ class DailySalesSupport(APIView):
 class ResaveLeadsAPIView(APIView):
     def get(self, request):
         # Retrieve leads with lead_creator as 'administrator'
-        leads = Daily_Sales_Support.objects.all()
-
+        leads = Daily_Sales_Support.objects.filter(lead_creator = 'mehtab.sharif@alnafi.edu.pk')
+        print(leads)
         # Iterate over the leads and re-save them
         for lead in leads:
+            print(lead)
             lead.save()
         return Response({"message": "Leads re-saved successfully."})
+    
+
 class MatchingId(APIView):
     def get(self, request):
         url = 'https://crm.alnafi.com/api/resource/Daily Sales Module?fields=["*"]&limit_start=0&limit_page_length=10000000'

@@ -9,7 +9,7 @@ from django.dispatch import receiver
 
 @receiver(post_save, sender=Daily_lead)
 def on_lead_saved(sender, instance, created, **kwargs):
-    # print("signal running")
+    print("signal running")
     if instance.pk is None:
         return
     # data = {
@@ -31,7 +31,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
     # print(f"al_baseer_verify: {instance.al_baseer_verify}, crm_verify: {instance.crm_verify}")
     # print(instance.completely_verified)
     if instance.manager_approval == 'True' and instance.manager_approval_crm == 'True' and instance.veriification_cfo == 'True' and instance.completely_verified == '1' and instance.paid == '0':
-        # print("in condition")
+        print("in condition")
         if instance.source == 'Easypaisa':
             amount = float(instance.amount)
             fees = amount*0.0085       #0.0085 = 0.85%
@@ -98,9 +98,9 @@ def on_lead_saved(sender, instance, created, **kwargs):
                 # print("Renewal", comission_amount)
             else:
                 pass            
-        # print("Commission", comission_amount)
+        print("Commission", comission_amount)
         # print("Source", instance.source)
-
+        
         url_get = f'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
         api_key = "4e7074f890507cb"
         api_secret = "c954faf5ff73d31"
@@ -111,7 +111,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
             "Accept": "application/json",
         }
         response_get = requests.get(url_get, headers=headers)
-        # print(response_get.text)
+        print(response_get.text)
         # print("source", instance.source)
         if response_get.status_code == 200:
             response_data = json.loads(response_get.text)
@@ -136,9 +136,10 @@ def on_lead_saved(sender, instance, created, **kwargs):
                     # Add other fields you want to update
                 }
                 response_put = requests.put(url_put, headers=headers, json=payload)
-                # print(response_put.text)
+                print(response_put.text)
                 # print("Response", response_put)
             else:
+                print("in else")
                 payload = {
                 "daily_lead_id": instance.id,   
                 "lead_owner": instance.lead_creator, 
@@ -154,7 +155,7 @@ def on_lead_saved(sender, instance, created, **kwargs):
                 url = "https://crm.alnafi.com/api/resource/Leader Board For Sales"
                 response = requests.post(url, headers=headers, json=payload)
                 # print(response.status_code)
-                # print(response.text)
+                print(response.text)    
                 # return response("Done")
     else:
         print("Not Verified")

@@ -26,6 +26,7 @@ class Daily_lead(models.Model):
     support = models.CharField(max_length =50, null=True, blank=True)
     completely_verified = models.CharField(max_length =50, null=True, blank=True)
     paid = models.CharField(max_length =50, null=True, blank=True)
+    is_comission = models.BooleanField(default = False)
     created_at = models.CharField(max_length =50, null=True, blank=True)
 
     def __str__(self):

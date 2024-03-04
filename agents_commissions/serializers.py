@@ -24,6 +24,7 @@ class DailyLeadSerializer(ModelSerializer):
         instance.completely_verified =  validated_data.get("completely_verified", instance.completely_verified)
         instance.paid =  validated_data.get("paid", instance.paid)
         instance.support = validated_data.get('support', instance.support)
+        instance.is_comission = validated_data.get("is_comission", instance.is_comission)
 
         instance.save()
         return instance
