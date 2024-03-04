@@ -77,6 +77,8 @@ class DailySalesSupport(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if serializer.is_valid():
+            if data['manager_approval'] == 'True' and data['manager_approval_crm'] == 'True' and data['veriification_cfo'] == 'True' and data['completely_verified'] == '1' and data['paid'] == '0':
+                serializer.validated_data['is_comission'] = True
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
