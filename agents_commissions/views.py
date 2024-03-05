@@ -102,7 +102,7 @@ class DailySalesSupport(APIView):
 class ResaveLeadsAPIView(APIView):
     def get(self, request):
         # Retrieve leads with lead_creator as 'administrator'
-        leads = Daily_Sales_Support.objects.filter(lead_creator = 'mehtab.sharif@alnafi.edu.pk')
+        leads = Daily_lead.objects.filter(lead_creator = 'ribal.shahid@alnafi.edu.pk')
         print(leads)
         # Iterate over the leads and re-save them
         for lead in leads:

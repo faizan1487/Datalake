@@ -90,7 +90,6 @@ class Unpaid_New_Alnafi_Payments(models.Model):
     orderId = models.CharField(max_length=255)
     amount = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
-    updated_at = models.DateTimeField(null=True, blank=True)
     card_number = models.CharField(max_length=255, blank=True, null=True)
     account_number = models.CharField(max_length=255, blank=True, null=True)
     meta = models.JSONField(null=True, blank=True)
@@ -107,7 +106,6 @@ class Unpaid_New_Alnafi_Payments(models.Model):
     depositor_name = models.CharField(max_length=255, blank=True, null=True)
     application_id = models.CharField(max_length=255, blank=True, null=True)
     customer_email = models.CharField(max_length=300, null=True, blank=True)
-    expiration_date = models.DateTimeField(null=True, blank=True)
     coupon_id = models.CharField(max_length=255, blank=True, null=True)
     additional_months = models.IntegerField(null=True, blank=True)
     is_manual = models.BooleanField(default=False)
@@ -118,6 +116,8 @@ class Unpaid_New_Alnafi_Payments(models.Model):
     remarks = models.CharField(max_length=1000,null=True, blank=True)
     transaction_id = models.CharField(max_length=255,null=True, blank=True)
 
+    expiration_date = models.DateTimeField(null=True, blank=True)
+    updated_at = models.DateTimeField(null=True, blank=True)
     payment_date = models.DateTimeField(blank=True, null=True)
     created_at = models.DateTimeField(null=True, blank=True)
 
@@ -125,7 +125,7 @@ class Unpaid_New_Alnafi_Payments(models.Model):
         managed = True
         verbose_name = "Unpaid New Al-Nafi Payment"
 
-    def _str_(self):
+    def _str_(self): 
         return self.orderId or '-'
 
 

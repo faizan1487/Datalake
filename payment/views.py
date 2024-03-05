@@ -117,7 +117,6 @@ class UnpaidNewAlnafiPayment(APIView):
 
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-
 # delete this api before production
 class AlnafiPayment(APIView):#if 
     def get(self, request):
@@ -1098,6 +1097,71 @@ def add_tax_stripe_according_to_the_country_code(amount,country_code):
 
         final_checkout_amount = float(amount) + tax_amount
         return final_checkout_amount,tax
+
+
+
+
+
+class UnpaidSearchPayments(APIView):
+    # permission_classes = [IsAuthenticated]   
+    # Define the sources list here
+    def get(self, request):
+        query = self.request.GET.get('q', None)
+        origin = self.request.GET.get('origin', None)
+        start_date = self.request.GET.get('start_date', None)
+        end_date = self.request.GET.get('end_date', None)
+        export = self.request.GET.get('export', None)
+        plan = self.request.GET.get('plan', None)
+        product = self.request.GET.get('product', None)
+        status = self.request.GET.get('status', None)
+        page = int(self.request.GET.get('page', 1))
+        source = self.request.GET.get('source', None)
+
+        payments = Unpaid_New_Alnafi_Payments.objects.exclude(
+            customer_email__endswith="yopmail.com"
+        ).all().values()
+
+
+        if query:
+            payments = payments.filter(customer_email__icontains=query)
+
+        print(payments.count())
+        if status:
+            payments = payments.filter(status=status)
+    
+        # if not start_date:
+        #     first_payment = payments.exclude(payment_date=None).first()
+        #     print("first payment",first_payment)
+        #     start_date = first_payment['payment_date'].date() if first_payment else None
+
+        # if not end_date:
+        #     last_payment = payments.exclude(payment_date=None).last()
+        #     print("last payment",last_payment)
+        #     end_date = last_payment['payment_date'].date() if last_payment else None
+
+        # print("start_date",start_date)
+        # print("end_date",end_date)
+        # payments = payments.filter(Q(payment_date__date__lte=end_date, payment_date__date__gte=start_date))
+            
+        page_size = 10  # Number of payments per page
+        
+            
+        start_index = (page - 1) * page_size
+        end_index = start_index + page_size
+
+        total_count = payments.count()  # Calculate the total count of payments
+
+
+        payments = payments[start_index:end_index]
+
+        num_pages = (total_count + 10 - 1) // 10
+        return Response({
+            'count': total_count,
+            'num_pages': num_pages,
+            'page': page,
+            'payments': payments,
+        })
+       
 
 
 #PRODUCTION
@@ -2487,3 +2551,13 @@ class Roidata(APIView):
             'data': list(paginated_data),
         }
         return JsonResponse(response_data, safe=False)
+
+
+
+
+
+
+
+
+
+
