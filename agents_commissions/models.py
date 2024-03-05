@@ -72,6 +72,7 @@ class Deleted_Daily_lead(models.Model):
     support = models.CharField(max_length =50, null=True, blank=True)
     completely_verified = models.CharField(max_length =50, null=True, blank=True)
     paid = models.CharField(max_length =50, null=True, blank=True)
+    is_comission = models.BooleanField(default = True)
     created_at = models.CharField(max_length =50, null=True, blank=True)
 
     def __str__(self):
@@ -92,6 +93,7 @@ class Deleted_Daily_Sales_Support(models.Model):
     veriification_cfo = models.CharField(max_length =50, null=True, blank=True)
     completely_verified = models.CharField(max_length =50, null=True, blank=True)
     paid = models.CharField(max_length =50, null=True, blank=True)
+    is_comission = models.BooleanField(default = True)
     created_at = models.CharField(max_length =50, null=True, blank=True)
 
     def __str__(self):

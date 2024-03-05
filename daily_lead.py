@@ -33,7 +33,7 @@ from user.models import Moc_Leads
 
 def upload_leads():
     data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Special.csv')
-    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/lead bank - Lead Godaam.csv')
+    # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/lead bank - Lead Godaam.csv')
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
@@ -104,19 +104,19 @@ def upload_leads():
 
 
         ## For Old Leads Support
-        if index <= 11:
+        if index <= 10:
             user_api_key = 'ee3c9803e0a7aa0'
             user_secret_key = 'ad8a5dc4bc4f13f'
             print("mutahir")
-        elif index >= 11 and index < 21:
+        elif index >= 10 and index < 20:
             user_api_key = 'c09e9698c024bd5'
             user_secret_key = '02c5e4ff622bb22'  
             print("salman")
-        elif index >= 21 and index < 31:
+        elif index >= 20 and index < 30:
             user_api_key = 'b5658b2d5a087d0'
             user_secret_key = 'a9faaabc26bddc5' 
             print("ahsan") 
-        elif index >= 31 and index < 41:
+        elif index >= 30 and index < 4:
             user_api_key = '940ef42feabf766'
             user_secret_key = '7a642a5b930eb44'
             print("mujtaba")
@@ -445,7 +445,7 @@ def upload_leads():
                     writer.writerow(lead)
 
 
-# upload_leads()
+upload_leads()
 
 
 
@@ -602,7 +602,7 @@ def upload_support_leads():
                     writer.writerow(lead)
 
 
-upload_support_leads()
+# upload_support_leads()
 
 
 

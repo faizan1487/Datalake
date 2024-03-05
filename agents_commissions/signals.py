@@ -299,6 +299,7 @@ def deduct_from_leader_board(sender, instance, **kwargs):
                                         support=daily_lead_instance.support,
                                         completely_verified=daily_lead_instance.completely_verified,
                                         paid=daily_lead_instance.paid,
+                                        is_comission = daily_lead_instance.is_comission,
                                         created_at=daily_lead_instance.created_at,
                                     )
                                     # Delete the instance from Daily_lead
@@ -639,6 +640,7 @@ def deduct_from_leader_board_support(sender, instance, **kwargs):
                                     veriification_cfo=daily_Support_instance.veriification_cfo,
                                     completely_verified=daily_Support_instance.completely_verified,
                                     paid=daily_Support_instance.paid,
+                                    is_comission=daily_Support_instance.is_comission,
                                     created_at=daily_Support_instance.created_at,
                                 )
                                 # Delete the instance from Daily_lead
