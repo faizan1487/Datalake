@@ -32,6 +32,8 @@ DEBUG = env('DEBUG',cast=bool)
 @receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running")
+    if settings.DEBUG:
+        return
     model_name = 'new_alnafi'
     # fun = send_payment_support_module(instance,model_name)
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
@@ -39,12 +41,16 @@ def new_alnafi_payment_signal_support(sender, instance: New_Alnafi_Payments, *ar
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_support(sender, instance: AlNafi_Payment, *args, **kwargs):
+    if settings.DEBUG:
+        return
     model_name = 'alnafi'
     Thread(target=send_payment_support_module, args=(instance,model_name,)).start()
 
 @receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     print("exam new alnafi signal running")
+    if settings.DEBUG:
+        return
     model_name = 'new_alnafi'
     # fun = send_payment_exam_module(instance,model_name)
     Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
@@ -52,6 +58,8 @@ def new_alnafi_payment_signal_exam(sender, instance: New_Alnafi_Payments, *args,
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_exam(sender, instance: AlNafi_Payment, *args, **kwargs):
     print("alnafi exam signal running")
+    if settings.DEBUG:
+        return
     model_name = 'alnafi'
     # fun = send_payment_exam_module(instance,model_name)    
     Thread(target=send_payment_exam_module, args=(instance,model_name,)).start()
@@ -59,18 +67,24 @@ def alnafi_payment_signal_exam(sender, instance: AlNafi_Payment, *args, **kwargs
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_sales(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running for sales")
+    if settings.DEBUG:
+        return
     model = 'NewAlnafi'
     Thread(target=change_lead_status_sales_module, args=(instance,model,)).start()
 
 @receiver(post_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_signal_commission(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running for commission")
+    if settings.DEBUG:
+        return
     model = 'NewAlnafi'
     Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
 @receiver(post_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_commission(sender, instance: AlNafi_Payment, *args, **kwargs):
     # print("alnafi signal running for commission")
+    if settings.DEBUG:
+        return
     model = 'Alnafi'
     Thread(target=send_payment_to_commission_doctype, args=(instance,model,)).start()
 
@@ -78,17 +92,23 @@ def alnafi_payment_signal_commission(sender, instance: AlNafi_Payment, *args, **
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_sales(sender, instance: AlNafi_Payment, *args, **kwargs):
     # print("alnafi signal running for sales")
+    if settings.DEBUG:
+        return
     model = 'Alnafi'
     Thread(target=change_lead_status_sales_module, args=(instance,model,)).start()
 
 @receiver(pre_save, sender=AlNafi_Payment)
 def alnafi_payment_signal_renewal_leads(sender, instance: AlNafi_Payment, *args, **kwargs):
     # print("alnafi signal running for sales")
+    if settings.DEBUG:
+        return
     Thread(target=change_lead_status_renewal_module, args=(instance,)).start()
 
 @receiver(pre_save, sender=New_Alnafi_Payments)
 def new_alnafi_payment_renewal_leads(sender, instance: New_Alnafi_Payments, *args, **kwargs):
     # print("new alnafi signal running for sales")
+    if settings.DEBUG:
+        return
     Thread(target=change_lead_status_renewal_module, args=(instance,)).start()
 
 
@@ -96,6 +116,8 @@ def new_alnafi_payment_renewal_leads(sender, instance: New_Alnafi_Payments, *arg
 @receiver(pre_save, sender=Renewal)
 def support_renewal_leads_signal(sender, instance: Renewal, *args, **kwargs):
     # print("renewal leads signal running for support")
+    if settings.DEBUG:
+        return
     Thread(target=support_renewal_leads, args=(instance,)).start()
 
 
@@ -228,8 +250,6 @@ def send_payment_support_module(instance,model_name, **kwargs):
                     print("data sent to support doctype")
                    
    
-
-
 def change_lead_status_sales_module(instance, **kwargs):
     # print("change_lead_status_sales signal running")
     # print("model_name", model_name)
@@ -675,7 +695,6 @@ def alnafi_payment_support_data(instance,payment_user,product):
     return customer_data
 
 
-
 def support_renewal_leads(instance):
     crm_endpoint = 'https://crm.alnafi.com/api/resource/Renewal Leads'
 
@@ -743,8 +762,6 @@ def support_renewal_leads(instance):
         # print(response.text)
     else:
         print("lead created successfully")
-
-
 
 
 def change_lead_status_renewal_module(instance):
