@@ -3,11 +3,16 @@ from .models import Daily_lead, Daily_Sales_Support, Deleted_Daily_lead, Deleted
 from django.db.models.signals import post_save, post_delete
 import requests
 import json
+from threading import Thread
 from django.dispatch import receiver
 
 
 
+
 @receiver(post_save, sender=Daily_lead)
+def commission_making_sales(sender, instance, created, **kwargs):
+    thread = Thread(target=on_lead_saved, args=(sender, instance, created), kwargs=kwargs)
+    thread.start()
 def on_lead_saved(sender, instance, created, **kwargs):
     print("signal running")
     if instance.pk is None:
@@ -162,8 +167,10 @@ def on_lead_saved(sender, instance, created, **kwargs):
     else:
         print("Not Verified")
 
-
 @receiver(post_save, sender=Daily_lead)
+def commission_deduction_sales(sender, instance, created, **kwargs):
+    thread = Thread(target=deduct_from_leader_board, args=(sender, instance, created), kwargs=kwargs)
+    thread.start()
 def deduct_from_leader_board(sender, instance, **kwargs):
     # print("signal running")
     # print("veriification_cfo", instance.veriification_cfo)
@@ -423,6 +430,9 @@ def deduct_from_leader_board_on_delete(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Daily_Sales_Support)
+def commission_making_support(sender, instance, created, **kwargs):
+    thread = Thread(target=on_support_saved, args=(sender, instance, created), kwargs=kwargs)
+    thread.start()
 def on_support_saved(sender, instance, created, **kwargs):
     # print("signal running")
     if instance.pk is None:
@@ -532,6 +542,9 @@ def on_support_saved(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=Daily_Sales_Support)
+def commission_deduction_support(sender, instance, created, **kwargs):
+    thread = Thread(target=deduct_from_leader_board_support, args=(sender, instance, created), kwargs=kwargs)
+    thread.start()
 def deduct_from_leader_board_support(sender, instance, **kwargs):
     # print("signal running")
     # print("veriification_cfo", instance.veriification_cfo)
