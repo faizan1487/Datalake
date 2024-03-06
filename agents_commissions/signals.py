@@ -14,7 +14,7 @@ def commission_making_sales(sender, instance, created, **kwargs):
     thread = Thread(target=on_lead_saved, args=(sender, instance, created), kwargs=kwargs)
     thread.start()
 def on_lead_saved(sender, instance, created, **kwargs):
-    print("signal running")
+    # print("signal running")
     if instance.pk is None:
         return
     # data = {
@@ -168,11 +168,11 @@ def on_lead_saved(sender, instance, created, **kwargs):
         print("Not Verified")
 
 @receiver(post_save, sender=Daily_lead)
-def commission_deduction_sales(sender, instance, created, **kwargs):
-    thread = Thread(target=deduct_from_leader_board, args=(sender, instance, created), kwargs=kwargs)
+def commission_deduction_sales(sender, instance, **kwargs):
+    thread = Thread(target=deduct_from_leader_board, args=(sender, instance), kwargs=kwargs)
     thread.start()
 def deduct_from_leader_board(sender, instance, **kwargs):
-    # print("signal running")
+    print("signal running")
     # print("veriification_cfo", instance.veriification_cfo)
     # print("instance.is_comission",instance.is_comission)
     if instance.is_comission:
@@ -542,8 +542,8 @@ def on_support_saved(sender, instance, created, **kwargs):
 
 
 @receiver(post_save, sender=Daily_Sales_Support)
-def commission_deduction_support(sender, instance, created, **kwargs):
-    thread = Thread(target=deduct_from_leader_board_support, args=(sender, instance, created), kwargs=kwargs)
+def commission_deduction_support(sender, instance, **kwargs):
+    thread = Thread(target=deduct_from_leader_board_support, args=(sender, instance), kwargs=kwargs)
     thread.start()
 def deduct_from_leader_board_support(sender, instance, **kwargs):
     # print("signal running")
