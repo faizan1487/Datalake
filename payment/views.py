@@ -1103,7 +1103,7 @@ def add_tax_stripe_according_to_the_country_code(amount,country_code):
 
 
 class UnpaidSearchPayments(APIView):
-    # permission_classes = [IsAuthenticated]   
+    permission_classes = [IsAuthenticated]   
     # Define the sources list here
     def get(self, request):
         query = self.request.GET.get('q', None)
