@@ -1106,7 +1106,7 @@ class UnpaidSearchPayments(APIView):
     permission_classes = [IsAuthenticated]   
     # Define the sources list here
     def get(self, request):
-        query = self.request.GET.get('q', None)
+        email = self.request.GET.get('email', None)
         origin = self.request.GET.get('origin', None)
         start_date = self.request.GET.get('start_date', None)
         end_date = self.request.GET.get('end_date', None)
@@ -1122,26 +1122,38 @@ class UnpaidSearchPayments(APIView):
         ).all().values()
 
 
-        if query:
-            payments = payments.filter(customer_email__icontains=query)
+        if email:
+            payments = payments.filter(customer_email__icontains=email)
 
-        print(payments.count())
         if status:
             payments = payments.filter(status=status)
-    
-        # if not start_date:
-        #     first_payment = payments.exclude(payment_date=None).first()
-        #     print("first payment",first_payment)
-        #     start_date = first_payment['payment_date'].date() if first_payment else None
 
-        # if not end_date:
-        #     last_payment = payments.exclude(payment_date=None).last()
-        #     print("last payment",last_payment)
-        #     end_date = last_payment['payment_date'].date() if last_payment else None
+
+        if product:
+            product = product.replace('&', 'and')
+            products_list = product.split(',')
+            # If there is more than one source, filter payments using each source
+            if len(products_list) > 1:
+                payments = payments.filter(product_names=products_list)
+                payments = payments.distinct()
+            else:
+                # If there is only one source, filter payments using that single source
+                payments = payments.filter(product_names=products_list)
+                payments = payments.distinct()
+    
+        if not start_date:
+            first_payment = payments.exclude(payment_date=None).first()
+            # print("first payment",first_payment)
+            start_date = first_payment['payment_date'].date() if first_payment else None
+
+        if not end_date:
+            last_payment = payments.exclude(payment_date=None).last()
+            # print("last payment",last_payment)
+            end_date = last_payment['payment_date'].date() if last_payment else None
 
         # print("start_date",start_date)
         # print("end_date",end_date)
-        # payments = payments.filter(Q(payment_date__date__lte=end_date, payment_date__date__gte=start_date))
+        payments = payments.filter(Q(payment_date__date__lte=end_date, payment_date__date__gte=start_date))
             
         page_size = 10  # Number of payments per page
         
