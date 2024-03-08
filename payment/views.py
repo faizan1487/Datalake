@@ -72,50 +72,54 @@ class NewAlnafiPayment(APIView):
 
 class UnpaidNewAlnafiPayment(APIView):
     def post(self, request):
-        data = request.data
-        order_id = data.get('orderId')
-        product_name = data.get('product_names')
-        customer_email = data.get('customer_email')
-        order_id = data.get('orderId')
-        # print(data)
-        # print(product_name)
-        # print(customer_email)
+        # data = request.data
+        # order_id = data.get('orderId')
+        # product_name = data.get('product_names')
+        # customer_email = data.get('customer_email')
+        # order_id = data.get('orderId')
+        # # print(data)
+        # # print(product_name)
+        # # print(customer_email)
 
-        today = timezone.now()
-        # Calculate the date 30 days ago
-        thirty_days_ago = today - timedelta(days=30)
+        # today = timezone.now()
+        # # Calculate the date 30 days ago
+        # thirty_days_ago = today - timedelta(days=30)
 
-        # print("time",today)
-        # print("30 days ago", thirty_days_ago)
+        # # print("time",today)
+        # # print("30 days ago", thirty_days_ago)
 
-        if data['status'].lower() == 'paid':
-            #filter payment based on email , product name and time filter of 30 days
-            #if payment exists delete if from unpaid_payments
-            # payment_date
-            # instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)
-            instance = Unpaid_New_Alnafi_Payments.objects.filter(
-                product_names=product_name,
-                customer_email=customer_email,
-                payment_date__gte=thirty_days_ago,  # Filter by creation date greater than or equal to thirty_days_ago
-                payment_date__lte=today  # Filter by creation date less than or equal to today
-            )
-            # print("instance",instance)
+        # if data['status'].lower() == 'paid':
+        #     #filter payment based on email , product name and time filter of 30 days
+        #     #if payment exists delete if from unpaid_payments
+        #     # payment_date
+        #     # instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)
+        #     instance = Unpaid_New_Alnafi_Payments.objects.filter(
+        #         product_names=product_name,
+        #         customer_email=customer_email,
+        #         payment_date__gte=thirty_days_ago,  # Filter by creation date greater than or equal to thirty_days_ago
+        #         payment_date__lte=today  # Filter by creation date less than or equal to today
+        #     )
+        #     # print("instance",instance)
             
-            instance.delete()
-            return Response("instance deleted")
-        else:
-            try:
-                instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)            
-                serializer = Unpaid_New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
-            except:
-                serializer = Unpaid_New_Al_Nafi_Payments_Serializer(data=data)
+        #     instance.delete()
+        #     return Response("instance deleted")
+        # else:
+        #     try:
+        #         instance = Unpaid_New_Alnafi_Payments.objects.filter(orderId=order_id)            
+        #         serializer = Unpaid_New_Al_Nafi_Payments_Serializer(instance.first(), data=data)
+        #     except:
+        #         serializer = Unpaid_New_Al_Nafi_Payments_Serializer(data=data)
 
             
-            if serializer.is_valid():
-                serializer.save()
-                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        #     if serializer.is_valid():
+        #         serializer.save()
+        #         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response("Working")
+    
+
+
 
 # delete this api before production
 class AlnafiPayment(APIView):#if 
@@ -1388,12 +1392,6 @@ def unpaid_search_payment(export, q, start_date, end_date, plan, source, origin,
         return response_data
 
 
-
-
-
-
-
-       
 
 
 #PRODUCTION

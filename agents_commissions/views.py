@@ -53,6 +53,8 @@ class DailyLead(APIView):
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
     
 class DailySalesSupport(APIView):
+
+
     def post(self, request):
         # print("in post")
         data = request.data
@@ -65,10 +67,13 @@ class DailySalesSupport(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+
     def put(self, request):
         data = request.data 
         id = data.get('id')
-        # print("data", data)
+        print("data", data)
 
         try:
             instance = Daily_Sales_Support.objects.get(id=id)
@@ -83,6 +88,8 @@ class DailySalesSupport(APIView):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
     def delete(self, request):
         data = request.data
         # print("data", data)
