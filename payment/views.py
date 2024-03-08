@@ -833,7 +833,7 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
     payments = Main_Payment.objects.exclude(
         user__email__endswith="yopmail.com"
     ).exclude(
-        source='UBL_DD', status__in=["0", False, 0]
+        source='UBL_DD', status__in=["0", False, 0, "cancelled","no_account","pending","failed"]
     ).filter(
         Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source__contains='dlocal')
     )
@@ -1188,7 +1188,7 @@ def unpaid_search_payment(export, q, start_date, end_date, plan, source, origin,
     ).exclude(
         source='UBL_DD', status__in=["0", False, 0]
     ).exclude(
-        status__in=["paid","PAID","0", "succeeded" ,"success"]
+        status__in=["paid","PAID","1", "succeeded" ,"success"]
     ).filter(
         Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source__contains='dlocal')
     )
@@ -1362,11 +1362,6 @@ def unpaid_search_payment(export, q, start_date, end_date, plan, source, origin,
         data = {'file_link': file_path, 'export': 'true'}
         return data
 
-
-
-
-
-
     payments = payments[start_index:end_index]
 
     if not payments:
@@ -1401,77 +1396,7 @@ def unpaid_search_payment(export, q, start_date, end_date, plan, source, origin,
 
 
 
-# class UnpaidSearchPayments(APIView):
-#     # permission_classes = [IsAuthenticated]   
-#     # Define the sources list here
-#     def get(self, request):
-#         email = self.request.GET.get('email', None)
-#         origin = self.request.GET.get('origin', None)
-#         start_date = self.request.GET.get('start_date', None)
-#         end_date = self.request.GET.get('end_date', None)
-#         export = self.request.GET.get('export', None)
-#         plan = self.request.GET.get('plan', None)
-#         product = self.request.GET.get('product', None)
-#         status = self.request.GET.get('status', None)
-#         page = int(self.request.GET.get('page', 1))
-#         source = self.request.GET.get('source', None)
 
-#         payments = Unpaid_New_Alnafi_Payments.objects.exclude(
-#             customer_email__endswith="yopmail.com"
-#         ).all().values()
-
-
-#         if email:
-#             payments = payments.filter(customer_email__icontains=email)
-
-#         if status:
-#             payments = payments.filter(status=status)
-
-
-#         if product:
-#             product = product.replace('&', 'and')
-#             products_list = product.split(',')
-#             # If there is more than one source, filter payments using each source
-#             if len(products_list) > 1:
-#                 payments = payments.filter(product_names=products_list)
-#                 payments = payments.distinct()
-#             else:
-#                 # If there is only one source, filter payments using that single source
-#                 payments = payments.filter(product_names=products_list)
-#                 payments = payments.distinct()
-    
-#         if not start_date:
-#             first_payment = payments.exclude(payment_date=None).first()
-#             # print("first payment",first_payment)
-#             start_date = first_payment['payment_date'].date() if first_payment else None
-
-#         if not end_date:
-#             last_payment = payments.exclude(payment_date=None).last()
-#             # print("last payment",last_payment)
-#             end_date = last_payment['payment_date'].date() if last_payment else None
-
-#         # print("start_date",start_date)
-#         # print("end_date",end_date)
-#         payments = payments.filter(Q(payment_date__date__lte=end_date, payment_date__date__gte=start_date))
-            
-#         page_size = 10  # Number of payments per page
-        
-            
-#         start_index = (page - 1) * page_size
-#         end_index = start_index + page_size
-
-#         total_count = payments.count()  # Calculate the total count of payments
-
-
-#         payments = payments[start_index:end_index]
-
-#         num_pages = (total_count + 10 - 1) // 10
-#         return Response({
-#             'count': total_count,
-#             'num_pages': num_pages,
-#             'page': page,
-#             'payments': payments,
-#         })
        
 
 
@@ -1517,7 +1442,9 @@ class PaymentValidationNew(APIView):
             source__in=['Al-Nafi', 'NEW ALNAFI']
         ).exclude(
             user__email__endswith="yopmail.com"
-            ).select_related('user').prefetch_related('product')
+        ).exclude(
+            source='UBL_DD', status__in=["0", False, 0, "cancelled","no_account","pending","failed"]
+        ).select_related('user').prefetch_related('product')
 
         if source:
             payments = payments.filter(source=source)
@@ -1994,7 +1921,7 @@ def search_payment_for_product_analytics(export, q, start_date, end_date, plan, 
     payments = Main_Payment.objects.exclude(
         user__email__endswith="yopmail.com"
     ).exclude(
-        source='UBL_DD', status__in=["0", False, 0]
+        source='UBL_DD', status__in=["0", False, 0, "cancelled","no_account","pending","failed"]
     ).filter(
         source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']
     )
