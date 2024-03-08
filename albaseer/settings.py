@@ -155,6 +155,8 @@ INSTALLED_APPS = [
     'rangefilter',
     'django_crontab',
 
+    'django_admin_logs',
+
     'agents_commissions.apps.AgentsCommissionsConfig',
     'accounts.apps.AccountsConfig',
     'payment.apps.PaymentConfig',
@@ -181,6 +183,8 @@ CRONJOBS = [
 
 # '0 0 * * *',
 # '* * * * *', 
+
+DJANGO_ADMIN_LOGS_ENABLED = False
 
 
 

@@ -828,6 +828,7 @@ class SearchPayments(APIView):
    
 # PRODUCTION
 # bug, only 3 payments showing up instead of 10 
+    
 def search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
     payments = Main_Payment.objects.exclude(
         user__email__endswith="yopmail.com"
@@ -1074,6 +1075,12 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
         return response_data
 
 
+
+
+    
+
+
+
 def add_tax_stripe_according_to_the_country_code(amount,country_code):
     tax_url = f'{settings.CRM_COUNTRY_TAX_API}{country_code}'
     headers = {
@@ -1100,13 +1107,11 @@ def add_tax_stripe_according_to_the_country_code(amount,country_code):
 
 
 
-
-
 class UnpaidSearchPayments(APIView):
     permission_classes = [IsAuthenticated]   
     # Define the sources list here
     def get(self, request):
-        email = self.request.GET.get('email', None)
+        query = self.request.GET.get('q', None)
         origin = self.request.GET.get('origin', None)
         start_date = self.request.GET.get('start_date', None)
         end_date = self.request.GET.get('end_date', None)
@@ -1117,62 +1122,356 @@ class UnpaidSearchPayments(APIView):
         page = int(self.request.GET.get('page', 1))
         source = self.request.GET.get('source', None)
 
-        payments = Unpaid_New_Alnafi_Payments.objects.exclude(
-            customer_email__endswith="yopmail.com"
-        ).all().values()
+        payments= unpaid_search_payment(export, query, start_date, end_date, plan, source, origin, status,product,page)
+        if export == 'true':
+            return Response(payments)
+        if payments['success']:
+            total_count = payments['total_count']
+            payments = self.process_payments(payments['payments'], export,product,plan)
+            
+            # Calculate the number of pages
+            num_pages = (total_count + 10 - 1) // 10
+            return Response({
+                'count': total_count,
+                'num_pages': num_pages,
+                'payments': payments['payments'],
+            })
+        else:
+            payments = []
+            return Response(payments)
+        
+    def process_payments(self,payments,export,product,plan):
+        payment_list = []
+        for payment in payments:
+            payment_id = payment['id']
+
+            payment_found = False
+
+            for existing_payment in payment_list:
+                if existing_payment['id'] == payment_id:
+                    payment_found = True
+                    break
+
+            if not payment_found:
+                payment_data = {
+                    'id': payment['id'],
+                    'user_id': payment['user'],
+                    'phone': payment['user_phone'],
+                    'source': payment['source'],
+                    'currency': payment['currency'],
+                    'amount': payment['amount'],
+                    'product_names': payment['product'],
+                    'plans': payment['plan'],
+                    'alnafi_payment_id': payment['alnafi_payment_id'],
+                    'source_payment_id': payment['source_payment_id'],
+                    'card_mask': payment['card_mask'],
+                    'order_datetime': payment['order_datetime'].isoformat(),
+                    'internal_source': payment['internal_source'],
+                    'status': payment['status']
+                }
+
+                payment_list.append(payment_data)
 
 
-        if email:
-            payments = payments.filter(customer_email__icontains=email)
 
-        if status:
-            payments = payments.filter(status=status)
+        return {
+            'payments': payment_list,
+            "count": len(payment_list)
+        }
 
 
-        if product:
-            product = product.replace('&', 'and')
-            products_list = product.split(',')
-            # If there is more than one source, filter payments using each source
-            if len(products_list) > 1:
-                payments = payments.filter(product_names=products_list)
+
+
+def unpaid_search_payment(export, q, start_date, end_date, plan, source, origin, status,product,page):
+    payments = Main_Payment.objects.exclude(
+        user__email__endswith="yopmail.com"
+    ).exclude(
+        source='UBL_DD', status__in=["0", False, 0]
+    ).exclude(
+        status__in=["paid","PAID","0", "succeeded" ,"success"]
+    ).filter(
+        Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source__contains='dlocal')
+    )
+
+
+
+
+    if status:
+        payments = payments.filter(status=status)
+    
+    if source:
+        # Split the source string into a list if it contains a comma
+        sources_list = source.split(',')
+        if 'dlocal' in sources_list:
+            if len(sources_list) > 1:
+                payments = payments.filter(Q(source__in=sources_list) | Q(source='NEW ALNAFI', internal_source__contains='dlocal'))
+            else:
+                payments = payments.filter(Q(source=source) | Q(source='NEW ALNAFI', internal_source__contains='dlocal'))
+        else:
+            if len(sources_list) > 1:
+                payments = payments.filter(source__in=sources_list)
+            else:
+                payments = payments.filter(source=source)
+
+
+    if origin:
+        if not payments:
+            total_count = payments.count() 
+            payments = {"payments": payments, "success": False,"total_count":total_count}
+            return payments
+        else:
+            if origin == 'local':
+                payments = payments.filter(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD'])
+            else:
+                payments = payments.filter(source='Stripe')
+
+    if not start_date:
+        if not payments:
+            total_count = payments.count() 
+            payments = {"payments": payments, "success": False,"total_count":total_count}
+            return payments
+        else:
+            first_payment = payments.exclude(order_datetime=None).last()
+            start_date = first_payment.order_datetime.date() if first_payment else None
+
+    if not end_date:
+        if not payments:
+            total_count = payments.count() 
+            payments = {"payments": payments, "success": False,"total_count":total_count}
+            return payments
+        else:
+            last_payment = payments.exclude(order_datetime=None).first()
+            end_date = last_payment.order_datetime.date() if last_payment else None
+
+    if not payments:
+        total_count = payments.count() 
+        payments = {"payments": payments, "success": False,"total_count":total_count}
+        return payments
+    else:
+        payments = payments.filter(Q(order_datetime__date__lte=end_date, order_datetime__date__gte=start_date))
+
+
+    if q:
+        payments = payments.filter(user__email__icontains=q)
+
+    if product:
+        product = product.replace('&', 'and')
+        products_list = product.split(',')
+        # If there is more than one source, filter payments using each source
+        if len(products_list) > 1:
+            payments = payments.filter(product__product_name__in=products_list)
+            payments = payments.distinct()
+        else:
+            # If there is only one source, filter payments using that single source
+            payments = payments.filter(product__product_name__in=products_list)
+            payments = payments.distinct()
+
+    
+    if plan:
+        # Split the source string into a list if it contains a comma
+        plans_list = plan.split(',')
+
+        # If there is more than one source, filter payments using each source
+        if len(plans_list) > 1:
+            payments = payments.filter(product__product_plan__in=plans_list)
+            payments = payments.distinct()
+        else:
+            # If there is only one source, filter payments using that single source
+            if plan == 'halfyearly':
+                payments = payments.filter(product__product_plan='Half Yearly')
                 payments = payments.distinct()
             else:
-                # If there is only one source, filter payments using that single source
-                payments = payments.filter(product_names=products_list)
+                payments = payments.filter(product__product_plan=plan)
                 payments = payments.distinct()
-    
-        if not start_date:
-            first_payment = payments.exclude(payment_date=None).first()
-            # print("first payment",first_payment)
-            start_date = first_payment['payment_date'].date() if first_payment else None
 
-        if not end_date:
-            last_payment = payments.exclude(payment_date=None).last()
-            # print("last payment",last_payment)
-            end_date = last_payment['payment_date'].date() if last_payment else None
+    payment_cycle = payments.values_list('product__product_plan', flat=True).distinct()
+    payment_cycle_descriptions = {
+        'Monthly': 'Monthly',
+        'Yearly': 'Yearly',
+        'Half Yearly': 'Half-Yearly',
+        'Quarterly': 'Quarterly'
+        # Add more plan-value pairs as needed
+    }
 
-        # print("start_date",start_date)
-        # print("end_date",end_date)
-        payments = payments.filter(Q(payment_date__date__lte=end_date, payment_date__date__gte=start_date))
+    payments = payments.annotate(
+        payment_cycle=Case(
+            *[When(product__product_plan=plan, then=Value(description)) for plan, description in payment_cycle_descriptions.items()],
+            default=Value('Unknown Plan'),
+            output_field=CharField()
+        )
+    )
+
+
+    page_size = 10  # Number of payments per page
+
+    # Calculate the start and end indices for slicing
+    start_index = (page - 1) * page_size
+    end_index = start_index + page_size
+
+    total_count = payments.count()  # Calculate the total count of payments
+
+
+    if export == 'true':
+        payments_data = payments.values('user__email', 'user__phone', 'product__product_name', 'source', 'amount','currency','order_datetime', 'id','payment_cycle','alnafi_payment_id','card_mask','source_payment_id')
+        
+        payments = [{'user': payment['user__email'],
+                     'user_phone': payment['user__phone'], 
+                     'product': payment['product__product_name'],
+                     'plan': payment['payment_cycle'],
+                     'source': payment['source'],
+                     'amount': payment['amount'],
+                     'alnafi_payment_id':payment['alnafi_payment_id'], 
+                     'order_datetime': payment['order_datetime'],
+                     'card_mask': payment['card_mask'], 
+                     'id': payment['id'],
+                     'currency': payment['currency'],
+                     'source_payment_id':payment['source_payment_id']} for payment in payments_data]
+        payment_list = []
+        for payment in payments:
+            payment_id = payment['id']
+            payment_found = False
             
-        page_size = 10  # Number of payments per page
+            for existing_payment in payment_list:
+                if existing_payment['id'] == payment_id:
+                    payment_found = True
+                    break
+
+            if not payment_found:
+                payment_data = {
+                    'id': payment['id'],
+                    'user_id': payment['user'],
+                    'phone': payment['user_phone'],
+                    'source': payment['source'],
+                    'amount': payment['amount'],
+                    'currency': payment['currency'],
+                    'product_names': [payment['product']],
+                    'plans': [payment['plan']],
+                    'alnafi_payment_id': payment['alnafi_payment_id'],
+                    'source_payment_id': payment['source_payment_id'],
+                    'card_mask': payment['card_mask'],
+                    'order_datetime': payment['order_datetime'].isoformat(),
+                }
+                payment_list.append(payment_data)
+
+
+
+        file_name = f"Payments_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        df = pd.DataFrame(payment_list).to_csv(index=False)
+        s3 = upload_csv_to_s3(df, file_name)
+        data = {'file_link': file_path, 'export': 'true'}
+        return data
+
+
+
+
+
+
+    payments = payments[start_index:end_index]
+
+    if not payments:
+        payments = {"payments": payments, "success": False,"total_count":total_count}
+        return payments
+    else:        
+        payments = [
+            {
+                'user': payment.user.email if payment.user else None,
+                'user_phone': payment.user.phone if payment.user else None,
+                'product': [product.product_name for product in payment.product.all()] if payment.product.exists() else [],
+                'plan': [product.product_plan for product in payment.product.all()] if payment.product.exists() else [],
+                'source': payment.source,
+                'currency': payment.currency,
+                'amount': payment.amount,
+                'alnafi_payment_id': payment.alnafi_payment_id,
+                'order_datetime': payment.order_datetime,
+                'card_mask': payment.card_mask,
+                'id': payment.id,
+                'source_payment_id': payment.source_payment_id,
+                'internal_source': payment.internal_source,
+                'status': payment.status
+            }
+            for payment in payments
+        ]
+
+        response_data = {"payments":payments,"total_count":total_count,"success":True}
+        return response_data
+
+
+
+
+
+
+# class UnpaidSearchPayments(APIView):
+#     # permission_classes = [IsAuthenticated]   
+#     # Define the sources list here
+#     def get(self, request):
+#         email = self.request.GET.get('email', None)
+#         origin = self.request.GET.get('origin', None)
+#         start_date = self.request.GET.get('start_date', None)
+#         end_date = self.request.GET.get('end_date', None)
+#         export = self.request.GET.get('export', None)
+#         plan = self.request.GET.get('plan', None)
+#         product = self.request.GET.get('product', None)
+#         status = self.request.GET.get('status', None)
+#         page = int(self.request.GET.get('page', 1))
+#         source = self.request.GET.get('source', None)
+
+#         payments = Unpaid_New_Alnafi_Payments.objects.exclude(
+#             customer_email__endswith="yopmail.com"
+#         ).all().values()
+
+
+#         if email:
+#             payments = payments.filter(customer_email__icontains=email)
+
+#         if status:
+#             payments = payments.filter(status=status)
+
+
+#         if product:
+#             product = product.replace('&', 'and')
+#             products_list = product.split(',')
+#             # If there is more than one source, filter payments using each source
+#             if len(products_list) > 1:
+#                 payments = payments.filter(product_names=products_list)
+#                 payments = payments.distinct()
+#             else:
+#                 # If there is only one source, filter payments using that single source
+#                 payments = payments.filter(product_names=products_list)
+#                 payments = payments.distinct()
+    
+#         if not start_date:
+#             first_payment = payments.exclude(payment_date=None).first()
+#             # print("first payment",first_payment)
+#             start_date = first_payment['payment_date'].date() if first_payment else None
+
+#         if not end_date:
+#             last_payment = payments.exclude(payment_date=None).last()
+#             # print("last payment",last_payment)
+#             end_date = last_payment['payment_date'].date() if last_payment else None
+
+#         # print("start_date",start_date)
+#         # print("end_date",end_date)
+#         payments = payments.filter(Q(payment_date__date__lte=end_date, payment_date__date__gte=start_date))
+            
+#         page_size = 10  # Number of payments per page
         
             
-        start_index = (page - 1) * page_size
-        end_index = start_index + page_size
+#         start_index = (page - 1) * page_size
+#         end_index = start_index + page_size
 
-        total_count = payments.count()  # Calculate the total count of payments
+#         total_count = payments.count()  # Calculate the total count of payments
 
 
-        payments = payments[start_index:end_index]
+#         payments = payments[start_index:end_index]
 
-        num_pages = (total_count + 10 - 1) // 10
-        return Response({
-            'count': total_count,
-            'num_pages': num_pages,
-            'page': page,
-            'payments': payments,
-        })
+#         num_pages = (total_count + 10 - 1) // 10
+#         return Response({
+#             'count': total_count,
+#             'num_pages': num_pages,
+#             'page': page,
+#             'payments': payments,
+#         })
        
 
 

@@ -5,7 +5,9 @@ from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, M
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin, ExportActionModelAdmin
 
-# Register your models here
+
+# Register your 
+# models here
 
 # For PSWFormRecords:
 class PSWFormRecordsAdmin(ImportExportModelAdmin, ExportActionModelAdmin,admin.ModelAdmin):
