@@ -73,7 +73,7 @@ class DailySalesSupport(APIView):
         try:
             instance = Daily_Sales_Support.objects.get(id=id)
             serializer = DailySalesSupportSerializer(instance, data=data)
-        except DailySalesSupportSerializer.DoesNotExist:
+        except:
             return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if serializer.is_valid():

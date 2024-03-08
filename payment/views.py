@@ -1077,10 +1077,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 
 
 
-    
-
-
-
 def add_tax_stripe_according_to_the_country_code(amount,country_code):
     tax_url = f'{settings.CRM_COUNTRY_TAX_API}{country_code}'
     headers = {
