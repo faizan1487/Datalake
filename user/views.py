@@ -141,7 +141,7 @@ class UploadMocLeads(APIView):
 
 class o_level_leads_moc_model(APIView):
     def post(self,request):
-        data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - O Levels.csv')
+        data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/user/MOC Leads - Al Baseer to CRM - O Levels.csv')
         lst = []
         
         for index, row in data.iterrows():
@@ -1281,7 +1281,7 @@ class ExportDataAPIView(APIView):
         end_time = timezone.now()
 
         # Set start time to yesterday
-        start_time = end_time - timedelta(days=1) #stop from 28 feb
+        start_time = end_time - timedelta(days=9) #stop from 28 feb
 
         start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -1336,6 +1336,7 @@ class GetAuthDataLead(APIView):
             return Response(status=response.status_code)
         else:
             json_data = response.json()
+            total_count = len(json_data)
             filtered_data = []
             if not email_filter and not source_filter and not export:
                 filtered_data = json_data
@@ -1362,6 +1363,7 @@ class GetAuthDataLead(APIView):
                 data = {'file_link': file_path, 'export': 'true'}
                 return Response(data)
             return Response({
+                "total_count": total_count,
                 "num_pages": paginator.num_pages,
                 'current_page': paginated_data.number,
                 'has_next': paginated_data.has_next(), 
