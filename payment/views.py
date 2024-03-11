@@ -1190,7 +1190,7 @@ def unpaid_search_payment(export, q, start_date, end_date, plan, source, origin,
     ).exclude(
         status__in=["paid","PAID","1", "succeeded" ,"success"]
     ).filter(
-        Q(source__in=['Easypaisa', 'UBL_IPG', 'UBL_DD', 'Stripe']) | Q(source='NEW ALNAFI', internal_source__contains='dlocal')
+        Q(source__in=['NEW ALNAFi','Al-Nafi']) | Q(source='NEW ALNAFI', internal_source__contains='dlocal')
     )
 
 
