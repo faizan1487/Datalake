@@ -120,7 +120,8 @@ class ResaveLeadsAPIView(APIView):
 
 class MatchingId(APIView):
     def get(self, request):
-        url = 'https://crm.alnafi.com/api/resource/Daily Sales Module?fields=["*"]&limit_start=0&limit_page_length=10000000'
+        # url = 'https://crm.alnafi.com/api/resource/Daily Sales Module?fields=["*"]&limit_start=0&limit_page_length=10000000'
+        url = 'https://crm.alnafi.com/api/resource/Daily Sales For Support?fields=["*"]&limit_start=0&limit_page_length=10000000'
         api_key = "4e7074f890507cb"
         api_secret = "c954faf5ff73d31"
 
@@ -134,7 +135,8 @@ class MatchingId(APIView):
             response_data = response_get.json()
             data = response_data.get('data', [])
             # print(len(data))
-            all_daily_leads = Daily_lead.objects.all()
+            # all_daily_leads = Daily_lead.objects.all()
+            all_daily_leads = Daily_Sales_Support.objects.all()
 
             for record in data:
                 api_name = record.get('name')
@@ -149,8 +151,6 @@ class MatchingId(APIView):
         else:
             return Response({'error': 'Failed to retrieve data from the API'}, status=response_get.status_code)
         
-
-
 class UpdateDailyLead(APIView):
     def get(self, request):
         print("get")
