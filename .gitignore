@@ -4,6 +4,16 @@ db.sqlite3.2
 .env_faizan
 __pycache__
 
+
+
+
+
+
+daily_lead.py
+renewal.py
+sales.py
+
+
 populate.py
 conversation_ods.py
 lead_owner.py

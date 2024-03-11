@@ -1193,9 +1193,6 @@ def unpaid_search_payment(export, q, start_date, end_date, plan, source, origin,
         Q(source__in=['NEW ALNAFi']) | Q(source='NEW ALNAFI', internal_source__contains='dlocal')
     )
 
-
-
-
     if status:
         payments = payments.filter(status=status)
     
