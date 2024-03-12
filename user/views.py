@@ -1328,6 +1328,7 @@ class GetAuthDataLead(APIView):
         source_filter = request.GET.get('source')
         export = request.GET.get('export')
         page_number = request.GET.get('page')
+        campaign = request.GET.get('campaign')
         # url = "http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/"
         url = env('AUTH_SERVICE_LEAD_DATA')
         response = requests.get(url)
@@ -1345,6 +1346,9 @@ class GetAuthDataLead(APIView):
                     filtered_data.append(lead)
                 if lead.get('page_source'):
                     if source_filter and source_filter.lower() in lead.get('page_source', '').lower():
+                        filtered_data.append(lead)
+                if lead.get('campaign'):
+                    if lead.get('campaign') and campaign and campaign.lower() in lead.get('campaign', '').lower():
                         filtered_data.append(lead)
             
             paginator = Paginator(filtered_data, 10)  
