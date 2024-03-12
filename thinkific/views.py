@@ -121,10 +121,11 @@ class GetThinkificUser(APIView):
             courses  = []
             for i in bundle_ids:
                 if i['product__bundle_ids']:
-                    bundle_courses = get_courses_name_from_bundle_id(i['product__bundle_ids'])
-                    bundle_courses['bundle_id'] = i['product__bundle_ids']
-                    bundle_courses['product_name'] = i['product__product_name']
-                    courses.append(bundle_courses)
+                    if i['product__bundle_ids'] != '7869':
+                        bundle_courses = get_courses_name_from_bundle_id(i['product__bundle_ids'])
+                        bundle_courses['bundle_id'] = i['product__bundle_ids']
+                        bundle_courses['product_name'] = i['product__product_name']
+                        courses.append(bundle_courses)
             
 
             # print("courses",courses)
@@ -287,9 +288,7 @@ def get_courses_name_from_bundle_id(bundle_id):
             headers=headers
         ).json()
         return bundle_res
-    # print("bundle_id",bundle_id)
     bundle_res = get_courses(bundle_id)
-    # print("bundle_res",bundle_res)
     # current_page = bundle_res.get("meta").get("pagination").get("current_page")
     total_pages = bundle_res.get("meta").get("pagination").get("total_pages")
     total_items = bundle_res.get("meta").get("pagination").get("total_items")
