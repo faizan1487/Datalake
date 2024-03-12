@@ -1332,7 +1332,7 @@ class GetAuthDataLead(APIView):
         # url = "http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/"
         # url = env('AUTH_SERVICE_LEAD_DATA')
         # url=f'https://stage-auth.alnafi.edu.pk/api/v1.0/all-forms/get_leaddata/?email={email_filter}&source={source_filter}&campaign={campaign_filter}&export={export}&page={page_number}'
-        url=f' http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/?email={email_filter}&source={source_filter}&campaign={campaign_filter}&export={export}&page={page_number}'
+        url=f' http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/?email={email_filter}&source={source_filter}&campaign={campaign}&export={export}&page={page_number}'
         response = requests.get(url)
         
         if response.status_code != 200:
