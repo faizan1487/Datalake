@@ -32,8 +32,8 @@ from user.models import Moc_Leads
 
 
 def upload_leads():
-    data = pd.read_csv('/home/uzair/Documents/Al-Baseer-Backend/Special.csv')
     # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/lead bank - Lead Godaam.csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook.csv')
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
@@ -55,32 +55,34 @@ def upload_leads():
 
         form = row['form']
         form = None if pd.isna(form) else form
-        try:
-            moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
-                'first_name': full_name,
-                'phone': phone,
-                'email': email,
-                'form': form,
-                'country': country,
-                'login_source': login_source,
-                'created_at': created_at,
-                'advert': advert,
-                'city': city,
-            })
 
-            if not created:
-                moc.first_name = full_name
-                moc.email = email
-                moc.phone = phone
-                moc.form = form
-                moc.country = country
-                moc.login_source = login_source
-                moc.created_at = created_at
-                moc.advert = advert
-                moc.city = city
-                moc.save()
-        except Exception as e:
-            pass
+
+        # try:
+        #     moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
+        #         'first_name': full_name,
+        #         'phone': phone,
+        #         'email': email,
+        #         'form': form,
+        #         'country': country,
+        #         'login_source': login_source,
+        #         'created_at': created_at,
+        #         'advert': advert,
+        #         'city': city,
+        #     })
+
+        #     if not created:
+        #         moc.first_name = full_name
+        #         moc.email = email
+        #         moc.phone = phone
+        #         moc.form = form
+        #         moc.country = country
+        #         moc.login_source = login_source
+        #         moc.created_at = created_at
+        #         moc.advert = advert
+        #         moc.city = city
+        #         moc.save()
+        # except Exception as e:
+        #     pass
         
 
 
@@ -101,25 +103,23 @@ def upload_leads():
 
 
 
-
-
         ## For Old Leads Support
-        if index <= 10:
-            user_api_key = 'ee3c9803e0a7aa0'
-            user_secret_key = 'ad8a5dc4bc4f13f'
-            print("mutahir")
-        elif index >= 10 and index < 20:
-            user_api_key = 'c09e9698c024bd5'
-            user_secret_key = '02c5e4ff622bb22'  
-            print("salman")
-        elif index >= 20 and index < 30:
-            user_api_key = 'b5658b2d5a087d0'
-            user_secret_key = 'a9faaabc26bddc5' 
-            print("ahsan") 
-        elif index >= 30 and index < 4:
-            user_api_key = '940ef42feabf766'
-            user_secret_key = '7a642a5b930eb44'
-            print("mujtaba")
+        # if index <= 10:
+        #     user_api_key = 'ee3c9803e0a7aa0'
+        #     user_secret_key = 'ad8a5dc4bc4f13f'
+        #     print("mutahir")
+        # elif index >= 10 and index < 20:
+        #     user_api_key = 'c09e9698c024bd5'
+        #     user_secret_key = '02c5e4ff622bb22'  
+        #     print("salman")
+        # elif index >= 20 and index < 30:
+        #     user_api_key = 'b5658b2d5a087d0'
+        #     user_secret_key = 'a9faaabc26bddc5' 
+        #     print("ahsan") 
+        # elif index >= 30 and index < 4:
+        #     user_api_key = '940ef42feabf766'
+        #     user_secret_key = '7a642a5b930eb44'
+        #     print("mujtaba")
         #support
         # lead_data = {
         #     'full_name':row['first_name'],
@@ -167,130 +167,62 @@ def upload_leads():
         # New Lead distribution keys concept for support
         # support 2 agents 30 leads fresh  Zeeshan, Mehtab
 
-        # if index <= 29:
+        # if index <= 10:
         #     user_api_key = 'a17f7cc184a55ec'
         #     user_secret_key = '3e26bf2dde0db20'
         #     print("zeeshan")
-        # if index <= 20:
-        #     user_api_key = 'a17f7cc184a55ec'
-        #     user_secret_key = '3e26bf2dde0db20'
-        #     print("zeeshan")
-        # elif index >=20 and index <= 40:
-            # user_api_key = '6b0bb41dba21795'
-            # user_secret_key = 'f56c627e47bdff6'
-            # print("mehtab")
-
-        # elif index >=29 and index <= 59:
+        # elif index >=10 and index <= 21:
+        #     user_api_key = '2a1d467717681df'
+        #     user_secret_key = '39faa082ac5f258'
+        #     print("haider")
+        # elif index >=21 and index <= 33:
         #     user_api_key = '6b0bb41dba21795'
         #     user_secret_key = 'f56c627e47bdff6'
         #     print("mehtab")
-        # elif index >=59 and index <= 90:
-        #     user_api_key = '2a1d467717681df'
-        #     user_secret_key = '39faa082ac5f258'
-        #     print("haider")
-     
-            
-
-
-
-
-
-        #haider bhai 10 leads
-        # if index <= 29:
-        #     user_api_key = '2a1d467717681df'
-        #     user_secret_key = '39faa082ac5f258'
-        #     print("haider")
       
         
         #india leads
         #maarij hamza toqir sunil
 
 
-        # if index <= 27:
+      
+        # if index <= 38:
         #     # Wamiq Keys
         #     user_api_key = '31c85c7e921b270'
         #     user_secret_key = '845aff8197932c3'
-        # elif index >= 27 and index < 54: 
+        # elif index >= 38 and index < 76: 
         #     # Saad Bhai Keys
         #     user_api_key = 'e31afcb884def7e'
         #     user_secret_key = 'cb799e6913b57f9'
-        # elif index >= 54 and index < 81:
+        # elif index >= 76 and index < 114:
         #     # Saima Keys
         #     user_api_key = '3da0a250742fa00'
         #     user_secret_key = '5ec8bb8e1e94930'
-        # elif index >= 81 and index < 108:
+        # elif index >= 114 and index < 152:
         #     # Shoaib keys
         #     user_api_key = '484f3e9978c00f3'
         #     user_secret_key = 'f61de5c03b3935d'
-        # elif index >= 108 and index < 135:
+        # elif index >= 152 and index < 190:
         #     # Suleman Keys
         #     user_api_key = '3f6d0f005e4fccc'
         #     user_secret_key = 'bbcaef6140205d2'
-        # elif index >= 135 and index < 162:
+        # elif index >= 190 and index < 228:
         #     # Ribal Keys
         #     user_api_key = '39d14c9d602fa09'
         #     user_secret_key = '216de0a015e7fd1'
-        # elif index >= 162 and index < 189:
+        # elif index >= 228 and index < 266:
         #     # Waqas Kes
         #     user_api_key = 'b09d1796de6444a'
         #     user_secret_key = '9ac70da03e4c23c'
-        # elif index >= 189 and index < 216:
+        # elif index >= 266 and index < 304:
         #     # Rehan Bhai keys
         #     user_api_key = 'b6a9a44a08790f8'
         #     user_secret_key = 'b6d91bfa5792ccc'
-        # elif index >= 216 and index < 243:
+        # elif index >= 304 and index < 342:
         #     # Marij Keys
         #     user_api_key = 'b3bb7a167ec651a'
         #     user_secret_key = '449cd28cd263361'
-        # elif index >= 243 and index < 270:
-        #     # Hamza Bhai keys
-        #     user_api_key = 'dd3d10e83dfbb6b'
-        #     user_secret_key = 'a1a50d549455fe3'
-        # elif index >= 270 and index < 297:
-        #     # Toqir Bhai keys
-        #     user_api_key = '5306bb96b02c8f1'
-        #     user_secret_key = '362d44b933cef9e'
-        # elif index >= 297 and index < 331:
-        #     # Sunil Keys
-        #     user_api_key = '9d37a29d966277f'
-        #     user_secret_key = '018c3f6127c43cc'
-        # if index <= 33:
-        #     # Wamiq Keys
-        #     user_api_key = '31c85c7e921b270'
-        #     user_secret_key = '845aff8197932c3'
-        # elif index >= 33 and index < 66: 
-        #     # Saad Bhai Keys
-        #     user_api_key = 'e31afcb884def7e'
-        #     user_secret_key = 'cb799e6913b57f9'
-        # elif index >= 66 and index < 99:
-        #     # Saima Keys
-        #     user_api_key = '3da0a250742fa00'
-        #     user_secret_key = '5ec8bb8e1e94930'
-        # elif index >= 99 and index < 132:
-        #     # Shoaib keys
-        #     user_api_key = '484f3e9978c00f3'
-        #     user_secret_key = 'f61de5c03b3935d'
-        # elif index >= 132 and index < 165:
-        #     # Suleman Keys
-        #     user_api_key = '3f6d0f005e4fccc'
-        #     user_secret_key = 'bbcaef6140205d2'
-        # elif index >= 165 and index < 198:
-        #     # Ribal Keys
-        #     user_api_key = '39d14c9d602fa09'
-        #     user_secret_key = '216de0a015e7fd1'
-        # elif index >= 198 and index < 231:
-        #     # Waqas Kes
-        #     user_api_key = 'b09d1796de6444a'
-        #     user_secret_key = '9ac70da03e4c23c'
-        # elif index >= 231 and index < 264:
-        #     # Rehan Bhai keys
-        #     user_api_key = 'b6a9a44a08790f8'
-        #     user_secret_key = 'b6d91bfa5792ccc'
-        # elif index >= 264 and index < 297:
-        #     # Marij Keys
-        #     user_api_key = 'b3bb7a167ec651a'
-        #     user_secret_key = '449cd28cd263361'
-        # elif index >= 297 and index < 330:
+        # elif index >= 342 and index < 342:
         #     # Sunil Keys
         #     user_api_key = '9d37a29d966277f'
         #     user_secret_key = '018c3f6127c43cc'
@@ -298,13 +230,52 @@ def upload_leads():
         #     # Toqir Bhai keys
         #     user_api_key = '5306bb96b02c8f1'
         #     user_secret_key = '362d44b933cef9e'
+            
+
+
+        # if index <= 37:
+        #     # Toqir Bhai keys
+        #     user_api_key = '5306bb96b02c8f1'
+        #     user_secret_key = '362d44b933cef9e'
+        # elif index >= 37 and index <= 74: 
+        #     # Saad Bhai Keys
+        #     user_api_key = 'e31afcb884def7e'
+        #     user_secret_key = 'cb799e6913b57f9'
+        # elif index >= 74 and index <= 111:
+        #     # Saima Keys
+        #     user_api_key = '3da0a250742fa00'
+        #     user_secret_key = '5ec8bb8e1e94930'
+        # elif index >= 111 and index <= 148:
+        #     # Shoaib keys
+        #     user_api_key = '484f3e9978c00f3'
+        #     user_secret_key = 'f61de5c03b3935d'
+        # elif index >= 148 and index <= 185:
+        #     # Suleman Keys
+        #     user_api_key = '3f6d0f005e4fccc'
+        #     user_secret_key = 'bbcaef6140205d2'
+        # elif index >= 185 and index <= 222:
+        #     # Ribal Keys
+        #     user_api_key = '39d14c9d602fa09'
+        #     user_secret_key = '216de0a015e7fd1'
+        # elif index >= 222 and index <= 259:
+        #     # Sunil Keys
+        #     user_api_key = '9d37a29d966277f'
+        #     user_secret_key = '018c3f6127c43cc'
+        # elif index >= 259 and index <= 296:
+        #     # Rehan Bhai keys
+        #     user_api_key = 'b6a9a44a08790f8'
+        #     user_secret_key = 'b6d91bfa5792ccc'
+        # elif index >= 296 and index <= 335:
+        #     # Marij Keys
+        #     user_api_key = 'b3bb7a167ec651a'
+        #     user_secret_key = '449cd28cd263361'
       
 
 
         # if index <= 11:
-        #     # Hamza Bhai keys only 10 leads indexes
-        #     user_api_key = 'dd3d10e83dfbb6b'
-        #     user_secret_key = 'a1a50d549455fe3'
+        # Hamza Bhai keys only 10 leads indexes
+        user_api_key = 'dd3d10e83dfbb6b'
+        user_secret_key = 'a1a50d549455fe3'
 
         #maarij
         #rehan
@@ -329,24 +300,6 @@ def upload_leads():
         #     user_secret_key = '845aff8197932c3'
 
     
-
-        # if index <= 5:
-        #     # Toqir Bhai keys
-        #     user_api_key = '5306bb96b02c8f1'
-        #     user_secret_key = '362d44b933cef9e'
-        # elif index >= 5 and index < 10:
-        #     # hamza
-        #     user_api_key = 'dd3d10e83dfbb6b'
-        #     user_secret_key = 'a1a50d549455fe3'
-        # elif index >= 10 and index < 15:
-        #     # sunil
-        #     user_api_key = '9d37a29d966277f'
-        #     user_secret_key = '018c3f6127c43cc'
-        # elif index >= 15 and index < 20:
-        #     # Marij
-        #     user_api_key = 'b3bb7a167ec651a'
-        #     user_secret_key = '449cd28cd263361'
-
         headers = {
             'Authorization': f'token {user_api_key}:{user_secret_key}',
             "Content-Type": "application/json",
@@ -445,85 +398,125 @@ def upload_leads():
                     writer.writerow(lead)
 
 
-upload_leads()
-
-
+# upload_leads()
 
 def upload_support_leads():
-    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/Old Support Leads - Old for Support.csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook.csv')
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
 
         # email_id,first_name,mobile_no,source,form,advert_detail
         #support
-        full_name = row['first_name']
-        email = row['email_id']
-        phone = row['mobile_no']
-        login_source = row['source']
-        advert = row['advert_detail']
-        created_at = datetime.now()
+        # full_name = row['first_name']
+        # email = row['email_id']
+        # phone = row['mobile_no']
+        # login_source = row['source']
+        # advert = row['advert_detail']
+        # created_at = datetime.now()
 
         form = row['form']
         form = None if pd.isna(form) else form
 
 
+        #sales
+        full_name = row['full_name']
+        email = row['email']
+        phone = row['phone']
+        country = row['country']
+        login_source = row['source']
+        created_at_str = row['created_at']
+        city = row['city']
+        advert = row['advert']
 
-        try:
-            moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
-                'first_name': full_name,
-                'phone': phone,
-                'email': email,
-                'form': form,
-                'login_source': login_source,
-                'created_at': created_at,
-                'advert': advert,
-            })
 
-            if not created:
-                moc.first_name = full_name
-                moc.email = email
-                moc.phone = phone
-                moc.form = form
-                moc.login_source = login_source
-                moc.created_at = created_at
-                moc.advert = advert
-                moc.save()
-        except Exception as e:
-            pass
+
+
+        # try:
+        #     moc, created = Moc_Leads.objects.get_or_create(email=email, defaults={
+        #         'first_name': full_name,
+        #         'phone': phone,
+        #         'email': email,
+        #         'form': form,
+        #         'login_source': login_source,
+        #         'created_at': created_at,
+        #         'advert': advert,
+        #     })
+
+        #     if not created:
+        #         moc.first_name = full_name
+        #         moc.email = email
+        #         moc.phone = phone
+        #         moc.form = form
+        #         moc.login_source = login_source
+        #         moc.created_at = created_at
+        #         moc.advert = advert
+        #         moc.save()
+        # except Exception as e:
+        #     pass
 
 
         #support
+        # lead_data = {
+        #     'full_name':row['first_name'],
+        #     'email':row['email_id'],
+        #     'phone': row['mobile_no'],
+        #     'login_source':row['source'],
+        #     'created_at_str': created_at, 
+        #     'form': row['form'],
+        #     'advert': row['advert_detail'],
+        # }
+
+
+           #sales
         lead_data = {
-            'full_name':row['first_name'],
-            'email':row['email_id'],
-            'phone': row['mobile_no'],
+            'full_name':row['full_name'],
+            'email':row['email'],
+            'phone': row['phone'],
+            'country': row['country'],
             'login_source':row['source'],
-            'created_at_str': created_at, 
+            'created_at_str': row['created_at'], 
             'form': row['form'],
-            'advert': row['advert_detail'],
+            'advert': row['advert'],
+            'city': row['city']
         }
+
 
 
     
         ## For Old Leads Support
-        # if index <= 10:
+        # if index < 30:
         #     user_api_key = 'ee3c9803e0a7aa0'
         #     user_secret_key = 'ad8a5dc4bc4f13f'
         #     print("mutahir")
-        # elif index >= 10 and index <= 20:
+        # elif index >= 30 and index < 60:
         #     user_api_key = 'c09e9698c024bd5'
         #     user_secret_key = '02c5e4ff622bb22'  
         #     print("salman")
-        # elif index >= 20 and index <= 30:
-        #     user_api_key = 'b5658b2d5a087d0'
-        #     user_secret_key = 'a9faaabc26bddc5' 
-        #     print("ahsan") 
-        # elif index >= 30 and index <= 40:
-        user_api_key = '940ef42feabf766'
-        user_secret_key = '7a642a5b930eb44'
-        print("mujtaba")
+        # elif index >= 60 and index < 90:
+            # user_api_key = 'b5658b2d5a087d0'
+            # user_secret_key = 'a9faaabc26bddc5' 
+            # print("ahsan") 
+        # elif index >= 90 and index < 120:
+            # user_api_key = '940ef42feabf766'
+            # user_secret_key = '7a642a5b930eb44'
+            # print("mujtaba")
+        # elif index <= 120 and index < 150:
+        # user_api_key = 'a17f7cc184a55ec'
+        # user_secret_key = '3e26bf2dde0db20'
+        # print("zeeshan")
+        # elif index >=150 and index <= 181:
+        # user_api_key = '6b0bb41dba21795'
+        # user_secret_key = 'f56c627e47bdff6'
+        # print("mehtab")
 
+        user_api_key = 'c09e9698c024bd5'
+        user_secret_key = '02c5e4ff622bb22'  
+        print("salman")
+
+
+
+  
         headers = {
             'Authorization': f'token {user_api_key}:{user_secret_key}',
             "Content-Type": "application/json",
@@ -555,7 +548,7 @@ def upload_support_leads():
             if pd.isna(value):
                 data[key] = None
 
-        url = 'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{}"]]'.format(row['email_id'])
+        url = 'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{}"]]'.format(row['email'])
 
         response = requests.get(url, headers=headers)
 
@@ -602,11 +595,12 @@ def upload_support_leads():
                     writer.writerow(lead)
 
 
-# upload_support_leads()
+upload_support_leads()
+                    
 
 
+#40 hamza bhai 
+                    
 
-
-
-
-
+#haider bhai
+# 30 support   Zeeshan, Mehtab,
