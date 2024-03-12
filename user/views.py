@@ -1347,9 +1347,8 @@ class GetAuthDataLead(APIView):
                 if lead.get('page_source'):
                     if source_filter and source_filter.lower() in lead.get('page_source', '').lower():
                         filtered_data.append(lead)
-                if lead.get('campaign'):
-                    if lead.get('campaign') and campaign and campaign.lower() in lead.get('campaign', '').lower():
-                        filtered_data.append(lead)
+                if lead.get('campaign') and campaign and campaign.lower() in lead.get('campaign', '').lower():
+                    filtered_data.append(lead)
             
             paginator = Paginator(filtered_data, 10)  
             try:
