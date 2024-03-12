@@ -1281,7 +1281,7 @@ class ExportDataAPIView(APIView):
         end_time = timezone.now()
 
         # Set start time to yesterday
-        start_time = end_time - timedelta(days=9) #stop from 28 feb
+        start_time = end_time - timedelta(days=1) #stop from 28 feb
 
         start_time = start_time.replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -1322,7 +1322,7 @@ class ExportDataAPIView(APIView):
         return Response({"msg": "done"})
 
 class GetAuthDataLead(APIView):
-    Authentication = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         email_filter = request.GET.get('q')
         source_filter = request.GET.get('source')
@@ -1330,7 +1330,9 @@ class GetAuthDataLead(APIView):
         page_number = request.GET.get('page')
         campaign = request.GET.get('campaign')
         # url = "http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/"
-        url = env('AUTH_SERVICE_LEAD_DATA')
+        # url = env('AUTH_SERVICE_LEAD_DATA')
+        # url=f'https://stage-auth.alnafi.edu.pk/api/v1.0/all-forms/get_leaddata/?email={email_filter}&source={source_filter}&campaign={campaign_filter}&export={export}&page={page_number}'
+        # url=f' http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/?email={email_filter}&source={source_filter}&campaign={campaign_filter}&export={export}&page={page_number}'
         response = requests.get(url)
         
         if response.status_code != 200:
@@ -1350,25 +1352,22 @@ class GetAuthDataLead(APIView):
                 if lead.get('campaign') and campaign and campaign.lower() in lead.get('campaign', '').lower():
                     filtered_data.append(lead)
             
-            paginator = Paginator(filtered_data, 10)  
-            try:
-                paginated_data = paginator.page(page_number)
-            except PageNotAnInteger:
-                paginated_data = paginator.page(1)
-            except EmptyPage:
-                paginated_data = paginator.page(paginator.num_pages)
+        #     if export == 'true':
+        #         file_name = f"Leads_Data_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+        #         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+        #         df = pd.DataFrame(paginated_data.object_list).to_csv(index=False)
+        #         s3 = upload_csv_to_s3(df, file_name)
+        #         data = {'file_link': file_path, 'export': 'true'}
+        #         return Response(data)
             
-            if export == 'true':
-                file_name = f"Leads_Data_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                df = pd.DataFrame(paginated_data.object_list).to_csv(index=False)
-                s3 = upload_csv_to_s3(df, file_name)
-                data = {'file_link': file_path, 'export': 'true'}
-                return Response(data)
-            return Response({
-                "total_count": total_count,
-                "num_pages": paginator.num_pages,
-                'current_page': paginated_data.number,
-                'has_next': paginated_data.has_next(), 
-                "data": paginated_data.object_list
-            })
+
+
+        #     return Response({
+        #         "total_count": total_count,
+        #         "num_pages": paginator.num_pages,
+        #         'current_page': paginated_data.number,
+        #         'has_next': paginated_data.has_next(), 
+        #         "data": paginated_data.object_list
+        #     })
+
+        return Response("working")
