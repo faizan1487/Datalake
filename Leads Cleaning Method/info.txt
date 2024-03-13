@@ -1,0 +1,53 @@
+# FOR AIOPS:
+
+    city = "-"
+    
+    form = "AIOps"
+    
+    country = "Pakistan"
+    
+    source = "Facebook"
+    
+    advert = "https://fb.me/rz4suL1GsQ3vYzp"
+
+
+
+# FOR CYBER SECURITY:
+
+    city = "-"
+    
+    form = "Cyber Security"
+    
+    country = "Pakistan"
+    
+    source = "Facebook"
+    
+    advert = "https://fb.me/21rMG0lv9fHcEpk"
+
+
+
+# FOR BLOCKCHAIN:
+
+    city = "-"
+    
+    form = "Blockchain"
+    
+    country = "Pakistan"
+    
+    source = "Facebook"
+    
+    advert = "https://fb.me/1S2JDVKsQTABpb8"
+
+
+# FOR O-LEVELS:
+
+    city = "-"
+    
+    form = "O Level Academy Form"
+    
+    country = "Pakistan"
+    
+    source = "Facebook"
+    
+    advert = "https://fb.me/9WkF3LV1vGqIO9"
+  

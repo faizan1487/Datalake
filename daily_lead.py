@@ -20,20 +20,13 @@ django.setup()
 from user.models import Moc_Leads
 
 
-# give them leads till 8 march
-# Zeeshan, Mehtab, haider bhai
-
-#support 2 agents 30 leads fresh  Zeeshan, Mehtab, haider bhai
-#hamza bhai 10 leads fresh
-# haider bhai 10 leads fresh
-# sales same process except hamza bhai
-# remaining 4 support agents 10 leads old
-
+#per sale agent 80 weekly leads include waqas and hamza bhai (exclude wamiq)
+#per support agent 50 weekly first priority o level leadas then facebook leads (include haider bhai)
 
 
 def upload_leads():
     # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/lead bank - Lead Godaam.csv')
-    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook.csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook (copy).csv')
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
@@ -181,101 +174,62 @@ def upload_leads():
         #     print("mehtab")
       
         
-        #india leads
-        #maarij hamza toqir sunil
 
-
-      
-        # if index <= 38:
-        #     # Wamiq Keys
+          # Wamiq Keys
         #     user_api_key = '31c85c7e921b270'
         #     user_secret_key = '845aff8197932c3'
-        # elif index >= 38 and index < 76: 
+      
+        # if index <= 18:
         #     # Saad Bhai Keys
         #     user_api_key = 'e31afcb884def7e'
         #     user_secret_key = 'cb799e6913b57f9'
-        # elif index >= 76 and index < 114:
+        # elif index >= 18 and index < 36: 
         #     # Saima Keys
         #     user_api_key = '3da0a250742fa00'
         #     user_secret_key = '5ec8bb8e1e94930'
-        # elif index >= 114 and index < 152:
+        # elif index >= 36 and index < 54:
         #     # Shoaib keys
         #     user_api_key = '484f3e9978c00f3'
         #     user_secret_key = 'f61de5c03b3935d'
-        # elif index >= 152 and index < 190:
+        # elif index >= 54 and index < 72:
         #     # Suleman Keys
         #     user_api_key = '3f6d0f005e4fccc'
         #     user_secret_key = 'bbcaef6140205d2'
-        # elif index >= 190 and index < 228:
+        # elif index >= 72 and index < 90:
         #     # Ribal Keys
         #     user_api_key = '39d14c9d602fa09'
         #     user_secret_key = '216de0a015e7fd1'
-        # elif index >= 228 and index < 266:
+        # elif index >= 90 and index < 108:
         #     # Waqas Kes
         #     user_api_key = 'b09d1796de6444a'
         #     user_secret_key = '9ac70da03e4c23c'
-        # elif index >= 266 and index < 304:
+        # elif index >= 108 and index < 126:
         #     # Rehan Bhai keys
         #     user_api_key = 'b6a9a44a08790f8'
         #     user_secret_key = 'b6d91bfa5792ccc'
-        # elif index >= 304 and index < 342:
-        #     # Marij Keys
-        #     user_api_key = 'b3bb7a167ec651a'
-        #     user_secret_key = '449cd28cd263361'
-        # elif index >= 342 and index < 342:
+        # elif index >= 126 and index < 144:
+        # Marij Keys
+            # user_api_key = 'b3bb7a167ec651a'
+            # user_secret_key = '449cd28cd263361'
+        # elif index >= 144 and index < 162:
         #     # Sunil Keys
-        #     user_api_key = '9d37a29d966277f'
-        #     user_secret_key = '018c3f6127c43cc'
-        # elif index >= 330 and index < 370:
+        user_api_key = '9d37a29d966277f'
+        user_secret_key = '018c3f6127c43cc'
+        # elif index >= 162 and index < 186:
         #     # Toqir Bhai keys
-        #     user_api_key = '5306bb96b02c8f1'
-        #     user_secret_key = '362d44b933cef9e'
+            # user_api_key = '5306bb96b02c8f1'
+            # user_secret_key = '362d44b933cef9e'
             
 
 
-        # if index <= 37:
-        #     # Toqir Bhai keys
-        #     user_api_key = '5306bb96b02c8f1'
-        #     user_secret_key = '362d44b933cef9e'
-        # elif index >= 37 and index <= 74: 
-        #     # Saad Bhai Keys
-        #     user_api_key = 'e31afcb884def7e'
-        #     user_secret_key = 'cb799e6913b57f9'
-        # elif index >= 74 and index <= 111:
-        #     # Saima Keys
-        #     user_api_key = '3da0a250742fa00'
-        #     user_secret_key = '5ec8bb8e1e94930'
-        # elif index >= 111 and index <= 148:
-        #     # Shoaib keys
-        #     user_api_key = '484f3e9978c00f3'
-        #     user_secret_key = 'f61de5c03b3935d'
-        # elif index >= 148 and index <= 185:
-        #     # Suleman Keys
-        #     user_api_key = '3f6d0f005e4fccc'
-        #     user_secret_key = 'bbcaef6140205d2'
-        # elif index >= 185 and index <= 222:
-        #     # Ribal Keys
-        #     user_api_key = '39d14c9d602fa09'
-        #     user_secret_key = '216de0a015e7fd1'
-        # elif index >= 222 and index <= 259:
-        #     # Sunil Keys
-        #     user_api_key = '9d37a29d966277f'
-        #     user_secret_key = '018c3f6127c43cc'
-        # elif index >= 259 and index <= 296:
-        #     # Rehan Bhai keys
-        #     user_api_key = 'b6a9a44a08790f8'
-        #     user_secret_key = 'b6d91bfa5792ccc'
-        # elif index >= 296 and index <= 335:
-        #     # Marij Keys
-        #     user_api_key = 'b3bb7a167ec651a'
-        #     user_secret_key = '449cd28cd263361'
+
       
 
 
         # if index <= 11:
         # Hamza Bhai keys only 10 leads indexes
-        user_api_key = 'dd3d10e83dfbb6b'
-        user_secret_key = 'a1a50d549455fe3'
+        # user_api_key = 'dd3d10e83dfbb6b'
+        # user_secret_key = 'a1a50d549455fe3'
 
         #maarij
         #rehan
@@ -398,7 +352,7 @@ def upload_leads():
                     writer.writerow(lead)
 
 
-# upload_leads()
+upload_leads()
 
 def upload_support_leads():
     data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook.csv')
@@ -595,7 +549,7 @@ def upload_support_leads():
                     writer.writerow(lead)
 
 
-upload_support_leads()
+# upload_support_leads()
                     
 
 
