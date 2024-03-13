@@ -1322,52 +1322,19 @@ class ExportDataAPIView(APIView):
         return Response({"msg": "done"})
 
 class GetAuthDataLead(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
-        email_filter = request.GET.get('q')
-        source_filter = request.GET.get('source')
-        export = request.GET.get('export')
-        page_number = request.GET.get('page')
-        campaign = request.GET.get('campaign')
+        email_filter = request.GET.get('q', '')
+        source_filter = request.GET.get('source', '')
+        export = request.GET.get('export', '')
+        page_number = request.GET.get('page', '')
+        campaign = request.GET.get('campaign', '')
         # url = "http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/"
         # url = env('AUTH_SERVICE_LEAD_DATA')
-        # url=f'https://stage-auth.alnafi.edu.pk/api/v1.0/all-forms/get_leaddata/?email={email_filter}&source={source_filter}&campaign={campaign_filter}&export={export}&page={page_number}'
-        url=f' http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/?email={email_filter}&source={source_filter}&campaign={campaign}&export={export}&page={page_number}'
+        url = f"{env('AUTH_SERVICE_LEAD_DATA')}?email={email_filter}&source={source_filter}&campaign={campaign}&export={export}&page={page_number}"
+        # url=f'http://127.0.0.1:8000/api/v1.0/all-forms/get_leaddata/?email={email_filter}&source={source_filter}&campaign={campaign}&export={export}&page={page_number}'
         response = requests.get(url)
-        
-        if response.status_code != 200:
-            return Response(status=response.status_code)
-        else:
-            json_data = response.json()
-            total_count = len(json_data)
-            filtered_data = []
-            if not email_filter and not source_filter and not export:
-                filtered_data = json_data
-            for lead in json_data:
-                if email_filter and email_filter.lower() in lead.get('email', '').lower():
-                    filtered_data.append(lead)
-                if lead.get('page_source'):
-                    if source_filter and source_filter.lower() in lead.get('page_source', '').lower():
-                        filtered_data.append(lead)
-                if lead.get('campaign') and campaign and campaign.lower() in lead.get('campaign', '').lower():
-                    filtered_data.append(lead)
-            
-        #     if export == 'true':
-        #         file_name = f"Leads_Data_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-        #         file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-        #         df = pd.DataFrame(paginated_data.object_list).to_csv(index=False)
-        #         s3 = upload_csv_to_s3(df, file_name)
-        #         data = {'file_link': file_path, 'export': 'true'}
-        #         return Response(data)
-            
-
-
-        #     return Response({
-        #         "total_count": total_count,
-        #         "num_pages": paginator.num_pages,
-        #         'current_page': paginated_data.number,
-        #         'has_next': paginated_data.has_next(), 
-        #         "data": paginated_data.object_list
-        #     })
-
-        return Response("working")
+        json_data = response.json()
+        # print(json_data)
+        return Response(json_data)
+       
