@@ -170,6 +170,7 @@ INSTALLED_APPS = [
     'newsletter.apps.NewsletterConfig',
     'stream.apps.StreamConfig',
     'affiliate.apps.AffiliateConfig',
+    'coupon.apps.CouponConfig',
     "corsheaders",
     "secrets_api",
     'elasticapm.contrib.django',
