@@ -37,8 +37,8 @@ class LiveCoupons(APIView):
 class CouponUsers(APIView):
     def get(self, request):
         coupon = request.GET.get('coupon', None)
-        # url=f"http://127.0.0.1:8000/payments/coupon-users"
-        url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
+        url=f"http://127.0.0.1:8001/payments/coupon-users"
+        # url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
 
         coupons = {
             "Limited5": "tesitnsdkf213"
