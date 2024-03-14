@@ -36,11 +36,23 @@ class LiveCoupons(APIView):
 
 class CouponUsers(APIView):
     def get(self, request):
-        coupon = request.GET.get('coupon')
-        url=f"http://127.0.0.1:8000/payments/coupon-users"
+        coupon = request.GET.get('coupon', None)
+        # url=f"http://127.0.0.1:8000/payments/coupon-users"
+        url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
+
+        coupons = {
+            "Limited5": "tesitnsdkf213"
+        }
+
+        coupon_param = None
+        # Search for a key
+        search_key = coupon
+        if search_key in coupons:
+            coupon_param = coupons[search_key]
+
 
         params = {
-            'coupon': coupon
+            'coupon': coupon_param
         }
         response = requests.get(url,params=params)
 
