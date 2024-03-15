@@ -26,7 +26,7 @@ from user.models import Moc_Leads
 
 def upload_leads():
     # data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/lead bank - Lead Godaam.csv')
-    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook (copy).csv')
+    data = pd.read_csv('/home/faizan/albaseer/Al-Baseer-Backend/MOC Leads - Al Baseer to CRM - Facebook.csv')
     # Iterate over rows in the DataFrame
     for index, row in data.iterrows():
         failed_leads = []
@@ -127,32 +127,32 @@ def upload_leads():
 
         #SUpport keys
         # if index <= 9:
-        #     user_api_key = '2a1d467717681df'
-        #     user_secret_key = '39faa082ac5f258'
+            # user_api_key = '2a1d467717681df'
+            # user_secret_key = '39faa082ac5f258'
         #     print("haider")
         # elif index >= 10 and index < 20:
-        #     user_api_key = 'ee3c9803e0a7aa0'
-        #     user_secret_key = 'ad8a5dc4bc4f13f'
-        #     print("mutahir")
+            # user_api_key = 'ee3c9803e0a7aa0'
+            # user_secret_key = 'ad8a5dc4bc4f13f'
+            # print("mutahir")
         # elif index >= 20 and index < 30:
-        #     user_api_key = 'a17f7cc184a55ec'
-        #     user_secret_key = '3e26bf2dde0db20'
+            # user_api_key = 'a17f7cc184a55ec'
+            # user_secret_key = '3e26bf2dde0db20'
         #     print("zeeshan")
         # elif index >= 30 and index < 40:
-        #     user_api_key = '6b0bb41dba21795'
-        #     user_secret_key = 'f56c627e47bdff6'
-        #     print("mehtab")
+            # user_api_key = '6b0bb41dba21795'
+            # user_secret_key = 'f56c627e47bdff6'
+            # print("mehtab")
         # elif index >= 40 and index < 50:
-        #     user_api_key = 'c09e9698c024bd5'
-        #     user_secret_key = '02c5e4ff622bb22'  
-        #     print("salman")
+            # user_api_key = 'c09e9698c024bd5'
+            # user_secret_key = '02c5e4ff622bb22'  
+            # print("salman")
         # elif index >= 50 and index < 60:
         #     user_api_key = 'b5658b2d5a087d0'
         #     user_secret_key = 'a9faaabc26bddc5' 
         #     print("ahsan") 
         # elif index >= 60 and index < 70:
-        #     user_api_key = '940ef42feabf766'
-        #     user_secret_key = '7a642a5b930eb44'
+        # user_api_key = '940ef42feabf766'
+        # user_secret_key = '7a642a5b930eb44'
         #     print("mujtaba")
 
 
@@ -189,32 +189,32 @@ def upload_leads():
         #     user_secret_key = '5ec8bb8e1e94930'
         # elif index >= 36 and index < 54:
         #     # Shoaib keys
-        #     user_api_key = '484f3e9978c00f3'
-        #     user_secret_key = 'f61de5c03b3935d'
+        # user_api_key = '484f3e9978c00f3'
+        # user_secret_key = 'f61de5c03b3935d'
         # elif index >= 54 and index < 72:
         #     # Suleman Keys
-        #     user_api_key = '3f6d0f005e4fccc'
-        #     user_secret_key = 'bbcaef6140205d2'
+            # user_api_key = '3f6d0f005e4fccc'
+            # user_secret_key = 'bbcaef6140205d2'
         # elif index >= 72 and index < 90:
         #     # Ribal Keys
         #     user_api_key = '39d14c9d602fa09'
         #     user_secret_key = '216de0a015e7fd1'
         # elif index >= 90 and index < 108:
         #     # Waqas Kes
-        #     user_api_key = 'b09d1796de6444a'
-        #     user_secret_key = '9ac70da03e4c23c'
+        # user_api_key = 'b09d1796de6444a'
+        # user_secret_key = '9ac70da03e4c23c'
         # elif index >= 108 and index < 126:
         #     # Rehan Bhai keys
         #     user_api_key = 'b6a9a44a08790f8'
         #     user_secret_key = 'b6d91bfa5792ccc'
         # elif index >= 126 and index < 144:
         # Marij Keys
-            # user_api_key = 'b3bb7a167ec651a'
-            # user_secret_key = '449cd28cd263361'
+        # user_api_key = 'b3bb7a167ec651a'
+        # user_secret_key = '449cd28cd263361'
         # elif index >= 144 and index < 162:
         #     # Sunil Keys
-        user_api_key = '9d37a29d966277f'
-        user_secret_key = '018c3f6127c43cc'
+            # user_api_key = '9d37a29d966277f'
+            # user_secret_key = '018c3f6127c43cc'
         # elif index >= 162 and index < 186:
         #     # Toqir Bhai keys
             # user_api_key = '5306bb96b02c8f1'
@@ -228,8 +228,8 @@ def upload_leads():
 
         # if index <= 11:
         # Hamza Bhai keys only 10 leads indexes
-        # user_api_key = 'dd3d10e83dfbb6b'
-        # user_secret_key = 'a1a50d549455fe3'
+            # user_api_key = 'dd3d10e83dfbb6b'
+            # user_secret_key = 'a1a50d549455fe3'
 
         #maarij
         #rehan
@@ -252,6 +252,11 @@ def upload_leads():
         #     # Wamiq Keys
         #     user_api_key = '31c85c7e921b270'
         #     user_secret_key = '845aff8197932c3'
+
+
+        user_api_key = 'b5658b2d5a087d0'
+        user_secret_key = 'a9faaabc26bddc5' 
+        print("ahsan") 
 
     
         headers = {
@@ -448,8 +453,8 @@ def upload_support_leads():
         #     user_secret_key = '02c5e4ff622bb22'  
         #     print("salman")
         # elif index >= 60 and index < 90:
-            # user_api_key = 'b5658b2d5a087d0'
-            # user_secret_key = 'a9faaabc26bddc5' 
+        user_api_key = 'b5658b2d5a087d0'
+        user_secret_key = 'a9faaabc26bddc5' 
             # print("ahsan") 
         # elif index >= 90 and index < 120:
             # user_api_key = '940ef42feabf766'
@@ -464,9 +469,9 @@ def upload_support_leads():
         # user_secret_key = 'f56c627e47bdff6'
         # print("mehtab")
 
-        user_api_key = 'c09e9698c024bd5'
-        user_secret_key = '02c5e4ff622bb22'  
-        print("salman")
+        # user_api_key = 'c09e9698c024bd5'
+        # user_secret_key = '02c5e4ff622bb22'  
+        # print("salman")
 
 
 

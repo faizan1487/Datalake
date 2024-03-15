@@ -8,7 +8,7 @@ import requests
 
 # Create your views here.
 class LiveCoupons(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         # q = self.request.GET.get('q', None) or None
         url="https://content-service.alnafi.edu.pk/api/coupons-data/?populate=*"
@@ -35,24 +35,15 @@ class LiveCoupons(APIView):
 
 
 class CouponUsers(APIView):
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         coupon = request.GET.get('coupon', None)
         url=f"http://127.0.0.1:8001/payments/coupon-users"
         # url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
 
-        coupons = {
-            "Limited5": "tesitnsdkf213"
-        }
-
-        coupon_param = None
-        # Search for a key
-        search_key = coupon
-        if search_key in coupons:
-            coupon_param = coupons[search_key]
-
-
+  
         params = {
-            'coupon': coupon_param
+            'coupon': coupon
         }
         response = requests.get(url,params=params)
 
