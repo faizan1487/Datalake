@@ -38,8 +38,8 @@ class CouponUsers(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         coupon = request.GET.get('coupon', None)
-        url=f"http://127.0.0.1:8001/payments/coupon-users"
-        # url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
+        # url=f"http://127.0.0.1:8001/payments/coupon-users"
+        url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
 
   
         params = {
