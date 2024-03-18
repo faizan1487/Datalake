@@ -51,5 +51,6 @@ class CouponUsers(APIView):
             'end_date': end_date
         }
         response = requests.get(url,params=params)
+        
         data = response.json()
         return Response(data)
