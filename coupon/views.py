@@ -50,7 +50,15 @@ class CouponUsers(APIView):
             'start_date': start_date,
             'end_date': end_date
         }
-        response = requests.get(url,params=params)
-        
-        data = response.json()
-        return Response(data)
+
+        try:
+            response = requests.get(url, params=params)
+            response.raise_for_status()  # Raise an exception for non-200 status codes
+            data = response.json()
+            return Response(data)
+        except requests.exceptions.RequestException as e:
+            if response.status_code == 500:
+                return Response({'message': 'Internal server error occurred. Please try again later.'}, status=500)
+            else:
+                # Handle other types of request exceptions
+                return Response({'message': f'An error occurred: {str(e)}'}, status=response.status_code)
