@@ -336,3 +336,49 @@ class CvForms(models.Model):
     def __str__(self):
         return self.email
 
+
+
+class Testing_User(models.Model):
+    username = models.CharField(max_length=255, null=True, blank=True)
+    first_name = models.CharField(max_length=255, null=True, blank=True)
+    last_name = models.CharField(max_length=255, null=True, blank=True)
+    email = models.EmailField(null=True, blank=True)
+    source = models.CharField(max_length=255,null=True, blank=True)
+    internal_source = models.CharField(max_length=255,null=True, blank=True)
+    phone = models.CharField(max_length=255, null=True, blank=True)
+    address = models.CharField(max_length=255, null=True, blank=True)
+    country = models.CharField(max_length=255, null=True, blank=True)
+    language = models.CharField(max_length=255, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+    modified_at = models.DateTimeField(auto_now_add=True,null=True, blank=True)
+    verification_code = models.CharField(max_length=30, null=True, blank=True)
+    isAffiliate = models.BooleanField(default=False)
+    how_did_you_hear_about_us = models.CharField(max_length=255, null=True, blank=True)
+    affiliate_code = models.CharField(max_length=255, null=True, blank=True)
+    isMentor = models.BooleanField(default=False)
+    is_paying_customer = models.BooleanField(default=False)
+    role = models.CharField(max_length=255, null=True, blank=True)
+    erp_lead_id = models.CharField(max_length=255,blank=True, null=True)
+    student_email = models.CharField(max_length=255, null=True, blank=True)
+    student_email_status = models.CharField(max_length=50, null=True, blank=True)
+    verified = models.BooleanField(default=False)
+    blocked = models.BooleanField(default=False)
+    meta_data = models.JSONField(null=True, blank=True)
+    facebook_user_id = models.CharField(null=True, blank=True, max_length=50)
+    google_user_id = models.CharField(null=True, blank=True, max_length=50)
+    provider = models.CharField(null=True, blank=True, max_length=50)
+    easypaisa_number = models.CharField(max_length=15, null=True, blank=True)
+    is_superuser = models.BooleanField(default=False)
+    is_staff = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=False)
+    academy_demo_access = models.BooleanField(default=False)
+    date_joined = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.email}"
+    
+    
+    class Meta:
+        managed = True
+        verbose_name = "Test User"
+        ordering = ['-created_at']

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import AlNafi_User
 from .models import Main_User
-from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User, CvForms
+from user.models import IslamicAcademy_User, User, NavbarLink, PSWFormRecords, Marketing_PKR_Form, Moc_Leads, New_AlNafi_User, CvForms, Testing_User
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from import_export.admin import ImportExportModelAdmin, ExportActionModelAdmin
 
@@ -59,6 +59,9 @@ class Main_UserAdmin(ImportExportModelAdmin,ExportActionModelAdmin,admin.ModelAd
 
 admin.site.register(Main_User, Main_UserAdmin)
 
+
+
+
 class UserModelAdmin(BaseUserAdmin):
   # The fields to be used in displaying the User model.
   # These override the definitions on the base UserModelAdmin
@@ -110,3 +113,13 @@ class CvFormAdmin(admin.ModelAdmin):
     list_per_page = 100
 
 admin.site.register(CvForms, CvFormAdmin)
+
+
+
+class Testing_UserAdmin(ImportExportModelAdmin,ExportActionModelAdmin,admin.ModelAdmin):
+    list_display = ["id","username", "first_name", "last_name", "email", "source", "internal_source", "phone", "address", "country", "language", "created_at", "modified_at", "verification_code", "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer", "role"]
+    search_fields = ("id","username", "first_name", "last_name", "email", "source", "internal_source", "phone", "address", "country", "language", "created_at", "modified_at", "verification_code", "isAffiliate", "affiliate_code", "isMentor", "is_paying_customer", "role")
+    list_filter = ("source", "country", "language", "created_at", "modified_at", "verification_code", "isMentor", "is_paying_customer", "role")
+
+admin.site.register(Testing_User, Testing_UserAdmin)
+

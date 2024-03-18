@@ -1,7 +1,7 @@
 from django.middleware import csrf
 from django.shortcuts import render
 from numpy import source
-from .models import AlNafi_User, IslamicAcademy_User, Main_User, User
+from .models import AlNafi_User, IslamicAcademy_User, Main_User, User, Testing_User
 from django.db.models import Q
 from django.conf import settings
 from django.utils.timezone import is_naive, make_aware, utc
@@ -67,69 +67,132 @@ def paying_users_details(query_time, is_converted):
     response = {"converted_users":converted_users, "converted": converted, "products":all_paid_users_products}
     return response
 
-def search_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access):
-    users = Main_User.objects.exclude(email__endswith="yopmail.com").values(
-        "id", "email", "username", "first_name", "last_name", "source", "internal_source",
-        "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
-        "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer",
-        "role", "erp_lead_id","academy_demo_access"
-    )
+def search_users(q, start_date, req_end_date, is_converted,source,request,phone,academy_demo_access,has_perm):
+    if has_perm:
+        users = Main_User.objects.exclude(email__endswith="yopmail.com").values(
+            "id", "email", "username", "first_name", "last_name", "source", "internal_source",
+            "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
+            "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer",
+            "role", "erp_lead_id","academy_demo_access"
+        )
 
-    # print(source)
-    if source:
-        if source == 'Academy':
-            users = users.filter(Q(internal_source='Academy') | Q(academy_demo_access=True))
-        elif source == 'Al-Nafi':
-            users = users.filter(Q(source='Al-Nafi') & ~Q(internal_source='Al-Nafi') & Q(academy_demo_access=False))
-        else:
-            users = users.filter(source=source)
-
-    if academy_demo_access:
-        users = users.filter(academy_demo_access=academy_demo_access)
-    
-    if users:
-        if not start_date:
-            first_user = users.exclude(created_at=None).last()
-            if first_user and first_user['created_at']:
-                date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f")
-                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
-                start_date = new_date_obj
-
-       
-        if not req_end_date:
-            last_user = users.exclude(created_at=None).first()
-            if last_user and last_user['created_at']:
-                date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f")
-                new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
-                end_date = new_date_obj
-
-        # print(request.user)
-        if req_end_date:
-            end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
-            end_date = end_date + timedelta(days=1)
-
-        if q:
-            users = users.filter(
-                Q(email__icontains=q) | Q(username__icontains=q) | Q(first_name__icontains=q)| Q(id__icontains=q))   
-            
-        if q:
-            if request.user.is_admin:
-                users = users.filter(email__icontains=q)
+        # print(source)
+        if source:
+            if source == 'Academy':
+                users = users.filter(Q(internal_source='Academy') | Q(academy_demo_access=True))
+            elif source == 'Al-Nafi':
+                users = users.filter(Q(source='Al-Nafi') & ~Q(internal_source='Al-Nafi') & Q(academy_demo_access=False))
             else:
-                users = users.filter(email__iexact=q)
+                users = users.filter(source=source)
 
-        if phone:
-            phone = phone.strip()
-            if phone.startswith("92"):
-                phone = "+" + phone
-            if request.user.is_admin:
-                users = users.filter(phone__icontains=phone)
+        if academy_demo_access:
+            users = users.filter(academy_demo_access=academy_demo_access)
+        
+        if users:
+            if not start_date:
+                first_user = users.exclude(created_at=None).last()
+                if first_user and first_user['created_at']:
+                    date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f")
+                    new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                    start_date = new_date_obj
+
+        
+            if not req_end_date:
+                last_user = users.exclude(created_at=None).first()
+                if last_user and last_user['created_at']:
+                    date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f")
+                    new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                    end_date = new_date_obj
+
+            # print(request.user)
+            if req_end_date:
+                end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
+                end_date = end_date + timedelta(days=1)
+
+            if q:
+                users = users.filter(
+                    Q(email__icontains=q) | Q(username__icontains=q) | Q(first_name__icontains=q)| Q(id__icontains=q))   
+                
+            if q:
+                if request.user.is_admin:
+                    users = users.filter(email__icontains=q)
+                else:
+                    users = users.filter(email__iexact=q)
+
+            if phone:
+                phone = phone.strip()
+                if phone.startswith("92"):
+                    phone = "+" + phone
+                if request.user.is_admin:
+                    users = users.filter(phone__icontains=phone)
+                else:
+                    users = users.filter(phone__iexact=phone)
+
+            users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
+            users = paying_users_details(users, is_converted)
+        return users 
+    else:
+        users = Testing_User.objects.exclude(email__endswith="yopmail.com").values(
+            "id", "email", "username", "first_name", "last_name", "source", "internal_source",
+            "phone", "address", "country", "language", "created_at", "modified_at", "verification_code",
+            "isAffiliate", "how_did_you_hear_about_us", "affiliate_code", "isMentor", "is_paying_customer",
+            "role", "erp_lead_id","academy_demo_access"
+        )
+
+        # print(source)
+        if source:
+            if source == 'Academy':
+                users = users.filter(Q(internal_source='Academy') | Q(academy_demo_access=True))
+            elif source == 'Al-Nafi':
+                users = users.filter(Q(source='Al-Nafi') & ~Q(internal_source='Al-Nafi') & Q(academy_demo_access=False))
             else:
-                users = users.filter(phone__iexact=phone)
+                users = users.filter(source=source)
 
-        users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
-        users = paying_users_details(users, is_converted)
-    return users 
+        if academy_demo_access:
+            users = users.filter(academy_demo_access=academy_demo_access)
+        
+        if users:
+            if not start_date:
+                first_user = users.exclude(created_at=None).last()
+                if first_user and first_user['created_at']:
+                    date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f")
+                    new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                    start_date = new_date_obj
+
+        
+            if not req_end_date:
+                last_user = users.exclude(created_at=None).first()
+                if last_user and last_user['created_at']:
+                    date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f")
+                    new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
+                    end_date = new_date_obj
+
+            # print(request.user)
+            if req_end_date:
+                end_date = datetime.strptime(req_end_date, "%Y-%m-%d")
+                end_date = end_date + timedelta(days=1)
+
+            if q:
+                users = users.filter(
+                    Q(email__icontains=q) | Q(username__icontains=q) | Q(first_name__icontains=q)| Q(id__icontains=q))   
+
+            if phone:
+                phone = phone.strip()
+                if phone.startswith("92"):
+                    phone = "+" + phone
+                if request.user.is_admin:
+                    users = users.filter(phone__icontains=phone)
+                else:
+                    users = users.filter(phone__iexact=phone)
+
+            users = users.filter(Q(created_at__lte = end_date) & Q(created_at__gte = start_date))
+
+        return users 
+
+
+
+
+
 
 
 #PRoduction
@@ -287,80 +350,6 @@ def active_paying_users_details(query_time,is_converted):
     # print(users_count)
     response = {"users":user_list, "count":users_count}
     return response
-
-
-#LOCAL
-# def search_active_users(q, start_date, req_end_date, is_converted, source, request, phone, academy_demo_access, page):
-#     users = Main_User.objects.all()
-
-#     if q:
-#         users = users.filter(Q(email__iexact=q))
-
-#     if users:
-#         users = users.prefetch_related('user_payments')
-
-#         page_size = 10  # Number of payments per page
-#         # Calculate the start and end indices for slicing
-#         start_index = (page - 1) * page_size
-#         end_index = start_index + page_size
-
-#         users = users[start_index:end_index]
-#         paying_users = active_paying_users_details(users)
-#         users = {"converted_users": paying_users, 'success': True}
-#     return users
-
-
-#LOCAL
-# def active_paying_users_details(users):
-#     user_list = []
-
-#     for user in users:
-#         payments = user.user_payments.exclude(expiration_datetime__isnull=True).order_by('-order_datetime')
-#         if payments:
-#             payment = payments[0]  # Only interested in the first payment
-#             products = payment.product.all()
-#             # print(products)
-#             # print(products)
-#             user_dict = {
-#                 'username': user.username,
-#                 'phone': user.phone,
-#                 'academy_demo_access': user.academy_demo_access,
-#                 'address': user.address,
-#                 'affiliate_code': user.affiliate_code,
-#                 'blocked': user.blocked,
-#                 'country': user.country,
-#                 'created_at': user.created_at,
-#                 'date_joined': user.date_joined,
-#                 'easypaisa_number': user.easypaisa_number,
-#                 'email': user.email,
-#                 'erp_lead_id': user.erp_lead_id,
-#                 'facebook_user_id': user.facebook_user_id,
-#                 'first_name': user.first_name,
-#                 'google_user_id': user.google_user_id,
-#                 'how_did_you_hear_about_us': user.how_did_you_hear_about_us,
-#                 'id': user.id,
-#                 'source': user.source,
-#                 'internal_source': user.internal_source,
-#                 'isAffiliate': user.isAffiliate,
-#                 'isMentor': user.isMentor,
-#                 'is_active': user.is_active,
-#                 'is_paying_customer': user.is_paying_customer,
-#                 'is_staff': user.is_staff,
-#                 'is_superuser': user.is_superuser,
-#                 'language': user.language,
-#                 'last_name': user.last_name,
-#                 'meta_data': user.meta_data,
-#                 'modified_at': user.modified_at,
-#                 'product': products[0].product_name if products else None,  # Assuming Payment has a foreign key to Product
-#                 'plan': products[0].product_plan if products else None, # Assuming Payment has a foreign key to
-#                 'expiry_date': payment.expiration_datetime,
-#             }
-
-#             user_dict['is_paying_customer'] = True
-
-#             user_list.append(user_dict)
-
-#     return user_list
 
 
 
@@ -527,66 +516,3 @@ class GroupPermission(BasePermission):
 
 
 
-
-
-
-# from django.db.models import Subquery, OuterRef
-
-# def paying_users_details(query_time, is_converted):
-#     converted_users = []
-#     converted = []
-
-#     all_paid_users = query_time.filter(
-#         id__in=Main_Payment.objects.filter(source='Al-Nafi').values_list('user_id', flat=True)
-#     ).values('id', 'username', 'email', 'first_name', 'last_name', 'source', 'phone', 'address', 'country', 'created_at')
-
-#     all_unpaid_users = query_time.exclude(source='Al-Nafi')
-
-#     if is_converted == 'true':
-#         converted_users = list(all_paid_users)
-#         converted = [True] * len(converted_users)
-#     elif is_converted == 'false':
-#         converted_users = list(all_unpaid_users)
-#         converted = [False] * len(converted_users)
-#     else:
-#         converted_users = list(all_paid_users) + list(all_unpaid_users)
-#         converted = [True] * len(all_paid_users) + [False] * len(all_unpaid_users)
-
-#     all_paid_users_products = Main_Payment.objects.filter(
-#         source='Al-Nafi', user_id__in=all_paid_users.values_list('id', flat=True)
-#     ).values('user__email', 'product__product_name')
-
-#     response = {"converted_users": converted_users, "converted": converted, "products": all_paid_users_products}
-#     return response
-
-
-
-# def search_users(q, start_date, end_date, is_converted, source):
-#     users = Main_User.objects.all().values()
-
-#     if source:
-#         users = users.filter(source=source)
-
-#     if not start_date:
-#         first_user = users.exclude(created_at=None).last()
-#         date_time_obj = first_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
-#         start_date = new_date_obj
-
-#     if not end_date:
-#         last_user = users.exclude(created_at=None).first()
-#         date_time_obj = last_user['created_at'].strftime("%Y-%m-%d %H:%M:%S.%f%z")
-#         new_date_obj = datetime.strptime(date_time_obj, "%Y-%m-%d %H:%M:%S.%f")
-#         end_date = new_date_obj
-
-#     if q:
-#         users = users.filter(
-#             Q(email__iexact=q) | Q(username__iexact=q) | Q(first_name__iexact=q) | Q(id__iexact=q))
-
-#     users = users.filter(Q(created_at__date__lte=end_date) & Q(created_at__date__gte=start_date))
-#     converted_users = paying_users_details(users, is_converted)
-    
-#     converted_dict = {user['email']: converted for user, converted in zip(users, converted_users)}
-
-#     response = {"converted_users": users, "converted": converted_dict, "products": converted_users['products']}
-#     return response
