@@ -36,15 +36,19 @@ class LiveCoupons(APIView):
 
 
 class CouponUsers(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         coupon = request.GET.get('coupon', None)
-        # url=f"http://127.0.0.1:8001/payments/coupon-users"
-        url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
+        start_date = request.GET.get('start_date', None)
+        end_date = request.GET.get('end_date', None)
+        url=f"http://127.0.0.1:8001/payments/coupon-users"
+        # url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
 
   
         params = {
-            'coupon': coupon
+            'coupon': coupon,
+            'start_date': start_date,
+            'end_date': end_date
         }
         response = requests.get(url,params=params)
 
