@@ -389,7 +389,7 @@ class NewAlnafiUser(APIView):
 
 #Optimized
 class GetUsers(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         is_converted = self.request.GET.get('is_converted', None) or None
@@ -401,49 +401,59 @@ class GetUsers(APIView):
         phone = self.request.GET.get('phone', None)
         academy_demo_access = self.request.GET.get('academy_demo_access', None)
 
-        users = search_users(q,start_date,req_end_date,is_converted,source,request,phone,academy_demo_access)
+        user_groups = request.user.groups.values_list('name', flat=True)  # Get the names of all user groups
+        has_perm = False
+        for i in user_groups:
+            if i != 'TESTING':
+                has_perm = True
+
+        users = search_users(q,start_date,req_end_date,is_converted,source,request,phone,academy_demo_access,has_perm)
         if users:
-            if export =='true':
-                for i in range(len(users['converted_users'])):
-                    users['converted_users'][i]['Converted'] = users['converted'][i]
+            if has_perm:
+                if export =='true':
+                    for i in range(len(users['converted_users'])):
+                        users['converted_users'][i]['Converted'] = users['converted'][i]
 
-                for info in users['products']:
-                    email = info.get('user__email')
-                    product_name = info.get('product__product_name')
+                    for info in users['products']:
+                        email = info.get('user__email')
+                        product_name = info.get('product__product_name')
 
-                    for user_dict in users['converted_users']:
-                        if user_dict.get('email') == email:
-                            user_dict['product'] = product_name
-                try:
-                    file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
-                    # Build the full path to the media directory
-                    file_path = os.path.join(settings.MEDIA_ROOT, file_name)
-                    df = pd.DataFrame(users['converted_users'])
-                    df_str = df.to_csv(index=False)
-                    s3 = upload_csv_to_s3(df_str,file_name)
-                    data = {'file_link': file_path,'export':'true'}
-                    return Response(data)
-                except Exception as e:
-                    return Response(e)
+                        for user_dict in users['converted_users']:
+                            if user_dict.get('email') == email:
+                                user_dict['product'] = product_name
+                    try:
+                        file_name = f"Users_{datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.csv"
+                        # Build the full path to the media directory
+                        file_path = os.path.join(settings.MEDIA_ROOT, file_name)
+                        df = pd.DataFrame(users['converted_users'])
+                        df_str = df.to_csv(index=False)
+                        s3 = upload_csv_to_s3(df_str,file_name)
+                        data = {'file_link': file_path,'export':'true'}
+                        return Response(data)
+                    except Exception as e:
+                        return Response(e)
+                else:
+                    email_product_map = {}
+                    for info in users['products']:
+                        email = info.get('user__email')
+                        product_name = info.get('product__product_name')
+                        email_product_map[email] = product_name
+
+                    # Assign 'is_paying_customer' and 'product' to each user in 'converted_users'
+                    for i, user_dict in enumerate(users['converted_users']):
+                        email = user_dict.get('email')
+                        product_name = email_product_map.get(email)
+                        is_paying_customer = users['converted'][i]  # Access the 'is_paying_customer' at the same index as 'user_dict'
+
+                        user_dict['is_paying_customer'] = is_paying_customer
+                        user_dict['product'] = product_name
+
+                    paginator = MyPagination()
+                    paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
+                    return paginator.get_paginated_response(paginated_queryset)
             else:
-                email_product_map = {}
-                for info in users['products']:
-                    email = info.get('user__email')
-                    product_name = info.get('product__product_name')
-                    email_product_map[email] = product_name
-
-                # Assign 'is_paying_customer' and 'product' to each user in 'converted_users'
-                for i, user_dict in enumerate(users['converted_users']):
-                    email = user_dict.get('email')
-                    product_name = email_product_map.get(email)
-                    is_paying_customer = users['converted'][i]  # Access the 'is_paying_customer' at the same index as 'user_dict'
-
-                    user_dict['is_paying_customer'] = is_paying_customer
-                    user_dict['product'] = product_name
-
                 paginator = MyPagination()
-                # paginated_queryset = paginator.paginate_queryset(users, request)
-                paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
+                paginated_queryset = paginator.paginate_queryset(users, request)
                 return paginator.get_paginated_response(paginated_queryset)
         else:
             response_data = {
