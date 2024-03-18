@@ -38,11 +38,11 @@ class LiveCoupons(APIView):
 class CouponUsers(APIView):
     # permission_classes = [IsAuthenticated]
     def get(self, request):
-        coupon = request.GET.get('coupon', None)
+        coupon = request.GET.get('coupon')
         start_date = request.GET.get('start_date', None)
         end_date = request.GET.get('end_date', None)
-        export = request.GET.get('export')
-        page=request.GET.get('page')
+        export = request.GET.get('export',None)
+        page= request.GET.get('page')
         # url=f"http://127.0.0.1:8001/payments/coupon-users"
         url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
 
