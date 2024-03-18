@@ -41,8 +41,8 @@ class CouponUsers(APIView):
         coupon = request.GET.get('coupon', None)
         start_date = request.GET.get('start_date', None)
         end_date = request.GET.get('end_date', None)
-        url=f"http://127.0.0.1:8001/payments/coupon-users"
-        # url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
+        # url=f"http://127.0.0.1:8001/payments/coupon-users"
+        url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
 
   
         params = {
