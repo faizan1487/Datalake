@@ -46,3 +46,6 @@ urlpatterns = [
     path("lead_data/", GetAuthDataLead.as_view()),
     # path('users/<int:pk>/', UserDetail.as_view(), name='user-detail'),
 ]
+
+
+

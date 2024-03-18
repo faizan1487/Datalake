@@ -389,7 +389,7 @@ class NewAlnafiUser(APIView):
 
 #Optimized
 class GetUsers(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         q = self.request.GET.get('q', None) or None
         is_converted = self.request.GET.get('is_converted', None) or None
@@ -452,6 +452,7 @@ class GetUsers(APIView):
                     paginated_queryset = paginator.paginate_queryset(users['converted_users'], request)
                     return paginator.get_paginated_response(paginated_queryset)
             else:
+                # users['converted_users'] = users
                 paginator = MyPagination()
                 paginated_queryset = paginator.paginate_queryset(users, request)
                 return paginator.get_paginated_response(paginated_queryset)
