@@ -42,13 +42,16 @@ class CouponUsers(APIView):
         start_date = request.GET.get('start_date', None)
         end_date = request.GET.get('end_date', None)
         export = request.GET.get('export')
+        page=request.GET.get('page')
         # url=f"http://127.0.0.1:8001/payments/coupon-users"
         url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
 
         params = {
             'coupon': coupon,
             'start_date': start_date,
-            'end_date': end_date
+            'end_date': end_date,
+            'page': page,
+            'export':export
         }
 
         try:
