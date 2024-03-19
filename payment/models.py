@@ -1,3 +1,4 @@
+from enum import unique
 from django.db import models
 from datetime import datetime, timezone
 from user.models import Main_User
@@ -87,7 +88,7 @@ class New_Alnafi_Payments(models.Model):
 
 
 class Unpaid_New_Alnafi_Payments(models.Model):
-    orderId = models.CharField(max_length=255)
+    orderId = models.CharField(max_length=255,unique=True)
     amount = models.IntegerField(null=True, blank=True)
     status = models.CharField(max_length=255, blank=True, null=True)
     card_number = models.CharField(max_length=255, blank=True, null=True)
