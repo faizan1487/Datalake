@@ -36,7 +36,7 @@ class LiveCoupons(APIView):
 
 
 class CouponUsers(APIView):
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         coupon = request.GET.get('coupon')
         start_date = request.GET.get('start_date', None)

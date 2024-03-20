@@ -7,6 +7,7 @@ from rest_framework.response import Response
 from .serializers import DailyLeadSerializer, DailySalesSupportSerializer
 from rest_framework import status
 
+
 class DailyLead(APIView):
     def post(self, request):
         data = request.data
@@ -151,6 +152,8 @@ class MatchingId(APIView):
         else:
             return Response({'error': 'Failed to retrieve data from the API'}, status=response_get.status_code)
         
+
+
 class UpdateDailyLead(APIView):
     def get(self, request):
         print("get")
@@ -163,3 +166,55 @@ class UpdateDailyLead(APIView):
                 lead.save()
 
         return Response("vdifbvofd")
+    
+
+
+
+
+from rest_framework.permissions import IsAuthenticated
+
+
+
+
+class FetchAgentLeads(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        status = request.GET.get('status', None)
+        agent = request.GET.get('agent', None)
+        start_date = request.GET.get('start_date'),
+        end_date = request.GET.get('end_date'),
+        export = request.GET.get('export'),
+        page = int(request.GET.get('page', 1))  # Default to page 1 if not provided
+        limit = int(request.GET.get('limit', 10))  # Default limit to 10 if not provided
+
+
+        #admin keys
+        user_api_key = '4e7074f890507cb'
+        user_secret_key = 'c954faf5ff73d31'
+
+
+        agents = {
+            'ahsan': {'user_api_key':'b5658b2d5a087d0','user_secret_key':'a9faaabc26bddc5'},
+            'wamiq': {'user_api_key':'31c85c7e921b270','user_secret_key':'845aff8197932c3'},
+        }
+
+        if agent in agents:
+            user_api_key = agents[agent]['user_api_key']
+            user_secret_key = agents[agent]['user_secret_key']
+
+        headers = {
+            'Authorization': f'token {user_api_key}:{user_secret_key}',
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+        }
+
+        if status:
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_page_length=10000000000'
+        else:
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id"]&&limit_page_length={limit}&limit_start={(page-1)*limit}'
+
+        response = requests.get(url, headers=headers)
+        lead_data = response.json()
+        print(len(lead_data['data']))
+
+        return Response(lead_data)
