@@ -47,9 +47,7 @@ class CouponUsers(APIView):
         end_date = request.GET.get('end_date', None)
         export = request.GET.get('export',None)
         page= request.GET.get('page')
-        # url=f"http://127.0.0.1:8001/payments/coupon-users"
         url = env('PAYMENT_SERVICE_COUPON_URL_PROD')
-
         params = {
             'coupon': coupon,
             'start_date': start_date,
