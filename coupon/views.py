@@ -6,6 +6,10 @@ from rest_framework.views import APIView
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 import requests
+import environ 
+
+env = environ.Env()
+env.read_env()
 
 # Create your views here.
 class LiveCoupons(APIView):
@@ -44,7 +48,7 @@ class CouponUsers(APIView):
         export = request.GET.get('export',None)
         page= request.GET.get('page')
         # url=f"http://127.0.0.1:8001/payments/coupon-users"
-        url="https://stage-payment-service.alnafi.edu.pk/payments/coupon-users/"
+        url = env('PAYMENT_SERVICE_COUPON_URL_PROD')
 
         params = {
             'coupon': coupon,

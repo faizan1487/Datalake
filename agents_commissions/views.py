@@ -209,12 +209,13 @@ class FetchAgentLeads(APIView):
         }
 
         if status:
-            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_page_length=10000000000'
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_page_length={limit}&limit_start={(page-1)*limit}'
         else:
-            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id"]&&limit_page_length={limit}&limit_start={(page-1)*limit}'
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&limit_page_length={limit}&limit_start={(page-1)*limit}'
 
         response = requests.get(url, headers=headers)
         lead_data = response.json()
         print(len(lead_data['data']))
+        lead_data['count'] = len(lead_data['data'])
 
         return Response(lead_data)
