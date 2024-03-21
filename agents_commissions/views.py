@@ -174,24 +174,22 @@ class UpdateDailyLead(APIView):
 from rest_framework.permissions import IsAuthenticated
 
 
-
+import datetime
 
 class FetchAgentLeads(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
         status = request.GET.get('status', None)
         agent = request.GET.get('agent', None)
-        start_date = request.GET.get('start_date'),
-        end_date = request.GET.get('end_date'),
-        export = request.GET.get('export'),
+        start_date = request.GET.get('start_date',None)
+        end_date = request.GET.get('end_date',None)
+        export = request.GET.get('export')
         page = int(request.GET.get('page', 1))  # Default to page 1 if not provided
         limit = int(request.GET.get('limit', 10))  # Default limit to 10 if not provided
-
 
         #admin keys
         user_api_key = '4e7074f890507cb'
         user_secret_key = 'c954faf5ff73d31'
-
 
         agents = {
             'ahsan': {'user_api_key':'b5658b2d5a087d0','user_secret_key':'a9faaabc26bddc5'},
@@ -210,14 +208,54 @@ class FetchAgentLeads(APIView):
 
         if status:
             # url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_page_length={limit}&limit_start={(page-1)*limit}'
-            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&&limit_start=0&limit_page_length=100000000000000'
-        else:
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_start=0&limit_page_length=100000000000000'
+
+        if status is None:
             # url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&limit_page_length={limit}&limit_start={(page-1)*limit}'
-            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&limit_start=0&limit_page_length=100000000000000'
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","form","source","status","date"]&limit_start=0&limit_page_length=100000000000000'
+
 
         response = requests.get(url, headers=headers)
         all_lead_data = response.json()
-        total_count = len(all_lead_data['data'])
+
+        with_dates = [entry for entry in all_lead_data['data'] if entry.get("date") is not None]
+
+
+        without_dates = [entry for entry in all_lead_data['data'] if entry.get("date") is None]
+
+        sorted_with_dates = sorted(with_dates, key=lambda lead: datetime.datetime.strptime(lead["date"], "%Y-%m-%d"))
+        all_lead_data = sorted_with_dates + without_dates 
+
+        if start_date is None:
+            i = 0
+            while start_date is None and i < len(all_lead_data):
+                start_date = all_lead_data[i].get('date', None)  # Handle potential absence of 'date' key
+                i += 1
+        
+        if start_date is not None:
+            start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
+
+        if end_date is None:
+            i = len(all_lead_data) - 1
+            while end_date is None:
+                end_date = all_lead_data[i].get('date', None)  # Handle potential absence of 'date' key
+                i -= 1
+
+
+        if end_date is not None:
+            end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+        
+        filtered_leads = []
+        for lead in all_lead_data:
+            if lead['date'] is not None:
+                lead_date = datetime.datetime.strptime(lead['date'], '%Y-%m-%d').date()
+                if start_date <= lead_date <= end_date:
+                    filtered_leads.append(lead)
+
+        
+        filtered_leads = filtered_leads
+
+        total_count = len(filtered_leads)
         pages = total_count // 10
 
         start_index = int((page - 1) * limit)
@@ -226,12 +264,5 @@ class FetchAgentLeads(APIView):
         all_data['pages'] = pages+1
         all_data['total_count'] = total_count
         all_data['page'] = page
-        all_data['leads'] = all_lead_data['data'][start_index:end_index]
+        all_data['leads'] = filtered_leads[start_index:end_index]
         return Response(all_data)
-
-
-        # response = requests.get(url, headers=headers)
-        # lead_data = response.json()
-        # print(len(lead_data['data']))
-        # lead_data['count'] = len(lead_data['data'])
-        # return Response(lead_data)
