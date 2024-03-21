@@ -209,13 +209,29 @@ class FetchAgentLeads(APIView):
         }
 
         if status:
-            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_page_length={limit}&limit_start={(page-1)*limit}'
+            # url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_page_length={limit}&limit_start={(page-1)*limit}'
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&&limit_start=0&limit_page_length=100000000000000'
         else:
-            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&limit_page_length={limit}&limit_start={(page-1)*limit}'
+            # url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&limit_page_length={limit}&limit_start={(page-1)*limit}'
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&limit_start=0&limit_page_length=100000000000000'
 
         response = requests.get(url, headers=headers)
-        lead_data = response.json()
-        print(len(lead_data['data']))
-        lead_data['count'] = len(lead_data['data'])
+        all_lead_data = response.json()
+        total_count = len(all_lead_data['data'])
+        pages = total_count // 10
 
-        return Response(lead_data)
+        start_index = int((page - 1) * limit)
+        end_index = int(start_index + limit)
+        all_data = {}
+        all_data['pages'] = pages+1
+        all_data['total_count'] = total_count
+        all_data['page'] = page
+        all_data['leads'] = all_lead_data['data'][start_index:end_index]
+        return Response(all_data)
+
+
+        # response = requests.get(url, headers=headers)
+        # lead_data = response.json()
+        # print(len(lead_data['data']))
+        # lead_data['count'] = len(lead_data['data'])
+        # return Response(lead_data)
