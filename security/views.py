@@ -222,9 +222,9 @@ class CreateScan(APIView):
             for department in departments:
                 recipient_list.append(department.email)
 
-            msg = EmailMultiAlternatives(subject, text_content, email_from, recipient_list)
-            msg.attach_alternative(html_content, "text/html")
-            msg.send()
+            # msg = EmailMultiAlternatives(subject, text_content, email_from, recipient_list)
+            # msg.attach_alternative(html_content, "text/html")
+            # msg.send()
 
         return Response(scan_data, status=status.HTTP_201_CREATED)
     

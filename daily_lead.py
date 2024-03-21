@@ -512,9 +512,6 @@ def upload_support_leads():
         user_secret_key = '02c5e4ff622bb22'  
         print("salman")
 
-
-
-  
         headers = {
             'Authorization': f'token {user_api_key}:{user_secret_key}',
             "Content-Type": "application/json",
@@ -534,7 +531,7 @@ def upload_support_leads():
             "country": 'unknown',
             "source": login_source or None,
             "form": form or None,
-            "cv_link": None,  
+            "cv_link": None,
             "interest": None,  
             "qualification": None,  
             "date_joined": str(date_joined_str) if date_joined_str else None,
