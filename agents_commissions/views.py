@@ -181,8 +181,8 @@ class FetchAgentLeads(APIView):
     def get(self, request):
         status = request.GET.get('status', None)
         agent = request.GET.get('agent', None)
-        start_date = request.GET.get('start_date',None)
-        end_date = request.GET.get('end_date',None)
+        start_date_param = request.GET.get('start_date',None)
+        end_date_param = request.GET.get('end_date',None)
         export = request.GET.get('export')
         page = int(request.GET.get('page', 1))  # Default to page 1 if not provided
         limit = int(request.GET.get('limit', 10))  # Default limit to 10 if not provided
@@ -201,6 +201,9 @@ class FetchAgentLeads(APIView):
             'Marij': {'user_api_key': 'b3bb7a167ec651a','user_secret_key':'449cd28cd263361'},
             'Waqas': {'user_api_key': 'b09d1796de6444a','user_secret_key':'b09d1796de6444a'},
             'Hamza': {'user_api_key': 'dd3d10e83dfbb6b','user_secret_key':'a1a50d549455fe3'},
+            'Toqir': {'user_api_key': '5306bb96b02c8f1','user_secret_key':'362d44b933cef9e'},
+            'Saad': {'user_api_key': 'e31afcb884def7e','user_secret_key':'cb799e6913b57f9'},
+            'Saima': {'user_api_key': '3da0a250742fa00','user_secret_key':'5ec8bb8e1e94930'},
 
             'Zeeshan': {'user_api_key': 'a17f7cc184a55ec','user_secret_key':'3e26bf2dde0db20'},
             'Haider': {'user_api_key': '2a1d467717681df','user_secret_key':'39faa082ac5f258'},
@@ -208,11 +211,8 @@ class FetchAgentLeads(APIView):
             'Ahsan': {'user_api_key':'b5658b2d5a087d0','user_secret_key':'a9faaabc26bddc5'},
             'Mutahir': {'user_api_key': 'ee3c9803e0a7aa0','user_secret_key':'ad8a5dc4bc4f13f'},
             'Salman': {'user_api_key': 'c09e9698c024bd5','user_secret_key':'02c5e4ff622bb22'},
-            'Mujtaba': {'user_api_key': '940ef42feabf766','user_secret_key':'7a642a5b930eb44'}
+            'Mujtaba': {'user_api_key': '940ef42feabf766','user_secret_key':'7a642a5b930eb44'},
         }
-
-
-
 
         if agent in agents:
             user_api_key = agents[agent]['user_api_key']
@@ -232,46 +232,57 @@ class FetchAgentLeads(APIView):
             # url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&limit_page_length={limit}&limit_start={(page-1)*limit}'
             url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","form","source","status","date"]&limit_start=0&limit_page_length=100000000000000'
 
-
         response = requests.get(url, headers=headers)
         all_lead_data = response.json()
-
         with_dates = [entry for entry in all_lead_data['data'] if entry.get("date") is not None]
-
-
         without_dates = [entry for entry in all_lead_data['data'] if entry.get("date") is None]
 
         sorted_with_dates = sorted(with_dates, key=lambda lead: datetime.datetime.strptime(lead["date"], "%Y-%m-%d"))
         all_lead_data = sorted_with_dates + without_dates 
 
-        if start_date is None:
+        if start_date_param is None:
+            start_date = None
             i = 0
             while start_date is None and i < len(all_lead_data):
                 start_date = all_lead_data[i].get('date', None)  # Handle potential absence of 'date' key
                 i += 1
         
-        if start_date is not None:
             start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
 
-        if end_date is None:
+        if start_date_param is not None:
+            start_date_param = datetime.datetime.strptime(start_date_param, '%Y-%m-%d').date()
+
+
+        if end_date_param is None:
+            end_date = None
             i = len(all_lead_data) - 1
             while end_date is None:
                 end_date = all_lead_data[i].get('date', None)  # Handle potential absence of 'date' key
                 i -= 1
 
-
-        if end_date is not None:
             end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+
+        if end_date_param is not None:
+            end_date_param = datetime.datetime.strptime(end_date_param, '%Y-%m-%d').date()
+
         
         filtered_leads = []
-        for lead in all_lead_data:
-            if lead['date'] is not None:
-                lead_date = datetime.datetime.strptime(lead['date'], '%Y-%m-%d').date()
-                if start_date <= lead_date <= end_date:
-                    filtered_leads.append(lead)
 
-        
-        filtered_leads = filtered_leads
+        if start_date_param is None and end_date_param is None:        
+            filtered_leads = filter_by_date(start_date,end_date,all_lead_data)
+        elif start_date_param is None and end_date_param is not None:
+            filtered_leads = filter_by_date(start_date,end_date_param,all_lead_data)
+        elif start_date_param is not None and end_date_param is None:
+            filtered_leads = filter_by_date(start_date_param,end_date,all_lead_data)
+        else:
+            filtered_leads = filter_by_date(start_date_param,end_date_param,all_lead_data)
+
+
+
+        if start_date_param is None and end_date_param is None:        
+            filtered_leads = filtered_leads + without_dates
+        else:
+            filtered_leads = filtered_leads
 
         total_count = len(filtered_leads)
         pages = total_count // 10
@@ -284,3 +295,22 @@ class FetchAgentLeads(APIView):
         all_data['page'] = page
         all_data['leads'] = filtered_leads[start_index:end_index]
         return Response(all_data)
+    
+
+
+
+
+
+
+
+
+
+def filter_by_date(start_date, end_date,data):
+    filtered_leads = []
+    for lead in data:
+        if lead['date'] is not None:
+            lead_date = datetime.datetime.strptime(lead['date'], '%Y-%m-%d').date()
+            if start_date <= lead_date <= end_date:
+                filtered_leads.append(lead)
+
+    return filtered_leads

@@ -231,7 +231,7 @@ def mocLead_Signalto_moc_doctype(instance,source):
 
 def mocLead_Signalto_sale_doctype(instance,source):
     # print("mocLead_Signalto_sale_doctype")
-    if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)':
+    if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)' or instance.form == 'O-Level New Batch':
         user_api_key = '2a1d467717681df'
         user_secret_key = '39faa082ac5f258'
     else:
