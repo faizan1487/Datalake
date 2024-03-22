@@ -172,8 +172,6 @@ class UpdateDailyLead(APIView):
 
 
 from rest_framework.permissions import IsAuthenticated
-
-
 import datetime
 
 class FetchAgentLeads(APIView):
@@ -214,6 +212,7 @@ class FetchAgentLeads(APIView):
             'Mujtaba': {'user_api_key': '940ef42feabf766','user_secret_key':'7a642a5b930eb44'},
         }
 
+
         if agent in agents:
             user_api_key = agents[agent]['user_api_key']
             user_secret_key = agents[agent]['user_secret_key']
@@ -224,10 +223,10 @@ class FetchAgentLeads(APIView):
             "Accept": "application/json",
         }
 
-        if status:
+        if status != '':
             url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","form","source","status","owner","date"]&filters=[["Lead","status","=","{status}"]]&limit_start=0&limit_page_length=100000000000000'
 
-        if status is None:
+        if status == '':
             url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","form","source","status","owner","date"]&limit_start=0&limit_page_length=100000000000000'
 
         response = requests.get(url, headers=headers)
@@ -238,7 +237,7 @@ class FetchAgentLeads(APIView):
         sorted_with_dates = sorted(with_dates, key=lambda lead: datetime.datetime.strptime(lead["date"], "%Y-%m-%d"))
         all_lead_data = sorted_with_dates + without_dates 
 
-        if start_date_param is None:
+        if start_date_param == '':
             start_date = None
             i = 0
             while start_date is None and i < len(all_lead_data):
@@ -247,11 +246,11 @@ class FetchAgentLeads(APIView):
         
             start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d').date()
 
-        if start_date_param is not None:
+        if start_date_param != '':
             start_date_param = datetime.datetime.strptime(start_date_param, '%Y-%m-%d').date()
 
 
-        if end_date_param is None:
+        if end_date_param == '':
             end_date = None
             i = len(all_lead_data) - 1
             while end_date is None:
@@ -260,27 +259,35 @@ class FetchAgentLeads(APIView):
 
             end_date = datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
 
-        if end_date_param is not None:
+
+        if end_date_param is not None and end_date_param != '':
             end_date_param = datetime.datetime.strptime(end_date_param, '%Y-%m-%d').date()
 
-        
+
         filtered_leads = []
 
-        if start_date_param is None and end_date_param is None:        
+        if start_date_param == '' and end_date_param == '':     
+            # print("1")   
             filtered_leads = filter_by_date(start_date,end_date,all_lead_data)
-        elif start_date_param is None and end_date_param is not None:
+        elif start_date_param == '' and end_date_param != '':
+            # print("2")
             filtered_leads = filter_by_date(start_date,end_date_param,all_lead_data)
-        elif start_date_param is not None and end_date_param is None:
+        elif start_date_param != '' and end_date_param == '':
+            # print("3")
             filtered_leads = filter_by_date(start_date_param,end_date,all_lead_data)
         else:
+            # print("4")
             filtered_leads = filter_by_date(start_date_param,end_date_param,all_lead_data)
 
-
-
-        if start_date_param is None and end_date_param is None:        
+        if start_date_param == '' and end_date_param == '':        
             filtered_leads = filtered_leads + without_dates
         else:
             filtered_leads = filtered_leads
+
+        if export:
+            pass
+
+
 
         total_count = len(filtered_leads)
         pages = total_count // 10
@@ -296,14 +303,9 @@ class FetchAgentLeads(APIView):
     
 
 
-
-
-
-
-
-
-
 def filter_by_date(start_date, end_date,data):
+    # print("start_date",start_date)
+    # print("end_date",end_date)
     filtered_leads = []
     for lead in data:
         if lead['date'] is not None:
