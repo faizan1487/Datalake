@@ -177,7 +177,7 @@ from rest_framework.permissions import IsAuthenticated
 import datetime
 
 class FetchAgentLeads(APIView):
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
     def get(self, request):
         status = request.GET.get('status', None)
         agent = request.GET.get('agent', None)
@@ -225,12 +225,10 @@ class FetchAgentLeads(APIView):
         }
 
         if status:
-            # url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_page_length={limit}&limit_start={(page-1)*limit}'
-            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&filters=[["Lead","status","=","{status}"]]&limit_start=0&limit_page_length=100000000000000'
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","form","source","status","owner","date"]&filters=[["Lead","status","=","{status}"]]&limit_start=0&limit_page_length=100000000000000'
 
         if status is None:
-            # url = f'https://crm.alnafi.com/api/resource/Lead?fields=["*"]&limit_page_length={limit}&limit_start={(page-1)*limit}'
-            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","form","source","status","date"]&limit_start=0&limit_page_length=100000000000000'
+            url = f'https://crm.alnafi.com/api/resource/Lead?fields=["email_id","form","source","status","owner","date"]&limit_start=0&limit_page_length=100000000000000'
 
         response = requests.get(url, headers=headers)
         all_lead_data = response.json()
