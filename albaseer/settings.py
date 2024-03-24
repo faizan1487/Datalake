@@ -401,6 +401,7 @@ AUTH_USER_MODEL = 'user.User'
 
 # Email Configuratio
 
+
 #JWT Settings
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
