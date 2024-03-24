@@ -16,9 +16,7 @@ def academy_leads():
     data = response.json()
 
     url = 'https://crm.alnafi.com/api/resource/Renewal Leads'
-    user_api_key = '2a1d467717681df'
-    user_secret_key = '39faa082ac5f258'
-
+    
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         'Content-Type': 'application/json',

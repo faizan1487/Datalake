@@ -21,8 +21,7 @@ def send_lead_post_request(sender, instance, created, **kwargs):
 def usersignal(instance,source):
     # print("instance.source",instance.source)
     if instance.source == 'Academy Newsletter':
-        user_api_key = '2a1d467717681df'
-        user_secret_key = '39faa082ac5f258'
+        pass
     else:
         user_api_key, user_secret_key = round_robin()
 

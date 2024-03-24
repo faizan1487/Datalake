@@ -16,9 +16,7 @@ def crm_all_leads_emails():
     encoded_params = urlencode(params)
     get_url = f'{base_url}?{encoded_params}'
 
-    user_api_key = '4e7074f890507cb'
-    user_secret_key = 'c954faf5ff73d31'
-
+    
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
         'Content-Type': 'application/json',

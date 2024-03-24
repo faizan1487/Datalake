@@ -48,13 +48,7 @@ def new_alnafi_lead_to_erp(sender, instance, created, *args, **kwargs):
 def usersignal(instance,source,sender):
     # print("user signal running")
     if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)':
-        user_api_key = '2a1d467717681df'
-        user_secret_key = '39faa082ac5f258'
-
-        if instance.email.endswith("yopmail.com"):
-            # Admin keys
-            user_api_key = '4e7074f890507cb'
-            user_secret_key = 'c954faf5ff73d31'
+        pass
         
         url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
         
@@ -142,8 +136,7 @@ import math  # Import math for handling nan
 
 def mocLead_Signalto_moc_doctype(instance,source):
     # print("mocdoctype signa;")
-    api_key = '351b6479c5a4a16'
-    api_secret = 'e459db7e2d30b34'
+   
     headers = {
         'Authorization': f'token {api_key}:{api_secret}',
         "Content-Type": "application/json",
@@ -232,18 +225,10 @@ def mocLead_Signalto_moc_doctype(instance,source):
 def mocLead_Signalto_sale_doctype(instance,source):
     # print("mocLead_Signalto_sale_doctype")
     if source == 'Academy' or source == 'Academy Signup' or instance.form == 'O Level Academy Form' or instance.form == 'O-Level New Batch (Crash Course)' or instance.form == 'O-Level New Batch':
-        user_api_key = '2a1d467717681df'
-        user_secret_key = '39faa082ac5f258'
+        pass
     else:
         #
-        user_api_key = 'b09d1796de6444a'
-        user_secret_key = '9ac70da03e4c23c'
-        # user_api_key, user_secret_key = round_robin()
-
-        #admin keys
-        # user_api_key = '4e7074f890507cb'
-        # user_secret_key = 'c954faf5ff73d31'
-        
+        pass
 
     headers = {
         'Authorization': f'token {user_api_key}:{user_secret_key}',
@@ -382,12 +367,7 @@ def newsignupsignal(instance,sender):
     source = instance.source
 
     if source == 'Academy' or source == 'Academy Signup':
-        user_api_key = '2a1d467717681df'
-        user_secret_key = '39faa082ac5f258'
-    
-        if instance.email.endswith("yopmail.com"):
-            user_api_key = '4e7074f890507cb'
-            user_secret_key = 'c954faf5ff73d31'
+        pass
 
         url = f'https://crm.alnafi.com/api/resource/Lead?fields=["name","email_id"]&filters=[["Lead","email_id","=","{instance.email}"]]'
 

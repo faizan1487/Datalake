@@ -123,8 +123,8 @@ class MatchingId(APIView):
     def get(self, request):
         # url = 'https://crm.alnafi.com/api/resource/Daily Sales Module?fields=["*"]&limit_start=0&limit_page_length=10000000'
         url = 'https://crm.alnafi.com/api/resource/Daily Sales For Support?fields=["*"]&limit_start=0&limit_page_length=10000000'
-        api_key = "4e7074f890507cb"
-        api_secret = "c954faf5ff73d31"
+        api_key = ""
+        api_secret = ""
 
         headers = {
             'Authorization': f'token {api_key}:{api_secret}',
@@ -186,33 +186,10 @@ class FetchAgentLeads(APIView):
         limit = int(request.GET.get('limit', 10))  # Default limit to 10 if not provided
 
         #admin keys
-        user_api_key = '4e7074f890507cb'
-        user_secret_key = 'c954faf5ff73d31'
+        user_api_key = ''
+        user_secret_key = ''
 
-        agents = {
-            'Wamiq': {'user_api_key':'31c85c7e921b270','user_secret_key':'845aff8197932c3'},
-            'Shoaib': {'user_api_key': '484f3e9978c00f3','user_secret_key':'f61de5c03b3935d'},
-            'Suleman': {'user_api_key': '3f6d0f005e4fccc','user_secret_key':'bbcaef6140205d2'},
-            'Ribal': {'user_api_key': '39d14c9d602fa09','user_secret_key':'216de0a015e7fd1'},
-            'Sunil': {'user_api_key': '9d37a29d966277f','user_secret_key':'018c3f6127c43cc'},
-            'Rehan': {'user_api_key': 'b6a9a44a08790f8','user_secret_key':'b6d91bfa5792ccc'},
-            'Marij': {'user_api_key': 'b3bb7a167ec651a','user_secret_key':'449cd28cd263361'},
-            'Waqas': {'user_api_key': 'b09d1796de6444a','user_secret_key':'b09d1796de6444a'},
-            'Hamza': {'user_api_key': 'dd3d10e83dfbb6b','user_secret_key':'a1a50d549455fe3'},
-            'Toqir': {'user_api_key': '5306bb96b02c8f1','user_secret_key':'362d44b933cef9e'},
-            'Saad': {'user_api_key': 'e31afcb884def7e','user_secret_key':'cb799e6913b57f9'},
-            'Saima': {'user_api_key': '3da0a250742fa00','user_secret_key':'5ec8bb8e1e94930'},
-
-            'Zeeshan': {'user_api_key': 'a17f7cc184a55ec','user_secret_key':'3e26bf2dde0db20'},
-            'Haider': {'user_api_key': '2a1d467717681df','user_secret_key':'39faa082ac5f258'},
-            'Mehtab': {'user_api_key': '6b0bb41dba21795','user_secret_key':'f56c627e47bdff6'},
-            'Ahsan': {'user_api_key':'b5658b2d5a087d0','user_secret_key':'a9faaabc26bddc5'},
-            'Mutahir': {'user_api_key': 'ee3c9803e0a7aa0','user_secret_key':'ad8a5dc4bc4f13f'},
-            'Salman': {'user_api_key': 'c09e9698c024bd5','user_secret_key':'02c5e4ff622bb22'},
-            'Mujtaba': {'user_api_key': '940ef42feabf766','user_secret_key':'7a642a5b930eb44'},
-        }
-
-
+        agents = []
         if agent in agents:
             user_api_key = agents[agent]['user_api_key']
             user_secret_key = agents[agent]['user_secret_key']
