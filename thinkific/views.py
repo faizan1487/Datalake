@@ -267,22 +267,7 @@ class GetThinkificUser(APIView):
 def get_courses_name_from_bundle_id(bundle_id):
 
     def get_courses(bundle_id, page=1):
-        headers={
-            "X-Auth-API-Key": '0af37f50be358db530e91f3033ca7b1d',
-            "X-Auth-Subdomain": "alnafi",
-            "Content-Type": "application/json"
-            }
-
-        # headers={
-        #     "X-Auth-API-Key": '372ad45a3882e5f7dda23cd75d79556c',
-        #     "X-Auth-Subdomain": "alnafidev",
-        #     "Content-Type": "application/json"
-        #     }
-        
-        #production url
-        # f"https://api.thinkific.com/api/public/v1/bundles/{bundle_id}/courses?page={page}&limit=200",
-        #stage url
-
+       
         bundle_res = requests.get(
             f"https://api.thinkific.com/api/public/v1/bundles/{bundle_id}/courses?page={page}&limit=200",
             headers=headers
@@ -331,18 +316,10 @@ class GetUserEnrollments(APIView):
 class ThinkificUsers(APIView):
     permission_classes = [IsAuthenticated]
     def get(self, request):
-        # url = "https://api.thinkific.com/api/public/v1/users?page=1&limit=25"
-        # headers={
-        #     "X-Auth-API-Key": '0af37f50be358db530e91f3033ca7b1d',
-        #     "X-Auth-Subdomain": "alnafi",
-        #     "Content-Type": "application/json"
-        #     }
         
         response = requests.get(
                     f"https://api.thinkific.com/api/public/v1/users?page=&limit=1000",
                     headers={
-                        "X-Auth-API-Key": '0af37f50be358db530e91f3033ca7b1d',
-                        "X-Auth-Subdomain": "alnafi",
                         "Content-Type": "application/json"
                     })
         # response = requests.get(url, headers=headers)

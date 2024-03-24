@@ -1073,7 +1073,6 @@ def search_payment(export, q, start_date, end_date, plan, source, origin, status
 def add_tax_stripe_according_to_the_country_code(amount,country_code):
     tax_url = f'{settings.CRM_COUNTRY_TAX_API}{country_code}'
     headers = {
-    'Authorization': 'Bearer 1f9d7bce259800a704f81c37216b05555be1efa1fcec244a1f0f16622c5542e2fe713afc648301d3840a7a07e243c07928c9e9697267ca6c76a42791b628e9fbb94d0aec3da55db3d6d710a3f4108bf0a206c9407d1c51994465e3e63faaaedcb8aeb46b0d2e42dd430e658bda904b94cd31562b2592a42baebf52be94f4bb71'
     }
     r = requests.get(tax_url,headers=headers)
     try:

@@ -23,7 +23,6 @@ class LiveCoupons(APIView):
         }
 
         headers = {
-            'Authorization': 'Bearer 4ebc2c82f4e716d05b64a3eb274b64bf5a60a66397e7b5a4ac7f2c99a6bacefb9cc7b2e2997e9532dac38adfa651990be1bdd89cf51a2d5dd131132ac6e6023daeeca9b690b8df0ed32f18fd9b3f23a89eb173d4d0181c02975b498f847f8d1c66a53cf120a6308f05c431dc115322cc9784e9b6f005c099f8367bfa35987e4b',
             "Content-Type": "application/json",
             "Accept": "application/json",
         }
