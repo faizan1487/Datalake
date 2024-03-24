@@ -399,13 +399,7 @@ PASSWORD_RESET_TIMEOUT=900
 
 AUTH_USER_MODEL = 'user.User'
 
-# Email Configuration
-EMAIL_BACKEND="django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'faizanahmed14877@gmail.com'
-EMAIL_HOST_PASSWORD = 'rrogkbngirfjchbq'
-EMAIL_USE_TLS = True
+# Email Configuratio
 
 #JWT Settings
 SIMPLE_JWT = {
@@ -448,19 +442,11 @@ SIMPLE_JWT = {
 FILE_UPLOAD_MAX_MEMORY_SIZE = 15875938475934
 DATA_UPLOAD_MAX_NUMBER_FIELDS = 1583795834
 
-EXCHANGE_RATE_API_KEY = '6b253c10180740ec36a3b5c8'
+
 CRM_COUNTRY_TAX_API= env('CRM_COUNTRY_TAX_API',default="")
 
 
 
-# if DEBUG:
-#     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-#     EMAIL_HOST = 'smtp.mailtrap.io'
-#     EMAIL_HOST_USER = 'b688d22fbcecbf'
-#     EMAIL_HOST_PASSWORD = '8992648cb5dd18'
-#     EMAIL_PORT = '2525'
-#     EMAIL_USE_TLS = True
-#     EMAIL_USE_SSL = False
 
 # else:
 # EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
