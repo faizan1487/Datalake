@@ -19,7 +19,6 @@ BASE_URL = "https://stage-api-al-baseer.alnafi.com/"
 # See https://docs.djangoproject.com/en/4.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-1i*4dn)-_9)gf84&yqq1jytyu$6ob98k0u!$+bha%8wv!i#v6w'
 
 # SECURITY WARNING: don't run with debug turned on in production!cl
 # DEBUG = env("DEBUG")

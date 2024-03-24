@@ -109,8 +109,8 @@ def on_lead_saved(sender, instance, created, **kwargs):
         # print("Source", instance.source)
         
         url_get = f'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
-        api_key = "4e7074f890507cb"
-        api_secret = "c954faf5ff73d31"
+        api_key = ""
+        api_secret = ""
 
         headers = {
             'Authorization': f'token {api_key}:{api_secret}',
@@ -246,8 +246,8 @@ def deduct_from_leader_board(sender, instance, **kwargs):
 
                 # print("amont", amount_to_deduct)
                 url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
-                api_key = "4e7074f890507cb"
-                api_secret = "c954faf5ff73d31"
+                api_key = ""
+                api_secret = ""
                 headers = {
                     'Authorization': f'token {api_key}:{api_secret}',
                     "Content-Type": "application/json",
@@ -394,8 +394,8 @@ def deduct_from_leader_board_on_delete(sender, instance, **kwargs):
 
             # print("amont", amount_to_deduct)
             url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Sales?fields=["*"]'
-            api_key = "4e7074f890507cb"
-            api_secret = "c954faf5ff73d31"
+            api_key = ""
+            api_secret = ""
             headers = {
                 'Authorization': f'token {api_key}:{api_secret}',
                 "Content-Type": "application/json",
@@ -487,8 +487,8 @@ def on_support_saved(sender, instance, created, **kwargs):
             comission_amount = total_amount*0.02
         # print('comission', comission_amount)
         url_get = f'https://crm.alnafi.com/api/resource/Leader Board For Support?fields=["*"]'
-        api_key = "4e7074f890507cb"
-        api_secret = "c954faf5ff73d31"
+        api_key = ""
+        api_secret = ""
 
         headers = {
             'Authorization': f'token {api_key}:{api_secret}',
@@ -598,8 +598,8 @@ def deduct_from_leader_board_support(sender, instance, **kwargs):
                 comission_amount = total_amount*0.02
                 # print("amont", amount_to_deduct)
                 url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Support?fields=["*"]'
-                api_key = "4e7074f890507cb"
-                api_secret = "c954faf5ff73d31"
+                api_key = ""
+                api_secret = ""
                 headers = {
                     'Authorization': f'token {api_key}:{api_secret}',
                     "Content-Type": "application/json",
@@ -718,8 +718,8 @@ def deduct_from_leader_board_support_on_delete(sender, instance, **kwargs):
             comission_amount = total_amount*0.02
             # print("amont", amount_to_deduct)
             url_get = 'https://crm.alnafi.com/api/resource/Leader Board For Support?fields=["*"]'
-            api_key = "4e7074f890507cb"
-            api_secret = "c954faf5ff73d31"
+            api_key = ""
+            api_secret = ""
             headers = {
                 'Authorization': f'token {api_key}:{api_secret}',
                 "Content-Type": "application/json",
